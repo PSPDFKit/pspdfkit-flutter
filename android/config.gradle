@@ -1,0 +1,48 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+ext.flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+ext.pspdfkitMavenUrl = localProperties.getProperty('pspdfkit.mavenUrl')
+if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
+    ext.pspdfkitMavenUrl = 'https://customers.pspdfkit.com/maven/'
+}
+
+ext.pspdfkitUsername = localProperties.getProperty('pspdfkit.username')
+if (pspdfkitUsername == null || pspdfkitUsername == '') {
+    ext.pspdfkitUsername = 'pspdfkit'
+}
+
+ext.pspdfkitPassword = localProperties.getProperty('pspdfkit.password')
+if (pspdfkitPassword == null || pspdfkitPassword == '') {
+    throw new GradleException("PSPDFKit password was not specified. The password is required to download the PSPDFKit AAR file into your project. Please specify as pspdfkit.password inside the local.properties file.")
+}
+
+def pspdfkitIsDemo = localProperties.getProperty('pspdfkit.demo')
+if (pspdfkitIsDemo == null) {
+    pspdfkitIsDemo = pspdfkitPassword.startsWith('TRIAL-')
+} else {
+    pspdfkitIsDemo = Boolean.parseBoolean(pspdfkitIsDemo)
+}
+
+ext.pspdfkitMavenModuleName = pspdfkitIsDemo ? 'pspdfkit-demo' : 'pspdfkit'
+ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
+if (pspdfkitVersion == null || pspdfkitVersion == '') {
+    ext.pspdfkitVersion = '4.7.0'
+}
+
+ext.pspdfkitFlutterVersion = '1.0.0-SNAPSHOT'
+
+ext.androidCompileSdkVersion = 27
+ext.androidBuildToolsVersion = '27.0.3'
+ext.androidMinSdkVersion = 19
+ext.androidTargetSdkVersion = 27
+ext.androidGradlePluginVersion = '3.1.3'

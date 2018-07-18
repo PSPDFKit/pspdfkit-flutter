@@ -1,0 +1,49 @@
+buildscript {
+    apply from: 'config.gradle'
+
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
+    }
+}
+
+group 'com.pspdfkit.flutter.pspdfkit'
+version pspdfkitFlutterVersion
+
+rootProject.allprojects {
+    repositories {
+        maven {
+            url pspdfkitMavenUrl
+            credentials {
+                username pspdfkitUsername
+                password pspdfkitPassword
+            }
+        }
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion androidCompileSdkVersion
+    buildToolsVersion androidBuildToolsVersion
+
+    defaultConfig {
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        minSdkVersion androidMinSdkVersion
+        targetSdkVersion androidTargetSdkVersion
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+}
+
+dependencies {
+    implementation "com.pspdfkit:$pspdfkitMavenModuleName:$pspdfkitVersion"
+}

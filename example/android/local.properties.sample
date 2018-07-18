@@ -1,0 +1,9 @@
+## This file is a sample of available properties that you have to declare inside your primary local.properties file.
+
+ndk.dir=/path/to/your/android/ndk
+sdk.dir=/path/to/your/android/sdk
+flutter.sdk=/path/to/your/flutter/sdk
+
+# The Maven password you received while together with your PSPDFKit demo email, or your customer Maven password.
+# If you don't yet own a password, please head over to https://pspdfkit.com/try to request a demo.
+pspdfkit.password=
