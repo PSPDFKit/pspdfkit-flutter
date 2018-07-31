@@ -14,7 +14,7 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 
 1. Run `flutter create --org com.example.myapp myapp`.
 2. Open `myapp/pubspec.yaml` and under `dependencies` add 
-```
+```yaml
   pspdfkit:
     git:
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
