@@ -1,4 +1,4 @@
-package com.pspdfkit.flutter.pspdfkitexample;
+package com.pspdfkit.flutter.example;
 
 import android.os.Bundle;
 
