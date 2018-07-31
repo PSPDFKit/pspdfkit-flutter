@@ -35,7 +35,7 @@ flutter.buildMode=debug
 5. Open `myapp/android/app/build.gradle` and modify line 27 from `minSdkVersion 16` to `minSdkVersion 19`.
 6. Open `myapp/lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem
 
-```
+```dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit/pspdfkit.dart';
