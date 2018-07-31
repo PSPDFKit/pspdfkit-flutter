@@ -22,9 +22,9 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 <strong>Spaces are important</strong>, so don't forget them.
 
 3. From `myapp` run `flutter packages get` to install the packages.
-4. Open `myapp/android/local.properties` and specify the following variables
+4. Open `myapp/android/local.properties` and specify the following properties
 
-```
+```local.properties
 ndk.dir=/path/to/your/Android/sdk/ndk-bundle
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
