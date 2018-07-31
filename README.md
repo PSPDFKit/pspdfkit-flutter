@@ -112,12 +112,25 @@ class _MyAppState extends State<MyApp> {
 
 ```
 
-7. Before launching the app you need to copy a PDF document onto your development device or emulator
-```
+7. Enter your PSPDFKit license key into `myapp/android/app/src/main/AndroidManifest.xml` file: 
+
+  ```diff
+     <application>
+        ...
+
+  +      <meta-data
+  +          android:name="pspdfkit_license_key"
+  +          android:value="YOUR_LICENSE_KEY_GOES_HERE"/>
+
+     </application> 
+  ```
+
+8. Before launching the app you need to copy a PDF document onto your development device or emulator
+```bash
 adb push /path/to/your/document.pdf /sdcard/document.pdf
 ```
 
-8. The app is ready to start! From `myapp` run `flutter run`.
+9. The app is ready to start! From `myapp` run `flutter run`.
 
 
 # Example
