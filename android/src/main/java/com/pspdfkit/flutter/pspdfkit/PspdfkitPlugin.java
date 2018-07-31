@@ -30,14 +30,12 @@ import static android.support.v4.content.ContextCompat.checkSelfPermission;
  */
 public class PspdfkitPlugin implements MethodCallHandler {
 
-    private static final String TAG = "PspdfkitPlugin";
     private static final String[] PERMISSIONS_OPEN_DOCUMENT = {Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private final Context context;
 
     public PspdfkitPlugin(Context context) {
         this.context = context;
-
 
         // Request runtime permissions on Android Marshmallow and upwards.
         arePermissionGranted();
