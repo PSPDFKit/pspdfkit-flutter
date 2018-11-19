@@ -60,7 +60,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.pspdfkit.myapp.myapp2"
+        applicationId "com.example.myapp"
 -       minSdkVersion 16
 +       minSdkVersion 19
 -       targetSdkVersion 27
