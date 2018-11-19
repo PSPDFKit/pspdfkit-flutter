@@ -32,7 +32,47 @@ pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
-5. Open `myapp/android/app/build.gradle` and modify line 27 from `minSdkVersion 16` to `minSdkVersion 19`.
+5. Open `myapp/android/app/build.gradle` and modify `compileSdkVersion` from `27` to `28`, `minSdkVersion` from `16` to `19`, `targetSdkVersion` from `27` to `28` and add compile options to enable desugaring 
+  
+  ```groovy
+  compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+  ```
+  
+**Four changes** to edit:
+
+```diff
+...
+android {
+-   compileSdkVersion 27
++   compileSdkVersion 28
+    
++    compileOptions {
++       sourceCompatibility 1.8
++       targetCompatibility 1.8
++   }
+
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.pspdfkit.myapp.myapp2"
+-       minSdkVersion 16
++       minSdkVersion 19
+-       targetSdkVersion 27
++       targetSdkVersion 28
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+...
+```
+
+
 6. Open `myapp/lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem
 
 ```dart
