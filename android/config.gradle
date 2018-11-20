@@ -45,4 +45,4 @@ ext.androidCompileSdkVersion = 28
 ext.androidBuildToolsVersion = '28.0.3'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 28
-ext.androidGradlePluginVersion = '3.1.3'
+ext.androidGradlePluginVersion = '3.2.1'
