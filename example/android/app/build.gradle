@@ -3,6 +3,11 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion androidCompileSdkVersion
+    
+    compileOptions {
+      sourceCompatibility 1.8
+      targetCompatibility 1.8
+    }
 
     lintOptions {
         disable 'InvalidPackage'
