@@ -8,7 +8,6 @@ class Pspdfkit {
   static Future<dynamic> get frameworkVersion =>
       _channel.invokeMethod('frameworkVersion');
 
-  static Future<void> openExternalDocument(String document) =>
-    _channel.invokeMethod(
-        'openExternalDocument', <String, dynamic>{'document': document});
+  static Future<void> present(String document) =>
+    _channel.invokeMethod('present', <String, dynamic>{'document': document});
 }

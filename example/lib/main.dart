@@ -1,6 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit/pspdfkit.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+
+const String DOCUMENT_PATH = 'PDFs/Guide_v4.pdf';
 
 void main() => runApp(new MyApp());
 
@@ -12,9 +18,17 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  openExternalDocument() async {
+  showDocument() async {
     try {
-      Pspdfkit.openExternalDocument("document.pdf");
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+
+      final file = await new File('${tempDir.path}/$DOCUMENT_PATH').create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(DOCUMENT_PATH);
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -65,7 +79,7 @@ class _MyAppState extends State<MyApp> {
                   child: new Text('Tap to Open Document',
                       style: themeData.textTheme.display1
                           .copyWith(fontSize: 21.0)),
-                  onPressed: openExternalDocument)
+                  onPressed: showDocument)
             ])),
       ),
     );
