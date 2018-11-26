@@ -78,6 +78,7 @@ android {
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 
 void main() => runApp(new MyApp());
 
@@ -89,9 +90,23 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  showDocument() async {
+  present() {
+    Pspdfkit.present("file:///sdcard/document.pdf");
+  }
+
+  showDocument(BuildContext context) async {
     try {
-      Pspdfkit.present("file:///sdcard/document.pdf");
+      if (await Pspdfkit.checkWriteExternalStoragePermission()) {
+        present();
+      } else {
+        PermissionStatus permissionStatus =
+            await Pspdfkit.requestWriteExternalStoragePermission();
+        if (permissionStatus == PermissionStatus.authorized) {
+          present();
+        } else if (permissionStatus == PermissionStatus.deniedNeverAsk) {
+          _showToast(context);
+        }
+      }
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -123,32 +138,54 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  _openSettings(ScaffoldState scaffold) {
+    scaffold.hideCurrentSnackBar();
+    Pspdfkit.openSettings();
+  }
+
+  _showToast(BuildContext context) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: const Text('PSPDFKit Flutter example requires file system permissions to open a PDF document into the sdcard folder.'),
+        action: SnackBarAction(
+            label: 'Open Settings', onPressed: () => _openSettings(scaffold)
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
     return new MaterialApp(
       home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('PSPDFKit Flutter Plugin example app'),
-        ),
-        body: new Center(
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-              new Text('PSPDFKit for $_frameworkVersion\n',
-                  style: themeData.textTheme.display1.copyWith(fontSize: 21.0)),
-              new RaisedButton(
-                  child: new Text('Tap to Open Document',
-                      style: themeData.textTheme.display1
-                          .copyWith(fontSize: 21.0)),
-                  onPressed: showDocument)
-            ])),
-      ),
+          appBar: new AppBar(
+            title: new Text('PSPDFKit Flutter Plugin example app'),
+          ),
+          body: Builder(
+            // Create an inner BuildContext so that the onPressed methods
+            // can refer to the Scaffold with Scaffold.of().
+            builder: (BuildContext context) {
+              return Center(
+                  child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                    new Text('PSPDFKit for $_frameworkVersion\n',
+                        style: themeData.textTheme.display1
+                            .copyWith(fontSize: 21.0)),
+                    new RaisedButton(
+                        child: new Text('Tap to Open Document',
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: 21.0)),
+                        onPressed: () => showDocument(context))
+                  ]));
+            },
+          )),
     );
   }
 }
-
 ```
 
 7. Enter your PSPDFKit license key into `myapp/android/app/src/main/AndroidManifest.xml` file: 
