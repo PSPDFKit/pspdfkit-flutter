@@ -216,7 +216,7 @@ To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 Showing a PDF document inside you Flutter app is as simple as this:
 
 ```MyApp.dart 
-openExternalDocument() async {
+showDocument() async {
     try {
         Pspdfkit.present("file:///sdcard/document.pdf");
     } on PlatformException catch (e) {
