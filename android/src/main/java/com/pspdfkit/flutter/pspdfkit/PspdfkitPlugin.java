@@ -7,8 +7,6 @@ import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.ui.PdfActivity;
 
-import java.io.File;
-
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -19,6 +17,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  * Pspdfkit Plugin.
  */
 public class PspdfkitPlugin implements MethodCallHandler {
+    private static final String FILE_SCHEME = "file:///";
     private final Context context;
 
     public PspdfkitPlugin(Context context) {
@@ -47,8 +46,13 @@ public class PspdfkitPlugin implements MethodCallHandler {
                 if (documentPath.isEmpty()) {
                     throw new IllegalArgumentException("Document path may not be empty.");
                 }
-                File document = new File(context.getCacheDir(), documentPath);
-                PdfActivity.showDocument(context, Uri.fromFile(document), new PdfActivityConfiguration.Builder(context).build());
+                if (Uri.parse(documentPath).getScheme() == null) {
+                    if (documentPath.startsWith("/")) {
+                        documentPath = documentPath.substring(1);
+                    }
+                    documentPath = FILE_SCHEME + documentPath;
+                }
+                PdfActivity.showDocument(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
                 break;
             default:
                 result.notImplemented();
