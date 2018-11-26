@@ -1,6 +1,6 @@
 name: pspdfkit_flutter
 description: PSPDFKit flutter plugin.
-version: 0.1.0
+version: 1.0.0
 author: PSPDFKit
 homepage: https://pspdfkit.com/
 environment:
@@ -9,9 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   simple_permissions:
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
