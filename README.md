@@ -15,7 +15,7 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 1. Run `flutter create --org com.example.myapp myapp`.
 2. Open `myapp/pubspec.yaml` and under `dependencies` add 
 ```yaml
-  pspdfkit:
+  pspdfkit_flutter:
     git:
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
 ```
@@ -77,7 +77,7 @@ android {
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit/pspdfkit.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 void main() => runApp(new MyApp());
 
@@ -89,9 +89,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  openExternalDocument() async {
+  showDocument() async {
     try {
-      Pspdfkit.openExternalDocument("document.pdf");
+      Pspdfkit.present("file:///sdcard/document.pdf");
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -142,7 +142,7 @@ class _MyAppState extends State<MyApp> {
                   child: new Text('Tap to Open Document',
                       style: themeData.textTheme.display1
                           .copyWith(fontSize: 21.0)),
-                  onPressed: openExternalDocument)
+                  onPressed: showDocument)
             ])),
       ),
     );
@@ -181,7 +181,7 @@ Showing a PDF document inside you Flutter app is as simple as this:
 ```MyApp.dart 
 openExternalDocument() async {
     try {
-        Pspdfkit.openExternalDocument("document.pdf");
+        Pspdfkit.present("file:///sdcard/document.pdf");
     } on PlatformException catch (e) {
         print("Failed to open document: '${e.message}'.");
     }
