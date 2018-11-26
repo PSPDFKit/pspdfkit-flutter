@@ -17,4 +17,7 @@ class Pspdfkit {
 
   static Future<PermissionStatus> requestWriteExternalStoragePermission() =>
     SimplePermissions.requestPermission(Permission.WriteExternalStorage);
+    
+  static Future<bool> openSettings() =>
+    SimplePermissions.openSettings();
 }
