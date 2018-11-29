@@ -15,6 +15,9 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"frameworkVersion" isEqualToString:call.method]) {
         result([@"iOS " stringByAppendingString:PSPDFKit.versionNumber]);
+    } else if ([@"setLicenseKey" isEqualToString:call.method]) {
+        NSString *licenseKey = call.arguments[@"licenseKey"];
+        [PSPDFKit setLicenseKey:licenseKey];
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
         NSAssert(documentPath != nil, @"Document path may not be nil.");

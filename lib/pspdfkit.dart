@@ -9,6 +9,9 @@ class Pspdfkit {
   static Future<dynamic> get frameworkVersion =>
       _channel.invokeMethod('frameworkVersion');
 
+  static Future<void> setLicenseKey(String licenseKey) =>
+    _channel.invokeMethod('setLicenseKey', <String, dynamic>{'licenseKey': licenseKey});
+
   static Future<void> present(String document) =>
     _channel.invokeMethod('present', <String, dynamic>{'document': document});
 
