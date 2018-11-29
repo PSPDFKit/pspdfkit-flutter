@@ -210,23 +210,6 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 9. The app is ready to start! From `myapp` run `flutter run`.
 
-
-# Example
-
-To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
-
-Showing a PDF document inside you Flutter app is as simple as this:
-
-```MyApp.dart 
-showDocument() async {
-    try {
-        Pspdfkit.present("file:///sdcard/document.pdf");
-    } on PlatformException catch (e) {
-        print("Failed to open document: '${e.message}'.");
-    }
-}
-```
-
 ## iOS
 
 1. Run `flutter create --org com.example.myapp myapp`.
@@ -374,6 +357,21 @@ class _MyAppState extends State<MyApp> {
 10. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
 11. Run `flutter run`.
 
+# Example
+
+To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
+
+Showing a PDF document inside you Flutter app is as simple as this:
+
+```MyApp.dart 
+showDocument() async {
+    try {
+        Pspdfkit.present("file:///document.pdf");
+    } on PlatformException catch (e) {
+        print("Failed to open document: '${e.message}'.");
+    }
+}
+```
 # Contributing
 
 Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
