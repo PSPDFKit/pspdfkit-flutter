@@ -4,7 +4,7 @@ PSPDFKit wrapper for Flutter.
 
 > If you are new to Flutter, make sure to check our [introductory blog post "How I Got Started With Flutter"](https://pspdfkit.com/blog/2018/starting-with-flutter/)
 
-Platform specific README exists for [Android](android/).
+Platform specific README exists for [Android](android/) and [iOS][ios/].
 
 # Setup
 
@@ -213,7 +213,8 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 ## iOS
 
 1. Run `flutter create --org com.example.myapp myapp`.
-2. Open `myapp/pubspec.yaml` and under `dependencies` add
+2. Step into your newly created app folder: `cd myapp`
+3. Open `pubspec.yaml` and under `dependencies` add
 
 ```yaml
   path_provider:
@@ -222,7 +223,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
 ```
 
-3. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/Guide_v4.pdf` and specify it in your `pubspec.yaml`:
+4. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/Guide_v4.pdf` and specify it in your `pubspec.yaml`:
 
 ```yaml
   assets:
@@ -230,8 +231,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 ```
 <strong>Spaces are important</strong>, so don't forget them.
 
-4. Step into your newly created app folder: `cd myapp`
-5. Open `Runner.xcworkspace` in Xcode: `open Runner.xcworkspace`
+5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
 6. Make sure the `iOS Deployment Target` is set to 10.0 or higher. 
 7. Change "View controller-based status bar appearance" to YES in `Info.plist`.
 8. Run `flutter packages get` to install the packages.
@@ -250,7 +250,7 @@ target 'Runner' do
 end  
 ``` 
 
-9. Open `myapp/lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem:
+9. Open `lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem:
 
 ```dart
 import 'dart:io';
@@ -361,7 +361,7 @@ class _MyAppState extends State<MyApp> {
 
 To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 
-Showing a PDF document inside you Flutter app is as simple as this:
+Showing a PDF document inside your Flutter app is as simple as this:
 
 ```MyApp.dart 
 showDocument() async {
