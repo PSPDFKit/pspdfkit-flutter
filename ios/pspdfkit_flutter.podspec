@@ -17,6 +17,6 @@ PSPDFKit flutter plugin.
   s.dependency 'Flutter'
   s.dependency 'PSPDFKit'
   
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '10.0'
 end
 
