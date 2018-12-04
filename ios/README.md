@@ -3,7 +3,7 @@
 ## Requirements
 
 * Flutter SDK.
-* Xcode 10 or later.
+* Xcode 10.1 or later.
 * PSPDFKit 8 for iOS
 * CocoaPods 1.5.3 or later.
 
