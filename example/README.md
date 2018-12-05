@@ -25,5 +25,5 @@ target 'Runner' do
 ```
 
 4. cd `pspdfkit-flutter/example`
-5. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emilator. Optionally you can repeat this step to launch multiple emulators.
-6. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all you devices connected, both iOS and Android.
+5. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
+6. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
