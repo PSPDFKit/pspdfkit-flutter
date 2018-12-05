@@ -69,10 +69,7 @@ class _MyAppState extends State<MyApp> {
       _frameworkVersion = frameworkVersion;
     });
     
-    bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
-    if (isIOS) {
-        Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
-    }
+    Pspdfkit.setLicenseKey("LICENSE_KEY_GOES_HERE");
   }
 
   @override
