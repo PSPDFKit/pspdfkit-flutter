@@ -8,8 +8,7 @@ This is a brief example of how to use the PSPDFKit with Flutter.
 
 2. Create a local property file in `pspdfkit-flutter/example/android/local.properties` and specify the following properties:
 
-```
-local.properties
+```local.properties
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
 pspdfkit.password=YOUR_PASSWORD_GOES_HERE
