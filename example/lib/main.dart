@@ -1,6 +1,17 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit/pspdfkit.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+
+const String DOCUMENT_PATH = 'PDFs/Guide_v4.pdf';
+const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
+const String OPEN_DOCUMENT_BUTTON = 'Tap to Open Document';
+const String PSPDFKIT_FOR = 'PSPDFKit for';
+const double FONT_SIZE = 21.0;
 
 void main() => runApp(new MyApp());
 
@@ -12,9 +23,18 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  openExternalDocument() async {
+  showDocument() async {
     try {
-      Pspdfkit.openExternalDocument("document.pdf");
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+
+      final file = await new File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath);
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -24,6 +44,10 @@ class _MyAppState extends State<MyApp> {
   initState() {
     super.initState();
     initPlatformState();
+  }
+
+  frameworkVersion() {
+    return '$PSPDFKIT_FOR $_frameworkVersion\n';
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -44,30 +68,54 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _frameworkVersion = frameworkVersion;
     });
+    
+    Pspdfkit.setLicenseKey("LICENSE_KEY_GOES_HERE");
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
-
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('PSPDFKit Flutter Plugin example app'),
+    bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    if (isIOS) {
+      return new CupertinoApp(
+        home: new CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+              middle: Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE,
+              style: themeData.textTheme.title
+              )
+          ),
+          child: new Center(
+              child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    new Text(frameworkVersion(),
+                        style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
+                    new CupertinoButton(
+                        child: new Text(OPEN_DOCUMENT_BUTTON),
+                        onPressed: showDocument)
+                  ])),
         ),
-        body: new Center(
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-              new Text('PSPDFKit for $_frameworkVersion\n',
-                  style: themeData.textTheme.display1.copyWith(fontSize: 21.0)),
-              new RaisedButton(
-                  child: new Text('Tap to Open Document',
-                      style: themeData.textTheme.display1
-                          .copyWith(fontSize: 21.0)),
-                  onPressed: openExternalDocument)
-            ])),
-      ),
-    );
+      );
+    } else {
+      return new MaterialApp(
+        home: new Scaffold(
+          appBar: new AppBar(
+            title: new Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE),
+          ),
+          body: new Center(
+              child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    new Text(frameworkVersion(),
+                        style: themeData.textTheme.display1.copyWith(fontSize: 21.0)),
+                    new RaisedButton(
+                        child: new Text(OPEN_DOCUMENT_BUTTON,
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: FONT_SIZE)),
+                        onPressed: showDocument)
+                  ])),
+        ),
+      );
+    }
   }
 }

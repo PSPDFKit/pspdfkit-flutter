@@ -4,18 +4,20 @@ PSPDFKit wrapper for Flutter.
 
 > If you are new to Flutter, make sure to check our [introductory blog post "How I Got Started With Flutter"](https://pspdfkit.com/blog/2018/starting-with-flutter/)
 
-Platform specific README exists for [Android](android/).
+Platform specific README exists for [Android](android/) and [iOS](ios/).
 
 # Setup
 
 ## Integration into a new Flutter app
+
+### Android
 
 Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit plugin.
 
 1. Run `flutter create --org com.example.myapp myapp`.
 2. Open `myapp/pubspec.yaml` and under `dependencies` add 
 ```yaml
-  pspdfkit:
+  pspdfkit_flutter:
     git:
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
 ```
@@ -77,7 +79,8 @@ android {
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit/pspdfkit.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 
 void main() => runApp(new MyApp());
 
@@ -89,9 +92,23 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  openExternalDocument() async {
+  present() {
+    Pspdfkit.present("file:///sdcard/document.pdf");
+  }
+
+  showDocument(BuildContext context) async {
     try {
-      Pspdfkit.openExternalDocument("document.pdf");
+      if (await Pspdfkit.checkWriteExternalStoragePermission()) {
+        present();
+      } else {
+        PermissionStatus permissionStatus =
+            await Pspdfkit.requestWriteExternalStoragePermission();
+        if (permissionStatus == PermissionStatus.authorized) {
+          present();
+        } else if (permissionStatus == PermissionStatus.deniedNeverAsk) {
+          _showToast(context);
+        }
+      }
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -123,32 +140,54 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  _openSettings(ScaffoldState scaffold) {
+    scaffold.hideCurrentSnackBar();
+    Pspdfkit.openSettings();
+  }
+
+  _showToast(BuildContext context) {
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: const Text('PSPDFKit Flutter example requires file system permissions to open a PDF document into the sdcard folder.'),
+        action: SnackBarAction(
+            label: 'Open Settings', onPressed: () => _openSettings(scaffold)
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
     return new MaterialApp(
       home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('PSPDFKit Flutter Plugin example app'),
-        ),
-        body: new Center(
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-              new Text('PSPDFKit for $_frameworkVersion\n',
-                  style: themeData.textTheme.display1.copyWith(fontSize: 21.0)),
-              new RaisedButton(
-                  child: new Text('Tap to Open Document',
-                      style: themeData.textTheme.display1
-                          .copyWith(fontSize: 21.0)),
-                  onPressed: openExternalDocument)
-            ])),
-      ),
+          appBar: new AppBar(
+            title: new Text('PSPDFKit Flutter Plugin example app'),
+          ),
+          body: Builder(
+            // Create an inner BuildContext so that the onPressed methods
+            // can refer to the Scaffold with Scaffold.of().
+            builder: (BuildContext context) {
+              return Center(
+                  child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                    new Text('PSPDFKit for $_frameworkVersion\n',
+                        style: themeData.textTheme.display1
+                            .copyWith(fontSize: 21.0)),
+                    new RaisedButton(
+                        child: new Text('Tap to Open Document',
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: 21.0)),
+                        onPressed: () => showDocument(context))
+                  ]));
+            },
+          )),
     );
   }
 }
-
 ```
 
 7. Enter your PSPDFKit license key into `myapp/android/app/src/main/AndroidManifest.xml` file: 
@@ -171,23 +210,169 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 9. The app is ready to start! From `myapp` run `flutter run`.
 
+## iOS
+
+1. Run `flutter create --org com.example.myapp myapp`.
+2. Step into your newly created app folder: `cd myapp`
+3. Open `pubspec.yaml` and under `dependencies` add
+
+```yaml
+  path_provider:
+  pspdfkit_flutter:
+    git:
+      url: git://github.com/PSPDFKit/pspdfkit-flutter.git
+```
+
+4. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/Guide_v4.pdf` and specify it in your `pubspec.yaml`:
+
+```yaml
+  assets:
+    - PDFs/   
+```
+<strong>Spaces are important</strong>, so don't forget them.
+
+5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
+6. Make sure the `iOS Deployment Target` is set to 10.0 or higher. 
+7. Change "View controller-based status bar appearance" to YES in `Info.plist`.
+8. Run `flutter packages get` to install the packages.
+9. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
+
+```diff
+# Uncomment this line to define a global platform for your project
+-   # platform :ios, '9.0'
++   platform :ios, '10.0'
++   use_frameworks!
+...
+target 'Runner' do
+
++   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
+...
+end  
+``` 
+
+9. Open `lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem:
+
+```dart
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+
+const String DOCUMENT_PATH = 'PDFs/Guide_v4.pdf';
+const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
+const String OPEN_DOCUMENT_BUTTON = 'Tap to Open Document';
+const String PSPDFKIT_FOR = 'PSPDFKit for';
+const double FONT_SIZE = 21.0;
+
+void main() => runApp(new MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => new _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _frameworkVersion = '';
+
+  showDocument() async {
+    try {
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+
+      final file = await new File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+    
+      Pspdfkit.present(tempDocumentPath);
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    initPlatformState();
+  }
+
+  frameworkVersion() {
+    return '$PSPDFKIT_FOR $_frameworkVersion\n';
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  initPlatformState() async {
+    String frameworkVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      frameworkVersion = await Pspdfkit.frameworkVersion;
+    } on PlatformException {
+      frameworkVersion = 'Failed to get platform version. ';
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _frameworkVersion = frameworkVersion;
+    });
+    
+    // Replace 
+    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+      return new CupertinoApp(
+        home: new CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+              middle: Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE,
+              style: themeData.textTheme.title
+              )
+          ),
+          child: new Center(
+              child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    new Text(frameworkVersion(),
+                        style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
+                    new CupertinoButton(
+                        child: new Text(OPEN_DOCUMENT_BUTTON),
+                        onPressed: showDocument)
+                  ])),
+              ),
+          );
+      }
+}
+```
+
+10. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
+11. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
+12. Run `flutter run`.
 
 # Example
 
 To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 
-Showing a PDF document inside you Flutter app is as simple as this:
+Showing a PDF document inside your Flutter app is as simple as this:
 
 ```MyApp.dart 
-openExternalDocument() async {
+showDocument() async {
     try {
-        Pspdfkit.openExternalDocument("document.pdf");
+        Pspdfkit.present("file:///document.pdf");
     } on PlatformException catch (e) {
         print("Failed to open document: '${e.message}'.");
     }
 }
 ```
-
 # Contributing
 
 Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
