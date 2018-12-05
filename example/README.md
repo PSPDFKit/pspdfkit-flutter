@@ -15,7 +15,7 @@ pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
-3. Replace `YOUR_COCOAPODS_KEY_GOES_HERE` with you Cocoapods key in `pspdfkit-flutter/example/iOS/Podfile`
+3. Replace `YOUR_COCOAPODS_KEY_GOES_HERE` with your Cocoapods key in `pspdfkit-flutter/example/iOS/Podfile`
 
 ```bash
 ...
