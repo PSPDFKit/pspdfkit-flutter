@@ -250,7 +250,7 @@ target 'Runner' do
 end  
 ``` 
 
-9. Open `lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem:
+9. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
 
 ```dart
 import 'dart:io';
