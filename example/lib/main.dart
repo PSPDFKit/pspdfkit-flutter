@@ -8,8 +8,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 const String DOCUMENT_PATH = 'PDFs/Guide_v4.pdf';
+const String IMAGE_PATH = 'PDFs/PSPDFKit Image Example.jpg';
 const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
-const String OPEN_DOCUMENT_BUTTON = 'Tap to Open Document';
+const String OPEN_DOCUMENT_BUTTON = 'Tap to Open PDF Document';
+const String OPEN_IMAGE_BUTTON = 'Tap to Open Image Document';
 const String PSPDFKIT_FOR = 'PSPDFKit for';
 const double FONT_SIZE = 21.0;
 
@@ -30,6 +32,23 @@ class _MyAppState extends State<MyApp> {
 
       final tempDir = await getTemporaryDirectory();
       final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+
+      final file = await new File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath);
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
+  
+  showImage() async {
+    try {
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(IMAGE_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$IMAGE_PATH';
 
       final file = await new File(tempDocumentPath).create(recursive: true);
       file.writeAsBytesSync(list);
@@ -86,13 +105,16 @@ class _MyAppState extends State<MyApp> {
           ),
           child: new Center(
               child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     new Text(frameworkVersion(),
                         style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
                     new CupertinoButton(
                         child: new Text(OPEN_DOCUMENT_BUTTON),
-                        onPressed: showDocument)
+                        onPressed: showDocument),
+                    new CupertinoButton(
+                        child: new Text(OPEN_IMAGE_BUTTON),
+                        onPressed: showImage)
                   ])),
         ),
       );
@@ -104,15 +126,20 @@ class _MyAppState extends State<MyApp> {
           ),
           body: new Center(
               child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     new Text(frameworkVersion(),
-                        style: themeData.textTheme.display1.copyWith(fontSize: 21.0)),
+                        style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
                     new RaisedButton(
                         child: new Text(OPEN_DOCUMENT_BUTTON,
                             style: themeData.textTheme.display1
                                 .copyWith(fontSize: FONT_SIZE)),
-                        onPressed: showDocument)
+                        onPressed: showDocument),
+                    new RaisedButton(
+                        child: new Text(OPEN_IMAGE_BUTTON,
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: FONT_SIZE)),
+                        onPressed: showImage)
                   ])),
         ),
       );
