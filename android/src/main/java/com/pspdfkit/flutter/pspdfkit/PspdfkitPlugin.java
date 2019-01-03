@@ -2,6 +2,7 @@ package com.pspdfkit.flutter.pspdfkit;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
@@ -55,11 +56,25 @@ public class PspdfkitPlugin implements MethodCallHandler {
                     }
                     documentPath = FILE_SCHEME + documentPath;
                 }
-                PdfActivity.showDocument(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
+                boolean imageDocument = isImageDocument(documentPath);
+                if (imageDocument) {
+                    PdfActivity.showImage(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
+                } else {
+                    PdfActivity.showDocument(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
+                }
                 break;
             default:
                 result.notImplemented();
                 break;
         }
+    }
+
+    private boolean isImageDocument(@NonNull String documentPath) {
+        String extension = "";
+        int lastDot = documentPath.lastIndexOf('.');
+        if (lastDot != -1) {
+            extension = documentPath.substring(lastDot + 1).toLowerCase();
+        }
+        return extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg");
     }
 }
