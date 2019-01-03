@@ -2,11 +2,10 @@ package com.pspdfkit.flutter.pspdfkit;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
-import com.pspdfkit.flutter.pspdfkit.util.Preconditions;
 import com.pspdfkit.ui.PdfActivity;
 
 import io.flutter.plugin.common.MethodCall;

@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
     }
