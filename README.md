@@ -63,7 +63,7 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.myapp"
 -       minSdkVersion 16
-+       minSdkVersion 19
++       minSdkVersion 21
 -       targetSdkVersion 27
 +       targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
@@ -80,7 +80,7 @@ android {
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:simple_permissions/simple_permissions.dart';
+import 'package:pspdfkit_flutter/simple_permissions.dart';
 
 void main() => runApp(new MyApp());
 
@@ -138,6 +138,9 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _frameworkVersion = frameworkVersion;
     });
+
+    // Replace
+    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
   }
 
   _openSettings(ScaffoldState scaffold) {
@@ -190,18 +193,7 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-7. Enter your PSPDFKit license key into `myapp/android/app/src/main/AndroidManifest.xml` file: 
-
-  ```diff
-     <application>
-        ...
-
-  +      <meta-data
-  +          android:name="pspdfkit_license_key"
-  +          android:value="YOUR_LICENSE_KEY_GOES_HERE"/>
-
-     </application> 
-  ```
+7. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
 
 8. Before launching the app you need to copy a PDF document onto your development device or emulator
 ```bash
