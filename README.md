@@ -210,7 +210,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 3. Open `pubspec.yaml` and under `dependencies` add
 
 ```yaml
-  path_provider:
+  path_provider: ^0.4.1
   pspdfkit_flutter:
     git:
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
