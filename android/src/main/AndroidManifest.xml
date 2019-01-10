@@ -5,10 +5,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application android:largeHeap="true">
-        <meta-data
-            android:name="pspdfkit_license_key"
-            android:value="YOUR_LICENSE_KEY_GOES_HERE"/>
-
         <activity
             android:name="com.pspdfkit.ui.PdfActivity"
             android:windowSoftInputMode="adjustNothing" />
