@@ -12,8 +12,11 @@ class Pspdfkit {
   static Future<void> setLicenseKey(String licenseKey) =>
     _channel.invokeMethod('setLicenseKey', <String, dynamic>{'licenseKey': licenseKey});
 
-  static Future<void> present(String document) =>
-    _channel.invokeMethod('present', <String, dynamic>{'document': document});
+  static Future<void> present(String document, [dynamic configuration]) =>
+    _channel.invokeMethod(
+        'present',
+        <String, dynamic>{'document': document, 'configuration': configuration}
+        );
 
   static Future<bool> checkWriteExternalStoragePermission() =>
     SimplePermissions.checkPermission(Permission.WriteExternalStorage);
