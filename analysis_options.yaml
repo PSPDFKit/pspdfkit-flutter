@@ -1,0 +1,10 @@
+analyzer:
+  errors:
+    invalid_assignment: warning
+    missing_return: error
+    dead_code: info
+
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+    
