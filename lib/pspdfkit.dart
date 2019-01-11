@@ -1,7 +1,11 @@
+library pspdfkit;
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'simple_permissions.dart';
+
+part 'configuration_options.dart';
 
 class Pspdfkit {
   static const MethodChannel _channel = const MethodChannel('pspdfkit');

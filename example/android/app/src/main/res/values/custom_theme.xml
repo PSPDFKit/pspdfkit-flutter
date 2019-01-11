@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ custom_theme.xml
+  ~
+  ~   PSPDFKit
+  ~
+  ~   Copyright © 2017-2019 PSPDFKit GmbH. All rights reserved.
+  ~
+  ~   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+  ~   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+  ~   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+  ~   This notice may not be removed from this file.
+  -->
+
+<resources>
+    <style name="PSPDFCatalog.Theme.Custom" parent="PSPDFKit.Theme">
+        <item name="colorPrimary">@color/teal</item>
+        <item name="colorPrimaryDark">@color/dark_accent</item>
+        <item name="colorAccent">@color/red_light</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+
+        <item name="android:listDivider">@android:drawable/divider_horizontal_dark</item>
+
+        <!-- Default background color of PSPDFKit Views. PDF view background is controlled by a separate property pspdf__backgroundColor -->
+        <item name="android:colorBackground">@color/signature_blue</item>
+        <!-- Default foreground color of PSPDFKit Views. -->
+        <item name="android:colorForeground">@color/dark_theme_orange</item>
+
+
+        <item name="pspdf__backgroundColor">@color/dark_background_color</item>
+        <item name="pspdf__navigationHistoryIconColor">@color/dark_scrollbars</item>
+    </style>
+</resources>

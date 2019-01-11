@@ -12,6 +12,8 @@ const String IMAGE_PATH = 'PDFs/PSPDFKit Image Example.jpg';
 const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
 const String OPEN_DOCUMENT_BUTTON = 'Tap to Open PDF Document';
 const String OPEN_IMAGE_BUTTON = 'Tap to Open Image Document';
+const String OPEN_DARK_THEME_BUTTON = 'Tap to Open PSPDFKit with a dark theme';
+const String CUSTOM_THEME_BUTTON = 'Tap to Open PSPDFKit with custom configuration options';
 const String PSPDFKIT_FOR = 'PSPDFKit for';
 const double FONT_SIZE = 21.0;
 
@@ -54,6 +56,69 @@ class _MyAppState extends State<MyApp> {
       file.writeAsBytesSync(list);
 
       Pspdfkit.present(tempDocumentPath);
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
+
+  darkTheme() async {
+    try {
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+
+      final file = await new File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath,
+          {
+            THEME_MODE: THEME_MODE_NIGHT,
+            DARK_THEME_RESOURCE: 'PSPDFCatalog.Theme.Dark'
+          });
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
+
+  customConfiguration() async {
+    try {
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+
+      final file = await new File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath,
+          {
+            PAGE_SCROLL_DIRECTION: PAGE_SCROLL_DIRECTION_VERTICAL,
+            PAGE_SCROLL_CONTINUOUS: true,
+            FIT_PAGE_TO_WIDTH: true,
+            IMMERSIVE_MODE: false,
+            USER_INTERFACE_VIEW_MODE: USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES,
+            SHOW_SEARCH_ACTION: true,
+            INLINE_SEARCH: false,
+            SHOW_THUMBNAIL_BAR: SHOW_THUMBNAIL_BAR_SCROLLABLE,
+            SHOW_THUMBNAIL_GRID_ACTION: true,
+            SHOW_OUTLINE_ACTION: true,
+            SHOW_ANNOTATION_LIST_ACTION: true,
+            SHOW_PAGE_NUMBER_OVERLAY: false,
+            SHOW_PAGE_LABELS: true,
+            INVERT_COLORS: false,
+            GRAY_SCALE: false,
+            START_PAGE: 2,
+            ENABLE_ANNOTATION_EDITING: true,
+            ENABLE_TEXT_SELECTION: false,
+            SHOW_SHARE_ACTION: true,
+            SHOW_PRINT_ACTION: false,
+            SHOW_DOCUMENT_INFO_VIEW: true,
+            THEME_MODE: THEME_MODE_DEFAULT,
+            DEFAULT_THEME_RESOURCE: 'PSPDFCatalog.Theme.Custom'
+          });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -139,7 +204,17 @@ class _MyAppState extends State<MyApp> {
                         child: new Text(OPEN_IMAGE_BUTTON,
                             style: themeData.textTheme.display1
                                 .copyWith(fontSize: FONT_SIZE)),
-                        onPressed: showImage)
+                        onPressed: showImage),
+                    new RaisedButton(
+                        child: new Text(OPEN_DARK_THEME_BUTTON,
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: FONT_SIZE)),
+                        onPressed: darkTheme),
+                    new RaisedButton(
+                        child: new Text(CUSTOM_THEME_BUTTON,
+                            style: themeData.textTheme.display1
+                                .copyWith(fontSize: FONT_SIZE)),
+                        onPressed: customConfiguration)
                   ])),
         ),
       );
