@@ -80,8 +80,8 @@ class _MyAppState extends State<MyApp> {
       file.writeAsBytesSync(list);
 
       Pspdfkit.present(tempDocumentPath, {
-        THEME_MODE: THEME_MODE_NIGHT,
-        DARK_THEME_RESOURCE: 'PSPDFCatalog.Theme.Dark'
+        APPEARANCE_MODE: APPEARANCE_MODE_NIGHT,
+        ANDROID_DARK_THEME_RESOURCE: 'PSPDFCatalog.Theme.Dark'
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
@@ -104,14 +104,14 @@ class _MyAppState extends State<MyApp> {
         PAGE_SCROLL_DIRECTION: PAGE_SCROLL_DIRECTION_VERTICAL,
         PAGE_SCROLL_CONTINUOUS: true,
         FIT_PAGE_TO_WIDTH: true,
-        IMMERSIVE_MODE: false,
+        ANDROID_IMMERSIVE_MODE: false,
         USER_INTERFACE_VIEW_MODE: USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES,
-        SHOW_SEARCH_ACTION: true,
+        ANDROID_SHOW_SEARCH_ACTION: true,
         INLINE_SEARCH: false,
         SHOW_THUMBNAIL_BAR: SHOW_THUMBNAIL_BAR_SCROLLABLE,
-        SHOW_THUMBNAIL_GRID_ACTION: true,
-        SHOW_OUTLINE_ACTION: true,
-        SHOW_ANNOTATION_LIST_ACTION: true,
+        ANDROID_SHOW_THUMBNAIL_GRID_ACTION: true,
+        ANDROID_SHOW_OUTLINE_ACTION: true,
+        ANDROID_SHOW_ANNOTATION_LIST_ACTION: true,
         SHOW_PAGE_NUMBER_OVERLAY: false,
         SHOW_PAGE_LABELS: true,
         INVERT_COLORS: false,
@@ -119,11 +119,11 @@ class _MyAppState extends State<MyApp> {
         START_PAGE: 2,
         ENABLE_ANNOTATION_EDITING: true,
         ENABLE_TEXT_SELECTION: false,
-        SHOW_SHARE_ACTION: true,
-        SHOW_PRINT_ACTION: false,
+        ANDROID_SHOW_SHARE_ACTION: true,
+        ANDROID_SHOW_PRINT_ACTION: false,
         SHOW_DOCUMENT_INFO_VIEW: true,
-        THEME_MODE: THEME_MODE_DEFAULT,
-        DEFAULT_THEME_RESOURCE: 'PSPDFCatalog.Theme.Custom'
+        APPEARANCE_MODE: APPEARANCE_MODE_DEFAULT,
+        ANDROID_DEFAULT_THEME_RESOURCE: 'PSPDFCatalog.Theme.Custom'
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");

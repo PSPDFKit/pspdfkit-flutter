@@ -32,15 +32,15 @@ class ConfigurationAdapter {
     private static final String USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES = "automaticBorderPages";
     private static final String USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE = "alwaysVisible";
     private static final String USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN = "alwaysHidden";
-    private static final String SHOW_SEARCH_ACTION = "showSearchAction";
+    private static final String ANDROID_SHOW_SEARCH_ACTION = "showSearchAction";
     private static final String INLINE_SEARCH = "inlineSearch";
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
     private static final String SHOW_THUMBNAIL_BAR_DEFAULT = "default";
     private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
     private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
-    private static final String SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
-    private static final String SHOW_OUTLINE_ACTION = "showOutlineAction";
-    private static final String SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
+    private static final String ANDROID_SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
+    private static final String ANDROID_SHOW_OUTLINE_ACTION = "showOutlineAction";
+    private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
     private static final String INVERT_COLORS = "invertColors";
@@ -48,14 +48,14 @@ class ConfigurationAdapter {
     private static final String START_PAGE = "startPage";
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
-    private static final String SHOW_SHARE_ACTION = "showShareAction";
-    private static final String SHOW_PRINT_ACTION = "showPrintAction";
+    private static final String ANDROID_SHOW_SHARE_ACTION = "showShareAction";
+    private static final String ANDROID_SHOW_PRINT_ACTION = "showPrintAction";
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
-    private static final String THEME_MODE = "themeMode";
-    private static final String THEME_MODE_DEFAULT = "default";
-    private static final String THEME_MODE_NIGHT = "night";
-    private static final String DARK_THEME_RESOURCE = "darkThemeResource";
-    private static final String DEFAULT_THEME_RESOURCE = "defaultThemeResource";
+    private static final String APPEARANCE_MODE = "appearanceMode";
+    private static final String APPEARANCE_MODE_DEFAULT = "default";
+    private static final String APPEARANCE_MODE_NIGHT = "night";
+    private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
+    private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
 
     private final PdfActivityConfiguration.Builder configuration;
 
@@ -84,20 +84,20 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, START_PAGE, Integer.class)) {
                 configureStartPage((Integer) configurationMap.get(START_PAGE));
             }
-            if (containsKeyOfType(configurationMap, SHOW_SEARCH_ACTION, Boolean.class)) {
-                configureShowSearchAction((Boolean) configurationMap.get(SHOW_SEARCH_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_SEARCH_ACTION, Boolean.class)) {
+                configureShowSearchAction((Boolean) configurationMap.get(ANDROID_SHOW_SEARCH_ACTION));
             }
             if (containsKeyOfType(configurationMap, IMMERSIVE_MODE, Boolean.class)) {
                 configureImmersiveMode((Boolean) configurationMap.get(IMMERSIVE_MODE));
             }
-            if (containsKeyOfType(configurationMap, SHOW_THUMBNAIL_GRID_ACTION, Boolean.class)) {
-                configureShowThumbnailGridAction((Boolean) configurationMap.get(SHOW_THUMBNAIL_GRID_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_THUMBNAIL_GRID_ACTION, Boolean.class)) {
+                configureShowThumbnailGridAction((Boolean) configurationMap.get(ANDROID_SHOW_THUMBNAIL_GRID_ACTION));
             }
-            if (containsKeyOfType(configurationMap, SHOW_OUTLINE_ACTION, Boolean.class)) {
-                configureShowOutlineAction((Boolean) configurationMap.get(SHOW_OUTLINE_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_OUTLINE_ACTION, Boolean.class)) {
+                configureShowOutlineAction((Boolean) configurationMap.get(ANDROID_SHOW_OUTLINE_ACTION));
             }
-            if (containsKeyOfType(configurationMap, SHOW_ANNOTATION_LIST_ACTION, Boolean.class)) {
-                configureShowAnnotationListAction((Boolean) configurationMap.get(SHOW_ANNOTATION_LIST_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_ANNOTATION_LIST_ACTION, Boolean.class)) {
+                configureShowAnnotationListAction((Boolean) configurationMap.get(ANDROID_SHOW_ANNOTATION_LIST_ACTION));
             }
             if (containsKeyOfType(configurationMap, SHOW_PAGE_NUMBER_OVERLAY, Boolean.class)) {
                 configureShowPageNumberOverlay((Boolean) configurationMap.get(SHOW_PAGE_NUMBER_OVERLAY));
@@ -114,11 +114,11 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, ENABLE_ANNOTATION_EDITING, Boolean.class)) {
                 configureEnableAnnotationEditing((Boolean) configurationMap.get(ENABLE_ANNOTATION_EDITING));
             }
-            if (containsKeyOfType(configurationMap, SHOW_SHARE_ACTION, Boolean.class)) {
-                configureShowShareAction((Boolean) configurationMap.get(SHOW_SHARE_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_SHARE_ACTION, Boolean.class)) {
+                configureShowShareAction((Boolean) configurationMap.get(ANDROID_SHOW_SHARE_ACTION));
             }
-            if (containsKeyOfType(configurationMap, SHOW_PRINT_ACTION, Boolean.class)) {
-                configureShowPrintAction((Boolean) configurationMap.get(SHOW_PRINT_ACTION));
+            if (containsKeyOfType(configurationMap, ANDROID_SHOW_PRINT_ACTION, Boolean.class)) {
+                configureShowPrintAction((Boolean) configurationMap.get(ANDROID_SHOW_PRINT_ACTION));
             }
             if (containsKeyOfType(configurationMap, ENABLE_TEXT_SELECTION, Boolean.class)) {
                 configureEnableTextSelection((Boolean) configurationMap.get(ENABLE_TEXT_SELECTION));
@@ -129,14 +129,14 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_INFO_VIEW, Boolean.class)) {
                 configureDocumentInfoView((Boolean) configurationMap.get(SHOW_DOCUMENT_INFO_VIEW));
             }
-            if (containsKeyOfType(configurationMap, THEME_MODE, String.class)) {
-                configureThemeMode((String) configurationMap.get(THEME_MODE));
+            if (containsKeyOfType(configurationMap, APPEARANCE_MODE, String.class)) {
+                configureThemeMode((String) configurationMap.get(APPEARANCE_MODE));
             }
-            if (containsKeyOfType(configurationMap, DARK_THEME_RESOURCE, String.class)) {
-                configureDarkThemeRes((String) configurationMap.get(DARK_THEME_RESOURCE), context);
+            if (containsKeyOfType(configurationMap, ANDROID_DARK_THEME_RESOURCE, String.class)) {
+                configureDarkThemeRes((String) configurationMap.get(ANDROID_DARK_THEME_RESOURCE), context);
             }
-            if (containsKeyOfType(configurationMap, DEFAULT_THEME_RESOURCE, String.class)) {
-                configureDefaultThemeRes((String) configurationMap.get(DEFAULT_THEME_RESOURCE), context);
+            if (containsKeyOfType(configurationMap, ANDROID_DEFAULT_THEME_RESOURCE, String.class)) {
+                configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
             }
         }
     }
@@ -292,9 +292,9 @@ class ConfigurationAdapter {
 
     private void configureThemeMode(String themeMode) {
         ThemeMode result = ThemeMode.DEFAULT;
-        if (themeMode.equals(THEME_MODE_DEFAULT)) {
+        if (themeMode.equals(APPEARANCE_MODE_DEFAULT)) {
             result = ThemeMode.DEFAULT;
-        } else if (themeMode.equals(THEME_MODE_NIGHT)) {
+        } else if (themeMode.equals(APPEARANCE_MODE_NIGHT)) {
             result = ThemeMode.NIGHT;
         }
         configuration.themeMode(result);
