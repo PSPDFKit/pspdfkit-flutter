@@ -42,6 +42,9 @@ public class PspdfkitPlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         channel.setMethodCallHandler(new PspdfkitPlugin(registrar.activeContext()));
+        // Include simple permissions plugin to deal with reading 
+        // and writing permissions.
+        SimplePermissionsPlugin.registerWith(registrar);
     }
 
     @Override
