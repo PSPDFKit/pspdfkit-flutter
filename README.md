@@ -66,7 +66,7 @@ android {
 +       minSdkVersion 21
 -       targetSdkVersion 27
 +       targetSdkVersion 28
-+       multiDexEnabled enable
++       multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
