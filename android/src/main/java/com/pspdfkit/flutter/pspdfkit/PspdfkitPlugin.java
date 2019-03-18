@@ -42,8 +42,7 @@ public class PspdfkitPlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         channel.setMethodCallHandler(new PspdfkitPlugin(registrar.activeContext()));
-        // Include simple permissions plugin to deal with reading 
-        // and writing permissions.
+        // Include simple permissions plugin to deal with reading and writing permissions.
         SimplePermissionsPlugin.registerWith(registrar);
     }
 
@@ -63,10 +62,7 @@ public class PspdfkitPlugin implements MethodCallHandler {
                 requireNotNullNotEmpty(documentPath, "Document path");
 
                 HashMap<String, Object> configurationMap = call.argument("configuration");
-                ConfigurationAdapter configurationAdapter;
-                configurationAdapter = new ConfigurationAdapter(context, configurationMap);
-
-
+                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(context, configurationMap);
                 if (Uri.parse(documentPath).getScheme() == null) {
                     if (documentPath.startsWith("/")) {
                         documentPath = documentPath.substring(1);

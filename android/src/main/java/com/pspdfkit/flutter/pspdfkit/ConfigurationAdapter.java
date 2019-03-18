@@ -20,6 +20,8 @@ import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
 
+import java.lang.reflect.MalformedParameterizedTypeException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
@@ -340,8 +342,42 @@ class ConfigurationAdapter {
 
     private static <T> void checkCast(Object object, Class<T> clazz, String key) {
         if (!clazz.isInstance(object)) {
-            throw new ClassCastException(String.format("Value for the key %s must be of type %s.", key, clazz.getName()));
+            throw new ClassCastException(String.format("Value for the key %s must be of type %s.",
+                    key, javaToDartTypeConverted(clazz)));
         }
+    }
+
+    /**
+     * Conversion from Java to Dart type following official specification
+     * https://flutter.dev/docs/development/platform-integration/platform-channels#platform-channel-data-types-support-and-codecs
+     */
+    private static <T> String javaToDartTypeConverted(Class<T> clazz) {
+        if (clazz == null) {
+            return "null";
+        } else if (clazz.isInstance(Boolean.class)) {
+            return "bool";
+        } else if (clazz.isInstance(Integer.class)) {
+            return "int";
+        } else if (clazz.isInstance(Long.class)) {
+            return "int";
+        } else if (clazz.isInstance(Double.class)) {
+            return "double";
+        } else if (clazz.isInstance(String.class)) {
+            return "String";
+        } else if (clazz.isInstance(byte[].class)) {
+            return "Uint8List";
+        } else if (clazz.isInstance(int[].class)) {
+            return "Int32List";
+        } else if (clazz.isInstance(long[].class)) {
+            return "Int64List";
+        } else if (clazz.isInstance(double[].class)) {
+            return "Float64List";
+        } else if (clazz.isInstance(ArrayList.class)) {
+            return "List";
+        } else if (clazz.isInstance(HashMap.class)) {
+            return "Map";
+        }
+        throw new IllegalArgumentException("Undefined dart type conversion for " + clazz.getName());
     }
 
     PdfActivityConfiguration build() {
@@ -349,7 +385,6 @@ class ConfigurationAdapter {
     }
 
     static PdfActivityConfiguration.Builder getDefaultConfiguration(Context context) {
-
         final PageScrollDirection pageScrollDirection = PageScrollDirection.HORIZONTAL;
         final PageScrollMode pageScrollMode = PageScrollMode.PER_PAGE;
         final PageFitMode pageFitMode = PageFitMode.FIT_TO_WIDTH;

@@ -10,8 +10,8 @@ part of pspdfkit;
 
 /// Configuration options available can be set by the Flutter plugin.
 ///
-/// See `main.dart` in the example project to check how they
-/// are used.
+/// See `main.dart` in the example project to check how they are used.
+/// 
 const String pageScrollDirection = "pageScrollDirection";
 const String pageScrollDirectionHorizontal = "horizontal";
 const String pageScrollDirectionVertical = "vertical";
