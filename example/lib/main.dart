@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
 
       Pspdfkit.present(tempDocumentPath, {
         appearanceMode: appearanceModeNight,
-        androidDarkThemeResource: 'PSPDFCatalog.Theme.Dark'
+        androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
@@ -131,7 +131,7 @@ class _MyAppState extends State<MyApp> {
         androidShowPrintAction: false,
         showDocumentInfoView: true,
         appearanceMode: appearanceModeDefault,
-        androidDefaultThemeResource: 'PSPDFCatalog.Theme.Custom'
+        androidDefaultThemeResource: 'PSPDFKit.Theme.Example'
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");

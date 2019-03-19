@@ -10,7 +10,7 @@
 
 <resources>
 
-    <style name="PSPDFCatalog.Theme.Dark" parent="PSPDFKit.Theme.Dark">
+    <style name="PSPDFKit.Theme.Example.Dark" parent="PSPDFKit.Theme.Dark">
         <item name="colorPrimary">@color/dark_background_color</item>
         <item name="colorPrimaryDark">@color/dark_status_bar</item>
         <item name="colorAccent">@color/dark_input_field_blue</item>

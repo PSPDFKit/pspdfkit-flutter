@@ -9,7 +9,7 @@
   -->
 
 <resources>
-    <style name="PSPDFCatalog.Theme.Custom" parent="PSPDFKit.Theme">
+    <style name="PSPDFKit.Theme.Example" parent="PSPDFKit.Theme">
         <item name="colorPrimary">@color/teal</item>
         <item name="colorPrimaryDark">@color/dark_accent</item>
         <item name="colorAccent">@color/red_light</item>
