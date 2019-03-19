@@ -72,10 +72,8 @@ class ConfigurationAdapter {
     @SuppressWarnings("ConstantConditions")
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
-        if (configurationMap == null || configurationMap.isEmpty()) {
-            this.configuration = getDefaultConfiguration(context);
-        } else {
-            this.configuration = new PdfActivityConfiguration.Builder(context);
+        this.configuration = new PdfActivityConfiguration.Builder(context);
+        if (configurationMap != null && !configurationMap.isEmpty()) {
             if (containsKeyOfType(configurationMap, PAGE_SCROLL_DIRECTION, String.class)) {
                 configurePageScrollDirection((String) configurationMap.get(PAGE_SCROLL_DIRECTION));
             }
@@ -382,24 +380,5 @@ class ConfigurationAdapter {
 
     PdfActivityConfiguration build() {
         return configuration.build();
-    }
-
-    static PdfActivityConfiguration.Builder getDefaultConfiguration(Context context) {
-        final PageScrollDirection pageScrollDirection = PageScrollDirection.HORIZONTAL;
-        final PageScrollMode pageScrollMode = PageScrollMode.PER_PAGE;
-        final PageFitMode pageFitMode = PageFitMode.FIT_TO_WIDTH;
-        final int searchType = PdfActivityConfiguration.SEARCH_INLINE;
-        final UserInterfaceViewMode userInterfaceViewMode = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC;
-        final ThumbnailBarMode thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_DEFAULT;
-        int startPage = 0;
-
-        return new PdfActivityConfiguration.Builder(context)
-                .scrollDirection(pageScrollDirection)
-                .scrollMode(pageScrollMode)
-                .fitMode(pageFitMode)
-                .setUserInterfaceViewMode(userInterfaceViewMode)
-                .setSearchType(searchType)
-                .setThumbnailBarMode(thumbnailBarMode)
-                .page(startPage);
     }
 }
