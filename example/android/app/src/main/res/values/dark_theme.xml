@@ -19,7 +19,7 @@
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
 
-        <item name="alertDialogTheme">@style/PSPDFCatalog.AlertDialog.Dark</item>
+        <item name="alertDialogTheme">@style/FlutterExample.AlertDialog.Dark</item>
         <item name="android:listDivider">@android:drawable/divider_horizontal_dark</item>
 
         <!-- Default background color of PSPDFKit Views. PDF view background is controlled by a separate property pspdf__backgroundColor -->
@@ -27,73 +27,73 @@
         <!-- Default foreground color of PSPDFKit Views. -->
         <item name="android:colorForeground">@color/dark_input_field_blue</item>
 
-        <item name="pspdf__contextualToolbarStyle">@style/PSPDFCatalog.ContextualToolbar.Dark</item>
-        <item name="pspdf__actionBarIconsStyle">@style/PSPDFCatalog.ActionBarIcons.Dark</item>
+        <item name="pspdf__contextualToolbarStyle">@style/FlutterExample.ContextualToolbar.Dark</item>
+        <item name="pspdf__actionBarIconsStyle">@style/FlutterExample.ActionBarIcons.Dark</item>
 
         <item name="pspdf__backgroundColor">@color/dark_background_color</item>
         <item name="pspdf__navigationHistoryIconColor">@color/dark_accent</item>
-        <item name="pspdf__inlineSearchStyle">@style/PSPDFCatalog.SearchViewInline.Dark</item>
-        <item name="pspdf__modularSearchStyle">@style/PSPDFCatalog.SearchViewModular.Dark</item>
-        <item name="pspdf__thumbnailBarStyle">@style/PSPDFCatalog.ThumbnailBar.Dark</item>
-        <item name="pspdf__outlineViewStyle">@style/PSPDFCatalog.OutlineView.Dark</item>
-        <item name="pspdf__thumbnailGridStyle">@style/PSPDFCatalog.ThumbnailGrid.Dark</item>
-        <item name="pspdf__toolbarCoordinatorLayoutStyle">@style/PSPDFCatalog.ToolbarCoordinator.Dark</item>
-        <item name="pspdf__searchResultHighlighterStyle">@style/PSPDFCatalog.SearchResultHighlighter.Dark</item>
-        <item name="pspdf__annotationSelectionStyle">@style/PSPDFCatalog.AnnotationSelection.Dark</item>
-        <item name="pspdf__textSelectionStyle">@style/PSPDFCatalog.TextSelection.Dark</item>
-        <item name="pspdf__propertyInspectorStyle">@style/PSPDFCatalog.PropertyInspector.Dark</item>
-        <item name="pspdf__actionMenuStyle">@style/PSPDFCatalog.ActionMenu.Dark</item>
-        <item name="pspdf__stampPickerStyle">@style/PSPDFCatalog.StampPicker.Dark</item>
-        <item name="pspdf__signatureLayoutStyle">@style/PSPDFCatalog.SignatureLayout.Dark</item>
-        <item name="pspdf__documentViewStyle">@style/PSPDFCatalog.DocumentViewStyle.Dark</item>
-        <item name="pspdf__sharingDialogStyle">@style/PSPDFCatalog.SharingDialog.Dark</item>
-        <item name="pspdf__newPageDialogStyle">@style/PSPDFCatalog.NewPageDialog.Dark</item>
-        <item name="pspdf__modalDialogStyle">@style/PSPDFCatalog.ModalDialog.Dark</item>
-        <item name="pspdf__formSelectionStyle">@style/PSPDFCatalog.FormSelection.Dark</item>
-        <item name="pspdf__annotationNoteHinterStyle">@style/PSPDFCatalog.AnnotationNoteHinter.Dark</item>
+        <item name="pspdf__inlineSearchStyle">@style/FlutterExample.SearchViewInline.Dark</item>
+        <item name="pspdf__modularSearchStyle">@style/FlutterExample.SearchViewModular.Dark</item>
+        <item name="pspdf__thumbnailBarStyle">@style/FlutterExample.ThumbnailBar.Dark</item>
+        <item name="pspdf__outlineViewStyle">@style/FlutterExample.OutlineView.Dark</item>
+        <item name="pspdf__thumbnailGridStyle">@style/FlutterExample.ThumbnailGrid.Dark</item>
+        <item name="pspdf__toolbarCoordinatorLayoutStyle">@style/FlutterExample.ToolbarCoordinator.Dark</item>
+        <item name="pspdf__searchResultHighlighterStyle">@style/FlutterExample.SearchResultHighlighter.Dark</item>
+        <item name="pspdf__annotationSelectionStyle">@style/FlutterExample.AnnotationSelection.Dark</item>
+        <item name="pspdf__textSelectionStyle">@style/FlutterExample.TextSelection.Dark</item>
+        <item name="pspdf__propertyInspectorStyle">@style/FlutterExample.PropertyInspector.Dark</item>
+        <item name="pspdf__actionMenuStyle">@style/FlutterExample.ActionMenu.Dark</item>
+        <item name="pspdf__stampPickerStyle">@style/FlutterExample.StampPicker.Dark</item>
+        <item name="pspdf__signatureLayoutStyle">@style/FlutterExample.SignatureLayout.Dark</item>
+        <item name="pspdf__documentViewStyle">@style/FlutterExample.DocumentViewStyle.Dark</item>
+        <item name="pspdf__sharingDialogStyle">@style/FlutterExample.SharingDialog.Dark</item>
+        <item name="pspdf__newPageDialogStyle">@style/FlutterExample.NewPageDialog.Dark</item>
+        <item name="pspdf__modalDialogStyle">@style/FlutterExample.ModalDialog.Dark</item>
+        <item name="pspdf__formSelectionStyle">@style/FlutterExample.FormSelection.Dark</item>
+        <item name="pspdf__annotationNoteHinterStyle">@style/FlutterExample.AnnotationNoteHinter.Dark</item>
     </style>
 
     <!-- Action bar icon items. -->
-    <style name="PSPDFCatalog.ActionBarIcons.Dark" parent="PSPDFKit.ActionBarIcons">
+    <style name="FlutterExample.ActionBarIcons.Dark" parent="PSPDFKit.ActionBarIcons">
         <!-- Default icons. -->
         <item name="pspdf__iconsColor">@color/dark_icons_blue</item>
         <item name="pspdf__iconsColorActivated">@color/color_primary_dark</item>
     </style>
 
-    <style name="PSPDFCatalog.ContextualToolbar.Dark" parent="PSPDFKit.ContextualToolbar">
+    <style name="FlutterExample.ContextualToolbar.Dark" parent="PSPDFKit.ContextualToolbar">
         <item name="pspdf__iconsColor">@color/dark_icons_blue</item>
         <item name="pspdf__iconsColorActivated">@color/white</item>
     </style>
 
-    <style name="PSPDFCatalog.SearchResultHighlighter.Dark" parent="PSPDFKit.SearchResultHighlighter">
+    <style name="FlutterExample.SearchResultHighlighter.Dark" parent="PSPDFKit.SearchResultHighlighter">
         <item name="pspdf__searchResultBackgroundColor">@color/dark_selection_background</item>
         <item name="pspdf__searchResultBorderColor">@color/search_result_highlight_border_color</item>
     </style>
 
     <!-- Inline search items. -->
-    <style name="PSPDFCatalog.SearchViewInline.Dark" parent="PSPDFKit.SearchViewInline">
+    <style name="FlutterExample.SearchViewInline.Dark" parent="PSPDFKit.SearchViewInline">
         <item name="pspdf__backgroundColor">@android:color/transparent</item>
         <item name="pspdf__borderColor">@color/dark_input_field_blue</item>
         <item name="pspdf__borderWidth">1dp</item>
-        <item name="pspdf__inputFieldTextAppearance">@style/PSPDFCatalog.SeachViewInline.InputFieldTextAppearance.Dark</item>
-        <item name="pspdf__resultTextAppearance">@style/PSPDFCatalog.SearchViewInline.ResultTextAppearance.Dark</item>
+        <item name="pspdf__inputFieldTextAppearance">@style/FlutterExample.SeachViewInline.InputFieldTextAppearance.Dark</item>
+        <item name="pspdf__resultTextAppearance">@style/FlutterExample.SearchViewInline.ResultTextAppearance.Dark</item>
         <item name="pspdf__throbberColor">@color/dark_icons_blue</item>
         <item name="pspdf__prevIconColorTint">@color/dark_icons_blue</item>
         <item name="pspdf__nextIconColorTint">@color/dark_icons_blue</item>
         <item name="pspdf__backIconColorTint">@color/dark_icons_blue</item>
     </style>
 
-    <style name="PSPDFCatalog.SeachViewInline.InputFieldTextAppearance.Dark" parent="PSPDFKit.SearchViewInline.InputFieldTextAppearance">
+    <style name="FlutterExample.SeachViewInline.InputFieldTextAppearance.Dark" parent="PSPDFKit.SearchViewInline.InputFieldTextAppearance">
         <item name="android:textColor">@color/dark_icons_blue</item>
         <item name="android:textColorHint">@color/dark_icons_blue</item>
     </style>
 
-    <style name="PSPDFCatalog.SearchViewInline.ResultTextAppearance.Dark" parent="PSPDFKit.SearchViewInline.ResultTextAppearance">
+    <style name="FlutterExample.SearchViewInline.ResultTextAppearance.Dark" parent="PSPDFKit.SearchViewInline.ResultTextAppearance">
         <item name="android:textColor">@color/dark_icons_blue</item>
     </style>
 
     <!-- Modular search items. -->
-    <style name="PSPDFCatalog.SearchViewModular.Dark" parent="PSPDFKit.SearchViewModular">
+    <style name="FlutterExample.SearchViewModular.Dark" parent="PSPDFKit.SearchViewModular">
         <item name="pspdf__backgroundColor">@color/dark_background_color</item>
         <item name="pspdf__inputFieldTextColor">@color/dark_background_color</item>
         <item name="pspdf__inputFieldHintColor">@color/white</item>
@@ -109,7 +109,7 @@
     </style>
 
     <!-- Thumbnail bar items. -->
-    <style name="PSPDFCatalog.ThumbnailBar.Dark" parent="PSPDFKit.ThumbnailBar">
+    <style name="FlutterExample.ThumbnailBar.Dark" parent="PSPDFKit.ThumbnailBar">
         <item name="pspdf__backgroundColor">@color/dark_background_color</item>
         <item name="pspdf__thumbnailWidth">@dimen/thumbnail_bar_width</item>
         <item name="pspdf__thumbnailHeight">@dimen/thumbnail_bar_height</item>
@@ -117,7 +117,7 @@
     </style>
 
     <!-- Outline view items. -->
-    <style name="PSPDFCatalog.OutlineView.Dark" parent="PSPDFKit.OutlineView">
+    <style name="FlutterExample.OutlineView.Dark" parent="PSPDFKit.OutlineView">
         <item name="pspdf__backgroundColor">@color/dark_status_bar</item>
         <item name="pspdf__defaultTextColor">@color/dark_input_field_blue</item>
         <item name="pspdf__bookmarksBarIconColor">@color/dark_icons_blue</item>
@@ -134,15 +134,15 @@
         <item name="pspdf__documentInfoFabIconColor">@color/white</item>
     </style>
 
-    <style name="PSPDFCatalog.ThumbnailGrid.Dark" parent="PSPDFKit.ThumbnailGrid">
+    <style name="FlutterExample.ThumbnailGrid.Dark" parent="PSPDFKit.ThumbnailGrid">
         <item name="pspdf__backgroundColor">@color/dark_status_bar</item>
     </style>
 
-    <style name="PSPDFCatalog.ToolbarCoordinator.Dark" parent="PSPDFKit.ToolbarCoordinatorLayout">
+    <style name="FlutterExample.ToolbarCoordinator.Dark" parent="PSPDFKit.ToolbarCoordinatorLayout">
         <item name="pspdf__dragTargetColor">@color/dark_drag_target</item>
     </style>
 
-    <style name="PSPDFCatalog.AnnotationSelection.Dark" parent="PSPDFKit.AnnotationSelection">
+    <style name="FlutterExample.AnnotationSelection.Dark" parent="PSPDFKit.AnnotationSelection">
         <item name="pspdf__borderColor">@color/dark_accent</item>
         <item name="pspdf__borderWidth">2dp</item>
         <item name="pspdf__scaleHandleColor">@color/dark</item>
@@ -150,19 +150,19 @@
         <item name="pspdf__padding">24dp</item>
     </style>
 
-    <style name="PSPDFCatalog.TextSelection.Dark" parent="PSPDFKit.TextSelection">
+    <style name="FlutterExample.TextSelection.Dark" parent="PSPDFKit.TextSelection">
         <item name="pspdf__highlightColor">@color/dark_text_selection_highlight</item>
         <item name="pspdf__leftHandleColor">@color/dark_text_selection_left_handle</item>
         <item name="pspdf__rightHandleColor">@color/dark_text_selection_right_handle</item>
     </style>
 
-    <style name="PSPDFCatalog.PropertyInspector.Dark" parent="PSPDFKit.PropertyInspector">
+    <style name="FlutterExample.PropertyInspector.Dark" parent="PSPDFKit.PropertyInspector">
         <item name="pspdf__backgroundColor">?colorPrimary</item>
         <item name="pspdf__textColor">?colorAccent</item>
-        <item name="pspdf__modalDialogStyle">@style/PSPDFCatalog.ModalDialog.Dark</item>
+        <item name="pspdf__modalDialogStyle">@style/FlutterExample.ModalDialog.Dark</item>
     </style>
 
-    <style name="PSPDFCatalog.ActionMenu.Dark" parent="PSPDFKit.ActionMenu">
+    <style name="FlutterExample.ActionMenu.Dark" parent="PSPDFKit.ActionMenu">
         <item name="pspdf__backgroundColor">?colorPrimary</item>
         <item name="pspdf__labelColor">?colorAccent</item>
         <item name="pspdf__fixedActionsPanelBackgroundColor">@color/dark_background_color_secondary</item>
@@ -170,7 +170,7 @@
         <item name="pspdf__fixedActionsIconBackground">?colorAccent</item>
     </style>
 
-    <style name="PSPDFCatalog.SignatureLayout.Dark" parent="PSPDFKit.SignatureLayout">
+    <style name="FlutterExample.SignatureLayout.Dark" parent="PSPDFKit.SignatureLayout">
         <item name="pspdf__backgroundColor">@color/dark_background_color</item>
         <item name="pspdf__addSignatureIcon">@drawable/pspdf__ic_add</item>
         <item name="pspdf__addSignatureIconColor">@color/white</item>
@@ -191,13 +191,13 @@
         <item name="android:listDivider">@drawable/pspdf_list_divider_light</item>
     </style>
 
-    <style name="PSPDFCatalog.StampPicker.Dark" parent="PSPDFKit.StampPicker">
+    <style name="FlutterExample.StampPicker.Dark" parent="PSPDFKit.StampPicker">
         <item name="pspdf__backgroundColor">@color/white</item>
         <item name="pspdf__textColor">@color/dialog_text_color</item>
         <item name="pspdf__hintColor">@color/gray</item>
     </style>
 
-    <style name="PSPDFCatalog.DocumentViewStyle.Dark" parent="PSPDFKit.DocumentView">
+    <style name="FlutterExample.DocumentViewStyle.Dark" parent="PSPDFKit.DocumentView">
         <item name="android:scrollbarSize">6dp</item>
         <item name="android:scrollbarThumbVertical">@color/dark_scrollbars</item>
         <item name="android:scrollbarThumbHorizontal">@color/dark_scrollbars</item>
@@ -205,35 +205,35 @@
         <item name="android:scrollbars">horizontal|vertical</item>
     </style>
 
-    <style name="PSPDFCatalog.AlertDialog.Dark" parent="PSPDFKit.AlertDialog">
+    <style name="FlutterExample.AlertDialog.Dark" parent="PSPDFKit.AlertDialog">
         <item name="android:colorBackground">?colorPrimary</item>
         <!-- Alert dialog's title text color. -->
         <item name="android:textColor">@color/dark_input_field_blue</item>
     </style>
 
-    <style name="PSPDFCatalog.SharingDialog.Dark" parent="ThemeOverlay.AppCompat">
+    <style name="FlutterExample.SharingDialog.Dark" parent="ThemeOverlay.AppCompat">
         <item name="pspdf__backgroundColor">?colorPrimary</item>
         <item name="pspdf__errorColor">@color/error</item>
         <item name="android:colorBackground">?colorPrimary</item>
         <item name="android:colorForeground">@color/white</item>
     </style>
 
-    <style name="PSPDFCatalog.NewPageDialog.Dark" parent="ThemeOverlay.AppCompat">
+    <style name="FlutterExample.NewPageDialog.Dark" parent="ThemeOverlay.AppCompat">
         <item name="android:colorForeground">@color/white</item>
     </style>
 
-    <style name="PSPDFCatalog.ModalDialog.Dark" parent="PSPDFKit.ModalDialog">
+    <style name="FlutterExample.ModalDialog.Dark" parent="PSPDFKit.ModalDialog">
         <item name="pspdf__titleBackground">?colorPrimaryDark</item>
         <item name="pspdf__titleTextColor">?colorAccent</item>
         <item name="pspdf__titleIconsColor">?colorAccent</item>
     </style>
 
-    <style name="PSPDFCatalog.FormSelection.Dark" parent="PSPDFKit.FormSelection">
+    <style name="FlutterExample.FormSelection.Dark" parent="PSPDFKit.FormSelection">
         <item name="pspdf__selectedTextElementBackgroundColor">@color/dark_selection_background</item>
         <item name="pspdf__touchedFormElementHighlightColor">#6064BDDF</item>
     </style>
 
-    <style name="PSPDFCatalog.AnnotationNoteHinter.Dark" parent="PSPDFKit.AnnotationNoteHinter">
+    <style name="FlutterExample.AnnotationNoteHinter.Dark" parent="PSPDFKit.AnnotationNoteHinter">
         <item name="pspdf__noteHinterColor">@color/gray</item>
         <item name="pspdf__useNoteHinterIntrinsicSize">false</item>
         <item name="pspdf__noteHinterWidth">24dp</item>
