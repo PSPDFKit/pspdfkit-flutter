@@ -33,7 +33,7 @@ pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
-5. Open `myapp/android/app/build.gradle` and modify `compileSdkVersion` from `27` to `28`, `minSdkVersion` from `16` to `21`, `targetSdkVersion` from `27` to `28`, enable multiDex, and add compile options to enable desugaring 
+5. Open `myapp/android/app/build.gradle` and modify `minSdkVersion` from `16` to `21`, enable multiDex, and add compile options to enable desugaring 
   
   ```groovy
   compileOptions {
@@ -42,14 +42,13 @@ flutter.buildMode=debug
     }
   ```
   
-**Four changes** to edit:
+**Three changes** to edit:
 
 ```diff
 ...
 android {
--   compileSdkVersion 27
-+   compileSdkVersion 28
-    
+     compileSdkVersion 28
+     
 +    compileOptions {
 +       sourceCompatibility 1.8
 +       targetCompatibility 1.8
@@ -64,8 +63,7 @@ android {
         applicationId "com.example.myapp"
 -       minSdkVersion 16
 +       minSdkVersion 21
--       targetSdkVersion 27
-+       targetSdkVersion 28
+        targetSdkVersion 28
 +       multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

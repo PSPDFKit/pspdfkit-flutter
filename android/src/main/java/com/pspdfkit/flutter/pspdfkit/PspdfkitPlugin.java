@@ -1,13 +1,22 @@
+/*
+ *   Copyright © 2018-2019 PSPDFKit GmbH. All rights reserved.
+ *
+ *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ *   This notice may not be removed from this file.
+ */
 package com.pspdfkit.flutter.pspdfkit;
 
 import android.content.Context;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.ui.PdfActivity;
 
+import java.util.HashMap;
+
+import androidx.annotation.NonNull;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -33,6 +42,8 @@ public class PspdfkitPlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         channel.setMethodCallHandler(new PspdfkitPlugin(registrar.activeContext()));
+        // Include simple permissions plugin to deal with reading and writing permissions.
+        SimplePermissionsPlugin.registerWith(registrar);
     }
 
     @Override
@@ -49,6 +60,9 @@ public class PspdfkitPlugin implements MethodCallHandler {
             case "present":
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
+
+                HashMap<String, Object> configurationMap = call.argument("configuration");
+                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(context, configurationMap);
                 if (Uri.parse(documentPath).getScheme() == null) {
                     if (documentPath.startsWith("/")) {
                         documentPath = documentPath.substring(1);
@@ -57,9 +71,9 @@ public class PspdfkitPlugin implements MethodCallHandler {
                 }
                 boolean imageDocument = isImageDocument(documentPath);
                 if (imageDocument) {
-                    PdfActivity.showImage(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
+                    PdfActivity.showImage(context, Uri.parse(documentPath), configurationAdapter.build());
                 } else {
-                    PdfActivity.showDocument(context, Uri.parse(documentPath), new PdfActivityConfiguration.Builder(context).build());
+                    PdfActivity.showDocument(context, Uri.parse(documentPath), configurationAdapter.build());
                 }
                 break;
             default:

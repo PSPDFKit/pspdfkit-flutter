@@ -1,3 +1,11 @@
+<!--
+  ~   Copyright © 2018-2019 PSPDFKit GmbH. All rights reserved.
+  ~
+  ~   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+  ~   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+  ~   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+  ~   This notice may not be removed from this file.
+  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pspdfkit.flutter.pspdfkit">
 
@@ -5,10 +13,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application android:largeHeap="true">
-        <meta-data
-            android:name="pspdfkit_license_key"
-            android:value="YOUR_LICENSE_KEY_GOES_HERE"/>
-
         <activity
             android:name="com.pspdfkit.ui.PdfActivity"
             android:windowSoftInputMode="adjustNothing" />
