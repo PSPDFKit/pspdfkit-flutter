@@ -31,11 +31,12 @@
         NSAssert(documentPath != nil, @"Document path may not be nil.");
         NSAssert(documentPath.length != 0, @"Document path may not be empty.");
         NSDictionary *configurationDictionary = call.arguments[@"configuration"];
-
+        
         PSPDFDocument *document = [self PSPDFDocument:documentPath];
-        PSPDFConfiguration *psPdfConfiguration = [self PSPDFConfiguration:configurationDictionary forDocument:document];
+        PSPDFConfiguration *psPdfConfiguration = [self PSPDFConfiguration:configurationDictionary isImageDocument:[self isImageDocument:documentPath]];
         PSPDFViewController *pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
         pdfViewController.appearanceModeManager.appearanceMode = [self PSPDFAppearanceMode:configurationDictionary];
+        pdfViewController.pageIndex = [self PSPDFPageIndex:configurationDictionary];
         
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
@@ -47,36 +48,34 @@
 
 # pragma mark - Private methods
 
-- (PSPDFDocument *)PSPDFDocument:(NSString *)string {
+- (PSPDFDocument *)PSPDFDocument:(NSString *)path {
     NSURL *url;
     
-    if ([string hasPrefix:@"/"]) {
-        url = [NSURL fileURLWithPath:string];
+    if ([path hasPrefix:@"/"]) {
+        url = [NSURL fileURLWithPath:path];
     } else {
-        url = [NSBundle.mainBundle URLForResource:string withExtension:nil];
+        url = [NSBundle.mainBundle URLForResource:path withExtension:nil];
     }
-
-    NSString *fileExtension = url.pathExtension.lowercaseString;
-    BOOL isImageFile = [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
-    if (isImageFile) {
+    
+    if ([self isImageDocument:path]) {
         return [[PSPDFImageDocument alloc] initWithImageURL:url];
     } else {
         return [[PSPDFDocument alloc] initWithURL:url];
     }
 }
 
-- (PSPDFConfiguration *)PSPDFConfiguration:(NSDictionary *)dictionary forDocument:(PSPDFDocument *)document{
+- (PSPDFConfiguration *)PSPDFConfiguration:(NSDictionary *)dictionary isImageDocument:(BOOL)isImageDocument {
     PSPDFConfiguration *configuration;
-    if ([document isKindOfClass:PSPDFImageDocument.class]) {
+    if (isImageDocument) {
         configuration = PSPDFConfiguration.imageConfiguration;
     } else {
         configuration = PSPDFConfiguration.defaultConfiguration;
     }
-
+    
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return configuration;
     }
-
+    
     return [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
         if (dictionary[@"pageScrollDirection"]) {
             builder.scrollDirection = [dictionary[@"pageScrollDirection"] isEqualToString:@"pageScrollDirectionHorizontal"] ? PSPDFScrollDirectionHorizontal : PSPDFScrollDirectionVertical;
@@ -113,6 +112,15 @@
             }
             builder.thumbnailBarMode = thumbnailBarMode;
         }
+        if (dictionary[@"showPageLabels"]) {
+            builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        }
+        if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
+            builder.editableAnnotationTypes = nil;
+        }
+        if (dictionary[@"enableTextSelection"]) {
+            builder.textSelectionEnabled = [dictionary[@"enableTextSelection"] boolValue];
+        }
     }];
 }
 
@@ -132,6 +140,18 @@
         }
     }
     return appearanceMode;
+}
+
+- (PSPDFPageIndex)PSPDFPageIndex:(NSDictionary *)dictionary {
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
+        return 0;
+    }
+    return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
+}
+
+- (BOOL)isImageDocument:(NSString*)path {
+    NSString *fileExtension = path.lowercaseString.pathExtension;
+    return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
 }
 
 @end
