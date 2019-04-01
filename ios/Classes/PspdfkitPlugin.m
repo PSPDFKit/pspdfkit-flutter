@@ -32,11 +32,11 @@
         NSAssert(documentPath.length != 0, @"Document path may not be empty.");
         NSDictionary *configurationDictionary = call.arguments[@"configuration"];
         
-        PSPDFDocument *document = [self PSPDFDocument:documentPath];
-        PSPDFConfiguration *psPdfConfiguration = [self PSPDFConfiguration:configurationDictionary isImageDocument:[self isImageDocument:documentPath]];
+        PSPDFDocument *document = [self document:documentPath];
+        PSPDFConfiguration *psPdfConfiguration = [self configuration:configurationDictionary isImageDocument:[self isImageDocument:documentPath]];
         PSPDFViewController *pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
-        pdfViewController.appearanceModeManager.appearanceMode = [self PSPDFAppearanceMode:configurationDictionary];
-        pdfViewController.pageIndex = [self PSPDFPageIndex:configurationDictionary];
+        pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
+        pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
         
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
@@ -48,7 +48,7 @@
 
 # pragma mark - Private methods
 
-- (PSPDFDocument *)PSPDFDocument:(NSString *)path {
+- (PSPDFDocument *)document:(NSString *)path {
     NSURL *url;
     
     if ([path hasPrefix:@"/"]) {
@@ -64,7 +64,7 @@
     }
 }
 
-- (PSPDFConfiguration *)PSPDFConfiguration:(NSDictionary *)dictionary isImageDocument:(BOOL)isImageDocument {
+- (PSPDFConfiguration *)configuration:(NSDictionary *)dictionary isImageDocument:(BOOL)isImageDocument {
     PSPDFConfiguration *configuration;
     if (isImageDocument) {
         configuration = PSPDFConfiguration.imageConfiguration;
@@ -84,33 +84,13 @@
             builder.pageTransition = dictionary[@"pageScrollContinuous"] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
         }
         if (dictionary[@"userInterfaceViewMode"]) {
-            PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
-            NSString *value = dictionary[@"userInterfaceViewMode"];
-            if ([value isEqualToString:@"automatic"]) {
-                userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
-            } else if ([value isEqualToString:@"alwaysVisible"]) {
-                userInterfaceMode = PSPDFUserInterfaceViewModeAlways;
-            } else if ([value isEqualToString:@"alwaysHidden"]) {
-                userInterfaceMode = PSPDFUserInterfaceViewModeNever;
-            } else if ([value isEqualToString:@"automaticNoFirstLastPage"]) {
-                userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
-            }
-            builder.userInterfaceViewMode = userInterfaceMode;
+            builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary[@"userInterfaceViewMode"]];
         }
         if (dictionary[@"inlineSearch"]) {
             builder.searchMode = dictionary[@"inlineSearch"] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         }
         if (dictionary[@"showThumbnailBar"]) {
-            PSPDFThumbnailBarMode thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
-            NSString *value = dictionary[@"showThumbnailBar"];
-            if ([value isEqualToString:@"default"]) {
-                thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
-            } else if ([value isEqualToString:@"scrollable"]) {
-                thumbnailBarMode = PSPDFThumbnailBarModeScrollable;
-            } else if ([value isEqualToString:@"none"]) {
-                thumbnailBarMode = PSPDFThumbnailBarModeNone;
-            }
-            builder.thumbnailBarMode = thumbnailBarMode;
+            builder.thumbnailBarMode = [self thumbnailBarMode:dictionary[@"showThumbnailBar"]];
         }
         if (dictionary[@"showPageLabels"]) {
             builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
@@ -124,7 +104,44 @@
     }];
 }
 
-- (PSPDFAppearanceMode)PSPDFAppearanceMode:(NSDictionary *)dictionary {
+# pragma mark - Helpers
+
+- (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSString *)stringValue {
+    if ((id)stringValue == NSNull.null || !stringValue || stringValue.length == 0) {
+        return PSPDFUserInterfaceViewModeAutomatic;
+    } else {
+        PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
+        if ([stringValue isEqualToString:@"automatic"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
+        } else if ([stringValue isEqualToString:@"alwaysVisible"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAlways;
+        } else if ([stringValue isEqualToString:@"alwaysHidden"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeNever;
+        } else if ([stringValue isEqualToString:@"automaticNoFirstLastPage"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
+        }
+        return  userInterfaceMode;
+    }
+}
+
+- (PSPDFThumbnailBarMode)thumbnailBarMode:(NSString *)stringValue {
+    if ((id)stringValue == NSNull.null || !stringValue || stringValue.length == 0) {
+        return PSPDFThumbnailBarModeScrubberBar;
+    } else {
+        PSPDFThumbnailBarMode thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
+        if ([stringValue isEqualToString:@"default"]) {
+            thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
+        } else if ([stringValue isEqualToString:@"scrollable"]) {
+            thumbnailBarMode = PSPDFThumbnailBarModeScrollable;
+        } else if ([stringValue isEqualToString:@"none"]) {
+            thumbnailBarMode = PSPDFThumbnailBarModeNone;
+        }
+        return thumbnailBarMode;
+    }
+}
+
+
+- (PSPDFAppearanceMode)appearanceMode:(NSDictionary *)dictionary {
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return PSPDFAppearanceModeDefault;
     }
@@ -142,7 +159,7 @@
     return appearanceMode;
 }
 
-- (PSPDFPageIndex)PSPDFPageIndex:(NSDictionary *)dictionary {
+- (PSPDFPageIndex)pageIndex:(NSDictionary *)dictionary {
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return 0;
     }
