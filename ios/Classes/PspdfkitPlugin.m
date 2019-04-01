@@ -84,13 +84,13 @@
             builder.pageTransition = dictionary[@"pageScrollContinuous"] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
         }
         if (dictionary[@"userInterfaceViewMode"]) {
-            builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary[@"userInterfaceViewMode"]];
+            builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         }
         if (dictionary[@"inlineSearch"]) {
             builder.searchMode = dictionary[@"inlineSearch"] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         }
         if (dictionary[@"showThumbnailBar"]) {
-            builder.thumbnailBarMode = [self thumbnailBarMode:dictionary[@"showThumbnailBar"]];
+            builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
         }
         if (dictionary[@"showPageLabels"]) {
             builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
@@ -106,38 +106,44 @@
 
 # pragma mark - Helpers
 
-- (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSString *)stringValue {
-    if ((id)stringValue == NSNull.null || !stringValue || stringValue.length == 0) {
+- (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSDictionary *)dictionary {
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return PSPDFUserInterfaceViewModeAutomatic;
-    } else {
-        PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
-        if ([stringValue isEqualToString:@"automatic"]) {
+    }
+
+    PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
+    NSString *value = dictionary[@"userInterfaceViewMode"];
+    if (value) {
+        if ([value isEqualToString:@"automatic"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
-        } else if ([stringValue isEqualToString:@"alwaysVisible"]) {
+        } else if ([value isEqualToString:@"alwaysVisible"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeAlways;
-        } else if ([stringValue isEqualToString:@"alwaysHidden"]) {
+        } else if ([value isEqualToString:@"alwaysHidden"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeNever;
-        } else if ([stringValue isEqualToString:@"automaticNoFirstLastPage"]) {
+        } else if ([value isEqualToString:@"automaticNoFirstLastPage"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
         }
-        return  userInterfaceMode;
     }
+    return userInterfaceMode;
 }
 
-- (PSPDFThumbnailBarMode)thumbnailBarMode:(NSString *)stringValue {
-    if ((id)stringValue == NSNull.null || !stringValue || stringValue.length == 0) {
+- (PSPDFThumbnailBarMode)thumbnailBarMode:(NSDictionary *)dictionary {
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return PSPDFThumbnailBarModeScrubberBar;
-    } else {
-        PSPDFThumbnailBarMode thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
-        if ([stringValue isEqualToString:@"default"]) {
+    }
+
+    PSPDFThumbnailBarMode thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
+    NSString *value = dictionary[@"showThumbnailBar"];
+    if (value) {
+        if ([value isEqualToString:@"default"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
-        } else if ([stringValue isEqualToString:@"scrollable"]) {
+        } else if ([value isEqualToString:@"scrollable"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeScrollable;
-        } else if ([stringValue isEqualToString:@"none"]) {
+        } else if ([value isEqualToString:@"none"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeNone;
         }
-        return thumbnailBarMode;
     }
+    return thumbnailBarMode;
 }
 
 
@@ -146,8 +152,8 @@
         return PSPDFAppearanceModeDefault;
     }
     PSPDFAppearanceMode appearanceMode = PSPDFAppearanceModeDefault;
-    if (dictionary[@"appearanceMode"]) {
-        NSString *value = dictionary[@"appearanceMode"];
+    NSString *value = dictionary[@"appearanceMode"];
+    if (value) {
         if ([value isEqualToString:@"default"]) {
             appearanceMode = PSPDFAppearanceModeDefault;
         } else if ([value isEqualToString:@"night"]) {
