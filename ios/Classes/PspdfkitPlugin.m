@@ -150,7 +150,7 @@
 }
 
 - (BOOL)isImageDocument:(NSString*)path {
-    NSString *fileExtension = path.lowercaseString.pathExtension;
+    NSString *fileExtension = path.pathExtension.lowercaseString;
     return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
 }
 
