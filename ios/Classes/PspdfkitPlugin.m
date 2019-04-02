@@ -77,24 +77,14 @@
     }
     
     return [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
-        if (dictionary[@"pageScrollDirection"]) {
-            builder.scrollDirection = [dictionary[@"pageScrollDirection"] isEqualToString:@"pageScrollDirectionHorizontal"] ? PSPDFScrollDirectionHorizontal : PSPDFScrollDirectionVertical;
-        }
-        if (dictionary[@"pageScrollContinuous"]) {
-            builder.pageTransition = dictionary[@"pageScrollContinuous"] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
-        }
-        if (dictionary[@"userInterfaceViewMode"]) {
-            builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
-        }
-        if (dictionary[@"inlineSearch"]) {
-            builder.searchMode = dictionary[@"inlineSearch"] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
-        }
-        if (dictionary[@"showThumbnailBar"]) {
-            builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
-        }
-        if (dictionary[@"showPageLabels"]) {
-            builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
-        }
+        builder.scrollDirection = [dictionary[@"pageScrollDirection"] isEqualToString:@"vertical"] ? PSPDFScrollDirectionVertical : PSPDFScrollDirectionHorizontal;
+        builder.pageTransition = [dictionary[@"scrollContinuously"] boolValue] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
+        builder.spreadFitting = [dictionary[@"fitPageToWidth"] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
+        builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
+        builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
+        builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
+
         if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
             builder.editableAnnotationTypes = nil;
         }
@@ -107,11 +97,11 @@
 # pragma mark - Helpers
 
 - (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSDictionary *)dictionary {
+    PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFConfiguration.defaultConfiguration.userInterfaceViewMode;
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return PSPDFUserInterfaceViewModeAutomatic;
+        return userInterfaceMode;
     }
 
-    PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
     NSString *value = dictionary[@"userInterfaceViewMode"];
     if (value) {
         if ([value isEqualToString:@"automatic"]) {
@@ -128,11 +118,11 @@
 }
 
 - (PSPDFThumbnailBarMode)thumbnailBarMode:(NSDictionary *)dictionary {
+    PSPDFThumbnailBarMode thumbnailBarMode = PSPDFConfiguration.defaultConfiguration.thumbnailBarMode;
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return PSPDFThumbnailBarModeScrubberBar;
+        return thumbnailBarMode;
     }
 
-    PSPDFThumbnailBarMode thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
     NSString *value = dictionary[@"showThumbnailBar"];
     if (value) {
         if ([value isEqualToString:@"default"]) {
