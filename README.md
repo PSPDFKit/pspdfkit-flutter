@@ -2,7 +2,10 @@
 
 PSPDFKit wrapper for Flutter.
 
-> If you are new to Flutter, make sure to check our [introductory blog post "How I Got Started With Flutter"](https://pspdfkit.com/blog/2018/starting-with-flutter/)
+If you are new to Flutter, make sure to check our blog:
+
+- [How I Got Started With Flutter](https://pspdfkit.com/blog/2018/starting-with-flutter/).
+- [Getting Started with PSPDFKit Flutter](https://pspdfkit.com/blog/2019/getting-started-with-pspdfkit-flutter/).
 
 Platform specific README exists for [Android](android/) and [iOS](ios/).
 
