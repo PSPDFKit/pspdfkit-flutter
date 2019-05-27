@@ -73,3 +73,4 @@ const String appearanceModeSepia = "sepia";
 const String androidDarkThemeResource = "darkThemeResource";
 
 const String androidDefaultThemeResource = "defaultThemeResource";
+const String password = "password";
