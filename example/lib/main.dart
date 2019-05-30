@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
-const String _documentPath = 'PDFs/protected.pdf';
+const String _documentPath = 'PDFs/Guide_v4.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit Image Example.jpg';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
