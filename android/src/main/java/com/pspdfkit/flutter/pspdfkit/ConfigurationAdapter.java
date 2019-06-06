@@ -66,8 +66,10 @@ class ConfigurationAdapter {
     private static final String APPEARANCE_MODE_NIGHT = "night";
     private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
+    private static final String PASSWORD = "password";
 
     private final PdfActivityConfiguration.Builder configuration;
+    @Nullable private String password = null;
 
     @SuppressWarnings("ConstantConditions")
     ConfigurationAdapter(@NonNull Context context,
@@ -145,6 +147,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, ANDROID_DEFAULT_THEME_RESOURCE, String.class)) {
                 configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
+            }
+            if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
+                this.password = ((String) configurationMap.get(PASSWORD));
             }
         }
     }
@@ -376,6 +381,11 @@ class ConfigurationAdapter {
             return "Map";
         }
         throw new IllegalArgumentException("Undefined dart type conversion for " + clazz.getName());
+    }
+
+    @Nullable
+    String getPassword() {
+        return password;
     }
 
     PdfActivityConfiguration build() {

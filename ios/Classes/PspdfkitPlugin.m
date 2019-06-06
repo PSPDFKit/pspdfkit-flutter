@@ -33,6 +33,7 @@
         NSDictionary *configurationDictionary = call.arguments[@"configuration"];
         
         PSPDFDocument *document = [self document:documentPath];
+        [self unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
         PSPDFConfiguration *psPdfConfiguration = [self configuration:configurationDictionary isImageDocument:[self isImageDocument:documentPath]];
         PSPDFViewController *pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
         pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
@@ -165,6 +166,16 @@
 - (BOOL)isImageDocument:(NSString*)path {
     NSString *fileExtension = path.pathExtension.lowercaseString;
     return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
+}
+
+- (void)unlockWithPasswordIfNeeded:(PSPDFDocument *)document dictionary:(NSDictionary *)dictionary {
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
+        return;
+    }
+    NSString *password = dictionary[@"password"];
+    if (password.length) {
+        [document unlockWithPassword:password];
+    }
 }
 
 @end

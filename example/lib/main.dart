@@ -16,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 const String _documentPath = 'PDFs/Guide_v4.pdf';
+const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit Image Example.jpg';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
 const String _basicExample = 'Basic Example';
@@ -26,6 +27,8 @@ const String _darkTheme = 'Dark Theme';
 const String _darkThemeSub = 'Opens a document in night mode with custom dark theme.';
 const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
+const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
+const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -138,6 +141,26 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  void unlockPasswordProtectedDocument() async {
+    try {
+      final ByteData bytes =
+          await DefaultAssetBundle.of(context).load(_lockedDocumentPath);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$_lockedDocumentPath';
+
+      final file = await File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath, {
+        password: 'test123'
+      });
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
+  
   @override
   initState() {
     super.initState();
@@ -222,6 +245,17 @@ class _MyAppState extends State<MyApp> {
               ])),
         ),
         Divider(),
+        GestureDetector(
+          onTap: unlockPasswordProtectedDocument,
+          child: Container(
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+
+                Text(_passwordProtectedDocument, style: title),
+                Text(_passwordProtectedDocumentSub, style: subhead)
+              ])),
+        ),
+        Divider(),
       ];
       return CupertinoApp(
           home: CupertinoPageScaffold(
@@ -252,6 +286,11 @@ class _MyAppState extends State<MyApp> {
             title: Text(_customConfiguration),
             subtitle: Text(_customConfigurationSub),
             onTap: () => applyCustomConfiguration()),
+        Divider(),
+        ListTile(
+            title: Text(_passwordProtectedDocument),
+            subtitle: Text(_passwordProtectedDocumentSub),
+            onTap: () => unlockPasswordProtectedDocument()),
         Divider(),
       ];
       return MaterialApp(

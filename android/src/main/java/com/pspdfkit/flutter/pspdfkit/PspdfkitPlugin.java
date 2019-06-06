@@ -73,7 +73,7 @@ public class PspdfkitPlugin implements MethodCallHandler {
                 if (imageDocument) {
                     PdfActivity.showImage(context, Uri.parse(documentPath), configurationAdapter.build());
                 } else {
-                    PdfActivity.showDocument(context, Uri.parse(documentPath), configurationAdapter.build());
+                    PdfActivity.showDocument(context, Uri.parse(documentPath), configurationAdapter.getPassword(), configurationAdapter.build());
                 }
                 break;
             default:
