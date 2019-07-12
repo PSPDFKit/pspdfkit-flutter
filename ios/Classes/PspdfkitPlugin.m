@@ -11,6 +11,10 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
+@interface PspdfkitPlugin()
+@property (nonatomic) PSPDFViewController *pdfViewController;
+@end
+
 @implementation PspdfkitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
@@ -35,11 +39,13 @@
         PSPDFDocument *document = [self document:documentPath];
         [self unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
         PSPDFConfiguration *psPdfConfiguration = [self configuration:configurationDictionary isImageDocument:[self isImageDocument:documentPath]];
-        PSPDFViewController *pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
-        pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
-        pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
-        
-        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:pdfViewController];
+        self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
+        self.pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
+        self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
+        [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
+        [self setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"]];
+
+        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
     } else {
@@ -83,6 +89,7 @@
         builder.spreadFitting = [dictionary[@"fitPageToWidth"] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
         builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
 
@@ -94,6 +101,40 @@
         }
     }];
 }
+
+
+#pragma mark - Customize the Toolbar
+
+- (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items {
+    if ((id)items == NSNull.null || !items || items.count == 0) {
+        return;
+    }
+    NSMutableArray *leftItems = [NSMutableArray array];
+    for (NSString *barButtonItemString in items) {
+        UIBarButtonItem *barButtonItem = [self barButtonItemFromString:barButtonItemString forViewController:self.pdfViewController];
+        if (barButtonItem && ![self.pdfViewController.navigationItem.rightBarButtonItems containsObject:barButtonItem]) {
+            [leftItems addObject:barButtonItem];
+        }
+    }
+
+    [self.pdfViewController.navigationItem setLeftBarButtonItems:[leftItems copy] animated:NO];
+}
+
+- (void)setRightBarButtonItems:(nullable NSArray <NSString *> *)items {
+    if ((id)items == NSNull.null || !items || items.count == 0) {
+        return;
+    }
+    NSMutableArray *rightItems = [NSMutableArray array];
+    for (NSString *barButtonItemString in items) {
+        UIBarButtonItem *barButtonItem = [self barButtonItemFromString:barButtonItemString forViewController:self.pdfViewController];
+        if (barButtonItem && ![self.pdfViewController.navigationItem.leftBarButtonItems containsObject:barButtonItem]) {
+            [rightItems addObject:barButtonItem];
+        }
+    }
+
+    [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
+}
+
 
 # pragma mark - Helpers
 
@@ -175,6 +216,40 @@
     NSString *password = dictionary[@"password"];
     if (password.length) {
         [document unlockWithPassword:password];
+    }
+}
+
+- (UIBarButtonItem *)barButtonItemFromString:(NSString *)barButtonItem forViewController:(PSPDFViewController *)pdfController {
+    if ([barButtonItem isEqualToString:@"closeButtonItem"]) {
+        return pdfController.closeButtonItem;
+    } else if ([barButtonItem isEqualToString:@"outlineButtonItem"]) {
+        return pdfController.outlineButtonItem;
+    } else if ([barButtonItem isEqualToString:@"searchButtonItem"]) {
+        return pdfController.searchButtonItem;
+    } else if ([barButtonItem isEqualToString:@"thumbnailsButtonItem"]) {
+        return pdfController.thumbnailsButtonItem;
+    } else if ([barButtonItem isEqualToString:@"documentEditorButtonItem"]) {
+        return pdfController.documentEditorButtonItem;
+    } else if ([barButtonItem isEqualToString:@"printButtonItem"]) {
+        return pdfController.printButtonItem;
+    } else if ([barButtonItem isEqualToString:@"openInButtonItem"]) {
+        return pdfController.openInButtonItem;
+    } else if ([barButtonItem isEqualToString:@"emailButtonItem"]) {
+        return pdfController.emailButtonItem;
+    } else if ([barButtonItem isEqualToString:@"messageButtonItem"]) {
+        return pdfController.messageButtonItem;
+    } else if ([barButtonItem isEqualToString:@"annotationButtonItem"]) {
+        return pdfController.annotationButtonItem;
+    } else if ([barButtonItem isEqualToString:@"bookmarkButtonItem"]) {
+        return pdfController.bookmarkButtonItem;
+    } else if ([barButtonItem isEqualToString:@"brightnessButtonItem"]) {
+        return pdfController.brightnessButtonItem;
+    } else if ([barButtonItem isEqualToString:@"activityButtonItem"]) {
+        return pdfController.activityButtonItem;
+    } else if ([barButtonItem isEqualToString:@"settingsButtonItem"]) {
+        return pdfController.settingsButtonItem;
+    } else {
+        return nil;
     }
 }
 

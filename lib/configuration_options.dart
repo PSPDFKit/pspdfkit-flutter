@@ -48,6 +48,8 @@ const String showPageNumberOverlay = "showPageNumberOverlay";
 
 const String showPageLabels = "showPageLabels";
 
+const String showDocumentTitle = "showDocumentTitle";
+
 const String invertColors = "invertColors";
 
 const String grayScale = "grayScale";
@@ -74,3 +76,6 @@ const String androidDarkThemeResource = "darkThemeResource";
 const String androidDefaultThemeResource = "defaultThemeResource";
 
 const String password = "password";
+
+const String iOSLeftBarButtonItems = "leftBarButtonItems";
+const String iOSRightBarButtonItems = "rightBarButtonItems";
