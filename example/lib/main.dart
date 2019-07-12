@@ -125,7 +125,7 @@ class _MyAppState extends State<MyApp> {
         androidShowAnnotationListAction: true,
         showPageNumberOverlay: false,
         showPageLabels: true,
-        showDocumentTitle: true,
+        showDocumentTitle: false,
         invertColors: false,
         grayScale: false,
         startPage: 2,
@@ -136,7 +136,7 @@ class _MyAppState extends State<MyApp> {
         showDocumentInfoView: true,
         appearanceMode: appearanceModeDefault,
         androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
-        iOSRightBarButtonItems:['thumbnailsButtonItem', 'searchButtonItem', 'annotationButtonItem'],
+        iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
         iOSLeftBarButtonItems:['settingsButtonItem']
       });
     } on PlatformException catch (e) {

@@ -111,7 +111,7 @@
     }
     NSMutableArray *leftItems = [NSMutableArray array];
     for (NSString *barButtonItemString in items) {
-        UIBarButtonItem *barButtonItem = [self uiBarButtonItemFrom:barButtonItemString forViewController:self.pdfViewController];
+        UIBarButtonItem *barButtonItem = [self barButtonItemFromString:barButtonItemString forViewController:self.pdfViewController];
         if (barButtonItem && ![self.pdfViewController.navigationItem.rightBarButtonItems containsObject:barButtonItem]) {
             [leftItems addObject:barButtonItem];
         }
@@ -126,7 +126,7 @@
     }
     NSMutableArray *rightItems = [NSMutableArray array];
     for (NSString *barButtonItemString in items) {
-        UIBarButtonItem *barButtonItem = [self uiBarButtonItemFrom:barButtonItemString forViewController:self.pdfViewController];
+        UIBarButtonItem *barButtonItem = [self barButtonItemFromString:barButtonItemString forViewController:self.pdfViewController];
         if (barButtonItem && ![self.pdfViewController.navigationItem.leftBarButtonItems containsObject:barButtonItem]) {
             [rightItems addObject:barButtonItem];
         }
