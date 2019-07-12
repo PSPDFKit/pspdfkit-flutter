@@ -76,3 +76,6 @@ const String androidDarkThemeResource = "darkThemeResource";
 const String androidDefaultThemeResource = "defaultThemeResource";
 
 const String password = "password";
+
+const String iOSLeftBarButtonItems = "leftBarButtonItems";
+const String iOSRightBarButtonItems = "rightBarButtonItems";
