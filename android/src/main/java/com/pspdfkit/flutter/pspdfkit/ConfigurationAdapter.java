@@ -52,7 +52,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
-    private static final String SHOW_DOCUMENT_TITLE="showDocumentTitle";
+    private static final String SHOW_DOCUMENT_TITLE = "showDocumentTitle";
     private static final String INVERT_COLORS = "invertColors";
     private static final String GRAY_SCALE = "grayScale";
     private static final String START_PAGE = "startPage";
