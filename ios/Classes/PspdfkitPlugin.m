@@ -83,6 +83,7 @@
         builder.spreadFitting = [dictionary[@"fitPageToWidth"] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
         builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        builder.documentLabelEnabled = [dictionary[@"showDocumentLabel"] boolValue];
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
 
