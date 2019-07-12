@@ -59,7 +59,7 @@ class ConfigurationAdapter {
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
     private static final String ENABLE_BOOKMARK_LIST = "enableBookmarkList";
-    private static final String ENABLE_DOCUMENT_EDITOR ="enableDocumentEditor";
+    private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
     private static final String ANDROID_SHOW_SHARE_ACTION = "showShareAction";
     private static final String ANDROID_SHOW_PRINT_ACTION = "showPrintAction";
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
