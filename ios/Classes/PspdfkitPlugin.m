@@ -219,7 +219,7 @@
     }
 }
 
-- (UIBarButtonItem *)uiBarButtonItemFrom:(NSString *)barButtonItem forViewController:(PSPDFViewController *)pdfController {
+- (UIBarButtonItem *)barButtonItemFromString:(NSString *)barButtonItem forViewController:(PSPDFViewController *)pdfController {
     if ([barButtonItem isEqualToString:@"closeButtonItem"]) {
         return pdfController.closeButtonItem;
     } else if ([barButtonItem isEqualToString:@"outlineButtonItem"]) {
