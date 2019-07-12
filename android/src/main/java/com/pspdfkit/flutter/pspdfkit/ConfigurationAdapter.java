@@ -20,7 +20,6 @@ import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
 
-import java.lang.reflect.MalformedParameterizedTypeException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -53,6 +52,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
+    private static final String SHOW_DOCUMENT_TITLE="showDocumentTitle";
     private static final String INVERT_COLORS = "invertColors";
     private static final String GRAY_SCALE = "grayScale";
     private static final String START_PAGE = "startPage";
@@ -114,6 +114,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, SHOW_PAGE_LABELS, Boolean.class)) {
                 configureShowPageLabels((Boolean) configurationMap.get(SHOW_PAGE_LABELS));
+            }
+            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_TITLE, Boolean.class)) {
+                configureShowDocumentTitle((Boolean) configurationMap.get(SHOW_DOCUMENT_TITLE));
             }
             if (containsKeyOfType(configurationMap, GRAY_SCALE, Boolean.class)) {
                 configureGrayScale((Boolean) configurationMap.get(GRAY_SCALE));
@@ -256,6 +259,14 @@ class ConfigurationAdapter {
             configuration.showPageLabels();
         } else {
             configuration.hidePageLabels();
+        }
+    }
+
+    private void configureShowDocumentTitle(boolean showDocumentTitle) {
+        if (showDocumentTitle) {
+            configuration.showDocumentTitleOverlay();
+        } else {
+            configuration.hideDocumentTitleOverlay();
         }
     }
 

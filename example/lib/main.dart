@@ -125,6 +125,7 @@ class _MyAppState extends State<MyApp> {
         androidShowAnnotationListAction: true,
         showPageNumberOverlay: false,
         showPageLabels: true,
+        showDocumentTitle: false,
         invertColors: false,
         grayScale: false,
         startPage: 2,
