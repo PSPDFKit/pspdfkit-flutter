@@ -60,6 +60,10 @@ const String enableAnnotationEditing = "enableAnnotationEditing";
 
 const String enableTextSelection = "enableTextSelection";
 
+const String enableBookmarkList = "enableBookmarkList";
+
+const String enableDocumentEditor = "enableDocumentEditor";
+
 const String androidShowShareAction = "showShareAction";
 
 const String androidShowPrintAction = "showPrintAction";

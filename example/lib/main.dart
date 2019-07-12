@@ -131,6 +131,8 @@ class _MyAppState extends State<MyApp> {
         startPage: 2,
         enableAnnotationEditing: true,
         enableTextSelection: false,
+        enableBookmarkList: false,
+        enableDocumentEditor: false,
         androidShowShareAction: true,
         androidShowPrintAction: false,
         showDocumentInfoView: true,
