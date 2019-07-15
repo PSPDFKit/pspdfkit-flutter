@@ -58,8 +58,8 @@ class ConfigurationAdapter {
     private static final String START_PAGE = "startPage";
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
-    private static final String ENABLE_BOOKMARK_LIST = "enableBookmarkList";
-    private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
+    private static final String ANDROID_ENABLE_BOOKMARK_LIST = "androidEnableBookmarkList";
+    private static final String ANDROID_ENABLE_DOCUMENT_EDITOR = "androidEnableDocumentEditor";
     private static final String ANDROID_SHOW_SHARE_ACTION = "showShareAction";
     private static final String ANDROID_SHOW_PRINT_ACTION = "showPrintAction";
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
@@ -138,11 +138,11 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, ENABLE_TEXT_SELECTION, Boolean.class)) {
                 configureEnableTextSelection((Boolean) configurationMap.get(ENABLE_TEXT_SELECTION));
             }
-            if (containsKeyOfType(configurationMap, ENABLE_BOOKMARK_LIST, Boolean.class)) {
-                configureEnableBookmarkList((Boolean) configurationMap.get(ENABLE_BOOKMARK_LIST));
+            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_BOOKMARK_LIST, Boolean.class)) {
+                configureEnableBookmarkList((Boolean) configurationMap.get(ANDROID_ENABLE_BOOKMARK_LIST));
             }
-            if (containsKeyOfType(configurationMap, ENABLE_DOCUMENT_EDITOR, Boolean.class)) {
-                configureEnableDocumentEditor((Boolean) configurationMap.get(ENABLE_DOCUMENT_EDITOR));
+            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_DOCUMENT_EDITOR, Boolean.class)) {
+                configureEnableDocumentEditor((Boolean) configurationMap.get(ANDROID_ENABLE_DOCUMENT_EDITOR));
             }
             if (containsKeyOfType(configurationMap, SHOW_THUMBNAIL_BAR, String.class)) {
                 configureShowThumbnailBar((String) configurationMap.get(SHOW_THUMBNAIL_BAR));
