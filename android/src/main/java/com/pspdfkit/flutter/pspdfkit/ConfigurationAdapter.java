@@ -20,7 +20,6 @@ import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
 
-import java.lang.reflect.MalformedParameterizedTypeException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -53,11 +52,14 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
+    private static final String SHOW_DOCUMENT_TITLE = "showDocumentTitle";
     private static final String INVERT_COLORS = "invertColors";
     private static final String GRAY_SCALE = "grayScale";
     private static final String START_PAGE = "startPage";
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
+    private static final String ANDROID_ENABLE_BOOKMARK_LIST = "androidEnableBookmarkList";
+    private static final String ANDROID_ENABLE_DOCUMENT_EDITOR = "androidEnableDocumentEditor";
     private static final String ANDROID_SHOW_SHARE_ACTION = "showShareAction";
     private static final String ANDROID_SHOW_PRINT_ACTION = "showPrintAction";
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
@@ -115,6 +117,9 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, SHOW_PAGE_LABELS, Boolean.class)) {
                 configureShowPageLabels((Boolean) configurationMap.get(SHOW_PAGE_LABELS));
             }
+            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_TITLE, Boolean.class)) {
+                configureShowDocumentTitle((Boolean) configurationMap.get(SHOW_DOCUMENT_TITLE));
+            }
             if (containsKeyOfType(configurationMap, GRAY_SCALE, Boolean.class)) {
                 configureGrayScale((Boolean) configurationMap.get(GRAY_SCALE));
             }
@@ -132,6 +137,12 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, ENABLE_TEXT_SELECTION, Boolean.class)) {
                 configureEnableTextSelection((Boolean) configurationMap.get(ENABLE_TEXT_SELECTION));
+            }
+            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_BOOKMARK_LIST, Boolean.class)) {
+                configureEnableBookmarkList((Boolean) configurationMap.get(ANDROID_ENABLE_BOOKMARK_LIST));
+            }
+            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_DOCUMENT_EDITOR, Boolean.class)) {
+                configureEnableDocumentEditor((Boolean) configurationMap.get(ANDROID_ENABLE_DOCUMENT_EDITOR));
             }
             if (containsKeyOfType(configurationMap, SHOW_THUMBNAIL_BAR, String.class)) {
                 configureShowThumbnailBar((String) configurationMap.get(SHOW_THUMBNAIL_BAR));
@@ -259,6 +270,14 @@ class ConfigurationAdapter {
         }
     }
 
+    private void configureShowDocumentTitle(boolean showDocumentTitle) {
+        if (showDocumentTitle) {
+            configuration.showDocumentTitleOverlay();
+        } else {
+            configuration.hideDocumentTitleOverlay();
+        }
+    }
+
     private void configureGrayScale(boolean grayScale) {
         configuration.toGrayscale(grayScale);
     }
@@ -293,6 +312,22 @@ class ConfigurationAdapter {
 
     private void configureEnableTextSelection(boolean enableTextSelection) {
         configuration.textSelectionEnabled(enableTextSelection);
+    }
+
+    private void configureEnableBookmarkList(boolean enableBookmarkList) {
+        if (enableBookmarkList) {
+            configuration.enableBookmarkList();
+        } else {
+            configuration.disableBookmarkList();
+        }
+    }
+
+    private void configureEnableDocumentEditor(boolean enableDocumentEditor) {
+        if (enableDocumentEditor) {
+            configuration.enableDocumentEditor();
+        } else {
+            configuration.disableDocumentEditor();
+        }
     }
 
     private void configureDocumentInfoView(boolean enableDocumentInfoView) {
