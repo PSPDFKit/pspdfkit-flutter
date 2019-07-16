@@ -89,15 +89,18 @@
         builder.pageTransition = [dictionary[@"scrollContinuously"] boolValue] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
         builder.spreadFitting = [dictionary[@"fitPageToWidth"] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
         builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
-        builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
-        builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
 
+        if (dictionary[@"showPageLabels"]) {
+            builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        }
+        if (dictionary[@"showDocumentTitle"]) {
+            builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
+        }
         if (dictionary[@"allowToolbarTitleChange"]) {
             builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
         }
-
         if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
             builder.editableAnnotationTypes = nil;
         }
