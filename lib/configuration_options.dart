@@ -48,7 +48,7 @@ const String showPageNumberOverlay = "showPageNumberOverlay";
 
 const String showPageLabels = "showPageLabels";
 
-const String showDocumentTitle = "showDocumentTitle";
+const String showDocumentLabel = "showDocumentLabel";
 
 const String invertColors = "invertColors";
 

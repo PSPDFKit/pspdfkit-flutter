@@ -95,8 +95,8 @@
         if (dictionary[@"showPageLabels"]) {
             builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
         }
-        if (dictionary[@"showDocumentTitle"]) {
-            builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
+        if (dictionary[@"showDocumentLabel"]) {
+            builder.documentLabelEnabled = [dictionary[@"showDocumentLabel"] boolValue];
         }
         if (dictionary[@"allowToolbarTitleChange"]) {
             builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
