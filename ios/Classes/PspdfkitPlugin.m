@@ -213,17 +213,13 @@
 }
 
 - (void)setToolbarTitle:(NSString *)toolbarTitle {
-    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return;
-    }
-    NSString *title = dictionary[@"toolbarTitle"];
     // Early return if the toolbar title is not explicitly set in the configuration dictionary.
-    if (!title) {
+    if (!toolbarTitle) {
         return;
     }
 
     // We allow setting a null title.
-    self.pdfViewController.title = (id)title == NSNull.null ? nil : title;
+    self.pdfViewController.title = (id)toolbarTitle == NSNull.null ? nil : toolbarTitle;
 }
 
 - (BOOL)isImageDocument:(NSString*)path {
