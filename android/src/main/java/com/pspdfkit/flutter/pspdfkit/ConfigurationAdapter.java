@@ -52,7 +52,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
-    private static final String SHOW_DOCUMENT_TITLE = "showDocumentTitle";
+    private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
     private static final String INVERT_COLORS = "invertColors";
     private static final String GRAY_SCALE = "grayScale";
     private static final String START_PAGE = "startPage";
@@ -117,8 +117,8 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, SHOW_PAGE_LABELS, Boolean.class)) {
                 configureShowPageLabels((Boolean) configurationMap.get(SHOW_PAGE_LABELS));
             }
-            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_TITLE, Boolean.class)) {
-                configureShowDocumentTitle((Boolean) configurationMap.get(SHOW_DOCUMENT_TITLE));
+            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_LABEL, Boolean.class)) {
+                configureShowDocumentLabel((Boolean) configurationMap.get(SHOW_DOCUMENT_LABEL));
             }
             if (containsKeyOfType(configurationMap, GRAY_SCALE, Boolean.class)) {
                 configureGrayScale((Boolean) configurationMap.get(GRAY_SCALE));
@@ -270,8 +270,8 @@ class ConfigurationAdapter {
         }
     }
 
-    private void configureShowDocumentTitle(boolean showDocumentTitle) {
-        if (showDocumentTitle) {
+    private void configureShowDocumentLabel(boolean showDocumentLabel) {
+        if (showDocumentLabel) {
             configuration.showDocumentTitleOverlay();
         } else {
             configuration.hideDocumentTitleOverlay();
