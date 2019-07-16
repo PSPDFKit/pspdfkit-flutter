@@ -44,7 +44,7 @@
         self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
         [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
         [self setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"]];
-        [self setToolbarTitle:configurationDictionary];
+        [self setToolbarTitle:configurationDictionary[@"toolbarTitle"]];
 
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
