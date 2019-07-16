@@ -44,6 +44,7 @@
         self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
         [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
         [self setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"]];
+        [self setToolbarTitle:configurationDictionary];
 
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
@@ -92,8 +93,11 @@
         builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
-        builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
-        
+
+        if (dictionary[@"allowToolbarTitleChange"]) {
+            builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
+        }
+
         if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
             builder.editableAnnotationTypes = nil;
         }
@@ -203,6 +207,20 @@
         return 0;
     }
     return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
+}
+
+- (void)setToolbarTitle:(NSDictionary *)dictionary {
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
+        return;
+    }
+    NSString *title = dictionary[@"toolbarTitle"];
+    // Early return if the toolbar title is not explicitly set in the configuration dictionary.
+    if (!title) {
+        return;
+    }
+
+    // We allow setting a null title.
+    self.pdfViewController.title = (id)title == NSNull.null ? nil : title;
 }
 
 - (BOOL)isImageDocument:(NSString*)path {

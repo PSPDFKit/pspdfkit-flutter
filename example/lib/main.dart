@@ -140,7 +140,8 @@ class _MyAppState extends State<MyApp> {
         androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
         iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
         iOSLeftBarButtonItems:['settingsButtonItem'],
-        iOSAllowToolbarTitleChange: false
+		iOSAllowToolbarTitleChange: false,
+		toolbarTitle: 'Custom Title'
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
