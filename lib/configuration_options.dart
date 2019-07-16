@@ -48,7 +48,7 @@ const String showPageNumberOverlay = "showPageNumberOverlay";
 
 const String showPageLabels = "showPageLabels";
 
-const String showDocumentTitle = "showDocumentTitle";
+const String showDocumentLabel = "showDocumentLabel";
 
 const String invertColors = "invertColors";
 
@@ -83,3 +83,7 @@ const String password = "password";
 
 const String iOSLeftBarButtonItems = "leftBarButtonItems";
 const String iOSRightBarButtonItems = "rightBarButtonItems";
+
+const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
+
+const String toolbarTitle = "toolbarTitle";

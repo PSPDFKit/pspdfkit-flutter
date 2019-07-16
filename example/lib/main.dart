@@ -125,7 +125,7 @@ class _MyAppState extends State<MyApp> {
         androidShowAnnotationListAction: true,
         showPageNumberOverlay: false,
         showPageLabels: true,
-        showDocumentTitle: false,
+        showDocumentLabel: false,
         invertColors: false,
         grayScale: false,
         startPage: 2,
@@ -139,7 +139,9 @@ class _MyAppState extends State<MyApp> {
         appearanceMode: appearanceModeDefault,
         androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
         iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
-        iOSLeftBarButtonItems:['settingsButtonItem']
+        iOSLeftBarButtonItems:['settingsButtonItem'],
+        iOSAllowToolbarTitleChange: false,
+        toolbarTitle: null
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
