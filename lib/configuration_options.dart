@@ -83,3 +83,5 @@ const String password = "password";
 
 const String iOSLeftBarButtonItems = "leftBarButtonItems";
 const String iOSRightBarButtonItems = "rightBarButtonItems";
+
+const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";

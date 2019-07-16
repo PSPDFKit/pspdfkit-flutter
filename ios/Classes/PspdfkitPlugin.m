@@ -92,7 +92,8 @@
         builder.documentLabelEnabled = [dictionary[@"showDocumentTitle"] boolValue];
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
-
+        builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
+        
         if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
             builder.editableAnnotationTypes = nil;
         }
