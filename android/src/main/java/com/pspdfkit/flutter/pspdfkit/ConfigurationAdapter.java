@@ -53,6 +53,7 @@ class ConfigurationAdapter {
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
     private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
+    private static final String TOOLBAR_TITLE = "toolbarTitle";
     private static final String INVERT_COLORS = "invertColors";
     private static final String GRAY_SCALE = "grayScale";
     private static final String START_PAGE = "startPage";
@@ -119,6 +120,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_LABEL, Boolean.class)) {
                 configureShowDocumentLabel((Boolean) configurationMap.get(SHOW_DOCUMENT_LABEL));
+            }
+            if (containsKeyOfType(configurationMap, TOOLBAR_TITLE, String.class)) {
+                configureToolbarTitle((String) configurationMap.get(TOOLBAR_TITLE));
             }
             if (containsKeyOfType(configurationMap, GRAY_SCALE, Boolean.class)) {
                 configureGrayScale((Boolean) configurationMap.get(GRAY_SCALE));
@@ -276,6 +280,10 @@ class ConfigurationAdapter {
         } else {
             configuration.hideDocumentTitleOverlay();
         }
+    }
+
+    private void configureToolbarTitle(@Nullable String toolbarTitle) {
+        configuration.title(toolbarTitle);
     }
 
     private void configureGrayScale(boolean grayScale) {
