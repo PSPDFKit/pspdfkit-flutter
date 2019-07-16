@@ -212,7 +212,7 @@
     return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
 }
 
-- (void)setToolbarTitle:(NSDictionary *)dictionary {
+- (void)setToolbarTitle:(NSString *)toolbarTitle {
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
         return;
     }
