@@ -42,9 +42,12 @@
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
         self.pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
-        [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
-        [self setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"]];
-        [self setToolbarTitle:configurationDictionary[@"toolbarTitle"]];
+        
+        if ((id)configurationDictionary != NSNull.null) {
+            [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
+            [self setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"]];
+            [self setToolbarTitle:configurationDictionary[@"toolbarTitle"]];
+        }
 
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
