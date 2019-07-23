@@ -141,7 +141,10 @@ class _MyAppState extends State<MyApp> {
         iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
         iOSLeftBarButtonItems:['settingsButtonItem'],
         iOSAllowToolbarTitleChange: false,
-        toolbarTitle: 'Custom Title'
+        toolbarTitle: 'Custom Title',
+        showBackActionButton: false,
+        showForwardActionButton: false,
+        showBackForwardActionButtonLabels: false
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
