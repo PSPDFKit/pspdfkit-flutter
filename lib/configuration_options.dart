@@ -88,6 +88,5 @@ const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
 
 const String toolbarTitle = "toolbarTitle";
 
-const String showBackActionButton = "showBackActionButton";
-const String showForwardActionButton = "showForwardActionButton";
-const String showBackForwardActionButtonLabels = "showBackForwardActionButtonLabels";
+const String showActionNavigationButtons = "showActionNavigationButtons";
+const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";

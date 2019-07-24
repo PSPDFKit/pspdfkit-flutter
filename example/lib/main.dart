@@ -142,9 +142,8 @@ class _MyAppState extends State<MyApp> {
         iOSLeftBarButtonItems:['settingsButtonItem'],
         iOSAllowToolbarTitleChange: false,
         toolbarTitle: 'Custom Title',
-        showBackActionButton: false,
-        showForwardActionButton: false,
-        showBackForwardActionButtonLabels: false
+        showActionNavigationButtons: false,
+        iOSShowActionNavigationButtonLabels: false
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");

@@ -110,14 +110,12 @@
         if (dictionary[@"enableTextSelection"]) {
             builder.textSelectionEnabled = [dictionary[@"enableTextSelection"] boolValue];
         }
-        if (dictionary[@"showBackActionButton"]) {
-            builder.showBackActionButton = [dictionary[@"showBackActionButton"] boolValue];
+        if (dictionary[@"showActionNavigationButtons"]) {
+            builder.showBackActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
+            builder.showForwardActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
         }
-        if (dictionary[@"showForwardActionButton"]) {
-            builder.showForwardActionButton = [dictionary[@"showForwardActionButton"] boolValue];
-        }
-        if (dictionary[@"showBackForwardActionButtonLabels"]) {
-            builder.showBackForwardActionButtonLabels = [dictionary[@"showBackForwardActionButtonLabels"] boolValue];
+        if (dictionary[@"iOSShowActionNavigationButtonLabels"]) {
+            builder.showBackForwardActionButtonLabels = [dictionary[@"iOSShowActionNavigationButtonLabels"] boolValue];
         }
     }];
 }
