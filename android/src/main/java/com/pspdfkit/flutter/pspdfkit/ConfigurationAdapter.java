@@ -11,6 +11,10 @@ package com.pspdfkit.flutter.pspdfkit;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StyleRes;
+
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.configuration.activity.ThumbnailBarMode;
 import com.pspdfkit.configuration.activity.UserInterfaceViewMode;
@@ -22,10 +26,6 @@ import com.pspdfkit.configuration.theming.ThemeMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StyleRes;
 
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
@@ -70,6 +70,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
     private static final String PASSWORD = "password";
+    private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
 
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
@@ -162,6 +163,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, ANDROID_DEFAULT_THEME_RESOURCE, String.class)) {
                 configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
+            }
+            if (containsKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class)) {
+                configureShowNavigationButtons((Boolean) configurationMap.get(SHOW_ACTION_NAVIGATION_BUTTONS));
             }
             if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
                 this.password = ((String) configurationMap.get(PASSWORD));
@@ -367,6 +371,14 @@ class ConfigurationAdapter {
         @StyleRes int defaultThemeId = getStyleResourceId(defaultThemeResource, context);
         if (defaultThemeId != 0) {
             configuration.theme(defaultThemeId);
+        }
+    }
+
+    private void configureShowNavigationButtons(boolean showNavigationButtons) {
+        if (showNavigationButtons) {
+            configuration.showNavigationButtons();
+        } else {
+            configuration.hideNavigationButtons();
         }
     }
 
