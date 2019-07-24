@@ -87,3 +87,5 @@ const String iOSRightBarButtonItems = "rightBarButtonItems";
 const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
 
 const String toolbarTitle = "toolbarTitle";
+
+const String androidSettingsMenuItems = "settingsMenuItems";

@@ -11,21 +11,23 @@ package com.pspdfkit.flutter.pspdfkit;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StyleRes;
+
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.configuration.activity.ThumbnailBarMode;
 import com.pspdfkit.configuration.activity.UserInterfaceViewMode;
 import com.pspdfkit.configuration.page.PageFitMode;
 import com.pspdfkit.configuration.page.PageScrollDirection;
 import com.pspdfkit.configuration.page.PageScrollMode;
+import com.pspdfkit.configuration.settings.SettingsMenuItemType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StyleRes;
 
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
@@ -70,6 +72,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
     private static final String PASSWORD = "password";
+    private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
 
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
@@ -162,6 +165,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, ANDROID_DEFAULT_THEME_RESOURCE, String.class)) {
                 configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
+            }
+            if (containsKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class)) {
+                configureSettingsMenuItems((ArrayList<String>) configurationMap.get(SETTINGS_MENU_ITEMS));
             }
             if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
                 this.password = ((String) configurationMap.get(PASSWORD));
@@ -376,6 +382,26 @@ class ConfigurationAdapter {
             Log.e(LOG_TAG, String.format("Style resource not found for %s", styleName));
         }
         return resourceId;
+    }
+
+    private void configureSettingsMenuItems(ArrayList<String> settingsMenuItems) {
+        EnumSet<SettingsMenuItemType> settingsMenuItemTypes = EnumSet.noneOf(SettingsMenuItemType.class);
+        for (String menuType : settingsMenuItems) {
+            if (menuType.equalsIgnoreCase("theme")) {
+                settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
+            } else if (menuType.equalsIgnoreCase("screenAwake")) {
+                settingsMenuItemTypes.add(SettingsMenuItemType.SCREEN_AWAKE);
+            } else if (menuType.equalsIgnoreCase("pageLayout")) {
+                settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_LAYOUT);
+            } else if (menuType.equalsIgnoreCase("pageTransition")) {
+                settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_TRANSITION);
+            } else if (menuType.equalsIgnoreCase("scrollDirection")) {
+                settingsMenuItemTypes.add(SettingsMenuItemType.SCROLL_DIRECTION);
+            } else {
+                throw new IllegalArgumentException("Provided settingMenuItem " + menuType + " is unknown.");
+            }
+        }
+        configuration.setSettingsMenuItems(settingsMenuItemTypes);
     }
 
     private <T> boolean containsKeyOfType(HashMap<String, Object> configurationMap, String key, Class<T> clazz) {
