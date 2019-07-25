@@ -143,6 +143,8 @@ class _MyAppState extends State<MyApp> {
         iOSAllowToolbarTitleChange: false,
         toolbarTitle: 'Custom Title',
         androidSettingsMenuItems:['theme', 'scrolldirection'],
+        showActionNavigationButtons: false,
+        iOSShowActionNavigationButtonLabels: false
       });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");

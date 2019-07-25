@@ -73,6 +73,7 @@ class ConfigurationAdapter {
     private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
     private static final String PASSWORD = "password";
     private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
+    private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
 
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
@@ -168,6 +169,9 @@ class ConfigurationAdapter {
             }
             if (containsKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class)) {
                 configureSettingsMenuItems((ArrayList<String>) configurationMap.get(SETTINGS_MENU_ITEMS));
+            }
+            if (containsKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class)) {
+                configureShowNavigationButtons((Boolean) configurationMap.get(SHOW_ACTION_NAVIGATION_BUTTONS));
             }
             if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
                 this.password = ((String) configurationMap.get(PASSWORD));
@@ -373,6 +377,14 @@ class ConfigurationAdapter {
         @StyleRes int defaultThemeId = getStyleResourceId(defaultThemeResource, context);
         if (defaultThemeId != 0) {
             configuration.theme(defaultThemeId);
+        }
+    }
+
+    private void configureShowNavigationButtons(boolean showNavigationButtons) {
+        if (showNavigationButtons) {
+            configuration.showNavigationButtons();
+        } else {
+            configuration.hideNavigationButtons();
         }
     }
 
