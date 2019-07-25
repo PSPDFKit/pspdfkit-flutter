@@ -87,3 +87,6 @@ const String iOSRightBarButtonItems = "rightBarButtonItems";
 const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
 
 const String toolbarTitle = "toolbarTitle";
+
+const String showActionNavigationButtons = "showActionNavigationButtons";
+const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";

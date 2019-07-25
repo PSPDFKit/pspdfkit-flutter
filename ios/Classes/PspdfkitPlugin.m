@@ -110,6 +110,13 @@
         if (dictionary[@"enableTextSelection"]) {
             builder.textSelectionEnabled = [dictionary[@"enableTextSelection"] boolValue];
         }
+        if (dictionary[@"showActionNavigationButtons"]) {
+            builder.showBackActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
+            builder.showForwardActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
+        }
+        if (dictionary[@"iOSShowActionNavigationButtonLabels"]) {
+            builder.showBackForwardActionButtonLabels = [dictionary[@"iOSShowActionNavigationButtonLabels"] boolValue];
+        }
     }];
 }
 
