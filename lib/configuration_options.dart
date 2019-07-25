@@ -88,5 +88,7 @@ const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
 
 const String toolbarTitle = "toolbarTitle";
 
+const String androidSettingsMenuItems = "settingsMenuItems";
+
 const String showActionNavigationButtons = "showActionNavigationButtons";
 const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";

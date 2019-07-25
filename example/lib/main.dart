@@ -142,6 +142,7 @@ class _MyAppState extends State<MyApp> {
         iOSLeftBarButtonItems:['settingsButtonItem'],
         iOSAllowToolbarTitleChange: false,
         toolbarTitle: 'Custom Title',
+        androidSettingsMenuItems:['theme', 'scrolldirection'],
         showActionNavigationButtons: false,
         iOSShowActionNavigationButtonLabels: false
       });
