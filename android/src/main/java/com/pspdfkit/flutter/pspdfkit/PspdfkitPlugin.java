@@ -72,7 +72,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
                 PSPDFKit.initialize(context, licenseKey);
-                break;    
+                break;
             case "present":
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
@@ -183,7 +183,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         Log.i(LOG_TAG, "Requesting permission status: " + status);
         Result result = this.result;
         this.result = null;
-        if(result != null) {
+        if (result != null) {
             result.success(status);
         }
         return status == 2;
