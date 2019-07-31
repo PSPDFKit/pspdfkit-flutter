@@ -8,6 +8,11 @@
 ///
 part of pspdfkit;
 
+/// Permission status enumeration used only by Android platform.
+///
+/// Used in the [Pspdfkit] class by [Pspdfkit.checkAndroidWriteExternalStoragePermission]
+/// and [Pspdfkit.requestAndroidWriteExternalStoragePermission] for handling access
+/// to external storage.
 enum AndroidPermissionStatus {
   notDetermined,
   denied,
