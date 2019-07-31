@@ -11,8 +11,8 @@ library pspdfkit;
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'simple_permissions.dart';
 
+part 'android_permission_status.dart';
 part 'configuration_options.dart';
 
 class Pspdfkit {
@@ -30,12 +30,40 @@ class Pspdfkit {
         <String, dynamic>{'document': document, 'configuration': configuration}
         );
 
-  static Future<bool> checkWriteExternalStoragePermission() =>
-    SimplePermissions.checkPermission(Permission.WriteExternalStorage);
+  static Future<bool> checkAndroidWriteExternalStoragePermission() async {
+    final bool isGranted = await _channel.invokeMethod(
+        "checkPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+    return isGranted;
+  }
 
-  static Future<PermissionStatus> requestWriteExternalStoragePermission() =>
-    SimplePermissions.requestPermission(Permission.WriteExternalStorage);
+  static Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
+    final status = await _channel.invokeMethod(
+        "requestPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+
+    return status is int
+        ? intToAndroidPermissionStatus(status)
+        : status is bool
+        ? (status ? AndroidPermissionStatus.authorized : AndroidPermissionStatus.denied)
+        : AndroidPermissionStatus.notDetermined;
+  }
+
+  static AndroidPermissionStatus intToAndroidPermissionStatus(int status) {
+    switch (status) {
+      case 0:
+        return AndroidPermissionStatus.notDetermined;
+      case 1:
+        return AndroidPermissionStatus.denied;
+      case 2:
+        return AndroidPermissionStatus.authorized;
+      case 3:
+        return AndroidPermissionStatus.deniedNeverAsk;
+      default:
+        return AndroidPermissionStatus.notDetermined;
+    }
+  }
     
-  static Future<bool> openSettings() =>
-    SimplePermissions.openSettings();
+  static Future<bool> openAndroidSettings() async {
+    final bool isOpen = await _channel.invokeMethod("openSettings");
+    return isOpen;
+  }
 }
