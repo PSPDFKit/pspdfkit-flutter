@@ -36,10 +36,10 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty;
 
 /**
- * Pspdfkit Plugin.
+ * PSPDFKit plugin to load PDF and image documents.
  */
 public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
-    private static final String LOG_TAG = "PspdfkitPlugin";
+    private static final String LOG_TAG = "PSPDFKitPlugin";
     private static final String FILE_SCHEME = "file:///";
     private final Context context;
     private final Registrar registrar;
@@ -171,7 +171,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 status = 1;
             } else {
                 if (ActivityCompat.checkSelfPermission(registrar.context(), permission) == PackageManager.PERMISSION_GRANTED) {
-                    // Permission allowed
+                    // Permission allowed.
                     status = 2;
                 } else {
                     // Set to never ask again.
