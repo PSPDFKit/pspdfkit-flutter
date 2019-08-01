@@ -32,7 +32,7 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 ```local.properties
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_PASSWORD_GOES_HERE
+pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
 flutter.buildMode=debug
 ```
 
@@ -370,3 +370,35 @@ showDocument() async {
 # Contributing
 
 Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
+
+# Troubleshooting
+
+## Flutter updates
+
+To update Flutter to the latest version, all you have to do is run `flutter upgrade`.
+
+## Flutter configuration problems
+
+Among the tools provided by Flutter, there is `flutter doctor`, a very handy program that checks your system configuration for you and provides step-by-step actions to take in case of problems.
+
+![Flutter doctor example](screenshots/flutter-doctor.png)
+
+The verbose mode of flutter doctor is even more helpful; it prints out extensive information about the nature of an issue and how to fix it. To run the verbose mode, all you have to do is type `flutter doctor -d`.
+
+### CocoaPods conflicts with asdf
+
+If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneusly suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
+
+## Error when running on Android: cannot find symbol `PSPDFKit`
+
+Verify that your Maven key has been correctly inserted in your `myapp/android/local.properties`
+
+```local.properties
+sdk.dir=/path/to/your/Android/sdk
+flutter.sdk=/path/to/your/flutter/sdk
+pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
+flutter.buildMode=debug
+```
+
+Make sure that the Maven key has not been confused with the license key. The Maven key is generally shorter and for demo license it starts with `TRIAL-`.
+
