@@ -11,31 +11,66 @@ library pspdfkit;
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'simple_permissions.dart';
 
+part 'android_permission_status.dart';
 part 'configuration_options.dart';
 
+/// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
   static const MethodChannel _channel = const MethodChannel('pspdfkit');
 
+  /// Gets the PSPDFKit framework version.
   static Future<dynamic> get frameworkVersion =>
       _channel.invokeMethod('frameworkVersion');
 
+  /// Sets the license key.
   static Future<void> setLicenseKey(String licenseKey) =>
     _channel.invokeMethod('setLicenseKey', <String, dynamic>{'licenseKey': licenseKey});
 
+  /// Loads a [document] with a supported format using a given [configuration].
   static Future<void> present(String document, [dynamic configuration]) =>
     _channel.invokeMethod(
         'present',
         <String, dynamic>{'document': document, 'configuration': configuration}
         );
 
-  static Future<bool> checkWriteExternalStoragePermission() =>
-    SimplePermissions.checkPermission(Permission.WriteExternalStorage);
+  /// Checks the external storage permission for writing on Android only.
+  static Future<bool> checkAndroidWriteExternalStoragePermission() async {
+    final bool isGranted = await _channel.invokeMethod(
+        "checkPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+    return isGranted;
+  }
 
-  static Future<PermissionStatus> requestWriteExternalStoragePermission() =>
-    SimplePermissions.requestPermission(Permission.WriteExternalStorage);
-    
-  static Future<bool> openSettings() =>
-    SimplePermissions.openSettings();
+  /// Requests the external storage permission for writing on Android only.
+  static Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
+    final status = await _channel.invokeMethod(
+        "requestPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+
+    return status is int
+        ? _intToAndroidPermissionStatus(status)
+        : status is bool
+        ? (status ? AndroidPermissionStatus.authorized : AndroidPermissionStatus.denied)
+        : AndroidPermissionStatus.notDetermined;
+  }
+
+  /// Opens the Android settings.
+  static Future<bool> openAndroidSettings() async {
+    final bool isOpen = await _channel.invokeMethod("openSettings");
+    return isOpen;
+  }
+
+  static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
+    switch (status) {
+      case 0:
+        return AndroidPermissionStatus.notDetermined;
+      case 1:
+        return AndroidPermissionStatus.denied;
+      case 2:
+        return AndroidPermissionStatus.authorized;
+      case 3:
+        return AndroidPermissionStatus.deniedNeverAsk;
+      default:
+        return AndroidPermissionStatus.notDetermined;
+    }
+  }
 }

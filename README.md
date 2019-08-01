@@ -82,7 +82,6 @@ android {
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/simple_permissions.dart';
 
 void main() => runApp(new MyApp());
 
@@ -94,20 +93,20 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  present() {
+  void present() {
     Pspdfkit.present("file:///sdcard/document.pdf");
   }
 
-  showDocument(BuildContext context) async {
+  void showDocument(BuildContext context) async {
     try {
-      if (await Pspdfkit.checkWriteExternalStoragePermission()) {
+      if (await Pspdfkit.checkAndroidWriteExternalStoragePermission()) {
         present();
       } else {
-        PermissionStatus permissionStatus =
-            await Pspdfkit.requestWriteExternalStoragePermission();
-        if (permissionStatus == PermissionStatus.authorized) {
+        AndroidPermissionStatus permissionStatus =
+        await Pspdfkit.requestAndroidWriteExternalStoragePermission();
+        if (permissionStatus == AndroidPermissionStatus.authorized) {
           present();
-        } else if (permissionStatus == PermissionStatus.deniedNeverAsk) {
+        } else if (permissionStatus == AndroidPermissionStatus.deniedNeverAsk) {
           _showToast(context);
         }
       }
@@ -123,7 +122,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  initPlatformState() async {
+  void initPlatformState() async {
     String frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
@@ -145,12 +144,12 @@ class _MyAppState extends State<MyApp> {
     Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
   }
 
-  _openSettings(ScaffoldState scaffold) {
+  void _openSettings(ScaffoldState scaffold) {
     scaffold.hideCurrentSnackBar();
-    Pspdfkit.openSettings();
+    Pspdfkit.openAndroidSettings();
   }
 
-  _showToast(BuildContext context) {
+  void _showToast(BuildContext context) {
     final scaffold = Scaffold.of(context);
     scaffold.showSnackBar(
       SnackBar(
@@ -179,15 +178,15 @@ class _MyAppState extends State<MyApp> {
                   child: new Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                    new Text('PSPDFKit for $_frameworkVersion\n',
-                        style: themeData.textTheme.display1
-                            .copyWith(fontSize: 21.0)),
-                    new RaisedButton(
-                        child: new Text('Tap to Open Document',
+                        new Text('PSPDFKit for $_frameworkVersion\n',
                             style: themeData.textTheme.display1
                                 .copyWith(fontSize: 21.0)),
-                        onPressed: () => showDocument(context))
-                  ]));
+                        new RaisedButton(
+                            child: new Text('Tap to Open Document',
+                                style: themeData.textTheme.display1
+                                    .copyWith(fontSize: 21.0)),
+                            onPressed: () => showDocument(context))
+                      ]));
             },
           )),
     );
@@ -272,7 +271,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
-  showDocument() async {
+  void showDocument() async {
     try {
       final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
       final Uint8List list = bytes.buffer.asUint8List();
@@ -282,7 +281,7 @@ class _MyAppState extends State<MyApp> {
 
       final file = await new File(tempDocumentPath).create(recursive: true);
       file.writeAsBytesSync(list);
-    
+
       Pspdfkit.present(tempDocumentPath);
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
@@ -295,12 +294,12 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  frameworkVersion() {
+  String frameworkVersion() {
     return '$PSPDFKIT_FOR $_frameworkVersion\n';
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  initPlatformState() async {
+  void initPlatformState() async {
     String frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
@@ -317,34 +316,34 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _frameworkVersion = frameworkVersion;
     });
-    
-    // Replace 
+
+    // Replace
     Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
-      return new CupertinoApp(
-        home: new CupertinoPageScaffold(
-          navigationBar: CupertinoNavigationBar(
-              middle: Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE,
-              style: themeData.textTheme.title
-              )
-          ),
-          child: new Center(
-              child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    new Text(frameworkVersion(),
-                        style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
-                    new CupertinoButton(
-                        child: new Text(OPEN_DOCUMENT_BUTTON),
-                        onPressed: showDocument)
-                  ])),
-              ),
-          );
-      }
+    return new CupertinoApp(
+      home: new CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+            middle: Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE,
+                style: themeData.textTheme.title
+            )
+        ),
+        child: new Center(
+            child: new Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  new Text(frameworkVersion(),
+                      style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
+                  new CupertinoButton(
+                      child: new Text(OPEN_DOCUMENT_BUTTON),
+                      onPressed: showDocument)
+                ])),
+      ),
+    );
+  }
 }
 ```
 
