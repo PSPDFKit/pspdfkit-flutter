@@ -400,5 +400,5 @@ pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
 flutter.buildMode=debug
 ```
 
-Make sure that the Maven key has not been confused with the license key. The Maven key is generally shorter and for demo license it starts with `TRIAL-`.
+Make sure that the Maven key has not been confused with the license key. The Maven key is generally shorter and for demo licenses it starts with `TRIAL-`.
 
