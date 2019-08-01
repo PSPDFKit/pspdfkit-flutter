@@ -21,6 +21,7 @@ import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.ui.PdfActivity;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -43,11 +44,13 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     private static final String FILE_SCHEME = "file:///";
     private final Context context;
     private final Registrar registrar;
-    private Result result;
+    /** Atomic reference that prevents sending twice the permission result and throw exception. */
+    private AtomicReference<Result> permissionRequestResult;
 
     public PspdfkitPlugin(Registrar registrar) {
         this.context = registrar.activeContext();
         this.registrar = registrar;
+        this.permissionRequestResult = new AtomicReference<>();
     }
 
     /**
@@ -61,7 +64,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     }
 
     @Override
-    public void onMethodCall(MethodCall call, Result result) {
+    public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         String permission;
 
         switch (call.method) {
@@ -98,7 +101,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 break;
             case "requestPermission":
                 permission = call.argument("permission");
-                this.result = result;
+                this.permissionRequestResult.set(result);
                 requestPermission(permission);
                 break;
             case "openSettings":
@@ -163,6 +166,8 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
 
     @Override
     public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (permissions.length == 0) return false;
+
         int status = 0;
         String permission = permissions[0];
         if (requestCode == 0 && grantResults.length > 0) {
@@ -181,8 +186,8 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             }
         }
         Log.i(LOG_TAG, "Requesting permission status: " + status);
-        Result result = this.result;
-        this.result = null;
+
+        Result result = permissionRequestResult.getAndSet(null);
         if (result != null) {
             result.success(status);
         }
