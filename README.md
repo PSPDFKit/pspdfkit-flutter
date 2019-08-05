@@ -226,7 +226,13 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
 6. Make sure the `iOS Deployment Target` is set to 11.0 or higher. 
+
+![iOS Deployment Target](screenshots/ios-deployment-target.png)
+
 7. Change "View controller-based status bar appearance" to YES in `Info.plist`.
+
+![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
+
 8. Run `flutter packages get` to install the packages.
 9. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
 
