@@ -30,6 +30,13 @@
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
         [PSPDFKit setLicenseKey:licenseKey];
+    } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
+        NSString *value = call.arguments[@"value"];
+        NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
+        [self setFormFieldValue:value forFieldWithFullyQualifiedName:fullyQualifiedName];
+    } else if ([@"getFormFieldValue" isEqualToString:call.method]) {
+        NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
+        result([self getFormFieldValueForFieldWithFullyQualifiedName:fullyQualifiedName]);
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
         NSAssert(documentPath != nil, @"Document path may not be nil.");
@@ -151,6 +158,53 @@
     }
 
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
+}
+
+
+#pragma mark - Forms
+
+- (void)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
+    if (fullyQualifiedName.length == 0) {
+        return;
+    }
+
+    PSPDFDocument *document = self.pdfViewController.document;
+    for (PSPDFFormElement *formElement in document.formParser.forms) {
+        if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
+            if ([formElement isKindOfClass:PSPDFButtonFormElement.class]) {
+                if ([value isEqualToString:@"selected"]) {
+                    [(PSPDFButtonFormElement *)formElement select];
+                } else if ([value isEqualToString:@"deselected"]) {
+                    [(PSPDFButtonFormElement *)formElement deselect];
+                }
+            } else if ([formElement isKindOfClass:PSPDFChoiceFormElement.class]) {
+                ((PSPDFChoiceFormElement *)formElement).selectedIndices = [NSIndexSet indexSetWithIndex:value.integerValue];
+            } else if ([formElement isKindOfClass:PSPDFTextFieldFormElement.class]) {
+                formElement.contents = value;
+            } else if ([formElement isKindOfClass:PSPDFSignatureFormElement.class]) {
+                NSLog(@"Signature form elements are not supported.");
+            } else {
+                NSLog(@"Unsupported form element.");
+            }
+            break;
+        }
+    }
+}
+
+- (id)getFormFieldValueForFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
+    if (fullyQualifiedName.length == 0) {
+        return nil;
+    }
+
+    PSPDFDocument *document = self.pdfViewController.document;
+    id formFieldValue = nil;
+    for (PSPDFFormElement *formElement in document.formParser.forms) {
+        if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
+            formFieldValue = formElement.value;
+            break;
+        }
+    }
+    return formFieldValue;
 }
 
 

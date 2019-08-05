@@ -34,6 +34,14 @@ class Pspdfkit {
         <String, dynamic>{'document': document, 'configuration': configuration}
         );
 
+  /// Sets the value of a form field by specifying its fully qualified field name.
+  static Future<void> setFormFieldValue(String value, String fullyQualifiedName) =>
+    _channel.invokeMethod('setFormFieldValue', <String, dynamic>{'value': value, 'fullyQualifiedName': fullyQualifiedName});
+
+  /// Gets the form field value by specifying its fully qualified name.
+  static Future<dynamic> getFormFieldValue(String fullyQualifiedName) =>
+    _channel.invokeMethod('getFormFieldValue', <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
+
   /// Checks the external storage permission for writing on Android only.
   static Future<bool> checkAndroidWriteExternalStoragePermission() async {
     final bool isGranted = await _channel.invokeMethod(

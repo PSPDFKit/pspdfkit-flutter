@@ -18,6 +18,7 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 const String _documentPath = 'PDFs/Guide_v4.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit Image Example.jpg';
+const String _formPath = 'PDFs/Form_example.pdf';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
@@ -29,6 +30,8 @@ const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
+const String _formExample = 'Form Document Example';
+const String _formExampleSub = 'Programmatically set and get the value of a form field.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -170,6 +173,42 @@ class _MyAppState extends State<MyApp> {
       print("Failed to open document: '${e.message}'.");
     }
   }
+
+  void showFormDocumentExample() async {
+    try {
+      final ByteData bytes =
+          await DefaultAssetBundle.of(context).load(_formPath);
+      final Uint8List list = bytes.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final tempDocumentPath = '${tempDir.path}/$_formPath';
+
+      final file = await File(tempDocumentPath).create(recursive: true);
+      file.writeAsBytesSync(list);
+
+      Pspdfkit.present(tempDocumentPath);
+
+      Pspdfkit.setFormFieldValue("Lastname", "Name_Last");
+      Pspdfkit.setFormFieldValue("0123456789", "Telephone_Home");
+      Pspdfkit.setFormFieldValue("City", "City");
+      Pspdfkit.setFormFieldValue("selected", "Sex.0");
+      Pspdfkit.setFormFieldValue("deselected", "Sex.1");
+      Pspdfkit.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+
+      String lastName;
+      // Platform messages may fail, so we use a try/catch PlatformException.
+      try {
+        lastName = (await Pspdfkit.getFormFieldValue("Name_Last")) as String;
+      } on PlatformException {
+        lastName = 'Failed to get last name.';
+      }
+
+      print(lastName);
+
+    } on PlatformException catch (e) {
+      print("Failed to open document: '${e.message}'.");
+    }
+  }
   
   @override
   initState() {
@@ -266,6 +305,17 @@ class _MyAppState extends State<MyApp> {
               ])),
         ),
         Divider(),
+        GestureDetector(
+          onTap: showFormDocumentExample,
+          child: Container(
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+
+                Text(_formExample, style: title),
+                Text(_formExampleSub, style: subhead)
+              ])),
+        ),
+        Divider()
       ];
       return CupertinoApp(
           home: CupertinoPageScaffold(
@@ -301,6 +351,11 @@ class _MyAppState extends State<MyApp> {
             title: Text(_passwordProtectedDocument),
             subtitle: Text(_passwordProtectedDocumentSub),
             onTap: () => unlockPasswordProtectedDocument()),
+        Divider(),
+        ListTile(
+            title: Text(_formExample),
+            subtitle: Text(_formExampleSub),
+            onTap: () => showFormDocumentExample()),
         Divider(),
       ];
       return MaterialApp(
