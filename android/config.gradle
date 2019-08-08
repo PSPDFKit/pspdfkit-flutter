@@ -34,6 +34,11 @@ if (pspdfkitPassword == null || pspdfkitPassword == '') {
     throw new GradleException("PSPDFKit password was not specified. The password is required to download the PSPDFKit AAR file into your project. Please specify as pspdfkit.password inside the local.properties file.")
 }
 
+ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
+if (pspdfkitVersion == null || pspdfkitVersion == '') {
+    ext.pspdfkitVersion = '5.5.0'
+}
+
 def pspdfkitIsDemo = localProperties.getProperty('pspdfkit.demo')
 if (pspdfkitIsDemo == null) {
     pspdfkitIsDemo = pspdfkitPassword.startsWith('TRIAL-')
@@ -41,11 +46,7 @@ if (pspdfkitIsDemo == null) {
     pspdfkitIsDemo = Boolean.parseBoolean(pspdfkitIsDemo)
 }
 
-ext.pspdfkitMavenModuleName = pspdfkitIsDemo ? 'pspdfkit-demo' : 'pspdfkit'
-ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
-if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '5.5.0'
-}
+ext.pspdfkitMavenModuleName = (pspdfkitIsDemo && !useUnifiedBinaries(ext.pspdfkitVersion)) ? 'pspdfkit-demo' : 'pspdfkit'
 
 ext.pspdfkitFlutterVersion = '1.0.0-SNAPSHOT'
 
@@ -54,3 +55,19 @@ ext.androidBuildToolsVersion = '28.0.3'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 28
 ext.androidGradlePluginVersion = '3.4.2'
+
+// Returns true when version1 is more recent than or equals to version2.
+boolean isMoreRecentOrEqual(String version1, String version2) {
+    [version1,version2]*.tokenize('.')*.collect { it as int }.with { u, v ->
+       Integer result = [u,v].transpose().findResult{ x,y -> x <=> y ?: null } ?: u.size() <=> v.size()
+       return (result == 1 || result == 0)
+    } 
+}
+
+// Starting from version 5.5.0 we moved to a simplified model
+// that uses unified binaries when on trial and in production
+// https://pspdfkit.com/blog/2019/pspdfkit-android-5-5/#simplified-integration
+boolean useUnifiedBinaries(String version) {
+String versionUnified = '5.5.0'
+return isMoreRecentOrEqual(version, versionUnified)
+}
