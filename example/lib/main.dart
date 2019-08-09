@@ -30,7 +30,7 @@ const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
-const String _formExample = 'Form Document Example';
+const String _formExample = 'Programmatic Form Filling Example';
 const String _formExampleSub = 'Programmatically set and get the value of a form field.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
@@ -199,12 +199,10 @@ class _MyAppState extends State<MyApp> {
       // Platform messages may fail, so we use a try/catch PlatformException.
       try {
         lastName = (await Pspdfkit.getFormFieldValue("Name_Last")) as String;
+        print(lastName);
       } on PlatformException {
-        lastName = 'Failed to get last name.';
+        print('Error: Failed to get last name.');
       }
-
-      print(lastName);
-
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }

@@ -169,6 +169,11 @@
     }
 
     PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        NSLog(@"Document is invalid.");
+        return;
+    }
+
     for (PSPDFFormElement *formElement in document.formParser.forms) {
         if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
             if ([formElement isKindOfClass:PSPDFButtonFormElement.class]) {
