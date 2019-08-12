@@ -186,23 +186,9 @@ class _MyAppState extends State<MyApp> {
       final file = await File(tempDocumentPath).create(recursive: true);
       file.writeAsBytesSync(list);
 
-      Pspdfkit.present(tempDocumentPath);
-
-      Pspdfkit.setFormFieldValue("Lastname", "Name_Last");
-      Pspdfkit.setFormFieldValue("0123456789", "Telephone_Home");
-      Pspdfkit.setFormFieldValue("City", "City");
-      Pspdfkit.setFormFieldValue("selected", "Sex.0");
-      Pspdfkit.setFormFieldValue("deselected", "Sex.1");
-      Pspdfkit.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
-
-      String lastName;
-      // Platform messages may fail, so we use a try/catch PlatformException.
-      try {
-        lastName = (await Pspdfkit.getFormFieldValue("Name_Last")) as String;
-        print(lastName);
-      } on PlatformException {
-        print('Error: Failed to get last name.');
-      }
+      Pspdfkit.present(tempDocumentPath, {
+        showFormDocumentExampleButtons: true
+      });
     } on PlatformException catch (e) {
       print("Failed to open document: '${e.message}'.");
     }
@@ -286,7 +272,6 @@ class _MyAppState extends State<MyApp> {
           child: Container(
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_customConfiguration, style: title),
                 Text(_customConfigurationSub, style: subhead)
               ])),
@@ -297,7 +282,6 @@ class _MyAppState extends State<MyApp> {
           child: Container(
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_passwordProtectedDocument, style: title),
                 Text(_passwordProtectedDocumentSub, style: subhead)
               ])),
@@ -308,7 +292,6 @@ class _MyAppState extends State<MyApp> {
           child: Container(
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_formExample, style: title),
                 Text(_formExampleSub, style: subhead)
               ])),

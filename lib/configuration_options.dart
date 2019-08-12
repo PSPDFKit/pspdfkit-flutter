@@ -91,3 +91,5 @@ const String androidSettingsMenuItems = "settingsMenuItems";
 
 const String showActionNavigationButtons = "showActionNavigationButtons";
 const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";
+
+const String showFormDocumentExampleButtons = "showFormDocumentExampleButtons";

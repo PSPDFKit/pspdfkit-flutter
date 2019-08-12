@@ -58,10 +58,45 @@
 
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+
+        if ((id)configurationDictionary != NSNull.null && configurationDictionary && configurationDictionary.count > 0 && [configurationDictionary[@"showFormDocumentExampleButtons"] boolValue]) {
+            UIToolbar *toolBar = [[UIToolbar alloc] init];
+            UIBarButtonItem *fillFormsButton = [[UIBarButtonItem alloc] initWithTitle:@"Fill Forms" style:UIBarButtonItemStylePlain target:self action:@selector(fillFormsButtonClicked)];
+            UIBarButtonItem *getLastNameValueButton = [[UIBarButtonItem alloc] initWithTitle:@"Get Last Name Value" style:UIBarButtonItemStylePlain target:self action:@selector(getLastNameValueButtonClicked)];
+            [toolBar setItems:@[fillFormsButton, getLastNameValueButton]];
+
+            [navigationController.view addSubview:toolBar];
+            toolBar.translatesAutoresizingMaskIntoConstraints = NO;
+            [toolBar.leftAnchor constraintEqualToAnchor:navigationController.view.leftAnchor].active = YES;
+            [toolBar.rightAnchor constraintEqualToAnchor:navigationController.view.rightAnchor].active = YES;
+            if (@available(iOS 11.0, *)) {
+                [toolBar.bottomAnchor constraintEqualToAnchor:navigationController.view.safeAreaLayoutGuide.bottomAnchor].active = YES;
+            } else {
+                [toolBar.bottomAnchor constraintEqualToAnchor:navigationController.view.bottomAnchor].active = YES;
+            }
+        }
+
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
     } else {
         result(FlutterMethodNotImplemented);
     }
+}
+
+- (void)fillFormsButtonClicked {
+    [self setFormFieldValue:@"Appleseed" forFieldWithFullyQualifiedName:@"Name_Last"];
+    [self setFormFieldValue:@"0123456789" forFieldWithFullyQualifiedName:@"Telephone_Home"];
+    [self setFormFieldValue:@"City" forFieldWithFullyQualifiedName:@"City"];
+    [self setFormFieldValue:@"selected" forFieldWithFullyQualifiedName:@"Sex.0"];
+    [self setFormFieldValue:@"deselected" forFieldWithFullyQualifiedName:@"Sex.1"];
+    [self setFormFieldValue:@"selected" forFieldWithFullyQualifiedName:@"HIGH SCHOOL DIPLOMA"];
+}
+
+- (void)getLastNameValueButtonClicked {
+    NSString *lastName = [self getFormFieldValueForFieldWithFullyQualifiedName:@"Name_Last"];
+
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Alert" message:[NSString stringWithFormat:@"Last Name: %@", lastName] preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {}]];
+    [self.pdfViewController presentViewController:alert animated:YES completion:nil];
 }
 
 # pragma mark - Private methods
