@@ -199,13 +199,8 @@
 #pragma mark - Forms
 
 - (void)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
-    if (fullyQualifiedName.length == 0) {
-        return;
-    }
-
     PSPDFDocument *document = self.pdfViewController.document;
-    if (!document || !document.isValid) {
-        NSLog(@"Document is invalid.");
+    if (!document || !document.isValid || fullyQualifiedName.length == 0) {
         return;
     }
 
