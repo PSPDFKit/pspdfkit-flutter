@@ -43,6 +43,10 @@ class Pspdfkit {
   static Future<String> getFormFieldValue(String fullyQualifiedName) =>
       _channel.invokeMethod('getFormFieldValue', <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
 
+  /// Saves the document back to its original location if it has been changed.
+  /// If there were no changes to the document, the document file will not be modified.
+  static Future<bool> save() => _channel.invokeMethod('save');
+  
   /// Checks the external storage permission for writing on Android only.
   static Future<bool> checkAndroidWriteExternalStoragePermission() async {
     final bool isGranted = await _channel.invokeMethod(

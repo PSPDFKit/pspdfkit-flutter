@@ -250,6 +250,19 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                                         null)
                         );
                 break;
+            case "save":
+                flutterPdfActivity = FlutterPdfActivity.getCurrentActivity();
+                if (flutterPdfActivity == null) {
+                    throw new IllegalStateException("Before using \"Pspdfkit.save()\" " +
+                            "the document needs to be presented by calling \"Pspdfkit.present()\".");
+                }
+                //noinspection ResultOfMethodCallIgnored,ConstantConditions
+                flutterPdfActivity.getPdfFragment().getDocument().saveIfModifiedAsync()
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result::success);
+
+                break;
             default:
                 result.notImplemented();
                 break;
