@@ -14,8 +14,7 @@
 
     <application android:largeHeap="true">
         <activity
-            android:name="com.pspdfkit.ui.PdfActivity"
+            android:name=".FlutterPdfActivity"
             android:windowSoftInputMode="adjustNothing" />
-
     </application>
 </manifest>
