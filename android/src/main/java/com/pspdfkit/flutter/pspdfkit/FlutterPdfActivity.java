@@ -31,6 +31,12 @@ public class FlutterPdfActivity extends PdfActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseActivity();
+    }
+
+    @Override
     public void onDocumentLoaded(@NonNull PdfDocument pdfDocument) {
         super.onDocumentLoaded(pdfDocument);
         Result result = loadedDocumentResult.getAndSet(null);
@@ -50,6 +56,14 @@ public class FlutterPdfActivity extends PdfActivity {
 
     private void bindActivity() {
         currentActivity = this;
+    }
+
+    private void releaseActivity() {
+        Result result = loadedDocumentResult.getAndSet(null);
+        if (result != null) {
+            result.success(false);
+        }
+        currentActivity = null;
     }
 
     public static FlutterPdfActivity getCurrentActivity() {
