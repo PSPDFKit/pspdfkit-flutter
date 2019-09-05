@@ -22,7 +22,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.document.PdfDocumentLoader;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
@@ -86,23 +85,6 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
                 PSPDFKit.initialize(context, licenseKey);
-                break;
-            case "open":
-                String documentPathToOpen = call.argument("document");
-                requireNotNullNotEmpty(documentPathToOpen, "Document path");
-
-                final String documentPathToOpenFixedScheme = addFileSchemeIfMissing(documentPathToOpen);
-
-                //noinspection ResultOfMethodCallIgnored
-                PdfDocumentLoader.openDocumentAsync(context, Uri.parse(documentPathToOpenFixedScheme))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                pdfDocument -> result.success(pdfDocument.getUid()),
-                                throwable -> result.error(LOG_TAG,
-                                        String.format("Error while opening document %s", documentPathToOpenFixedScheme),
-                                        throwable.getMessage())
-                        );
                 break;
             case "present":
                 String documentPath = call.argument("document");
