@@ -356,9 +356,9 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-11. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-12. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
-13. Run `flutter run`.
+12. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
+13. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
+14. Run `flutter run`.
 
 # Example
 
