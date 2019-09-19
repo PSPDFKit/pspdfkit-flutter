@@ -233,23 +233,26 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 ![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
 
-8. Run `flutter packages get` to install the packages.
-9. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
+8. If your application is targeting iOS versions **prior to iOS 12.2** and your application **does not already contain any Swift code**, then you need to make sure Xcode bundles Swift standard libraries with your application distribution. To to so, open your target Build Settings and enable `Always Embed Swift Standard Libraries`:
+
+![Always Embed Swift Standard Libraries](screenshots/ios-always-embed-swift-standard-libraries.png)
+
+9. Run `flutter packages get` to install the packages.
+10. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
 
 ```diff
 # Uncomment this line to define a global platform for your project
 -   # platform :ios, '9.0'
 +   platform :ios, '11.0'
-+   use_frameworks!
 ...
 target 'Runner' do
-
+  use_frameworks!
 +   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
 ...
 end  
 ``` 
 
-9. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
+11. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
 
 ```dart
 import 'dart:io';
@@ -353,9 +356,9 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-10. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-11. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
-12. Run `flutter run`.
+12. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
+13. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
+14. Run `flutter run`.
 
 # Example
 

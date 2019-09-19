@@ -26,10 +26,10 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"frameworkVersion" isEqualToString:call.method]) {
-        result([@"iOS " stringByAppendingString:PSPDFKit.versionNumber]);
+        result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKit setLicenseKey:licenseKey];
+        [PSPDFKitGlobal setLicenseKey:licenseKey];
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
         NSAssert(documentPath != nil, @"Document path may not be nil.");
