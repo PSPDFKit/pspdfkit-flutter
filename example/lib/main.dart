@@ -18,6 +18,7 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 const String _documentPath = 'PDFs/Guide_v4.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit Image Example.jpg';
+const String _formPath = 'PDFs/Form_example.pdf';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
@@ -29,6 +30,8 @@ const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
+const String _formExample = 'Programmatic Form Filling Example';
+const String _formExampleSub = 'Programmatically set and get the value of a form field.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -44,8 +47,7 @@ class _MyAppState extends State<MyApp> {
 
   void showDocument() async {
     try {
-      final ByteData bytes =
-          await DefaultAssetBundle.of(context).load(_documentPath);
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
       final Uint8List list = bytes.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -56,14 +58,14 @@ class _MyAppState extends State<MyApp> {
 
       Pspdfkit.present(tempDocumentPath);
     } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
+      print("Failed to present document: '${e.message}'.");
     }
   }
 
   void showImage() async {
     try {
       final ByteData bytes =
-          await DefaultAssetBundle.of(context).load(_imagePath);
+      await DefaultAssetBundle.of(context).load(_imagePath);
       final Uint8List list = bytes.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -74,14 +76,13 @@ class _MyAppState extends State<MyApp> {
 
       Pspdfkit.present(tempDocumentPath);
     } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
+      print("Failed to present document: '${e.message}'.");
     }
   }
 
   void applyDarkTheme() async {
     try {
-      final ByteData bytes =
-          await DefaultAssetBundle.of(context).load(_documentPath);
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
       final Uint8List list = bytes.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -95,14 +96,13 @@ class _MyAppState extends State<MyApp> {
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
     } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
+      print("Failed to present document: '${e.message}'.");
     }
   }
 
   void applyCustomConfiguration() async {
     try {
-      final ByteData bytes =
-          await DefaultAssetBundle.of(context).load(_documentPath);
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
       final Uint8List list = bytes.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -147,14 +147,13 @@ class _MyAppState extends State<MyApp> {
         iOSShowActionNavigationButtonLabels: false
       });
     } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
+      print("Failed to present document: '${e.message}'.");
     }
   }
 
   void unlockPasswordProtectedDocument() async {
     try {
-      final ByteData bytes =
-          await DefaultAssetBundle.of(context).load(_lockedDocumentPath);
+      final ByteData bytes = await DefaultAssetBundle.of(context).load(_lockedDocumentPath);
       final Uint8List list = bytes.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -167,10 +166,49 @@ class _MyAppState extends State<MyApp> {
         password: 'test123'
       });
     } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
+      print("Failed to present document: '${e.message}'.");
     }
   }
-  
+
+  void showFormDocumentExample() async {
+    final ByteData bytes = await DefaultAssetBundle.of(context).load(_formPath);
+    final Uint8List list = bytes.buffer.asUint8List();
+
+    final tempDir = await getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$_formPath';
+
+    final file = await File(tempDocumentPath).create(recursive: true);
+    file.writeAsBytesSync(list);
+
+    try {
+      await Pspdfkit.present(tempDocumentPath);
+    } on PlatformException catch(e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+
+    try {
+      Pspdfkit.setFormFieldValue("Lastname", "Name_Last");
+      Pspdfkit.setFormFieldValue("0123456789", "Telephone_Home");
+      Pspdfkit.setFormFieldValue("City", "City");
+      Pspdfkit.setFormFieldValue("selected", "Sex.0");
+      Pspdfkit.setFormFieldValue("deselected", "Sex.1");
+      Pspdfkit.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+    } on PlatformException catch(e) {
+      print("Failed to set form field values '${e.message}'.");
+    }
+
+    String lastName;
+    try {
+      lastName = await Pspdfkit.getFormFieldValue("Name_Last");
+    } on PlatformException catch(e) {
+      print("Failed to get form field value '${e.message}'.");
+    }
+
+    if (lastName != null) {
+      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
+    }
+  }
+
   @override
   initState() {
     super.initState();
@@ -186,7 +224,7 @@ class _MyAppState extends State<MyApp> {
     String frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      frameworkVersion = (await Pspdfkit.frameworkVersion) as String;
+      frameworkVersion = await Pspdfkit.frameworkVersion;
     } on PlatformException {
       frameworkVersion = 'Failed to get platform version. ';
     }
@@ -199,7 +237,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _frameworkVersion = frameworkVersion;
     });
-    
+
     Pspdfkit.setLicenseKey("LICENSE_KEY_GOES_HERE");
   }
 
@@ -266,6 +304,17 @@ class _MyAppState extends State<MyApp> {
               ])),
         ),
         Divider(),
+        GestureDetector(
+          onTap: showFormDocumentExample,
+          child: Container(
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+
+                Text(_formExample, style: title),
+                Text(_formExampleSub, style: subhead)
+              ])),
+        ),
+        Divider()
       ];
       return CupertinoApp(
           home: CupertinoPageScaffold(
@@ -301,6 +350,11 @@ class _MyAppState extends State<MyApp> {
             title: Text(_passwordProtectedDocument),
             subtitle: Text(_passwordProtectedDocumentSub),
             onTap: () => unlockPasswordProtectedDocument()),
+        Divider(),
+        ListTile(
+            title: Text(_formExample),
+            subtitle: Text(_formExampleSub),
+            onTap: () => showFormDocumentExample()),
         Divider(),
       ];
       return MaterialApp(
