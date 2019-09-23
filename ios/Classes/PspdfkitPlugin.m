@@ -30,10 +30,22 @@
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
         [PSPDFKit setLicenseKey:licenseKey];
+    } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
+        NSString *value = call.arguments[@"value"];
+        NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
+        result([self setFormFieldValue:value forFieldWithFullyQualifiedName:fullyQualifiedName]);
+    } else if ([@"getFormFieldValue" isEqualToString:call.method]) {
+        NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
+        result([self getFormFieldValueForFieldWithFullyQualifiedName:fullyQualifiedName]);
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
-        NSAssert(documentPath != nil, @"Document path may not be nil.");
-        NSAssert(documentPath.length != 0, @"Document path may not be empty.");
+
+        if (documentPath == nil || documentPath.length <= 0) {
+            FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
+            result(error);
+            return;
+        }
+
         NSDictionary *configurationDictionary = call.arguments[@"configuration"];
         
         PSPDFDocument *document = [self document:documentPath];
@@ -52,6 +64,7 @@
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
+        result(@(YES));
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -153,6 +166,78 @@
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
 }
 
+#pragma mark - Forms
+
+- (id)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
+    PSPDFDocument *document = self.pdfViewController.document;
+
+    if (!document || !document.isValid) {
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+        return error;
+    }
+
+    if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        return error;
+    }
+
+    BOOL success = NO;
+    for (PSPDFFormElement *formElement in document.formParser.forms) {
+        if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
+            if ([formElement isKindOfClass:PSPDFButtonFormElement.class]) {
+                if ([value isEqualToString:@"selected"]) {
+                    [(PSPDFButtonFormElement *)formElement select];
+                    success = YES;
+                } else if ([value isEqualToString:@"deselected"]) {
+                    [(PSPDFButtonFormElement *)formElement deselect];
+                    success = YES;
+                }
+            } else if ([formElement isKindOfClass:PSPDFChoiceFormElement.class]) {
+                ((PSPDFChoiceFormElement *)formElement).selectedIndices = [NSIndexSet indexSetWithIndex:value.integerValue];
+                success = YES;
+            } else if ([formElement isKindOfClass:PSPDFTextFieldFormElement.class]) {
+                formElement.contents = value;
+                success = YES;
+            } else if ([formElement isKindOfClass:PSPDFSignatureFormElement.class]) {
+                FlutterError *error = [FlutterError errorWithCode:@"" message:@"Signature form elements are not supported." details:nil];
+                return error;
+            } else {
+                return @(NO);
+            }
+            break;
+        }
+    }
+
+    if (!success) {
+        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        return error;
+    }
+
+    return @(YES);
+}
+
+- (id)getFormFieldValueForFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
+    if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        return error;
+    }
+
+    PSPDFDocument *document = self.pdfViewController.document;
+    id formFieldValue = nil;
+    for (PSPDFFormElement *formElement in document.formParser.forms) {
+        if ([formElement.fullyQualifiedFieldName isEqualToString:fullyQualifiedName]) {
+            formFieldValue = formElement.value;
+            break;
+        }
+    }
+
+    if (formFieldValue == nil) {
+        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        return error;
+    }
+
+    return formFieldValue;
+}
 
 # pragma mark - Helpers
 
@@ -195,7 +280,6 @@
     }
     return thumbnailBarMode;
 }
-
 
 - (PSPDFAppearanceMode)appearanceMode:(NSDictionary *)dictionary {
     if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
