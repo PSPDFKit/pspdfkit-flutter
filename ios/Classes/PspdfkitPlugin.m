@@ -26,10 +26,10 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"frameworkVersion" isEqualToString:call.method]) {
-        result([@"iOS " stringByAppendingString:PSPDFKit.versionNumber]);
+        result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKit setLicenseKey:licenseKey];
+        [PSPDFKitGlobal setLicenseKey:licenseKey];
     } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
         NSString *value = call.arguments[@"value"];
         NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
