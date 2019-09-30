@@ -33,7 +33,8 @@ const String androidShowSearchAction = "showSearchAction";
 const String inlineSearch = "inlineSearch";
 
 const String showThumbnailBar = "showThumbnailBar";
-const String showThumbnailBarDefault = "default";
+const String showThumbnailBarFloating = "floating";
+const String showThumbnailBarPinned = "pinned";
 const String showThumbnailBarScrollable = "scrollable";
 const String showThumbnailBarNone = "none";
 

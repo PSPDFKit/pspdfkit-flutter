@@ -46,7 +46,8 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_SEARCH_ACTION = "showSearchAction";
     private static final String INLINE_SEARCH = "inlineSearch";
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
-    private static final String SHOW_THUMBNAIL_BAR_DEFAULT = "default";
+    private static final String SHOW_THUMBNAIL_BAR_FLOATING = "floating";
+    private static final String SHOW_THUMBNAIL_BAR_PINNED = "pinned";
     private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
     private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
     private static final String ANDROID_SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
@@ -78,7 +79,6 @@ class ConfigurationAdapter {
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
 
-    @SuppressWarnings("ConstantConditions")
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
@@ -168,7 +168,7 @@ class ConfigurationAdapter {
                 configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
             }
             if (containsKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class)) {
-                configureSettingsMenuItems((ArrayList<String>) configurationMap.get(SETTINGS_MENU_ITEMS));
+                configureSettingsMenuItems((ArrayList<?>) configurationMap.get(SETTINGS_MENU_ITEMS));
             }
             if (containsKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class)) {
                 configureShowNavigationButtons((Boolean) configurationMap.get(SHOW_ACTION_NAVIGATION_BUTTONS));
@@ -241,13 +241,22 @@ class ConfigurationAdapter {
     }
 
     private void configureShowThumbnailBar(String showThumbnailBar) {
-        ThumbnailBarMode thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_DEFAULT;
-        if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_DEFAULT)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_DEFAULT;
-        } else if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_SCROLLABLE)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE;
-        } else if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_NONE)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE;
+        ThumbnailBarMode thumbnailBarMode;
+        switch (showThumbnailBar) {
+            case SHOW_THUMBNAIL_BAR_FLOATING:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_FLOATING;
+                break;
+            case SHOW_THUMBNAIL_BAR_PINNED:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_PINNED;
+                break;
+            case SHOW_THUMBNAIL_BAR_SCROLLABLE:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE;
+                break;
+            case SHOW_THUMBNAIL_BAR_NONE:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE;
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined thumbnail bar mode for " + showThumbnailBar);
         }
         configuration.setThumbnailBarMode(thumbnailBarMode);
     }
@@ -396,9 +405,13 @@ class ConfigurationAdapter {
         return resourceId;
     }
 
-    private void configureSettingsMenuItems(ArrayList<String> settingsMenuItems) {
+    private <T> void configureSettingsMenuItems(ArrayList<T> settingsMenuItems) {
         EnumSet<SettingsMenuItemType> settingsMenuItemTypes = EnumSet.noneOf(SettingsMenuItemType.class);
-        for (String menuType : settingsMenuItems) {
+        for (T settingsMenuItem : settingsMenuItems) {
+            if (!(settingsMenuItem instanceof String)) {
+                throw new IllegalArgumentException("Provided settingMenuItem " + settingsMenuItem + " must be a String.");
+            }
+            String menuType = (String) settingsMenuItem;
             if (menuType.equalsIgnoreCase("theme")) {
                 settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
             } else if (menuType.equalsIgnoreCase("screenAwake")) {
