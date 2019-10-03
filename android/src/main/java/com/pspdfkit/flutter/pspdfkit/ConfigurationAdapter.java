@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty;
+import static io.flutter.util.Preconditions.checkNotNull;
+
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
 
@@ -46,7 +49,8 @@ class ConfigurationAdapter {
     private static final String ANDROID_SHOW_SEARCH_ACTION = "showSearchAction";
     private static final String INLINE_SEARCH = "inlineSearch";
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
-    private static final String SHOW_THUMBNAIL_BAR_DEFAULT = "default";
+    private static final String SHOW_THUMBNAIL_BAR_FLOATING = "floating";
+    private static final String SHOW_THUMBNAIL_BAR_PINNED = "pinned";
     private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
     private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
     private static final String ANDROID_SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
@@ -75,10 +79,9 @@ class ConfigurationAdapter {
     private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
     private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
 
-    private final PdfActivityConfiguration.Builder configuration;
+    @NonNull private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
 
-    @SuppressWarnings("ConstantConditions")
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
@@ -168,7 +171,7 @@ class ConfigurationAdapter {
                 configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
             }
             if (containsKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class)) {
-                configureSettingsMenuItems((ArrayList<String>) configurationMap.get(SETTINGS_MENU_ITEMS));
+                configureSettingsMenuItems((ArrayList<?>) configurationMap.get(SETTINGS_MENU_ITEMS));
             }
             if (containsKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class)) {
                 configureShowNavigationButtons((Boolean) configurationMap.get(SHOW_ACTION_NAVIGATION_BUTTONS));
@@ -187,7 +190,8 @@ class ConfigurationAdapter {
         }
     }
 
-    private void configurePageScrollDirection(final String pageScrollDirection) {
+    private void configurePageScrollDirection(@NonNull final String pageScrollDirection) {
+        requireNotNullNotEmpty(pageScrollDirection, "pageScrollDirection");
         if (pageScrollDirection.equals(PAGE_SCROLL_DIRECTION_HORIZONTAL)) {
             configuration.scrollDirection(PageScrollDirection.HORIZONTAL);
         } else if (pageScrollDirection.equals(PAGE_SCROLL_DIRECTION_VERTICAL)) {
@@ -214,16 +218,25 @@ class ConfigurationAdapter {
         configuration.page(startPage);
     }
 
-    private void configureUserInterfaceViewMode(String userInterfaceViewMode) {
-        UserInterfaceViewMode result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC;
-        if (userInterfaceViewMode.equals(USER_INTERFACE_VIEW_MODE_AUTOMATIC)) {
-            result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC;
-        } else if (userInterfaceViewMode.equals(USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES)) {
-            result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES;
-        } else if (userInterfaceViewMode.equals(USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE)) {
-            result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_VISIBLE;
-        } else if (userInterfaceViewMode.equals(USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN)) {
-            result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_HIDDEN;
+    private void configureUserInterfaceViewMode(@NonNull String userInterfaceViewMode) {
+        requireNotNullNotEmpty(userInterfaceViewMode, "userInterfaceViewMode");
+
+        UserInterfaceViewMode result;
+        switch (userInterfaceViewMode) {
+            case USER_INTERFACE_VIEW_MODE_AUTOMATIC:
+                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC;
+                break;
+            case USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES:
+                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES;
+                break;
+            case USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE:
+                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_VISIBLE;
+                break;
+            case USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN:
+                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_HIDDEN;
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined user interface view mode for " + userInterfaceViewMode);
         }
         configuration.setUserInterfaceViewMode(result);
     }
@@ -240,14 +253,25 @@ class ConfigurationAdapter {
         configuration.useImmersiveMode(immersiveMode);
     }
 
-    private void configureShowThumbnailBar(String showThumbnailBar) {
-        ThumbnailBarMode thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_DEFAULT;
-        if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_DEFAULT)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_DEFAULT;
-        } else if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_SCROLLABLE)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE;
-        } else if (showThumbnailBar.equals(SHOW_THUMBNAIL_BAR_NONE)) {
-            thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE;
+    private void configureShowThumbnailBar(@NonNull String showThumbnailBar) {
+        requireNotNullNotEmpty(showThumbnailBar, "showThumbnailBar");
+
+        ThumbnailBarMode thumbnailBarMode;
+        switch (showThumbnailBar) {
+            case SHOW_THUMBNAIL_BAR_FLOATING:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_FLOATING;
+                break;
+            case SHOW_THUMBNAIL_BAR_PINNED:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_PINNED;
+                break;
+            case SHOW_THUMBNAIL_BAR_SCROLLABLE:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE;
+                break;
+            case SHOW_THUMBNAIL_BAR_NONE:
+                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE;
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined thumbnail bar mode for " + showThumbnailBar);
         }
         configuration.setThumbnailBarMode(thumbnailBarMode);
     }
@@ -356,24 +380,34 @@ class ConfigurationAdapter {
         }
     }
 
-    private void configureThemeMode(String themeMode) {
-        ThemeMode result = ThemeMode.DEFAULT;
+    private void configureThemeMode(@NonNull String themeMode) {
+        requireNotNullNotEmpty(themeMode, "themeMode");
+
+        ThemeMode result;
         if (themeMode.equals(APPEARANCE_MODE_DEFAULT)) {
             result = ThemeMode.DEFAULT;
         } else if (themeMode.equals(APPEARANCE_MODE_NIGHT)) {
             result = ThemeMode.NIGHT;
+        } else {
+            throw new IllegalArgumentException("Undefined theme mode for " + themeMode);
         }
         configuration.themeMode(result);
     }
 
-    private void configureDarkThemeRes(String darkThemeResource, Context context) {
+    private void configureDarkThemeRes(@NonNull String darkThemeResource, @NonNull Context context) {
+        requireNotNullNotEmpty(darkThemeResource, "darkThemeResource");
+        checkNotNull(context);
+
         @StyleRes int darkThemeId = getStyleResourceId(darkThemeResource, context);
         if (darkThemeId != 0) {
             configuration.themeDark(darkThemeId);
         }
     }
 
-    private void configureDefaultThemeRes(String defaultThemeResource, Context context) {
+    private void configureDefaultThemeRes(@NonNull String defaultThemeResource, @NonNull Context context) {
+        requireNotNullNotEmpty(defaultThemeResource, "defaultThemeResource");
+        checkNotNull(context);
+
         @StyleRes int defaultThemeId = getStyleResourceId(defaultThemeResource, context);
         if (defaultThemeId != 0) {
             configuration.theme(defaultThemeId);
@@ -388,7 +422,10 @@ class ConfigurationAdapter {
         }
     }
 
-    private static int getStyleResourceId(String styleName, Context context) {
+    private static int getStyleResourceId(@NonNull String styleName, @NonNull Context context) {
+        requireNotNullNotEmpty(styleName, "styleName");
+        checkNotNull(context);
+
         int resourceId = context.getResources().getIdentifier(styleName, "style", context.getPackageName());
         if (resourceId == 0) {
             Log.e(LOG_TAG, String.format("Style resource not found for %s", styleName));
@@ -396,9 +433,15 @@ class ConfigurationAdapter {
         return resourceId;
     }
 
-    private void configureSettingsMenuItems(ArrayList<String> settingsMenuItems) {
+    private <T> void configureSettingsMenuItems(@NonNull ArrayList<T> settingsMenuItems) {
+        checkNotNull(settingsMenuItems);
+
         EnumSet<SettingsMenuItemType> settingsMenuItemTypes = EnumSet.noneOf(SettingsMenuItemType.class);
-        for (String menuType : settingsMenuItems) {
+        for (T settingsMenuItem : settingsMenuItems) {
+            if (!(settingsMenuItem instanceof String)) {
+                throw new IllegalArgumentException("Provided settingMenuItem " + settingsMenuItem + " must be a String.");
+            }
+            String menuType = (String) settingsMenuItem;
             if (menuType.equalsIgnoreCase("theme")) {
                 settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
             } else if (menuType.equalsIgnoreCase("screenAwake")) {
@@ -416,7 +459,9 @@ class ConfigurationAdapter {
         configuration.setSettingsMenuItems(settingsMenuItemTypes);
     }
 
-    private <T> boolean containsKeyOfType(HashMap<String, Object> configurationMap, String key, Class<T> clazz) {
+    private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,
+                                          @NonNull String key,
+                                          @NonNull Class<T> clazz) {
         if (configurationMap.get(key) != null) {
             checkCast(configurationMap.get(key), clazz, key);
             return true;

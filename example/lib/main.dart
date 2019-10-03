@@ -119,7 +119,7 @@ class _MyAppState extends State<MyApp> {
         userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
         androidShowSearchAction: true,
         inlineSearch: false,
-        showThumbnailBar: showThumbnailBarScrollable,
+        showThumbnailBar: showThumbnailBarFloating,
         androidShowThumbnailGridAction: true,
         androidShowOutlineAction: true,
         androidShowAnnotationListAction: true,
