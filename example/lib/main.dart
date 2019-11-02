@@ -144,7 +144,9 @@ class _MyAppState extends State<MyApp> {
         toolbarTitle: 'Custom Title',
         androidSettingsMenuItems:['theme', 'scrolldirection'],
         showActionNavigationButtons: false,
-        iOSShowActionNavigationButtonLabels: false
+        iOSShowActionNavigationButtonLabels: false,
+        pageLayoutMode: 'automatic',
+        iOSIsFirstPageAlwaysSingle: false
       });
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");

@@ -108,6 +108,7 @@
         builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
+        builder.pageMode = [self pageMode:dictionary];
 
         if (dictionary[@"showPageLabels"]) {
             builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
@@ -130,6 +131,9 @@
         }
         if (dictionary[@"iOSShowActionNavigationButtonLabels"]) {
             builder.showBackForwardActionButtonLabels = [dictionary[@"iOSShowActionNavigationButtonLabels"] boolValue];
+        }
+        if (dictionary[@"isFirstPageAlwaysSingle"]) {
+            builder.firstPageAlwaysSingle = [dictionary[@"isFirstPageAlwaysSingle"] boolValue];
         }
     }];
 }
@@ -305,6 +309,26 @@
         return 0;
     }
     return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
+}
+
+- (PSPDFPageMode)pageMode:(NSDictionary *)dictionary {
+    PSPDFPageMode pageMode = PSPDFConfiguration.defaultConfiguration.pageMode;
+
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
+        return pageMode;
+    }
+
+    NSString *value = dictionary[@"pageLayoutMode"];
+    if (value) {
+        if ([value isEqualToString:@"automatic"]) {
+            pageMode = PSPDFPageModeAutomatic;
+        } else if ([value isEqualToString:@"single"]) {
+            pageMode = PSPDFPageModeSingle;
+        } else if ([value isEqualToString:@"double"]) {
+            pageMode = PSPDFPageModeDouble;
+        }
+    }
+    return pageMode;
 }
 
 - (void)setToolbarTitle:(NSString *)toolbarTitle {
