@@ -135,6 +135,9 @@
         if (dictionary[@"isFirstPageAlwaysSingle"]) {
             builder.firstPageAlwaysSingle = [dictionary[@"isFirstPageAlwaysSingle"] boolValue];
         }
+        if (dictionary[@"settingsMenuItems"]) {
+            builder.settingsOptions = [self settingsOptions:dictionary[@"settingsMenuItems"]];
+        }
     }];
 }
 
@@ -329,6 +332,36 @@
         }
     }
     return pageMode;
+}
+
+- (PSPDFSettingsOptions)settingsOptions:(nullable NSArray <NSString *> *)options {
+    if ((id)options == NSNull.null || !options || options.count == 0) {
+        return PSPDFSettingsOptionDefault;
+    }
+
+    PSPDFSettingsOptions finalOptions = 0;
+
+    for (NSString *option in options) {
+        if ([option isEqualToString:@"scrollDirection"]) {
+            finalOptions |= PSPDFSettingsOptionScrollDirection;
+        } else if ([option isEqualToString:@"pageTransition"]) {
+            finalOptions |= PSPDFSettingsOptionPageTransition;
+        } else if ([option isEqualToString:@"appearance"]) {
+            finalOptions |= PSPDFSettingsOptionAppearance;
+        } else if ([option isEqualToString:@"brightness"]) {
+            finalOptions |= PSPDFSettingsOptionBrightness;
+        } else if ([option isEqualToString:@"pageMode"]) {
+            finalOptions |= PSPDFSettingsOptionPageMode;
+        } else if ([option isEqualToString:@"spreadFitting"]) {
+            finalOptions |= PSPDFSettingsOptionSpreadFitting;
+        }
+    }
+
+    if (finalOptions == 0) {
+        finalOptions = PSPDFSettingsOptionDefault;
+    }
+
+    return finalOptions;
 }
 
 - (void)setToolbarTitle:(NSString *)toolbarTitle {

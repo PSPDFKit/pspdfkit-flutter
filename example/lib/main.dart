@@ -143,6 +143,7 @@ class _MyAppState extends State<MyApp> {
         iOSAllowToolbarTitleChange: false,
         toolbarTitle: 'Custom Title',
         androidSettingsMenuItems:['theme', 'scrolldirection'],
+        iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
         showActionNavigationButtons: false,
         iOSShowActionNavigationButtonLabels: false,
         pageLayoutMode: 'automatic',
