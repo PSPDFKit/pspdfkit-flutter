@@ -135,8 +135,8 @@
         if (dictionary[@"isFirstPageAlwaysSingle"]) {
             builder.firstPageAlwaysSingle = [dictionary[@"isFirstPageAlwaysSingle"] boolValue];
         }
-        if (dictionary[@"settingsMenuItems"]) {
-            builder.settingsOptions = [self settingsOptions:dictionary[@"settingsMenuItems"]];
+        if (dictionary[@"iOSSettingsMenuItems"]) {
+            builder.settingsOptions = [self settingsOptions:dictionary[@"iOSSettingsMenuItems"]];
         }
     }];
 }
@@ -340,7 +340,6 @@
     }
 
     PSPDFSettingsOptions finalOptions = 0;
-
     for (NSString *option in options) {
         if ([option isEqualToString:@"scrollDirection"]) {
             finalOptions |= PSPDFSettingsOptionScrollDirection;
@@ -354,9 +353,12 @@
             finalOptions |= PSPDFSettingsOptionPageMode;
         } else if ([option isEqualToString:@"spreadFitting"]) {
             finalOptions |= PSPDFSettingsOptionSpreadFitting;
+        } else {
+            NSLog(@"WARNING: '%@' is an invalid settings option. It will be ignored.", option);
         }
     }
 
+    // If no options were passed, we use the default setting options.
     if (finalOptions == 0) {
         finalOptions = PSPDFSettingsOptionDefault;
     }

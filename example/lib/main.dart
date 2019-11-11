@@ -146,8 +146,8 @@ class _MyAppState extends State<MyApp> {
         iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
         showActionNavigationButtons: false,
         iOSShowActionNavigationButtonLabels: false,
-        pageLayoutMode: 'automatic',
-        iOSIsFirstPageAlwaysSingle: false
+        pageLayoutMode: 'double',
+        isFirstPageAlwaysSingle: false
       });
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
