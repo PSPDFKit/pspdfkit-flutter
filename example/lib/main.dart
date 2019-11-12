@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
 
       Pspdfkit.present(tempDocumentPath, {
         pageScrollDirection: pageScrollDirectionVertical,
-        pageScrollContinuous: true,
+        pageScrollContinuous: false,
         fitPageToWidth: true,
         androidImmersiveMode: false,
         userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
@@ -147,7 +147,7 @@ class _MyAppState extends State<MyApp> {
         showActionNavigationButtons: false,
         iOSShowActionNavigationButtonLabels: false,
         pageLayoutMode: 'double',
-        isFirstPageAlwaysSingle: false
+        isFirstPageAlwaysSingle: true
       });
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");

@@ -19,6 +19,7 @@ import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.configuration.activity.ThumbnailBarMode;
 import com.pspdfkit.configuration.activity.UserInterfaceViewMode;
 import com.pspdfkit.configuration.page.PageFitMode;
+import com.pspdfkit.configuration.page.PageLayoutMode;
 import com.pspdfkit.configuration.page.PageScrollDirection;
 import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.settings.SettingsMenuItemType;
@@ -35,6 +36,10 @@ import static io.flutter.util.Preconditions.checkNotNull;
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
 
+    private static final String PAGE_LAYOUT_MODE = "pageLayoutMode";
+    private static final String PAGE_LAYOUT_MODE_SINGLE = "single";
+    private static final String PAGE_LAYOUT_MODE_DOUBLE = "double";
+    private static final String PAGE_LAYOUT_MODE_AUTO = "automatic";
     private static final String PAGE_SCROLL_DIRECTION = "pageScrollDirection";
     private static final String PAGE_SCROLL_DIRECTION_HORIZONTAL = "horizontal";
     private static final String PAGE_SCROLL_DIRECTION_VERTICAL = "vertical";
@@ -76,8 +81,9 @@ class ConfigurationAdapter {
     private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
     private static final String PASSWORD = "password";
-    private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
+    private static final String SETTINGS_MENU_ITEMS = "androidSettingsMenuItems";
     private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
+    private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
 
     @NonNull private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
@@ -86,6 +92,9 @@ class ConfigurationAdapter {
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
         if (configurationMap != null && !configurationMap.isEmpty()) {
+            if (containsKeyOfType(configurationMap, PAGE_LAYOUT_MODE, String.class)) {
+                configurePageLayoutMode((String) configurationMap.get(PAGE_LAYOUT_MODE));
+            }
             if (containsKeyOfType(configurationMap, PAGE_SCROLL_DIRECTION, String.class)) {
                 configurePageScrollDirection((String) configurationMap.get(PAGE_SCROLL_DIRECTION));
             }
@@ -179,6 +188,9 @@ class ConfigurationAdapter {
             if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
                 this.password = ((String) configurationMap.get(PASSWORD));
             }
+            if (containsKeyOfType(configurationMap, IS_FIRST_PAGE_ALWAYS_SINGLE, Boolean.class)) {
+                configureFirstPageAlwaysSingle((Boolean) configurationMap.get(IS_FIRST_PAGE_ALWAYS_SINGLE));
+            }
         }
     }
 
@@ -187,6 +199,23 @@ class ConfigurationAdapter {
             configuration.showPageNumberOverlay();
         } else {
             configuration.hidePageNumberOverlay();
+        }
+    }
+
+    private void configurePageLayoutMode(@NonNull final String pageLayoutMode) {
+        requireNotNullNotEmpty(pageLayoutMode, "pageLayoutMode");
+        switch (pageLayoutMode) {
+            case PAGE_LAYOUT_MODE_AUTO:
+                configuration.layoutMode(PageLayoutMode.AUTO);
+                break;
+            case PAGE_LAYOUT_MODE_SINGLE:
+                configuration.layoutMode(PageLayoutMode.SINGLE);
+                break;
+            case PAGE_LAYOUT_MODE_DOUBLE:
+                configuration.layoutMode(PageLayoutMode.DOUBLE);
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined page layout mode for " + pageLayoutMode);
         }
     }
 
@@ -221,24 +250,22 @@ class ConfigurationAdapter {
     private void configureUserInterfaceViewMode(@NonNull String userInterfaceViewMode) {
         requireNotNullNotEmpty(userInterfaceViewMode, "userInterfaceViewMode");
 
-        UserInterfaceViewMode result;
         switch (userInterfaceViewMode) {
             case USER_INTERFACE_VIEW_MODE_AUTOMATIC:
-                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC;
+                configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC);
                 break;
             case USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES:
-                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES;
+                configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES);
                 break;
             case USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE:
-                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_VISIBLE;
+                configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_VISIBLE);
                 break;
             case USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN:
-                result = UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_HIDDEN;
+                configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_HIDDEN);
                 break;
             default:
                 throw new IllegalArgumentException("Undefined user interface view mode for " + userInterfaceViewMode);
         }
-        configuration.setUserInterfaceViewMode(result);
     }
 
     private void configureShowSearchAction(boolean showSearchAction) {
@@ -457,6 +484,10 @@ class ConfigurationAdapter {
             }
         }
         configuration.setSettingsMenuItems(settingsMenuItemTypes);
+    }
+
+    private void configureFirstPageAlwaysSingle(final boolean firstPageAlwaysSingle) {
+        configuration.firstPageAlwaysSingle(firstPageAlwaysSingle);
     }
 
     private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,
