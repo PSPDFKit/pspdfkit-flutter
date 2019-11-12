@@ -3,4 +3,4 @@
 
 # Acceptance Criteria
 
-- [ ] When approved, right before merging, make sure that all examples work on both Android and iOS.
+- [ ] Before merging retest all the examples to make sure that they work on both Android and iOS.
