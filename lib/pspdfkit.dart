@@ -21,7 +21,7 @@ class Pspdfkit {
 
   /// Gets the PSPDFKit framework version.
   static Future<String> get frameworkVersion async =>
-      await _channel.invokeMethod('frameworkVersion');
+      _channel.invokeMethod('frameworkVersion');
 
   /// Sets the license key.
   static Future<void> setLicenseKey(String licenseKey) async =>
@@ -36,11 +36,11 @@ class Pspdfkit {
   }
 
   /// Sets the value of a form field by specifying its fully qualified field name.
-  static Future<bool> setFormFieldValue(String value, String fullyQualifiedName) =>
+  static Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
       _channel.invokeMethod('setFormFieldValue', <String, dynamic>{'value': value, 'fullyQualifiedName': fullyQualifiedName});
 
   /// Gets the form field value by specifying its fully qualified name.
-  static Future<String> getFormFieldValue(String fullyQualifiedName) =>
+  static Future<String> getFormFieldValue(String fullyQualifiedName) async =>
       _channel.invokeMethod('getFormFieldValue', <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
 
   /// Applies Instant document JSON to the presented document.
@@ -52,15 +52,14 @@ class Pspdfkit {
 
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
-  static Future<bool> save() => _channel.invokeMethod('save');
+  static Future<bool> save() async => _channel.invokeMethod('save');
   
   /// Checks the external storage permission for writing on Android only.
   static Future<bool> checkAndroidWriteExternalStoragePermission() async {
-    final bool isGranted = await _channel.invokeMethod(
+    _channel.invokeMethod(
         "checkPermission",
         {"permission": "WRITE_EXTERNAL_STORAGE"}
     );
-    return isGranted;
   }
 
   /// Requests the external storage permission for writing on Android only.
@@ -77,7 +76,7 @@ class Pspdfkit {
 
   /// Opens the Android settings.
   static Future<void> openAndroidSettings() async {
-    await _channel.invokeMethod("openSettings");
+    _channel.invokeMethod("openSettings");
   }
 
   static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
