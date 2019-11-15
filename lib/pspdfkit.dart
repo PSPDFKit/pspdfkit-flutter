@@ -43,6 +43,13 @@ class Pspdfkit {
   static Future<String> getFormFieldValue(String fullyQualifiedName) =>
       _channel.invokeMethod('getFormFieldValue', <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
 
+  /// Applies Instant document JSON to the presented document.
+  static Future<bool> applyInstantJson(String annotationsJson) async =>
+      _channel.invokeMethod('applyInstantJson', <String, String>{'annotationsJson': annotationsJson});
+
+  /// Exports Instant document JSON from the presented document.
+  static Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
+
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() => _channel.invokeMethod('save');
