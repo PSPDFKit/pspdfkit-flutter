@@ -18,20 +18,29 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.pspdfkit.PSPDFKit;
+import com.pspdfkit.document.PdfDocument;
+import com.pspdfkit.document.formatters.DocumentJsonFormatter;
+import com.pspdfkit.document.providers.InputStreamDataProvider;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.plugin.common.MethodCall;
@@ -43,6 +52,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireDocumentNotNull;
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty;
 
 /**
@@ -76,6 +86,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         String fullyQualifiedName;
         FlutterPdfActivity flutterPdfActivity;
+        PdfDocument document;
 
         switch (call.method) {
             case "frameworkVersion":
@@ -128,20 +139,47 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 openSettings();
                 result.success(true);
                 break;
+            case "applyInstantJson":
+                String annotationsJson = call.argument("annotationsJson");
+
+                requireNotNullNotEmpty(annotationsJson, "annotationsJson");
+                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.applyInstantJson(String)");
+
+                DocumentJsonDataProvider documentJsonDataProvider = new DocumentJsonDataProvider(annotationsJson);
+                //noinspection ResultOfMethodCallIgnored
+                DocumentJsonFormatter.importDocumentJsonAsync(document, documentJsonDataProvider)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> result.success(true),
+                                throwable -> result.error(LOG_TAG,
+                                        "Error while importing document Instant JSON",
+                                        throwable.getMessage()));
+                break;
+            case "exportInstantJson":
+                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.exportInstantJson()");
+
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                //noinspection ResultOfMethodCallIgnored
+                DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> result.success(outputStream.toString(StandardCharsets.UTF_8.name())),
+                                throwable -> result.error(LOG_TAG,
+                                        "Error while exporting document Instant JSON",
+                                        throwable.getMessage()));
+                break;
             case "setFormFieldValue":
                 String value = call.argument("value");
                 fullyQualifiedName = call.argument("fullyQualifiedName");
 
                 requireNotNullNotEmpty(value, "Value");
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
-                flutterPdfActivity = FlutterPdfActivity.getCurrentActivity();
-                if (flutterPdfActivity == null) {
-                    throw new IllegalStateException("Before using \"Pspdfkit.setFormFieldValue()\" " +
-                            "the document needs to be presented by calling \"Pspdfkit.present()\".");
-                }
+                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.setFormFieldValue(String)");
 
-                //noinspection ResultOfMethodCallIgnored,ConstantConditions
-                flutterPdfActivity.getPdfFragment().getDocument().getFormProvider()
+                //noinspection ResultOfMethodCallIgnored
+                document.getFormProvider()
                         .getFormElementWithNameAsync(fullyQualifiedName)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -187,14 +225,10 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 fullyQualifiedName = call.argument("fullyQualifiedName");
 
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
-                flutterPdfActivity = FlutterPdfActivity.getCurrentActivity();
-                if (flutterPdfActivity == null) {
-                    throw new IllegalStateException("Before using \"Pspdfkit.setFormFieldValue()\" " +
-                            "the document needs to be presented by calling \"Pspdfkit.present()\".");
-                }
+                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.getFormFieldValue()");
 
-                //noinspection ResultOfMethodCallIgnored,ConstantConditions
-                flutterPdfActivity.getPdfFragment().getDocument().getFormProvider()
+                //noinspection ResultOfMethodCallIgnored
+                document.getFormProvider()
                         .getFormElementWithNameAsync(fullyQualifiedName)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -233,13 +267,10 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                         );
                 break;
             case "save":
-                flutterPdfActivity = FlutterPdfActivity.getCurrentActivity();
-                if (flutterPdfActivity == null) {
-                    throw new IllegalStateException("Before using \"Pspdfkit.save()\" " +
-                            "the document needs to be presented by calling \"Pspdfkit.present()\".");
-                }
-                //noinspection ResultOfMethodCallIgnored,ConstantConditions
-                flutterPdfActivity.getPdfFragment().getDocument().saveIfModifiedAsync()
+                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.save()");
+
+                //noinspection ResultOfMethodCallIgnored
+                document.saveIfModifiedAsync()
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result::success);
@@ -352,5 +383,38 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             result.success(status);
         }
         return status == 2;
+    }
+
+    /** A small in-memory data provider for loading the Document instant JSON from a string. */
+    private static class DocumentJsonDataProvider extends InputStreamDataProvider {
+        @NonNull private final byte[] annotationsJsonBytes;
+        @NonNull private final UUID uuid;
+
+        DocumentJsonDataProvider(@NonNull final String annotationsJson) {
+            this.annotationsJsonBytes = annotationsJson.getBytes(StandardCharsets.UTF_8);
+            this.uuid = UUID.nameUUIDFromBytes(annotationsJsonBytes);
+        }
+        @NonNull
+        @Override
+        protected InputStream openInputStream() {
+            return new ByteArrayInputStream(annotationsJsonBytes);
+        }
+
+        @Override
+        public long getSize() {
+            return annotationsJsonBytes.length;
+        }
+
+        @NonNull
+        @Override
+        public String getUid() {
+            return String.format("document-instant-json-%s", uuid.toString());
+        }
+
+        @Nullable
+        @Override
+        public String getTitle() {
+            return null;
+        }
     }
 }
