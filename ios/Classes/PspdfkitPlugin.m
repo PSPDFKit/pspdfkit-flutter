@@ -108,6 +108,7 @@
         builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
         builder.userInterfaceViewMode = [self userInterfaceViewMode:dictionary];
         builder.thumbnailBarMode = [self thumbnailBarMode:dictionary];
+        builder.pageMode = [self pageMode:dictionary];
 
         if (dictionary[@"showPageLabels"]) {
             builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
@@ -130,6 +131,12 @@
         }
         if (dictionary[@"iOSShowActionNavigationButtonLabels"]) {
             builder.showBackForwardActionButtonLabels = [dictionary[@"iOSShowActionNavigationButtonLabels"] boolValue];
+        }
+        if (dictionary[@"isFirstPageAlwaysSingle"]) {
+            builder.firstPageAlwaysSingle = [dictionary[@"isFirstPageAlwaysSingle"] boolValue];
+        }
+        if (dictionary[@"iOSSettingsMenuItems"]) {
+            builder.settingsOptions = [self settingsOptions:dictionary[@"iOSSettingsMenuItems"]];
         }
     }];
 }
@@ -305,6 +312,58 @@
         return 0;
     }
     return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
+}
+
+- (PSPDFPageMode)pageMode:(NSDictionary *)dictionary {
+    PSPDFPageMode pageMode = PSPDFConfiguration.defaultConfiguration.pageMode;
+
+    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
+        return pageMode;
+    }
+
+    NSString *value = dictionary[@"pageLayoutMode"];
+    if (value) {
+        if ([value isEqualToString:@"automatic"]) {
+            pageMode = PSPDFPageModeAutomatic;
+        } else if ([value isEqualToString:@"single"]) {
+            pageMode = PSPDFPageModeSingle;
+        } else if ([value isEqualToString:@"double"]) {
+            pageMode = PSPDFPageModeDouble;
+        }
+    }
+    return pageMode;
+}
+
+- (PSPDFSettingsOptions)settingsOptions:(nullable NSArray <NSString *> *)options {
+    if ((id)options == NSNull.null || !options || options.count == 0) {
+        return PSPDFSettingsOptionDefault;
+    }
+
+    PSPDFSettingsOptions finalOptions = 0;
+    for (NSString *option in options) {
+        if ([option isEqualToString:@"scrollDirection"]) {
+            finalOptions |= PSPDFSettingsOptionScrollDirection;
+        } else if ([option isEqualToString:@"pageTransition"]) {
+            finalOptions |= PSPDFSettingsOptionPageTransition;
+        } else if ([option isEqualToString:@"appearance"]) {
+            finalOptions |= PSPDFSettingsOptionAppearance;
+        } else if ([option isEqualToString:@"brightness"]) {
+            finalOptions |= PSPDFSettingsOptionBrightness;
+        } else if ([option isEqualToString:@"pageMode"]) {
+            finalOptions |= PSPDFSettingsOptionPageMode;
+        } else if ([option isEqualToString:@"spreadFitting"]) {
+            finalOptions |= PSPDFSettingsOptionSpreadFitting;
+        } else {
+            NSLog(@"WARNING: '%@' is an invalid settings option. It will be ignored.", option);
+        }
+    }
+
+    // If no options were passed, we use the default setting options.
+    if (finalOptions == 0) {
+        finalOptions = PSPDFSettingsOptionDefault;
+    }
+
+    return finalOptions;
 }
 
 - (void)setToolbarTitle:(NSString *)toolbarTitle {

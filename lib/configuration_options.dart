@@ -88,7 +88,14 @@ const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
 
 const String toolbarTitle = "toolbarTitle";
 
-const String androidSettingsMenuItems = "settingsMenuItems";
+const String androidSettingsMenuItems = "androidSettingsMenuItems";
+const String iOSSettingsMenuItems = "iOSSettingsMenuItems";
 
 const String showActionNavigationButtons = "showActionNavigationButtons";
 const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";
+
+const String pageLayoutMode = "pageLayoutMode";
+const String pageLayoutModeAutomatic = "automatic";
+const String pageLayoutModeSingle = "single";
+const String pageLayoutModeDouble = "double";
+const String isFirstPageAlwaysSingle = "isFirstPageAlwaysSingle";
