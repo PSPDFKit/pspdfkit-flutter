@@ -39,7 +39,7 @@
         result([self getFormFieldValueForFieldWithFullyQualifiedName:fullyQualifiedName]);
     } else if ([@"applyInstantJson" isEqualToString:call.method]) {
         NSString *annotationsJson = call.arguments[@"annotationsJson"];
-        if (annotationsJson == nil || annotationsJson.length <= 0) {
+        if (annotationsJson.length == 0) {
             result([FlutterError errorWithCode:@"" message:@"annotationsJson may not be nil or empty." details:nil]);
             return;
         }
@@ -65,8 +65,8 @@
         NSError *error;
         NSData *data = [document generateInstantJSONFromDocumentProvider:document.documentProviders.firstObject error:&error];
         NSString *annotationsJson = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-        if (annotationsJson == nil || annotationsJson.length <= 0 || error) {
-            result([FlutterError errorWithCode:@"" message:@"Error while exporting document Instant JSON." details:nil]);
+        if (annotationsJson == nil) {
+            result([FlutterError errorWithCode:@"" message:@"Error while exporting document Instant JSON." details:error.localizedDescription]);
         } else {
             result(annotationsJson);
         }
