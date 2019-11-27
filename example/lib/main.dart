@@ -299,6 +299,17 @@ class _MyAppState extends State<MyApp> {
                 Text(_formExampleSub, style: subhead)
               ])),
         ),
+        Divider(),
+        GestureDetector(
+          onTap: importInstantJsonExample,
+          child: Container(
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+
+                Text(_importInstantJsonExample, style: title),
+                Text(_importInstantJsonExampleSub, style: subhead)
+              ])),
+        ),
         Divider()
       ];
       return CupertinoApp(
