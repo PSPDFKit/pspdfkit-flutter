@@ -35,3 +35,4 @@ flutter:
   
   assets:
     - PDFs/
+    - PDFs/Instant/

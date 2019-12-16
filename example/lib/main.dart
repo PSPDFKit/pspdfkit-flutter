@@ -8,6 +8,7 @@
 ///
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,10 +16,11 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
-const String _documentPath = 'PDFs/Guide_v4.pdf';
+const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit Image Example.jpg';
 const String _formPath = 'PDFs/Form_example.pdf';
+const String _instantDocumentJsonPath = 'PDFs/Instant/instant-document.json';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
@@ -32,6 +34,8 @@ const String _passwordProtectedDocument = 'Opens and unlocks a password protecte
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
 const String _formExample = 'Programmatic Form Filling Example';
 const String _formExampleSub = 'Programmatically set and get the value of a form field.';
+const String _importInstantJsonExample = 'Import Instant Document JSON';
+const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -45,18 +49,22 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _frameworkVersion = '';
 
+  Future<File> extractAsset(String assetPath) async {
+    final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
+    final Uint8List list = bytes.buffer.asUint8List();
+
+    final Directory tempDir = await getTemporaryDirectory();
+    final String tempDocumentPath = '${tempDir.path}/$assetPath';
+
+    final File file = await File(tempDocumentPath).create(recursive: true);
+    file.writeAsBytesSync(list);
+    return file;
+  }
+
   void showDocument() async {
     try {
-      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
-      final Uint8List list = bytes.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$_documentPath';
-
-      final file = await File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
-
-      Pspdfkit.present(tempDocumentPath);
+      final File extractedDocument = await extractAsset(_documentPath);
+      Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -64,34 +72,17 @@ class _MyAppState extends State<MyApp> {
 
   void showImage() async {
     try {
-      final ByteData bytes =
-      await DefaultAssetBundle.of(context).load(_imagePath);
-      final Uint8List list = bytes.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$_imagePath';
-
-      final file = await File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
-
-      Pspdfkit.present(tempDocumentPath);
+      final File extractedImage = await extractAsset(_imagePath);
+      Pspdfkit.present(extractedImage.path);
     } on PlatformException catch (e) {
-      print("Failed to present document: '${e.message}'.");
+      print("Failed to present image document: '${e.message}'.");
     }
   }
 
   void applyDarkTheme() async {
     try {
-      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
-      final Uint8List list = bytes.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$_documentPath';
-
-      final file = await File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
-
-      Pspdfkit.present(tempDocumentPath, {
+      final File extractedDocument = await extractAsset(_documentPath);
+      Pspdfkit.present(extractedDocument.path, {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
@@ -102,16 +93,8 @@ class _MyAppState extends State<MyApp> {
 
   void applyCustomConfiguration() async {
     try {
-      final ByteData bytes = await DefaultAssetBundle.of(context).load(_documentPath);
-      final Uint8List list = bytes.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$_documentPath';
-
-      final file = await File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
-
-      Pspdfkit.present(tempDocumentPath, {
+      final File extractedDocument = await extractAsset(_documentPath);
+      Pspdfkit.present(extractedDocument.path, {
         pageScrollDirection: pageScrollDirectionVertical,
         pageScrollContinuous: false,
         fitPageToWidth: true,
@@ -156,16 +139,8 @@ class _MyAppState extends State<MyApp> {
 
   void unlockPasswordProtectedDocument() async {
     try {
-      final ByteData bytes = await DefaultAssetBundle.of(context).load(_lockedDocumentPath);
-      final Uint8List list = bytes.buffer.asUint8List();
-
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$_lockedDocumentPath';
-
-      final file = await File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
-
-      Pspdfkit.present(tempDocumentPath, {
+      final File extractedLockedDocument = await extractAsset(_lockedDocumentPath);
+      Pspdfkit.present(extractedLockedDocument.path, {
         password: 'test123'
       });
     } on PlatformException catch (e) {
@@ -174,17 +149,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void showFormDocumentExample() async {
-    final ByteData bytes = await DefaultAssetBundle.of(context).load(_formPath);
-    final Uint8List list = bytes.buffer.asUint8List();
-
-    final tempDir = await getTemporaryDirectory();
-    final tempDocumentPath = '${tempDir.path}/$_formPath';
-
-    final file = await File(tempDocumentPath).create(recursive: true);
-    file.writeAsBytesSync(list);
-
     try {
-      await Pspdfkit.present(tempDocumentPath);
+      final File formDocument = await extractAsset(_formPath);
+      await Pspdfkit.present(formDocument.path);
     } on PlatformException catch(e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -209,6 +176,24 @@ class _MyAppState extends State<MyApp> {
 
     if (lastName != null) {
       print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
+    }
+  }
+
+  void importInstantJsonExample() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+      await Pspdfkit.present(extractedDocument.path);
+    } on PlatformException catch(e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+
+    // Extract a string from a file.
+    final String annotationsJson = await DefaultAssetBundle.of(context).loadString(_instantDocumentJsonPath);
+
+    try {
+      Pspdfkit.applyInstantJson(annotationsJson);
+    } on PlatformException catch(e) {
+      print("Failed to import Instant Document JSON '${e.message}'.");
     }
   }
 
@@ -317,6 +302,17 @@ class _MyAppState extends State<MyApp> {
                 Text(_formExampleSub, style: subhead)
               ])),
         ),
+        Divider(),
+        GestureDetector(
+          onTap: importInstantJsonExample,
+          child: Container(
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+
+                Text(_importInstantJsonExample, style: title),
+                Text(_importInstantJsonExampleSub, style: subhead)
+              ])),
+        ),
         Divider()
       ];
       return CupertinoApp(
@@ -328,7 +324,6 @@ class _MyAppState extends State<MyApp> {
                   themeData, frameworkVersion(), cupertinoListTiles)));
     } else {
       List<Widget> listTiles = <Widget>[
-        Divider(),
         ListTile(
             title: Text(_basicExample),
             subtitle: Text(_basicExampleSub),
@@ -358,6 +353,11 @@ class _MyAppState extends State<MyApp> {
             title: Text(_formExample),
             subtitle: Text(_formExampleSub),
             onTap: () => showFormDocumentExample()),
+        Divider(),
+        ListTile(
+            title: Text(_importInstantJsonExample),
+            subtitle: Text(_importInstantJsonExampleSub),
+            onTap: () => importInstantJsonExample()),
         Divider(),
       ];
       return MaterialApp(

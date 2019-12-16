@@ -216,7 +216,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
       url: git://github.com/PSPDFKit/pspdfkit-flutter.git
 ```
 
-4. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/Guide_v4.pdf` and specify it in your `pubspec.yaml`:
+4. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/PSPDFKit.pdf` and specify it in your `pubspec.yaml`:
 
 ```yaml
   assets:
@@ -264,7 +264,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
-const String DOCUMENT_PATH = 'PDFs/Guide_v4.pdf';
+const String DOCUMENT_PATH = 'PDFs/PSPDFKit.pdf';
 const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
 const String OPEN_DOCUMENT_BUTTON = 'Tap to Open Document';
 const String PSPDFKIT_FOR = 'PSPDFKit for';

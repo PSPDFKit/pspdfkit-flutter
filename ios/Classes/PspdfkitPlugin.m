@@ -37,6 +37,39 @@
     } else if ([@"getFormFieldValue" isEqualToString:call.method]) {
         NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
         result([self getFormFieldValueForFieldWithFullyQualifiedName:fullyQualifiedName]);
+    } else if ([@"applyInstantJson" isEqualToString:call.method]) {
+        NSString *annotationsJson = call.arguments[@"annotationsJson"];
+        if (annotationsJson.length == 0) {
+            result([FlutterError errorWithCode:@"" message:@"annotationsJson may not be nil or empty." details:nil]);
+            return;
+        }
+        PSPDFDocument *document = self.pdfViewController.document;
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        PSPDFDataContainerProvider *jsonContainer = [[PSPDFDataContainerProvider alloc] initWithData:[annotationsJson dataUsingEncoding:NSUTF8StringEncoding]];
+        NSError *error;
+        BOOL success = [document applyInstantJSONFromDataProvider:jsonContainer toDocumentProvider:document.documentProviders.firstObject lenient:NO error:&error];
+        if (!success) {
+            result([FlutterError errorWithCode:@"" message:@"Error while importing document Instant JSON." details:nil]);
+        } else {
+            result(@(YES));
+        }
+    } else if ([@"exportInstantJson" isEqualToString:call.method]) {
+        PSPDFDocument *document = self.pdfViewController.document;
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        NSError *error;
+        NSData *data = [document generateInstantJSONFromDocumentProvider:document.documentProviders.firstObject error:&error];
+        NSString *annotationsJson = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+        if (annotationsJson == nil) {
+            result([FlutterError errorWithCode:@"" message:@"Error while exporting document Instant JSON." details:error.localizedDescription]);
+        } else {
+            result(annotationsJson);
+        }
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
