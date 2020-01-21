@@ -54,6 +54,7 @@
         if (!success) {
             result([FlutterError errorWithCode:@"" message:@"Error while importing document Instant JSON." details:nil]);
         } else {
+            [self.pdfViewController reloadData];
             result(@(YES));
         }
     } else if ([@"exportInstantJson" isEqualToString:call.method]) {
