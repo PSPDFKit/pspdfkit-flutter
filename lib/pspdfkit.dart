@@ -56,7 +56,7 @@ class Pspdfkit {
   
   /// Checks the external storage permission for writing on Android only.
   static Future<bool> checkAndroidWriteExternalStoragePermission() async {
-    _channel.invokeMethod(
+    return _channel.invokeMethod(
         "checkPermission",
         {"permission": "WRITE_EXTERNAL_STORAGE"}
     );
