@@ -243,6 +243,7 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: showDocument,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_basicExample, style: title),
@@ -253,6 +254,7 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: showImage,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_imageDocument, style: title),
@@ -263,6 +265,7 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: applyDarkTheme,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_darkTheme, style: title),
@@ -273,9 +276,9 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_customConfiguration, style: title),
                 Text(_customConfigurationSub, style: subhead)
               ])),
@@ -284,9 +287,9 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: unlockPasswordProtectedDocument,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_passwordProtectedDocument, style: title),
                 Text(_passwordProtectedDocumentSub, style: subhead)
               ])),
@@ -295,9 +298,9 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: showFormDocumentExample,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_formExample, style: title),
                 Text(_formExampleSub, style: subhead)
               ])),
@@ -306,9 +309,9 @@ class _MyAppState extends State<MyApp> {
         GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
+              color: Colors.transparent,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_importInstantJsonExample, style: title),
                 Text(_importInstantJsonExampleSub, style: subhead)
               ])),
