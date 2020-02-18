@@ -323,8 +323,11 @@ class _MyAppState extends State<MyApp> {
               navigationBar: CupertinoNavigationBar(
                   middle: Text(_pspdfkitFlutterPluginTitle,
                       style: themeData.textTheme.title)),
-              child: ExampleListView(
-                  themeData, frameworkVersion(), cupertinoListTiles)));
+              child: SafeArea(
+                  bottom: false,
+                  child: ExampleListView(
+                    themeData, frameworkVersion(), cupertinoListTiles)
+                  )));
     } else {
       List<Widget> listTiles = <Widget>[
         ListTile(
