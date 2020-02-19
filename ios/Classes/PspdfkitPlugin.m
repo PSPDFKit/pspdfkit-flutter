@@ -17,9 +17,10 @@
 
 @implementation PspdfkitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    FlutterMethodChannel* channel = [FlutterMethodChannel
-                                     methodChannelWithName:@"pspdfkit"
-                                     binaryMessenger:[registrar messenger]];
+    PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
+    [registrar registerViewFactory:platformViewFactory withId:@"pspdf_widget"];
+
+    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"pspdfkit" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -461,3 +462,80 @@
 
 @end
 
+@interface PspdfPlatformViewFactory()
+@property (nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
+@end
+
+@implementation PspdfPlatformViewFactory
+
+- (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger> *)messenger {
+    self = [super init];
+    if (self) {
+        self.messenger = messenger;
+    }
+    return self;
+}
+
+- (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
+    return [[PspdfPlatformView alloc] initWithFrame:frame viewIdentifier:viewId arguments:args messenger:self.messenger];
+}
+
+@end
+
+@interface PspdfPlatformView()
+@property int64_t platformViewId;
+@property (nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic) PSPDFViewController *pdfViewController;
+@property (nonatomic) UINavigationController *navigationController;
+@end
+
+@implementation PspdfPlatformView
+
+- (nonnull UIView *)view {
+    return self.navigationController.view ? self.navigationController.view : [UIView new];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
+    NSString *name = [NSString stringWithFormat:@"pspdf_widget_%lld",viewId];
+    _platformViewId = viewId;
+    _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
+
+    _pdfViewController = [[PSPDFViewController alloc] init];
+    _navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
+    _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _navigationController.view.backgroundColor = [UIColor greenColor];
+
+    self = [super init];
+
+    __weak id weakSelf = self;
+    [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+        [weakSelf handleMethodCall:call result:result];
+    }];
+
+    return self;
+}
+
+- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    if ([@"present" isEqualToString:call.method]) {
+        [self presentWith:call result:result];
+    } else if ([@"dismiss" isEqualToString:call.method]) {
+        [self dismissWith:call result:result];
+    } else {
+        result(FlutterMethodNotImplemented);
+    }
+}
+
+- (void)presentWith:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *path = (NSString *)call.arguments;
+    if (path != nil) {
+        NSURL *url = [NSURL fileURLWithPath:path];
+        PSPDFDocument *document = [[PSPDFDocument alloc] initWithURL:url];
+        self.pdfViewController.document = document;
+    }
+}
+
+- (void)dismissWith:(FlutterMethodCall*)call result:(FlutterResult)result {
+    self.pdfViewController.document = nil;
+}
+
+@end

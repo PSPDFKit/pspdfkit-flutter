@@ -10,3 +10,14 @@
 
 @interface PspdfkitPlugin : NSObject<FlutterPlugin>
 @end
+
+@interface PspdfPlatformViewFactory : NSObject<FlutterPlatformViewFactory>
+- (instancetype _Nonnull)initWithMessenger:(NSObject<FlutterBinaryMessenger> * _Nonnull)messenger;
+@end
+
+@interface PspdfPlatformView : NSObject<FlutterPlatformView>
+- (instancetype _Nonnull)initWithFrame:(CGRect)frame
+                        viewIdentifier:(int64_t)viewId
+                             arguments:(id _Nullable)args
+                             messenger:(NSObject<FlutterBinaryMessenger> * _Nonnull)messenger;
+@end

@@ -13,8 +13,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:path_provider/path_provider.dart';
+
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/pspdf_widget.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -22,6 +25,8 @@ const String _imagePath = 'PDFs/PSPDFKit_Image_Example.jpg';
 const String _formPath = 'PDFs/Form_example.pdf';
 const String _instantDocumentJsonPath = 'PDFs/Instant/instant-document.json';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
+const String _widgetExample = 'Embedded View Example';
+const String _widgetExampleSub = 'Opens a PDF Document as an embedded view.';
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
 const String _imageDocument = 'Image Document';
@@ -41,12 +46,38 @@ const double _fontSize = 21.0;
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
+
   @override
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+    bool isIOS = themeData.platform == TargetPlatform.iOS;
+    if (isIOS) {
+      return CupertinoApp(
+        home: HomePage(),
+        onGenerateRoute: (settings) {
+          final String documentPath = settings.arguments as String;
+          return CupertinoPageRoute<dynamic> (
+            builder: (context) => PspdfWrapperWidget(documentPath: documentPath));
+        });
+    } else {
+      return MaterialApp(
+        home: HomePage(),
+        onGenerateRoute: (settings) {
+          final String documentPath = settings.arguments as String;
+          return MaterialPageRoute<dynamic> (
+            builder: (context) => PspdfWrapperWidget(documentPath: documentPath));
+        });
+    }
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   String _frameworkVersion = '';
 
   Future<File> extractAsset(String assetPath) async {
@@ -59,6 +90,15 @@ class _MyAppState extends State<MyApp> {
     final File file = await File(tempDocumentPath).create(recursive: true);
     file.writeAsBytesSync(list);
     return file;
+  }
+
+  void pushDocument() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+      Navigator.pushNamed(context, "pspdf_wrapper_widget", arguments: extractedDocument.path);
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
   }
 
   void showDocument() async {
@@ -241,6 +281,17 @@ class _MyAppState extends State<MyApp> {
       List<Widget> cupertinoListTiles = <Widget>[
         Divider(),
         GestureDetector(
+          onTap: pushDocument,
+          child: Container(
+              color: Colors.transparent,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_widgetExample, style: title),
+                Text(_widgetExampleSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
           onTap: showDocument,
           child: Container(
               color: Colors.transparent,
@@ -318,16 +369,13 @@ class _MyAppState extends State<MyApp> {
         ),
         Divider()
       ];
-      return CupertinoApp(
-          home: CupertinoPageScaffold(
+      return CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(
-                  middle: Text(_pspdfkitFlutterPluginTitle,
-                      style: themeData.textTheme.title)),
+                middle: Text(_pspdfkitFlutterPluginTitle, style: themeData.textTheme.title)),
               child: SafeArea(
-                  bottom: false,
-                  child: ExampleListView(
-                    themeData, frameworkVersion(), cupertinoListTiles)
-                  )));
+                bottom: false,
+                child: ExampleListView(themeData, frameworkVersion(), cupertinoListTiles))
+              );
     } else {
       List<Widget> listTiles = <Widget>[
         ListTile(
@@ -366,13 +414,10 @@ class _MyAppState extends State<MyApp> {
             onTap: () => importInstantJsonExample()),
         Divider(),
       ];
-      return MaterialApp(
-        home: Scaffold(
-            appBar: AppBar(
-              title: Text(_pspdfkitFlutterPluginTitle),
-            ),
-            body: ExampleListView(themeData, frameworkVersion(), listTiles)),
-      );
+      return Scaffold(
+              appBar: AppBar(title: Text(_pspdfkitFlutterPluginTitle)),
+              body: ExampleListView(themeData, frameworkVersion(), listTiles)
+            );
     }
   }
 }
@@ -388,6 +433,7 @@ class ExampleListView extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
       Container(
+        color: Colors.black12,
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
