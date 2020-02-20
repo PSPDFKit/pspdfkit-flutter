@@ -16,25 +16,14 @@ import 'package:flutter/material.dart';
 
 class PspdfWidgetController {
   MethodChannel _channel;
-  Function _callbackHandler;
 
   PspdfWidgetController.init(int id) {
-    _channel = new MethodChannel('pspdf_widget_$id');
+    _channel = new MethodChannel('com.pspdfkit.widget.$id');
   }
 
-  void setCallbackHandler(Future<dynamic> handler(MethodCall call)) {
-    _callbackHandler = handler;
-    _channel.setMethodCallHandler(_callbackHandler);
-  }
+  Future<void> present(String url) async => _channel.invokeMethod('present', url);
 
-  Future<void> present(String url) async {
-    assert(url != null);
-    return _channel.invokeMethod('present', url);
-  }
-
-  Future<void> dismiss() async {
-    return _channel.invokeMethod('dismiss');
-  }
+  Future<void> dismiss() async => _channel.invokeMethod('dismiss');
 }
 
 class PspdfWidget extends StatefulWidget {
@@ -54,26 +43,27 @@ class _PspdfWidgetState extends State<PspdfWidget> {
   
   @override
   void dispose() {
-    super.dispose();
     this.controller.dismiss();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return Scaffold(body: Center(child: AndroidView(
-        viewType: 'pspdf_widget',
-        onPlatformViewCreated: onPlatformViewCreated,
-        creationParamsCodec: const StandardMessageCodec(),
-      )));
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageScaffold(child:UiKitView(
-        viewType: 'pspdf_widget',
+        viewType: 'com.pspdfkit.widget',
         onPlatformViewCreated: onPlatformViewCreated,
         creationParamsCodec: const StandardMessageCodec(),
       ));
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
+      return Scaffold(body: Center(child: AndroidView(
+        viewType: 'com.pspdfkit.widget',
+        onPlatformViewCreated: onPlatformViewCreated,
+        creationParamsCodec: const StandardMessageCodec(),
+      )));
+    } else {
+      return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
-    return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
   }
 
   Future<void> onPlatformViewCreated(int id) async {

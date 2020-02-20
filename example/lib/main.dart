@@ -16,8 +16,8 @@ import 'package:flutter/services.dart';
 
 import 'package:path_provider/path_provider.dart';
 
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/pspdf_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit_global.dart';
+import 'package:pspdfkit_flutter/pspdfkit_widget.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -47,27 +47,12 @@ const double _fontSize = 21.0;
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-    bool isIOS = themeData.platform == TargetPlatform.iOS;
-    if (isIOS) {
-      return CupertinoApp(
-        home: HomePage(),
-        onGenerateRoute: (settings) {
-          final String documentPath = settings.arguments as String;
-          return CupertinoPageRoute<dynamic> (
-            builder: (context) => PspdfWrapperWidget(documentPath: documentPath));
-        });
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return CupertinoApp(home: HomePage());
     } else {
-      return MaterialApp(
-        home: HomePage(),
-        onGenerateRoute: (settings) {
-          final String documentPath = settings.arguments as String;
-          return MaterialPageRoute<dynamic> (
-            builder: (context) => PspdfWrapperWidget(documentPath: documentPath));
-        });
+      return MaterialApp(home: HomePage());
     }
   }
 }
@@ -92,10 +77,16 @@ class _HomePageState extends State<HomePage> {
     return file;
   }
 
-  void pushDocument() async {
+  void pushPspdfWidget() async {
     try {
       final File extractedDocument = await extractAsset(_documentPath);
-      Navigator.pushNamed(context, "pspdf_wrapper_widget", arguments: extractedDocument.path);
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+          PspdfWidget(documentPath: extractedDocument.path)));
+      } else {
+        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+          PspdfWidget(documentPath: extractedDocument.path)));
+      }
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -281,7 +272,7 @@ class _HomePageState extends State<HomePage> {
       List<Widget> cupertinoListTiles = <Widget>[
         Divider(),
         GestureDetector(
-          onTap: pushDocument,
+          onTap: pushPspdfWidget,
           child: Container(
               color: Colors.transparent,
               padding: padding,

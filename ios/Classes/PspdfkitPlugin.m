@@ -18,9 +18,9 @@
 @implementation PspdfkitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
-    [registrar registerViewFactory:platformViewFactory withId:@"pspdf_widget"];
+    [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
 
-    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"pspdfkit" binaryMessenger:[registrar messenger]];
+    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -496,7 +496,7 @@
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
-    NSString *name = [NSString stringWithFormat:@"pspdf_widget_%lld",viewId];
+    NSString *name = [NSString stringWithFormat:@"com.pspdfkit.widget.%lld",viewId];
     _platformViewId = viewId;
     _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
@@ -515,26 +515,22 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([@"present" isEqualToString:call.method]) {
-        [self presentWith:call result:result];
-    } else if ([@"dismiss" isEqualToString:call.method]) {
-        [self dismissWith:call result:result];
+    if ([@"setDocumentURL" isEqualToString:call.method]) {
+        [self setDocumentURLWith:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
 }
 
-- (void)presentWith:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)setDocumentURLWith:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString *path = (NSString *)call.arguments;
     if (path != nil) {
         NSURL *url = [NSURL fileURLWithPath:path];
         PSPDFDocument *document = [[PSPDFDocument alloc] initWithURL:url];
         self.pdfViewController.document = document;
+    } else {
+        self.pdfViewController.document = nil;
     }
-}
-
-- (void)dismissWith:(FlutterMethodCall*)call result:(FlutterResult)result {
-    self.pdfViewController.document = nil;
 }
 
 @end
