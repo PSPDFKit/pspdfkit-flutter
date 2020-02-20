@@ -34,12 +34,16 @@
 
     // View controller containment
     UIViewController *flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    if (flutterViewController == nil) {
+        NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
+    }
     [flutterViewController addChildViewController:_navigationController];
     [flutterViewController.view addSubview:_navigationController.view];
     [_navigationController didMoveToParentViewController:flutterViewController];
 
     _pdfViewController = [[PSPDFViewController alloc] init];
     [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
+    _pdfViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:self action:@selector(backButtonPressed)];
 
     self = [super init];
 
@@ -51,21 +55,16 @@
     return self;
 }
 
-- (void)dealloc {
-    [_pdfViewController.view removeFromSuperview];
-    [_pdfViewController removeFromParentViewController];
-    _pdfViewController = nil;
-    [_navigationController.view removeFromSuperview];
-    [_navigationController removeFromParentViewController];
-    _navigationController = nil;
-}
-
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"setDocumentURL" isEqualToString:call.method]) {
         [self setDocumentURLWith:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
+}
+
+- (void)backButtonPressed {
+    [_channel invokeMethod:@"popPlatformView" arguments:nil];
 }
 
 - (void)setDocumentURLWith:(FlutterMethodCall*)call result:(FlutterResult)result {
