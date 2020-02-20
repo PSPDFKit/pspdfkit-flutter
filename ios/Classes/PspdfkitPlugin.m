@@ -7,7 +7,6 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitPlugin.h"
-#import "PspdfFlutterHelper.h"
 #import "PspdfPlatformViewFactory.h"
 
 @import PSPDFKit;
