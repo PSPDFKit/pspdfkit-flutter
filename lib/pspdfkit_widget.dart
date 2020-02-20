@@ -21,9 +21,7 @@ class PspdfWidgetController {
     _channel = new MethodChannel('com.pspdfkit.widget.$id');
   }
 
-  Future<void> present(String url) async => _channel.invokeMethod('present', url);
-
-  Future<void> dismiss() async => _channel.invokeMethod('dismiss');
+  Future<void> setDocumentURL(String documentURL) async => _channel.invokeMethod('setDocumentURL', documentURL);
 }
 
 class PspdfWidget extends StatefulWidget {
@@ -43,7 +41,7 @@ class _PspdfWidgetState extends State<PspdfWidget> {
   
   @override
   void dispose() {
-    this.controller.dismiss();
+    this.controller.setDocumentURL(null);
     super.dispose();
   }
 
@@ -68,6 +66,6 @@ class _PspdfWidgetState extends State<PspdfWidget> {
 
   Future<void> onPlatformViewCreated(int id) async {
     this.controller = new PspdfWidgetController.init(id);
-    this.controller.present(widget.documentPath);
+    this.controller.setDocumentURL(widget.documentPath);
   }
 }
