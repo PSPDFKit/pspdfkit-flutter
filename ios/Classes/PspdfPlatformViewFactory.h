@@ -8,5 +8,6 @@
 //
 #import <Flutter/Flutter.h>
 
-@interface PspdfkitPlugin : NSObject<FlutterPlugin>
+@interface PspdfPlatformViewFactory : NSObject<FlutterPlatformViewFactory>
+- (instancetype _Nonnull)initWithMessenger:(NSObject<FlutterBinaryMessenger> * _Nonnull)messenger;
 @end

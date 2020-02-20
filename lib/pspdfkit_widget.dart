@@ -14,16 +14,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class PspdfWidgetController {
-  MethodChannel _channel;
-
-  PspdfWidgetController.init(int id) {
-    _channel = new MethodChannel('com.pspdfkit.widget.$id');
-  }
-
-  Future<void> setDocumentURL(String documentURL) async => _channel.invokeMethod('setDocumentURL', documentURL);
-}
-
 class PspdfWidget extends StatefulWidget {
   final String documentPath;
 
@@ -37,11 +27,11 @@ class PspdfWidget extends StatefulWidget {
 }
 
 class _PspdfWidgetState extends State<PspdfWidget> {
-  PspdfWidgetController controller;
+  MethodChannel _channel;  
   
   @override
   void dispose() {
-    this.controller.setDocumentURL(null);
+    _channel.invokeMethod<dynamic>('setDocumentURL', null);
     super.dispose();
   }
 
@@ -65,7 +55,7 @@ class _PspdfWidgetState extends State<PspdfWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.controller = new PspdfWidgetController.init(id);
-    this.controller.setDocumentURL(widget.documentPath);
+    _channel = new MethodChannel('com.pspdfkit.widget.$id');
+    await _channel.invokeMethod<dynamic>('setDocumentURL', widget.documentPath);
   }
 }
