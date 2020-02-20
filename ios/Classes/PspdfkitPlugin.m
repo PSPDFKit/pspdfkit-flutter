@@ -500,9 +500,17 @@
     _platformViewId = viewId;
     _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
-    _pdfViewController = [[PSPDFViewController alloc] init];
-    _navigationController = [[UINavigationController alloc] initWithRootViewController:_pdfViewController];
+    _navigationController = [UINavigationController new];
     _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+    // View controller containment
+    UIViewController *flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    [flutterViewController addChildViewController:_navigationController];
+    [flutterViewController.view addSubview:_navigationController.view];
+    [_navigationController didMoveToParentViewController:flutterViewController];
+
+    _pdfViewController = [[PSPDFViewController alloc] init];
+    [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
 
     self = [super init];
 
@@ -512,6 +520,15 @@
     }];
 
     return self;
+}
+
+- (void)dealloc {
+    [_pdfViewController.view removeFromSuperview];
+    [_pdfViewController removeFromParentViewController];
+    _pdfViewController = nil;
+    [_navigationController.view removeFromSuperview];
+    [_navigationController removeFromParentViewController];
+    _navigationController = nil;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
