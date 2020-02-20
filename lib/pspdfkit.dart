@@ -25,15 +25,11 @@ class Pspdfkit {
 
   /// Sets the license key.
   static Future<void> setLicenseKey(String licenseKey) async =>
-    await _channel.invokeMethod('setLicenseKey', <String, String>{'licenseKey': licenseKey});
+      await _channel.invokeMethod('setLicenseKey', <String, String>{'licenseKey': licenseKey});
 
   /// Loads a [document] with a supported format using a given [configuration].
-  static Future<bool> present(String document, [dynamic configuration]) async {
-    await _channel.invokeMethod(
-        'present',
-        <String, dynamic>{'document': document, 'configuration': configuration}
-    );
-  }
+  static Future<bool> present(String document, [dynamic configuration]) async =>
+      await _channel.invokeMethod('present', <String, dynamic>{'document': document, 'configuration': configuration});
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   static Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
@@ -75,9 +71,7 @@ class Pspdfkit {
   }
 
   /// Opens the Android settings.
-  static Future<void> openAndroidSettings() async {
-    _channel.invokeMethod("openSettings");
-  }
+  static Future<void> openAndroidSettings() async => _channel.invokeMethod("openSettings");
 
   static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
     switch (status) {

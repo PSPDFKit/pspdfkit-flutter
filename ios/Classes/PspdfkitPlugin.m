@@ -501,9 +501,8 @@
     _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
     _pdfViewController = [[PSPDFViewController alloc] init];
-    _navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
+    _navigationController = [[UINavigationController alloc] initWithRootViewController:_pdfViewController];
     _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _navigationController.view.backgroundColor = [UIColor greenColor];
 
     self = [super init];
 
