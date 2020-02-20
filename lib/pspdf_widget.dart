@@ -37,14 +37,12 @@ class PspdfWidgetController {
   }
 }
 
-typedef void PspdfWidgetCreatedCallback(PspdfWidgetController controller);
-
 class PspdfWidget extends StatefulWidget {
-  final PspdfWidgetCreatedCallback onCreate;
+  final String documentPath;
 
   PspdfWidget({
     Key key,
-    @required this.onCreate,
+    @required this.documentPath,
   });
 
   @override
@@ -52,72 +50,34 @@ class PspdfWidget extends StatefulWidget {
 }
 
 class _PspdfWidgetState extends State<PspdfWidget> {
+  PspdfWidgetController controller;
+  
+  @override
+  void dispose() {
+    super.dispose();
+    this.controller.dismiss();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return AndroidView(
+      return Scaffold(body: Center(child: AndroidView(
         viewType: 'pspdf_widget',
         onPlatformViewCreated: onPlatformViewCreated,
         creationParamsCodec: const StandardMessageCodec(),
-      );
+      )));
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return UiKitView(
+      return CupertinoPageScaffold(child:UiKitView(
         viewType: 'pspdf_widget',
         onPlatformViewCreated: onPlatformViewCreated,
         creationParamsCodec: const StandardMessageCodec(),
-      );
+      ));
     }
-
     return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    if (widget.onCreate == null) { return; }
-    widget.onCreate(new PspdfWidgetController.init(id));
-  }
-}
-
-class PspdfWrapperWidget extends StatefulWidget {
-  final String documentPath;
-
-  PspdfWrapperWidget({
-    Key key,
-    @required this.documentPath,
-  });
-
-  @override
-  _PspdfWrapperWidgetState createState() => _PspdfWrapperWidgetState();
-}
-
-class _PspdfWrapperWidgetState extends State<PspdfWrapperWidget> {
-  PspdfWidgetController pspdfWidgetController;
-  PspdfWidget pspdfWidget;
-
-  @override
-  void initState() {
-    super.initState();
-    pspdfWidget = new PspdfWidget(onCreate: onCreate);
-  }
-  
-  @override
-  void dispose() {
-    this.pspdfWidgetController.dismiss();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return Scaffold(body: Center(child: pspdfWidget));
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return CupertinoPageScaffold(child: pspdfWidget);
-    } 
-
-    return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
-  }
-
-  void onCreate(PspdfWidgetController pspdfWidgetController) async {
-    this.pspdfWidgetController = pspdfWidgetController;
-    pspdfWidgetController.present(widget.documentPath);
+    this.controller = new PspdfWidgetController.init(id);
+    this.controller.present(widget.documentPath);
   }
 }
