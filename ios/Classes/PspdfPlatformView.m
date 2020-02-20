@@ -21,7 +21,7 @@
 @implementation PspdfPlatformView
 
 - (nonnull UIView *)view {
-    return self.navigationController.view ? self.navigationController.view : [UIView new];
+    return self.navigationController.view ?: [UIView new];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {

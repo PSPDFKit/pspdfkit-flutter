@@ -60,8 +60,10 @@ class Pspdfkit {
 
   /// Requests the external storage permission for writing on Android only.
   static Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
-    final dynamic status = await _channel.invokeMethod(
-        "requestPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+    final dynamic status = await _channel.invokeMethod<dynamic>(
+      "requestPermission", 
+      {"permission": "WRITE_EXTERNAL_STORAGE"}
+    );
 
     return status is int
         ? _intToAndroidPermissionStatus(status)
