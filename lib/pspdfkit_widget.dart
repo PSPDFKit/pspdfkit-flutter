@@ -32,17 +32,17 @@ class _PspdfWidgetState extends State<PspdfWidget> {
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return CupertinoPageScaffold(child:UiKitView(
+      return UiKitView(
         viewType: 'com.pspdfkit.widget',
         onPlatformViewCreated: onPlatformViewCreated,
         creationParamsCodec: const StandardMessageCodec(),
-      ));
+      );
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return Scaffold(body: Center(child: AndroidView(
+      return AndroidView(
         viewType: 'com.pspdfkit.widget',
         onPlatformViewCreated: onPlatformViewCreated,
         creationParamsCodec: const StandardMessageCodec(),
-      )));
+      );
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
