@@ -12,7 +12,7 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
-@interface PspdfkitPlugin()
+@interface PspdfkitPlugin() <PSPDFViewControllerDelegate>
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @end
 
@@ -91,6 +91,7 @@
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
         self.pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
+        self.pdfViewController.delegate = self;
         
         if ((id)configurationDictionary != NSNull.null) {
             [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
@@ -106,6 +107,13 @@
     } else {
         result(FlutterMethodNotImplemented);
     }
+}
+
+# pragma mark - PSPDFViewControllerDelegate
+
+- (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
+    // Don't hold on to the view controller object after dismissal.
+    self.pdfViewController = nil;
 }
 
 # pragma mark - Private methods
@@ -178,8 +186,7 @@
     }];
 }
 
-
-#pragma mark - Customize the Toolbar
+# pragma mark - Customize the Toolbar
 
 - (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items {
     if ((id)items == NSNull.null || !items || items.count == 0) {
@@ -211,7 +218,7 @@
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
 }
 
-#pragma mark - Forms
+# pragma mark - Forms
 
 - (id)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
     PSPDFDocument *document = self.pdfViewController.document;
