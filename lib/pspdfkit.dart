@@ -50,6 +50,17 @@ class Pspdfkit {
   /// Exports Instant document JSON from the presented document.
   static Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
 
+  Future<bool> addAnnotation(dynamic jsonAnnotation) async => 
+      _channel.invokeMethod('addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+
+  Future<bool> removeAnnotation(String jsonAnnotation) async => 
+      _channel.invokeMethod('removeAnnotation', <String, String>{'jsonAnnotation': jsonAnnotation});
+  
+  Future<dynamic> getAnnotations(int pageIndex, String type) async =>
+      _channel.invokeMethod<dynamic>('getAnnotations', <String, dynamic>{'pageIndex': pageIndex, 'type': type});
+
+  Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
+
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() async => _channel.invokeMethod('save');

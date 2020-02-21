@@ -71,12 +71,23 @@
         } else {
             result(annotationsJson);
         }
+    } else if ([@"addAnnotation" isEqualToString:call.method]) {
+        id jsonAnnotation = call.arguments[@"jsonAnnotation"];
+        result([self addAnnotation:jsonAnnotation]);
+    } else if ([@"removeAnnotation" isEqualToString:call.method]) {
+        id jsonAnnotation = call.arguments[@"jsonAnnotation"];
+        result([self removeAnnotation:jsonAnnotation]);
+    } else if ([@"getAnnotations" isEqualToString:call.method]) {
+        PSPDFPageIndex pageIndex = [call.arguments[@"pageIndex"] longLongValue];
+        NSString *typeString = call.arguments[@"type"];
+        result([self getAnnotationsForPageIndex:pageIndex andType:typeString]);
+    } else if ([@"getAllUnsavedAnnotations" isEqualToString:call.method]) {
+        result([self getAllUnsavedAnnotations]);
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
         if (documentPath == nil || documentPath.length <= 0) {
-            FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
-            result(error);
+            result([FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil]);
             return;
         }
 
@@ -175,8 +186,158 @@
     }];
 }
 
+# pragma mark - Instant JSON
 
-#pragma mark - Customize the Toolbar
+- (id)addAnnotation:(id)jsonAnnotation {
+    PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    NSData *data;
+    if ([jsonAnnotation isKindOfClass:NSString.class]) {
+        data = [jsonAnnotation dataUsingEncoding:NSUTF8StringEncoding];
+    } else if ([jsonAnnotation isKindOfClass:NSDictionary.class])  {
+        data = [NSJSONSerialization dataWithJSONObject:jsonAnnotation options:0 error:nil];
+    }
+
+    if (data == nil) {
+        return [FlutterError errorWithCode:@"" message:@"Invalid JSON Annotation." details:nil];
+    }
+
+    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
+    PSPDFAnnotation *annotation = [PSPDFAnnotation annotationFromInstantJSON:data documentProvider:documentProvider error:NULL];
+    BOOL success = [document addAnnotations:@[annotation] options:nil];
+
+    if (!success) {
+        return [FlutterError errorWithCode:@"" message:@"Failed to add annotation." details:nil];
+    }
+
+    return @(YES);
+}
+
+- (id)removeAnnotation:(id)jsonAnnotation {
+    PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    NSString *annotationUUID;
+    if ([jsonAnnotation isKindOfClass:NSString.class]) {
+        NSData *jsonData = [jsonAnnotation dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
+        if (jsonDict) { annotationUUID = jsonDict[@"uuid"]; }
+    } else if ([jsonAnnotation isKindOfClass:NSDictionary.class])  {
+        if (jsonAnnotation) { annotationUUID = jsonAnnotation[@"uuid"]; }
+    }
+
+    if (annotationUUID.length <= 0) {
+        return [FlutterError errorWithCode:@"" message:@"Invalid annotation UUID." details:nil];
+    }
+
+    BOOL success = NO;
+    NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
+    for (PSPDFAnnotation *annotation in allAnnotations) {
+        // Remove the annotation if the uuids match.
+        if ([annotation.uuid isEqualToString:annotationUUID]) {
+            success = [document removeAnnotations:@[annotation] options:nil];
+            break;
+        }
+    }
+
+    return @(success);
+}
+
+- (id)getAnnotationsForPageIndex:(PSPDFPageIndex)pageIndex andType:(NSString *)typeString {
+    PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    PSPDFAnnotationType type = [self annotationTypeFromString:typeString];
+
+    NSArray <PSPDFAnnotation *> *annotations = [document annotationsForPageAtIndex:pageIndex type:type];
+    NSArray <NSDictionary *> *annotationsJSON = [PspdfkitPlugin instantJSONFromAnnotations:annotations];
+
+    if (annotationsJSON) {
+        return annotationsJSON;
+    } else {
+        return [FlutterError errorWithCode:@"" message:@"Failed to get annotations." details:nil];
+    }
+}
+
+- (id)getAllUnsavedAnnotations {
+    PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    PSPDFDocumentProvider *documentProvider = document.documentProviders.firstObject;
+    NSData *data = [document generateInstantJSONFromDocumentProvider:documentProvider error:NULL];
+    NSDictionary *annotationsJSON = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:NULL];
+
+    if (annotationsJSON) {
+        return annotationsJSON;
+    }  else {
+        return [FlutterError errorWithCode:@"" message:@"Failed to get annotations." details:nil];
+    }
+}
+
+# pragma mark - Instant JSON Helpers
+
++ (NSArray <NSDictionary *> *)instantJSONFromAnnotations:(NSArray <PSPDFAnnotation *> *) annotations {
+    NSMutableArray <NSDictionary *> *annotationsJSON = [NSMutableArray new];
+    for (PSPDFAnnotation *annotation in annotations) {
+        NSDictionary <NSString *, NSString *> *uuidDict = @{@"uuid" : annotation.uuid};
+        NSData *annotationData = [annotation generateInstantJSONWithError:NULL];
+        if (annotationData) {
+            NSMutableDictionary *annotationDictionary = [[NSJSONSerialization JSONObjectWithData:annotationData options:kNilOptions error:NULL] mutableCopy];
+            [annotationDictionary addEntriesFromDictionary:uuidDict];
+            if (annotationDictionary) {
+                [annotationsJSON addObject:annotationDictionary];
+            }
+        } else {
+            // We only generate Instant JSON data for attached annotations. When an annotation is deleted, we only set the annotation uuid.
+            [annotationsJSON addObject:uuidDict];
+        }
+    }
+
+    return [annotationsJSON copy];
+}
+
+- (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
+    if (!typeString) {
+        return PSPDFAnnotationTypeAll;
+    } else if ([typeString isEqualToString:@"pspdfkit/ink"]) {
+        return PSPDFAnnotationTypeInk;
+    } else if ([typeString isEqualToString:@"pspdfkit/link"]) {
+        return PSPDFAnnotationTypeLink;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/highlight"]) {
+        return PSPDFAnnotationTypeHighlight;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/squiggly"]) {
+        return PSPDFAnnotationTypeSquiggly;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/strikeout"]) {
+        return PSPDFAnnotationTypeStrikeOut;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/underline"]) {
+        return PSPDFAnnotationTypeUnderline;
+    } else if ([typeString isEqualToString:@"pspdfkit/note"]) {
+        return PSPDFAnnotationTypeNote;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/ellipse"]) {
+        return PSPDFAnnotationTypeCircle;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/line"]) {
+        return PSPDFAnnotationTypeLine;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/polygon"]) {
+        return PSPDFAnnotationTypePolygon;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/rectangle"]) {
+        return PSPDFAnnotationTypeSquare;
+    } else if ([typeString isEqualToString:@"pspdfkit/text"]) {
+        return PSPDFAnnotationTypeFreeText;
+    } else {
+        return PSPDFAnnotationTypeAll;
+    }
+}
+
+# pragma mark - Toolbar Customization
 
 - (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items {
     if ((id)items == NSNull.null || !items || items.count == 0) {
@@ -208,19 +369,17 @@
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
 }
 
-#pragma mark - Forms
+# pragma mark - Forms
 
 - (id)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
     PSPDFDocument *document = self.pdfViewController.document;
 
     if (!document || !document.isValid) {
-        FlutterError *error = [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
-        return error;
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
     }
 
     if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
-        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
-        return error;
+        return [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
     }
 
     BOOL success = NO;
@@ -241,8 +400,7 @@
                 formElement.contents = value;
                 success = YES;
             } else if ([formElement isKindOfClass:PSPDFSignatureFormElement.class]) {
-                FlutterError *error = [FlutterError errorWithCode:@"" message:@"Signature form elements are not supported." details:nil];
-                return error;
+                return [FlutterError errorWithCode:@"" message:@"Signature form elements are not supported." details:nil];
             } else {
                 return @(NO);
             }
@@ -251,8 +409,7 @@
     }
 
     if (!success) {
-        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
-        return error;
+        return [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
     }
 
     return @(YES);
@@ -260,8 +417,7 @@
 
 - (id)getFormFieldValueForFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
     if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
-        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
-        return error;
+        return [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
     }
 
     PSPDFDocument *document = self.pdfViewController.document;
@@ -274,8 +430,7 @@
     }
 
     if (formFieldValue == nil) {
-        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
-        return error;
+        return [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
     }
 
     return formFieldValue;
