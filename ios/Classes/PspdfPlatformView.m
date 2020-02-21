@@ -14,6 +14,7 @@
 @interface PspdfPlatformView()
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) UINavigationController *navigationController;
 @end
@@ -33,13 +34,13 @@
     _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
     // View controller containment
-    UIViewController *flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    if (flutterViewController == nil) {
+    _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    if (_flutterViewController == nil) {
         NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
     }
-    [flutterViewController addChildViewController:_navigationController];
-    [flutterViewController.view addSubview:_navigationController.view];
-    [_navigationController didMoveToParentViewController:flutterViewController];
+    [_flutterViewController addChildViewController:_navigationController];
+    [_flutterViewController.view addSubview:_navigationController.view];
+    [_navigationController didMoveToParentViewController:_flutterViewController];
 
     _pdfViewController = [[PSPDFViewController alloc] init];
     [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
@@ -55,6 +56,15 @@
     return self;
 }
 
+- (void)dealloc {
+    _pdfViewController.document = nil;
+    [_pdfViewController.view removeFromSuperview];
+    [_pdfViewController removeFromParentViewController];
+    [_navigationController.navigationBar removeFromSuperview];
+    [_navigationController.view removeFromSuperview];
+    [_navigationController removeFromParentViewController];
+}
+
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if ([@"setDocumentURL" isEqualToString:call.method]) {
         [self setDocumentURLWith:call result:result];
@@ -64,7 +74,8 @@
 }
 
 - (void)backButtonPressed {
-    [_channel invokeMethod:@"popPlatformView" arguments:nil];
+    FlutterViewController *flutterViewController = (FlutterViewController *)self.flutterViewController;
+    [flutterViewController popRoute];
 }
 
 - (void)setDocumentURLWith:(FlutterMethodCall*)call result:(FlutterResult)result {

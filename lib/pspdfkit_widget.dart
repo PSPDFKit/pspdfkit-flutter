@@ -28,12 +28,6 @@ class PspdfWidget extends StatefulWidget {
 
 class _PspdfWidgetState extends State<PspdfWidget> {
   MethodChannel _channel;  
-  
-  @override
-  void dispose() {
-    _channel.invokeMethod<dynamic>('setDocumentURL', null);
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,14 +50,6 @@ class _PspdfWidgetState extends State<PspdfWidget> {
 
   Future<void> onPlatformViewCreated(int id) async {
     _channel = new MethodChannel('com.pspdfkit.widget.$id');
-    _channel.setMethodCallHandler(this._methodCallHandler);
     await _channel.invokeMethod<dynamic>('setDocumentURL', widget.documentPath);
-  }
-
-  Future<void> _methodCallHandler(MethodCall call) async {
-      switch(call.method) {
-        case 'popPlatformView':
-          Navigator.pop(context);
-      }
   }
 }
