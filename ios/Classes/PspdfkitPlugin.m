@@ -71,6 +71,11 @@
         } else {
             result(annotationsJson);
         }
+    } else if ([@"processAnnotations" isEqualToString:call.method]) {
+        NSString *type = call.arguments[@"type"];
+        NSString *processingMode = call.arguments[@"processingMode"];
+        NSString *destinationPath = call.arguments[@"destinationPath"];
+        result([self processAnnotationsOfType:type withProcessingMode:processingMode andDestinationPath:destinationPath]);
     } else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
@@ -208,6 +213,40 @@
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
 }
 
+# pragma mark - Annotation Processing
+
+- (id)processAnnotationsOfType:(NSString *)type withProcessingMode:(NSString *)processingMode andDestinationPath:(NSString *)destinationPath {
+    PSPDFAnnotationChange change = [self convertToPSPDFAnnotationChange:processingMode];
+    NSURL *processedDocumentURL = [self writableFileURLWithPath:destinationPath override:YES copyIfNeeded:NO];
+    PSPDFAnnotationType annotationType = [self annotationTypeFromString:type];
+
+    if (!processedDocumentURL) {
+        return [FlutterError errorWithCode:@"" message:@"Could not create a new PDF file at the given path." details:nil];
+    }
+
+    PSPDFDocument *document = self.pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    // Create a processor configuration with the current document.
+    PSPDFProcessorConfiguration *configuration = [[PSPDFProcessorConfiguration alloc] initWithDocument:document];
+
+    // Modify annotations.
+    [configuration modifyAnnotationsOfTypes:annotationType change:change];
+
+    // Create the PDF processor and write the processed file.
+    PSPDFProcessor *processor = [[PSPDFProcessor alloc] initWithConfiguration:configuration securityOptions:nil];
+
+    NSError *error;
+    [processor writeToFileURL:processedDocumentURL error:&error];
+    if (error) {
+        return [FlutterError errorWithCode:@"" message:@"Error writing to PDF file." details:error.localizedDescription];
+    }
+
+    return @(YES);
+}
+
 #pragma mark - Forms
 
 - (id)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
@@ -282,6 +321,100 @@
 }
 
 # pragma mark - Helpers
+
+- (PSPDFAnnotationChange)convertToPSPDFAnnotationChange:(NSString *)annotationChange {
+  if ([annotationChange isEqualToString:@"flatten"]) {
+    return PSPDFAnnotationChangeFlatten;
+  } else if ([annotationChange isEqualToString:@"remove"]) {
+    return PSPDFAnnotationChangeRemove;
+  } else if ([annotationChange isEqualToString:@"embed"]) {
+    return PSPDFAnnotationChangeEmbed;
+  } else if ([annotationChange isEqualToString:@"print"]) {
+    return PSPDFAnnotationChangePrint;
+  } else {
+    return PSPDFAnnotationChangeEmbed;
+  }
+}
+
+- (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
+    if (!typeString) {
+        return PSPDFAnnotationTypeAll;
+    } else if ([typeString isEqualToString:@"pspdfkit/ink"]) {
+        return PSPDFAnnotationTypeInk;
+    } else if ([typeString isEqualToString:@"pspdfkit/link"]) {
+        return PSPDFAnnotationTypeLink;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/highlight"]) {
+        return PSPDFAnnotationTypeHighlight;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/squiggly"]) {
+        return PSPDFAnnotationTypeSquiggly;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/strikeout"]) {
+        return PSPDFAnnotationTypeStrikeOut;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/underline"]) {
+        return PSPDFAnnotationTypeUnderline;
+    } else if ([typeString isEqualToString:@"pspdfkit/note"]) {
+        return PSPDFAnnotationTypeNote;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/ellipse"]) {
+        return PSPDFAnnotationTypeCircle;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/line"]) {
+        return PSPDFAnnotationTypeLine;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/polygon"]) {
+        return PSPDFAnnotationTypePolygon;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/rectangle"]) {
+        return PSPDFAnnotationTypeSquare;
+    } else if ([typeString isEqualToString:@"pspdfkit/text"]) {
+        return PSPDFAnnotationTypeFreeText;
+    } else {
+        return PSPDFAnnotationTypeAll;
+    }
+}
+
+- (NSURL *)fileURLWithPath:(NSString *)path {
+    if (path) {
+        path = [path stringByExpandingTildeInPath];
+        path = [path stringByReplacingOccurrencesOfString:@"file:" withString:@""];
+        if (![path isAbsolutePath]) {
+            path = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"] stringByAppendingPathComponent:path];
+        }
+        return [NSURL fileURLWithPath:path];
+    }
+    return nil;
+}
+
+- (NSURL *)writableFileURLWithPath:(NSString *)path override:(BOOL)override copyIfNeeded:(BOOL)copyIfNeeded {
+    NSURL *writableFileURL;
+    if (path.absolutePath) {
+        writableFileURL = [NSURL fileURLWithPath:path];
+    } else {
+        NSString *docsFolder = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+        writableFileURL = [NSURL fileURLWithPath:[docsFolder stringByAppendingPathComponent:path]];
+    }
+
+    NSFileManager *fileManager = NSFileManager.defaultManager;
+    if (override) {
+        [fileManager removeItemAtURL:writableFileURL error:NULL];
+    }
+
+    // If we don't have a writable file already, we move the provided file to the ~/Documents folder.
+    if (![fileManager fileExistsAtPath:(NSString *)writableFileURL.path]) {
+        // Create the folder where the writable file will be saved.
+        NSError *createFolderError;
+        if (![fileManager createDirectoryAtPath:writableFileURL.path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:&createFolderError]) {
+            NSLog(@"Failed to create directory: %@", createFolderError.localizedDescription);
+            return nil;
+        }
+
+        // Copy the provided file to a writable location if it exists.
+        NSURL *fileURL = [self fileURLWithPath:path];
+        NSError *copyError;
+        if (copyIfNeeded && [fileManager fileExistsAtPath:(NSString *)fileURL.path]) {
+            if (![fileManager copyItemAtURL:fileURL toURL:writableFileURL error:&copyError]) {
+                NSLog(@"Failed to copy item at URL '%@' with error: %@", path, copyError.localizedDescription);
+                return nil;
+            }
+        }
+    }
+    return writableFileURL;
+}
 
 - (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSDictionary *)dictionary {
     PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFConfiguration.defaultConfiguration.userInterfaceViewMode;
