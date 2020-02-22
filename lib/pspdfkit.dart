@@ -57,7 +57,7 @@ class Pspdfkit {
 
   /// Removes the given annotation from the presented document. 
   /// `jsonAnnotation` can either be a JSON String or a valid JSON dictionary.
-  Future<bool> removeAnnotation(String jsonAnnotation) async => 
+  Future<bool> removeAnnotation(dynamic jsonAnnotation) async => 
       _channel.invokeMethod('removeAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
   
   /// Returns a list of JSON Strings for all the annotations of the given `type` on the given `pageIndex`.
