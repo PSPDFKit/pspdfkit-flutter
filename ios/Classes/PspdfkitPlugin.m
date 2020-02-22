@@ -338,7 +338,7 @@
     }
 }
 
-# pragma mark - Toolbar Customization
+#pragma mark - Customize the Toolbar
 
 - (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items {
     if ((id)items == NSNull.null || !items || items.count == 0) {
