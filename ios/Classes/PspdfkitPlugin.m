@@ -87,7 +87,8 @@
         NSString *documentPath = call.arguments[@"document"];
 
         if (documentPath == nil || documentPath.length <= 0) {
-            result([FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil]);
+            FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
+            result(error);
             return;
         }
 
@@ -369,17 +370,19 @@
     [self.pdfViewController.navigationItem setRightBarButtonItems:[rightItems copy] animated:NO];
 }
 
-# pragma mark - Forms
+#pragma mark - Forms
 
 - (id)setFormFieldValue:(NSString *)value forFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
     PSPDFDocument *document = self.pdfViewController.document;
 
     if (!document || !document.isValid) {
-        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+        return error;
     }
 
     if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
-        return [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        return error;
     }
 
     BOOL success = NO;
@@ -400,7 +403,8 @@
                 formElement.contents = value;
                 success = YES;
             } else if ([formElement isKindOfClass:PSPDFSignatureFormElement.class]) {
-                return [FlutterError errorWithCode:@"" message:@"Signature form elements are not supported." details:nil];
+                FlutterError *error = [FlutterError errorWithCode:@"" message:@"Signature form elements are not supported." details:nil];
+                return error;
             } else {
                 return @(NO);
             }
@@ -409,7 +413,8 @@
     }
 
     if (!success) {
-        return [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        return error;
     }
 
     return @(YES);
@@ -417,7 +422,8 @@
 
 - (id)getFormFieldValueForFieldWithFullyQualifiedName:(NSString *)fullyQualifiedName {
     if (fullyQualifiedName == nil || fullyQualifiedName.length == 0) {
-        return [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        FlutterError *error = [FlutterError errorWithCode:@"" message:@"Fully qualified name may not be nil or empty." details:nil];
+        return error;
     }
 
     PSPDFDocument *document = self.pdfViewController.document;
@@ -430,7 +436,8 @@
     }
 
     if (formFieldValue == nil) {
-        return [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        FlutterError *error = [FlutterError errorWithCode:@"" message:[NSString stringWithFormat:@"Error while searching for a form element with name %@.", fullyQualifiedName] details:nil];
+        return error;
     }
 
     return formFieldValue;
