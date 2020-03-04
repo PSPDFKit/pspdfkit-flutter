@@ -36,7 +36,7 @@ if (pspdfkitPassword == null || pspdfkitPassword == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '6.1.1'
+    ext.pspdfkitVersion = '6.2.0'
 }
 
 def pspdfkitIsDemo = localProperties.getProperty('pspdfkit.demo')
@@ -48,13 +48,13 @@ if (pspdfkitIsDemo == null) {
 
 ext.pspdfkitMavenModuleName = (pspdfkitIsDemo && !useUnifiedBinaries(ext.pspdfkitVersion)) ? 'pspdfkit-demo' : 'pspdfkit'
 
-ext.pspdfkitFlutterVersion = '1.0.0-SNAPSHOT'
+ext.pspdfkitFlutterVersion = '1.9.0-SNAPSHOT'
 
 ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 29
-ext.androidGradlePluginVersion = '3.5.2'
+ext.androidGradlePluginVersion = '3.5.3'
 
 // Returns true when version1 is more recent than or equals to version2.
 boolean isMoreRecentOrEqual(String version1, String version2) {
