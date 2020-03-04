@@ -64,8 +64,19 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  static final ThemeData lightTheme = ThemeData(
+    backgroundColor: Colors.transparent,
+    primaryColor: Colors.black
+  );
+
+  static final ThemeData darkTheme = ThemeData(
+    backgroundColor: Colors.grey[900],
+    primaryColor: Colors.white
+  );
+
   String _frameworkVersion = '';
+  ThemeData currentTheme = lightTheme;
 
   Future<File> extractAsset(String assetPath) async {
     final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
@@ -254,7 +265,23 @@ class _HomePageState extends State<HomePage> {
   @override
   initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initPlatformState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    currentTheme = WidgetsBinding.instance.window.platformBrightness == Brightness.light ? lightTheme : darkTheme;
+    setState(() {
+      build(context);
+    });
+    super.didChangePlatformBrightness();
   }
 
   String frameworkVersion() {
@@ -288,8 +315,8 @@ class _HomePageState extends State<HomePage> {
     final ThemeData themeData = Theme.of(context);
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
-      var title = themeData.textTheme.title;
-      var subhead = themeData.textTheme.subhead;
+      var title = themeData.textTheme.title.copyWith(color: currentTheme.primaryColor);
+      var subhead = themeData.textTheme.subhead.copyWith(color: currentTheme.primaryColor);
       var crossAxisAlignment = CrossAxisAlignment.start;
       var padding = EdgeInsets.all(16.0);
       List<Widget> cupertinoListTiles = <Widget>[
@@ -297,7 +324,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: showDocument,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_basicExample, style: title),
@@ -308,7 +335,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: showImage,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_imageDocument, style: title),
@@ -319,7 +346,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: applyDarkTheme,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_darkTheme, style: title),
@@ -330,7 +357,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_customConfiguration, style: title),
@@ -341,7 +368,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: unlockPasswordProtectedDocument,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_passwordProtectedDocument, style: title),
@@ -352,7 +379,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: showFormDocumentExample,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_formExample, style: title),
@@ -363,7 +390,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_importInstantJsonExample, style: title),
@@ -374,7 +401,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: pushPspdfWidgetFullScreen,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_widgetExampleFullScreen, style: title),
@@ -385,7 +412,7 @@ class _HomePageState extends State<HomePage> {
         GestureDetector(
           onTap: pushPspdfWidgetEmbedded,
           child: Container(
-              color: Colors.transparent,
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_widgetExampleEmbedded, style: title),
@@ -396,7 +423,7 @@ class _HomePageState extends State<HomePage> {
       ];
       return CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(
-                middle: Text(_pspdfkitFlutterPluginTitle, style: themeData.textTheme.title)),
+                middle: Text(_pspdfkitFlutterPluginTitle)),
               child: SafeArea(
                 bottom: false,
                 child: ExampleListView(themeData, frameworkVersion(), cupertinoListTiles))
@@ -458,7 +485,7 @@ class ExampleListView extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
       Container(
-        color: Colors.black12,
+        color: Colors.grey[300],
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
