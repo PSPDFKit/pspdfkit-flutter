@@ -14,19 +14,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class PspdfWidget extends StatefulWidget {
+class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
 
-  PspdfWidget({
+  PspdfkitWidget({
     Key key,
     @required this.documentPath,
   });
 
   @override
-  _PspdfWidgetState createState() => _PspdfWidgetState();
+  _PspdfkitWidgetState createState() => _PspdfkitWidgetState();
 }
 
-class _PspdfWidgetState extends State<PspdfWidget> {
+class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   MethodChannel _channel;  
 
   @override

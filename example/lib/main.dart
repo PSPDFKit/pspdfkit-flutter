@@ -16,8 +16,8 @@ import 'package:flutter/services.dart';
 
 import 'package:path_provider/path_provider.dart';
 
-import 'package:pspdfkit_flutter/pspdfkit_global.dart';
-import 'package:pspdfkit_flutter/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/src/main.dart';
+import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -40,9 +40,7 @@ const String _formExampleSub = 'Programmatically set and get the value of a form
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
 const String _widgetExampleFullScreen = 'PSPDFKit Widget Example (Fullscreen)';
-const String _widgetExampleFullScreenSub = 'Opens a PDF Document in the widget with a full screen presentation.';
-const String _widgetExampleEmbedded = 'PSPDFKit Widget Example (Embedded)';
-const String _widgetExampleEmbeddedSub = 'Opens a PDF Document in the widget embedded with another widget.';
+const String _widgetExampleFullScreenSub = 'Opens a PDF document using the Flutter PSPDFKit widget in a full screen presentation.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -95,31 +93,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final File extractedDocument = await extractAsset(_documentPath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
         Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
-          CupertinoPageScaffold(child: PspdfWidget(documentPath: extractedDocument.path))));
+          CupertinoPageScaffold(child: PspdfkitWidget(documentPath: extractedDocument.path))));
       } else {
         Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
-          Scaffold(body: Center(child: PspdfWidget(documentPath: extractedDocument.path)))));
-      }
-    } on PlatformException catch (e) {
-      print("Failed to present document: '${e.message}'.");
-    }
-  }
-
-  void pushPspdfWidgetEmbedded() async {
-    try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
-          CupertinoPageScaffold(child:Column(children: <Widget>[
-            Expanded(child: PspdfWidget(documentPath: extractedDocument.path)),
-            Expanded(child: Container(color: Colors.green)),
-        ]))));
-      } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
-          Scaffold(body: Center(child: Column(children: <Widget>[
-            Expanded(child: PspdfWidget(documentPath: extractedDocument.path)),
-            Expanded(child: Container(color: Colors.green)),
-        ])))));
+          Scaffold(body: Center(child: PspdfkitWidget(documentPath: extractedDocument.path)))));
       }
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
@@ -406,17 +383,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_widgetExampleFullScreen, style: title),
                 Text(_widgetExampleFullScreenSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: pushPspdfWidgetEmbedded,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_widgetExampleEmbedded, style: title),
-                Text(_widgetExampleEmbeddedSub, style: subhead)
               ])),
         ),
         Divider()
