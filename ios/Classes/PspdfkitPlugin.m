@@ -33,6 +33,8 @@
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
         [PSPDFKitGlobal setLicenseKey:licenseKey];
+    } else if ([@"customizeAppearance" isEqualToString:call.method]) {
+        [self customizeAppearance];
     } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
         NSString *value = call.arguments[@"value"];
         NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
@@ -106,6 +108,44 @@
         result(@(YES));
     } else {
         result(FlutterMethodNotImplemented);
+    }
+}
+
+# pragma mark - Appearance Customization
+
+- (void)customizeAppearance {
+    UINavigationBar *navBarPopoverProxy = [UINavigationBar appearance];
+    UIToolbar *toolbarPopoverProxy = [UIToolbar appearance];
+
+    // On iOS 13 and later.
+    if (@available(iOS 13, *)) {
+        // For `UINavigationBar`.
+        UINavigationBarAppearance *navigationBarAppearance = [[UINavigationBarAppearance alloc] init];
+        navigationBarAppearance.backgroundColor = UIColor.systemIndigoColor;
+        navigationBarAppearance.titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor whiteColor]};
+
+        // Use the same appearance for all navigation bar modes.
+        navBarPopoverProxy.standardAppearance = navigationBarAppearance;
+        navBarPopoverProxy.compactAppearance = navigationBarAppearance;
+        navBarPopoverProxy.scrollEdgeAppearance = navigationBarAppearance;
+
+        // For `UIToolbar`.
+        UIToolbarAppearance *toolbarAppearance = [[UIToolbarAppearance alloc] init];
+        toolbarAppearance.backgroundColor = UIColor.systemIndigoColor;
+
+        // Apply the same appearance styling to all sizes of `UIToolbar`.
+        toolbarPopoverProxy.standardAppearance = toolbarAppearance;
+        toolbarPopoverProxy.compactAppearance = toolbarAppearance;
+
+        navBarPopoverProxy.tintColor = UIColor.whiteColor;
+        toolbarPopoverProxy.tintColor = UIColor.whiteColor;
+    } else {
+        // On iOS 12 and earlier.
+        navBarPopoverProxy.barTintColor = UIColor.blueColor;
+        toolbarPopoverProxy.barTintColor = UIColor.blueColor;
+
+        navBarPopoverProxy.tintColor = UIColor.whiteColor;
+        toolbarPopoverProxy.tintColor = UIColor.whiteColor;
     }
 }
 

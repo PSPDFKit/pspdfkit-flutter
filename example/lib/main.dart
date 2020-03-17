@@ -31,6 +31,8 @@ const String _imageDocument = 'Image Document';
 const String _imageDocumentSub = 'Opens an image document.';
 const String _darkTheme = 'Dark Theme';
 const String _darkThemeSub = 'Opens a document in night mode with custom dark theme.';
+const String _customAppearance = 'Customizing Navigation Bar Appearance';
+const String _customAppearanceSub = 'Opens a document with a customized navigation bar.';
 const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
@@ -128,6 +130,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
+  void applyCustomAppearance() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+      Pspdfkit.customizeAppearance();
+      Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -332,6 +344,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         Divider(),
         GestureDetector(
+          onTap: applyCustomAppearance,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_customAppearance, style: title),
+                Text(_customAppearanceSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
               color: currentTheme.backgroundColor,
@@ -410,6 +433,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             title: Text(_darkTheme),
             subtitle: Text(_darkThemeSub),
             onTap: () => applyDarkTheme()),
+        Divider(),
+        ListTile(
+            title: Text(_customAppearanceSub),
+            subtitle: Text(_customAppearanceSub),
+            onTap: () => applyCustomAppearance()),
         Divider(),
         ListTile(
             title: Text(_customConfiguration),
