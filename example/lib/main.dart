@@ -88,51 +88,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return file;
   }
 
+  void onWidgetCreated(PspdfkitView view) {
+    view.setFormFieldValue("Lastname", "Name_Last");
+  }
+
   void pushTwoPspdfWidgetsSimultaneously() async {
     try {
       final File extractedDocument = await extractAsset(_documentPath);
       final File extractedFormDocument = await extractAsset(_formPath);
-
-      PspdfkitWidget widget1 = PspdfkitWidget(documentPath: extractedDocument.path, configuration: {
-        pageScrollDirection: pageScrollDirectionVertical,
-        pageScrollContinuous: false,
-        fitPageToWidth: true,
-        androidImmersiveMode: false,
-        userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
-        androidShowSearchAction: true,
-        inlineSearch: false,
-        showThumbnailBar: showThumbnailBarFloating,
-        androidShowThumbnailGridAction: true,
-        androidShowOutlineAction: true,
-        androidShowAnnotationListAction: true,
-        showPageNumberOverlay: false,
-        showPageLabels: true,
-        showDocumentLabel: false,
-        invertColors: false,
-        grayScale: false,
-        startPage: 2,
-        enableAnnotationEditing: true,
-        enableTextSelection: false,
-        androidEnableBookmarkList: false,
-        androidEnableDocumentEditor: false,
-        androidShowShareAction: true,
-        androidShowPrintAction: false,
-        showDocumentInfoView: true,
-        appearanceMode: appearanceModeDefault,
-        androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
-        iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
-        iOSLeftBarButtonItems:['settingsButtonItem'],
-        iOSAllowToolbarTitleChange: false,
-        toolbarTitle: 'Custom Title',
-        androidSettingsMenuItems:['theme', 'scrolldirection'],
-        iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
-        showActionNavigationButtons: false,
-        iOSShowActionNavigationButtonLabels: false,
-        pageLayoutMode: 'double',
-        isFirstPageAlwaysSingle: true
-      });
-
-      PspdfkitWidget widget2 = PspdfkitWidget(documentPath: extractedFormDocument.path);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
         Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
@@ -141,8 +104,46 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             child: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
-                Expanded(child: widget1),
-                Expanded(child: widget2)
+                Expanded(child: PspdfkitWidget(documentPath: extractedDocument.path, configuration: {
+                  pageScrollDirection: pageScrollDirectionVertical,
+                  pageScrollContinuous: false,
+                  fitPageToWidth: true,
+                  androidImmersiveMode: false,
+                  userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
+                  androidShowSearchAction: true,
+                  inlineSearch: false,
+                  showThumbnailBar: showThumbnailBarFloating,
+                  androidShowThumbnailGridAction: true,
+                  androidShowOutlineAction: true,
+                  androidShowAnnotationListAction: true,
+                  showPageNumberOverlay: false,
+                  showPageLabels: true,
+                  showDocumentLabel: false,
+                  invertColors: false,
+                  grayScale: false,
+                  startPage: 2,
+                  enableAnnotationEditing: true,
+                  enableTextSelection: false,
+                  androidEnableBookmarkList: false,
+                  androidEnableDocumentEditor: false,
+                  androidShowShareAction: true,
+                  androidShowPrintAction: false,
+                  showDocumentInfoView: true,
+                  appearanceMode: appearanceModeDefault,
+                  androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
+                  iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
+                  iOSLeftBarButtonItems:['settingsButtonItem'],
+                  iOSAllowToolbarTitleChange: false,
+                  toolbarTitle: 'Custom Title',
+                  androidSettingsMenuItems:['theme', 'scrolldirection'],
+                  iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
+                  showActionNavigationButtons: false,
+                  iOSShowActionNavigationButtonLabels: false,
+                  pageLayoutMode: 'double',
+                  isFirstPageAlwaysSingle: true})),
+                Expanded(child: PspdfkitWidget(
+                  documentPath: extractedFormDocument.path,
+                  onPspdfkitWidgetCreated: onWidgetCreated))
               ])))));
       } else {
         Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 

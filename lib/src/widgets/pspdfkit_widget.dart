@@ -14,22 +14,26 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+typedef PspdfkitWidgetCreatedCallback = void Function(PspdfkitView view);
+
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
+  final PspdfkitWidgetCreatedCallback onPspdfkitWidgetCreated;
 
   PspdfkitWidget({
     Key key,
     @required this.documentPath,
-    @required this.configuration
-  });
+    this.configuration = null,
+    this.onPspdfkitWidgetCreated = null
+  }) : super(key: key);
 
   @override
-  _PspdfkitWidgetState createState() => _PspdfkitWidgetState();
+  PspdfkitWidgetState createState() => PspdfkitWidgetState();
 }
 
-class _PspdfkitWidgetState extends State<PspdfkitWidget> {
-  MethodChannel _channel;  
+class PspdfkitWidgetState extends State<PspdfkitWidget> {
+  PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +55,25 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
+    this.view = PspdfkitView._init(id, widget.documentPath, widget.configuration);
+    if (widget.onPspdfkitWidgetCreated != null) {
+          widget.onPspdfkitWidgetCreated(this.view);
+    }
+  }
+}
+
+class PspdfkitView {
+  MethodChannel _channel;  
+  
+  PspdfkitView._init(
+    int id,
+    String documentPath,
+    dynamic configuration
+  ) {
     _channel = new MethodChannel('com.pspdfkit.widget.$id');
-    await _channel.invokeMethod<dynamic>('initializePlatformView', <String, dynamic>{'document': widget.documentPath, 'configuration': widget.configuration});
-  }      
+    _channel.invokeMethod<dynamic>('initializePlatformView', <String, dynamic>{'document': documentPath, 'configuration': configuration});
+  }
+
+  Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
+    _channel.invokeMethod('setFormFieldValue', <String, dynamic>{'value': value, 'fullyQualifiedName': fullyQualifiedName});
 }
