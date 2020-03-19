@@ -88,8 +88,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return file;
   }
 
-  void onWidgetCreated(PspdfkitView view) {
-    view.setFormFieldValue("Lastname", "Name_Last");
+  void onWidgetCreated(PspdfkitView view) async {
+    try {
+      view.setFormFieldValue("Lastname", "Name_Last");
+      view.setFormFieldValue("0123456789", "Telephone_Home");
+      view.setFormFieldValue("City", "City");
+      view.setFormFieldValue("selected", "Sex.0");
+      view.setFormFieldValue("deselected", "Sex.1");
+      view.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+    } on PlatformException catch(e) {
+      print("Failed to set form field values '${e.message}'.");
+    }
+
+    String lastName;
+    try {
+      lastName = await view.getFormFieldValue("Name_Last");
+    } on PlatformException catch(e) {
+      print("Failed to get form field value '${e.message}'.");
+    }
+
+    if (lastName != null) {
+      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
+    }
   }
 
   void pushTwoPspdfWidgetsSimultaneously() async {
