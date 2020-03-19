@@ -31,10 +31,6 @@ class Pspdfkit {
   static Future<bool> present(String document, [dynamic configuration]) async =>
       await _channel.invokeMethod('present', <String, dynamic>{'document': document, 'configuration': configuration});
 
-  /// Customizes the appearance of the user interface (on iOS).
-  static Future<void> customizeAppearance() async =>
-      await _channel.invokeMethod('customizeAppearance');
-
   /// Sets the value of a form field by specifying its fully qualified field name.
   static Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
       _channel.invokeMethod('setFormFieldValue', <String, dynamic>{'value': value, 'fullyQualifiedName': fullyQualifiedName});

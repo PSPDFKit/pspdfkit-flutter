@@ -7,11 +7,13 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfPlatformView.h"
+#import "PspdfkitFlutterHelper.h"
+#import "PspdfkitFlutterConverter.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
 
-@interface PspdfPlatformView()
+@interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
 @property (nonatomic, weak) UIViewController *flutterViewController;
@@ -44,7 +46,6 @@
 
     _pdfViewController = [[PSPDFViewController alloc] init];
     [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
-    _pdfViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStylePlain target:self action:@selector(backButtonPressed)];
 
     self = [super init];
 
@@ -57,36 +58,59 @@
 }
 
 - (void)dealloc {
-    _pdfViewController.document = nil;
-    [_pdfViewController.view removeFromSuperview];
-    [_pdfViewController removeFromParentViewController];
-    [_navigationController.navigationBar removeFromSuperview];
-    [_navigationController.view removeFromSuperview];
-    [_navigationController removeFromParentViewController];
+    [self cleanup];
+}
+
+- (void)cleanup {
+    self.pdfViewController.document = nil;
+    [self.pdfViewController.view removeFromSuperview];
+    [self.pdfViewController removeFromParentViewController];
+    [self.navigationController.navigationBar removeFromSuperview];
+    [self.navigationController.view removeFromSuperview];
+    [self.navigationController removeFromParentViewController];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([@"setDocumentURL" isEqualToString:call.method]) {
-        [self setDocumentURLWith:call result:result];
+    if ([@"initializePlatformView" isEqualToString:call.method]) {
+        NSString *documentPath = call.arguments[@"document"];
+
+        if (documentPath == nil || documentPath.length <= 0) {
+            FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
+            result(error);
+            return;
+        }
+
+        NSDictionary *configurationDictionary = call.arguments[@"configuration"];
+
+        PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+        [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
+
+        BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
+        PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
+
+        self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
+        self.pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
+        self.pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
+        self.pdfViewController.delegate = self;
+
+        if ((id)configurationDictionary != NSNull.null) {
+            [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"] forViewController:self.pdfViewController];
+            [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"] forViewController:self.pdfViewController];
+            [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[@"toolbarTitle"] forViewController:self.pdfViewController];
+        }
+
+        [self.navigationController setViewControllers:@[self.pdfViewController] animated:NO];
+        result(@(YES));
     } else {
-        result(FlutterMethodNotImplemented);
+        [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
 }
 
-- (void)backButtonPressed {
-    FlutterViewController *flutterViewController = (FlutterViewController *)self.flutterViewController;
-    [flutterViewController popRoute];
-}
+# pragma mark - PSPDFViewControllerDelegate
 
-- (void)setDocumentURLWith:(FlutterMethodCall*)call result:(FlutterResult)result {
-    NSString *path = (NSString *)call.arguments;
-    if (path != nil) {
-        NSURL *url = [NSURL fileURLWithPath:path];
-        PSPDFDocument *document = [[PSPDFDocument alloc] initWithURL:url];
-        self.pdfViewController.document = document;
-    } else {
-        self.pdfViewController.document = nil;
-    }
+- (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
+    // Don't hold on to the view controller object after dismissal.
+    [self cleanup];
 }
 
 @end

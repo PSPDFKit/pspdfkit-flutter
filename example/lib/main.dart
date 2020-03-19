@@ -31,8 +31,6 @@ const String _imageDocument = 'Image Document';
 const String _imageDocumentSub = 'Opens an image document.';
 const String _darkTheme = 'Dark Theme';
 const String _darkThemeSub = 'Opens a document in night mode with custom dark theme.';
-const String _customAppearance = 'Customizing Navigation Bar Appearance';
-const String _customAppearanceSub = 'Opens a document with a customized navigation bar.';
 const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
@@ -41,8 +39,8 @@ const String _formExample = 'Programmatic Form Filling Example';
 const String _formExampleSub = 'Programmatically set and get the value of a form field.';
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
-const String _widgetExampleFullScreen = 'PSPDFKit Widget Example (Fullscreen)';
-const String _widgetExampleFullScreenSub = 'Opens a PDF document using the Flutter PSPDFKit widget in a full screen presentation.';
+const String _widgetExampleFullScreen = 'Show two PSPDFKit Widgets simultaneously';
+const String _widgetExampleFullScreenSub = 'Opens two different PDF documents simultaneously using the Flutter PSPDFKit widgets.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -90,12 +88,62 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return file;
   }
 
-  void pushPspdfWidgetFullScreen() async {
+  void pushTwoPspdfWidgetsSimultaneously() async {
     try {
       final File extractedDocument = await extractAsset(_documentPath);
+      final File extractedFormDocument = await extractAsset(_formPath);
+
+      PspdfkitWidget widget1 = PspdfkitWidget(documentPath: extractedDocument.path, configuration: {
+        pageScrollDirection: pageScrollDirectionVertical,
+        pageScrollContinuous: false,
+        fitPageToWidth: true,
+        androidImmersiveMode: false,
+        userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
+        androidShowSearchAction: true,
+        inlineSearch: false,
+        showThumbnailBar: showThumbnailBarFloating,
+        androidShowThumbnailGridAction: true,
+        androidShowOutlineAction: true,
+        androidShowAnnotationListAction: true,
+        showPageNumberOverlay: false,
+        showPageLabels: true,
+        showDocumentLabel: false,
+        invertColors: false,
+        grayScale: false,
+        startPage: 2,
+        enableAnnotationEditing: true,
+        enableTextSelection: false,
+        androidEnableBookmarkList: false,
+        androidEnableDocumentEditor: false,
+        androidShowShareAction: true,
+        androidShowPrintAction: false,
+        showDocumentInfoView: true,
+        appearanceMode: appearanceModeDefault,
+        androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
+        iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
+        iOSLeftBarButtonItems:['settingsButtonItem'],
+        iOSAllowToolbarTitleChange: false,
+        toolbarTitle: 'Custom Title',
+        androidSettingsMenuItems:['theme', 'scrolldirection'],
+        iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
+        showActionNavigationButtons: false,
+        iOSShowActionNavigationButtonLabels: false,
+        pageLayoutMode: 'double',
+        isFirstPageAlwaysSingle: true
+      });
+
+      PspdfkitWidget widget2 = PspdfkitWidget(documentPath: extractedFormDocument.path);
+
       if (Theme.of(context).platform == TargetPlatform.iOS) {
         Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
-          CupertinoPageScaffold(child: PspdfkitWidget(documentPath: extractedDocument.path))));
+          CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(),
+            child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(child: widget1),
+                Expanded(child: widget2)
+              ])))));
       } else {
         Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
           Scaffold(body: Center(child: PspdfkitWidget(documentPath: extractedDocument.path)))));
@@ -130,16 +178,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
-    } on PlatformException catch (e) {
-      print("Failed to present document: '${e.message}'.");
-    }
-  }
-
-  void applyCustomAppearance() async {
-    try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      Pspdfkit.customizeAppearance();
-      Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -344,17 +382,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         Divider(),
         GestureDetector(
-          onTap: applyCustomAppearance,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_customAppearance, style: title),
-                Text(_customAppearanceSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
               color: currentTheme.backgroundColor,
@@ -399,7 +426,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         Divider(),
         GestureDetector(
-          onTap: pushPspdfWidgetFullScreen,
+          onTap: pushTwoPspdfWidgetsSimultaneously,
           child: Container(
               color: currentTheme.backgroundColor,
               padding: padding,
@@ -433,11 +460,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             title: Text(_darkTheme),
             subtitle: Text(_darkThemeSub),
             onTap: () => applyDarkTheme()),
-        Divider(),
-        ListTile(
-            title: Text(_customAppearanceSub),
-            subtitle: Text(_customAppearanceSub),
-            onTap: () => applyCustomAppearance()),
         Divider(),
         ListTile(
             title: Text(_customConfiguration),

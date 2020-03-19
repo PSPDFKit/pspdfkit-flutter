@@ -16,10 +16,12 @@ import 'package:flutter/material.dart';
 
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
+  final dynamic configuration;
 
   PspdfkitWidget({
     Key key,
     @required this.documentPath,
+    @required this.configuration
   });
 
   @override
@@ -50,6 +52,6 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
 
   Future<void> onPlatformViewCreated(int id) async {
     _channel = new MethodChannel('com.pspdfkit.widget.$id');
-    await _channel.invokeMethod<dynamic>('setDocumentURL', widget.documentPath);
-  }
+    await _channel.invokeMethod<dynamic>('initializePlatformView', <String, dynamic>{'document': widget.documentPath, 'configuration': widget.configuration});
+  }      
 }
