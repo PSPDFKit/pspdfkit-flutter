@@ -27,6 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setLeftBarButtonItems:(nullable NSArray <NSString *> *)items forViewController:(PSPDFViewController *)pdfViewController;
 + (void)setRightBarButtonItems:(nullable NSArray <NSString *> *)items forViewController:(PSPDFViewController *)pdfViewController;
 
+// Instant JSON Helpers
++ (id)addAnnotation:(id)jsonAnnotation forViewController:(PSPDFViewController *)pdfViewController;
++ (id)removeAnnotation:(id)jsonAnnotation forViewController:(PSPDFViewController *)pdfViewController;
+
+// Annotation Helpers
++ (id)getAnnotationsForPageIndex:(PSPDFPageIndex)pageIndex andType:(NSString *)typeString forViewController:(PSPDFViewController *)pdfViewController;
++ (id)getAllUnsavedAnnotationsForViewController:(PSPDFViewController *)pdfViewController;
+
 @end
 
 NS_ASSUME_NONNULL_END

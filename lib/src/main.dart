@@ -46,6 +46,23 @@ class Pspdfkit {
   /// Exports Instant document JSON from the presented document.
   static Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
 
+  /// Adds the given annotation to the presented document. 
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  static Future<bool> addAnnotation(dynamic jsonAnnotation) async => 
+      _channel.invokeMethod('addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+
+  /// Removes the given annotation from the presented document. 
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  static Future<bool> removeAnnotation(dynamic jsonAnnotation) async => 
+      _channel.invokeMethod('removeAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+
+  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
+  static Future<dynamic> getAnnotations(int pageIndex, String type) async =>
+      _channel.invokeMethod<dynamic>('getAnnotations', <String, dynamic>{'pageIndex': pageIndex, 'type': type});
+
+  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  static Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
+
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() async => _channel.invokeMethod('save');

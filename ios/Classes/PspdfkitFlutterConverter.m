@@ -179,4 +179,58 @@
     return finalOptions;
 }
 
+# pragma mark - Instant JSON Converters
+
++ (NSArray <NSDictionary *> *)instantJSONFromAnnotations:(NSArray <PSPDFAnnotation *> *) annotations {
+    NSMutableArray <NSDictionary *> *annotationsJSON = [NSMutableArray new];
+    for (PSPDFAnnotation *annotation in annotations) {
+        NSDictionary <NSString *, NSString *> *uuidDict = @{@"uuid" : annotation.uuid};
+        NSData *annotationData = [annotation generateInstantJSONWithError:NULL];
+        if (annotationData) {
+            NSMutableDictionary *annotationDictionary = [[NSJSONSerialization JSONObjectWithData:annotationData options:kNilOptions error:NULL] mutableCopy];
+            [annotationDictionary addEntriesFromDictionary:uuidDict];
+            if (annotationDictionary) {
+                [annotationsJSON addObject:annotationDictionary];
+            }
+        } else {
+            // We only generate Instant JSON data for attached annotations. When an annotation is deleted, we only set the annotation uuid.
+            [annotationsJSON addObject:uuidDict];
+        }
+    }
+
+    return [annotationsJSON copy];
+}
+
++ (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
+    if (!typeString) {
+        return PSPDFAnnotationTypeAll;
+    } else if ([typeString isEqualToString:@"pspdfkit/ink"]) {
+        return PSPDFAnnotationTypeInk;
+    } else if ([typeString isEqualToString:@"pspdfkit/link"]) {
+        return PSPDFAnnotationTypeLink;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/highlight"]) {
+        return PSPDFAnnotationTypeHighlight;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/squiggly"]) {
+        return PSPDFAnnotationTypeSquiggly;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/strikeout"]) {
+        return PSPDFAnnotationTypeStrikeOut;
+    } else if ([typeString isEqualToString:@"pspdfkit/markup/underline"]) {
+        return PSPDFAnnotationTypeUnderline;
+    } else if ([typeString isEqualToString:@"pspdfkit/note"]) {
+        return PSPDFAnnotationTypeNote;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/ellipse"]) {
+        return PSPDFAnnotationTypeCircle;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/line"]) {
+        return PSPDFAnnotationTypeLine;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/polygon"]) {
+        return PSPDFAnnotationTypePolygon;
+    } else if ([typeString isEqualToString:@"pspdfkit/shape/rectangle"]) {
+        return PSPDFAnnotationTypeSquare;
+    } else if ([typeString isEqualToString:@"pspdfkit/text"]) {
+        return PSPDFAnnotationTypeFreeText;
+    } else {
+        return PSPDFAnnotationTypeAll;
+    }
+}
+
 @end
