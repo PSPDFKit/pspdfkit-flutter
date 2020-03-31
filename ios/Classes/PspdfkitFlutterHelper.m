@@ -65,6 +65,12 @@
         result([PspdfkitFlutterHelper getAnnotationsForPageIndex:pageIndex andType:typeString forViewController:pdfViewController]);
     } else if ([@"getAllUnsavedAnnotations" isEqualToString:call.method]) {
         result([PspdfkitFlutterHelper getAllUnsavedAnnotationsForViewController:pdfViewController]);
+    } else if ([@"importXfdf" isEqualToString:call.method]) {
+        NSString *path = call.arguments[@"xfdfPath"];
+        result([PspdfkitFlutterHelper importXFDFFromPath:path forViewController:pdfViewController]);
+    } else if ([@"exportXfdf" isEqualToString:call.method]) {
+        NSString *path = call.arguments[@"xfdfPath"];
+        result([PspdfkitFlutterHelper exportXFDFToPath:path forViewController:pdfViewController]);
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -91,6 +97,56 @@
 + (BOOL)isImageDocument:(NSString *)path {
     NSString *fileExtension = path.pathExtension.lowercaseString;
     return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
+}
+
+# pragma mark - File Helpers
+
++ (NSURL *)fileURLWithPath:(NSString *)path {
+    if (path) {
+        path = [path stringByExpandingTildeInPath];
+        path = [path stringByReplacingOccurrencesOfString:@"file:" withString:@""];
+        if (![path isAbsolutePath]) {
+            path = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"] stringByAppendingPathComponent:path];
+        }
+        return [NSURL fileURLWithPath:path];
+    }
+    return nil;
+}
+
++ (NSURL *)writableFileURLWithPath:(NSString *)path override:(BOOL)override copyIfNeeded:(BOOL)copyIfNeeded {
+    NSURL *writableFileURL;
+    if (path.absolutePath) {
+        writableFileURL = [NSURL fileURLWithPath:path];
+    } else {
+        NSString *docsFolder = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+        writableFileURL = [NSURL fileURLWithPath:[docsFolder stringByAppendingPathComponent:path]];
+    }
+
+    NSFileManager *fileManager = NSFileManager.defaultManager;
+    if (override) {
+        [fileManager removeItemAtURL:writableFileURL error:NULL];
+    }
+
+    // If we don't have a writable file already, we move the provided file to the ~/Documents folder.
+    if (![fileManager fileExistsAtPath:(NSString *)writableFileURL.path]) {
+        // Create the folder where the writable file will be saved.
+        NSError *createFolderError;
+        if (![fileManager createDirectoryAtPath:writableFileURL.path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:&createFolderError]) {
+            NSLog(@"Failed to create directory: %@", createFolderError.localizedDescription);
+            return nil;
+        }
+
+        // Copy the provided file to a writable location if it exists.
+        NSURL *fileURL = [self fileURLWithPath:path];
+        NSError *copyError;
+        if (copyIfNeeded && [fileManager fileExistsAtPath:(NSString *)fileURL.path]) {
+            if (![fileManager copyItemAtURL:fileURL toURL:writableFileURL error:&copyError]) {
+                NSLog(@"Failed to copy item at URL '%@' with error: %@", path, copyError.localizedDescription);
+                return nil;
+            }
+        }
+    }
+    return writableFileURL;
 }
 
 # pragma mark - Password Helper
@@ -349,6 +405,72 @@
     }  else {
         return [FlutterError errorWithCode:@"" message:@"Failed to get annotations." details:nil];
     }
+}
+
+# pragma mark - XFDF
+
++ (id)importXFDFFromPath:(NSString *)path forViewController:(PSPDFViewController *)pdfViewController {
+    NSURL *fileURL = [PspdfkitFlutterHelper fileURLWithPath:path];
+    if (![NSFileManager.defaultManager fileExistsAtPath:(NSString *)fileURL.path]) {
+        return [FlutterError errorWithCode:@"" message:@"The XFDF file does not exist." details:nil];
+    }
+
+    PSPDFDocument *document = pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    PSPDFFileDataProvider *dataProvider = [[PSPDFFileDataProvider alloc] initWithFileURL:fileURL];
+    PSPDFXFDFParser *parser = [[PSPDFXFDFParser alloc] initWithDataProvider:dataProvider documentProvider:document.documentProviders[0]];
+
+    NSError *error;
+    [parser parseWithError:&error];
+
+    if (error) {
+        return [FlutterError errorWithCode:@"" message:@"Error while parsing XFDF file." details:error.localizedDescription];
+    }
+
+    // Import annotations to the document.
+    NSArray <PSPDFAnnotation *> *annotations = parser.annotations;
+    if (annotations) {
+        [document addAnnotations:annotations options:nil];
+    }
+
+    return @(YES);
+}
+
++ (id)exportXFDFToPath:(NSString *)path forViewController:(PSPDFViewController *)pdfViewController {
+    // Always overwrite the XFDF file we export to.
+    NSURL *fileURL = [PspdfkitFlutterHelper writableFileURLWithPath:path override:YES copyIfNeeded:NO];
+
+    if (!fileURL) {
+        return [FlutterError errorWithCode:@"" message:@"Could not create a new XFDF file at the given path." details:nil];
+    }
+
+    PSPDFDocument *document = pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    // Collect all existing annotations from the document
+    NSMutableArray *annotations = [NSMutableArray array];
+    for (NSArray *pageAnnotations in [document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues) {
+        [annotations addObjectsFromArray:pageAnnotations];
+    }
+
+    // Write to the XFDF file.
+    NSError *error;
+    PSPDFFileDataSink *dataSink = [[PSPDFFileDataSink alloc] initWithFileURL:fileURL options:PSPDFDataSinkOptionNone error:&error];
+    if (error) {
+        return [FlutterError errorWithCode:@"" message:@"Error while exporting XFDF file." details:error.localizedDescription];
+    }
+
+    [[PSPDFXFDFWriter new] writeAnnotations:annotations toDataSink:dataSink documentProvider:document.documentProviders[0] error:&error];
+    if (error) {
+        return [FlutterError errorWithCode:@"" message:@"Error while exporting XFDF file." details:error.localizedDescription];
+    }
+
+    return @(YES);
 }
 
 @end

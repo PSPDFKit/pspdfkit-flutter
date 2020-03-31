@@ -63,6 +63,14 @@ class Pspdfkit {
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
   static Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
 
+  /// Imports annotations from the XFDF file at the given path.
+  static Future<bool> importXfdf(String xfdfPath) async => 
+      _channel.invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
+
+  /// Exports annotations to the XFDF file at the given path.
+  static Future<bool> exportXfdf(String xfdfPath) async => 
+      _channel.invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
+
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() async => _channel.invokeMethod('save');
