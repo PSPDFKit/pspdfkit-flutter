@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (PSPDFPageMode)pageMode:(NSDictionary *)dictionary;
 + (PSPDFSettingsOptions)settingsOptions:(nullable NSArray <NSString *> *)options;
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString;
++ (PSPDFAnnotationChange)annotationChangeFromString:(NSString *)changeString;
 
 + (NSArray <NSDictionary *> *)instantJSONFromAnnotations:(NSArray <PSPDFAnnotation *> *) annotations;
 

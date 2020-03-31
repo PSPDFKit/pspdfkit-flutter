@@ -54,6 +54,15 @@ class PspdfkitView {
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
   Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
 
+  /// Processes annotations of the given type with the provided processing 
+  /// mode and stores the PDF at the given destination path.
+  Future<bool> processAnnotations(String type, String processingMode, String destinationPath) async =>
+      _channel.invokeMethod('processAnnotations', <String, String>{
+        'type': type,
+        'processingMode': processingMode,
+        'destinationPath': destinationPath}
+      );
+
   /// Imports annotations from the XFDF file at the given path.
   Future<bool> importXfdf(String xfdfPath) async => 
       _channel.invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});

@@ -71,6 +71,11 @@
     } else if ([@"exportXfdf" isEqualToString:call.method]) {
         NSString *path = call.arguments[@"xfdfPath"];
         result([PspdfkitFlutterHelper exportXFDFToPath:path forViewController:pdfViewController]);
+    } else if ([@"processAnnotations" isEqualToString:call.method]) {
+        NSString *type = call.arguments[@"type"];
+        NSString *processingMode = call.arguments[@"processingMode"];
+        NSString *destinationPath = call.arguments[@"destinationPath"];
+        result([PspdfkitFlutterHelper processAnnotationsOfType:type withProcessingMode:processingMode andDestinationPath:destinationPath forViewController:pdfViewController]);
     } else {
         result(FlutterMethodNotImplemented);
     }
@@ -308,6 +313,40 @@
     }
 
     return formFieldValue;
+}
+
+# pragma mark - Annotation Processing
+
++ (id)processAnnotationsOfType:(NSString *)type withProcessingMode:(NSString *)processingMode andDestinationPath:(NSString *)destinationPath forViewController:(PSPDFViewController *)pdfViewController {
+    PSPDFAnnotationChange change = [PspdfkitFlutterConverter annotationChangeFromString:processingMode];
+    NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:destinationPath override:YES copyIfNeeded:NO];
+    PSPDFAnnotationType annotationType = [PspdfkitFlutterConverter annotationTypeFromString:type];
+
+    if (!processedDocumentURL) {
+        return [FlutterError errorWithCode:@"" message:@"Could not create a new PDF file at the given path." details:nil];
+    }
+
+    PSPDFDocument *document = pdfViewController.document;
+    if (!document || !document.isValid) {
+        return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
+    }
+
+    // Create a processor configuration with the current document.
+    PSPDFProcessorConfiguration *configuration = [[PSPDFProcessorConfiguration alloc] initWithDocument:document];
+
+    // Modify annotations.
+    [configuration modifyAnnotationsOfTypes:annotationType change:change];
+
+    // Create the PDF processor and write the processed file.
+    PSPDFProcessor *processor = [[PSPDFProcessor alloc] initWithConfiguration:configuration securityOptions:nil];
+
+    NSError *error;
+    [processor writeToFileURL:processedDocumentURL error:&error];
+    if (error) {
+        return [FlutterError errorWithCode:@"" message:@"Error writing to PDF file." details:error.localizedDescription];
+    }
+
+    return @(YES);
 }
 
 # pragma mark - Instant JSON

@@ -35,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (id)getAnnotationsForPageIndex:(PSPDFPageIndex)pageIndex andType:(NSString *)typeString forViewController:(PSPDFViewController *)pdfViewController;
 + (id)getAllUnsavedAnnotationsForViewController:(PSPDFViewController *)pdfViewController;
 
+// Annotation processing Helper
++ (id)processAnnotationsOfType:(NSString *)type withProcessingMode:(NSString *)processingMode andDestinationPath:(NSString *)destinationPath forViewController:(PSPDFViewController *)pdfViewController;
+
 // XFDF Helpers
 + (id)importXFDFFromPath:(NSString *)path forViewController:(PSPDFViewController *)pdfViewController;
 + (id)exportXFDFToPath:(NSString *)path forViewController:(PSPDFViewController *)pdfViewController;
