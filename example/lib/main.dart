@@ -18,6 +18,10 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
+
+import 'pspdfkit_form_example_widget.dart';
+import 'pspdfkit_instantjson_example_widget.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -37,10 +41,14 @@ const String _passwordProtectedDocument = 'Opens and unlocks a password protecte
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
 const String _formExample = 'Programmatic Form Filling Example';
 const String _formExampleSub = 'Programmatically set and get the value of a form field.';
+const String _formExampleForView = 'Programmatic Form Filling Example (PspdfkitView)';
+const String _formExampleSubForView = 'Programmatically set and get the value of a form field using the PspdfkitView component.';
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
+const String _importInstantJsonExampleForView = 'Import Instant Document JSON (PspdfkitView)';
+const String _importInstantJsonExampleSubForView = 'Shows how to programmatically import Instant Document JSON using the PspdfkitView component.';
 const String _widgetExampleFullScreen = 'Show two PSPDFKit Widgets simultaneously';
-const String _widgetExampleFullScreenSub = 'Opens two different PDF documents simultaneously using the Flutter PSPDFKit widgets.';
+const String _widgetExampleFullScreenSub = 'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.';
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -86,92 +94,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final File file = await File(tempDocumentPath).create(recursive: true);
     file.writeAsBytesSync(list);
     return file;
-  }
-
-  void onWidgetCreated(PspdfkitView view) async {
-    try {
-      view.setFormFieldValue("Lastname", "Name_Last");
-      view.setFormFieldValue("0123456789", "Telephone_Home");
-      view.setFormFieldValue("City", "City");
-      view.setFormFieldValue("selected", "Sex.0");
-      view.setFormFieldValue("deselected", "Sex.1");
-      view.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
-    } on PlatformException catch(e) {
-      print("Failed to set form field values '${e.message}'.");
-    }
-
-    String lastName;
-    try {
-      lastName = await view.getFormFieldValue("Name_Last");
-    } on PlatformException catch(e) {
-      print("Failed to get form field value '${e.message}'.");
-    }
-
-    if (lastName != null) {
-      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
-    }
-  }
-
-  void pushTwoPspdfWidgetsSimultaneously() async {
-    try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      final File extractedFormDocument = await extractAsset(_formPath);
-
-      if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
-          CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(),
-            child: SafeArea(
-              bottom: false,
-              child: Column(children: <Widget>[
-                Expanded(child: PspdfkitWidget(documentPath: extractedDocument.path, configuration: {
-                  pageScrollDirection: pageScrollDirectionVertical,
-                  pageScrollContinuous: false,
-                  fitPageToWidth: true,
-                  androidImmersiveMode: false,
-                  userInterfaceViewMode: userInterfaceViewModeAutomaticBorderPages,
-                  androidShowSearchAction: true,
-                  inlineSearch: false,
-                  showThumbnailBar: showThumbnailBarFloating,
-                  androidShowThumbnailGridAction: true,
-                  androidShowOutlineAction: true,
-                  androidShowAnnotationListAction: true,
-                  showPageNumberOverlay: false,
-                  showPageLabels: true,
-                  showDocumentLabel: false,
-                  invertColors: false,
-                  grayScale: false,
-                  startPage: 2,
-                  enableAnnotationEditing: true,
-                  enableTextSelection: false,
-                  androidEnableBookmarkList: false,
-                  androidEnableDocumentEditor: false,
-                  androidShowShareAction: true,
-                  androidShowPrintAction: false,
-                  showDocumentInfoView: true,
-                  appearanceMode: appearanceModeDefault,
-                  androidDefaultThemeResource: 'PSPDFKit.Theme.Example',
-                  iOSRightBarButtonItems:['thumbnailsButtonItem', 'activityButtonItem', 'searchButtonItem', 'annotationButtonItem'],
-                  iOSLeftBarButtonItems:['settingsButtonItem'],
-                  iOSAllowToolbarTitleChange: false,
-                  toolbarTitle: 'Custom Title',
-                  androidSettingsMenuItems:['theme', 'scrolldirection'],
-                  iOSSettingsMenuItems:['scrollDirection', 'pageTransition', 'appearance', 'brightness', 'pageMode', 'spreadFitting'],
-                  showActionNavigationButtons: false,
-                  iOSShowActionNavigationButtonLabels: false,
-                  pageLayoutMode: 'double',
-                  isFirstPageAlwaysSingle: true})),
-                Expanded(child: PspdfkitWidget(
-                  documentPath: extractedFormDocument.path,
-                  onPspdfkitWidgetCreated: onWidgetCreated))
-              ])))));
-      } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
-          Scaffold(body: Center(child: PspdfkitWidget(documentPath: extractedDocument.path)))));
-      }
-    } on PlatformException catch (e) {
-      print("Failed to present document: '${e.message}'.");
-    }
   }
 
   void showDocument() async {
@@ -292,6 +214,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  void showFormDocumentExampleForView() async {
+    try {
+      final File extractedFormDocument = await extractAsset(_formPath);
+
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+          PspdfkitFormExampleWidget(documentPath: extractedFormDocument.path, onPspdfkitFormExampleWidgetCreated: onWidgetCreated)
+        ));
+      } else {
+        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+          PspdfkitFormExampleWidget(documentPath: extractedFormDocument.path, onPspdfkitFormExampleWidgetCreated: onWidgetCreated)
+        ));
+      }
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
   void importInstantJsonExample() async {
     try {
       final File extractedDocument = await extractAsset(_documentPath);
@@ -307,6 +247,72 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       Pspdfkit.applyInstantJson(annotationsJson);
     } on PlatformException catch(e) {
       print("Failed to import Instant Document JSON '${e.message}'.");
+    }
+  }
+
+  void importInstantJsonExampleForView() async {
+    try {
+      final File extractedFormDocument = await extractAsset(_documentPath);
+
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+          PspdfkitInstantJsonExampleWidget(documentPath: extractedFormDocument.path, instantJsonPath: _instantDocumentJsonPath)
+        ));
+      } else {
+        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+          PspdfkitInstantJsonExampleWidget(documentPath: extractedFormDocument.path, instantJsonPath: _instantDocumentJsonPath)
+        ));
+      }
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
+  void pushTwoPspdfWidgetsSimultaneously() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+      final File extractedFormDocument = await extractAsset(_formPath);
+
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+          CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(),
+            child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(child: PspdfkitWidget(documentPath: extractedDocument.path)),
+                Expanded(child: PspdfkitWidget(documentPath: extractedFormDocument.path, onPspdfkitWidgetCreated: onWidgetCreated))
+              ])))));
+      } else {
+        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+          Scaffold(body: Center(child: PspdfkitWidget(documentPath: extractedDocument.path)))));
+      }
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
+  void onWidgetCreated(PspdfkitView view) async {
+    try {
+      view.setFormFieldValue("Lastname", "Name_Last");
+      view.setFormFieldValue("0123456789", "Telephone_Home");
+      view.setFormFieldValue("City", "City");
+      view.setFormFieldValue("selected", "Sex.0");
+      view.setFormFieldValue("deselected", "Sex.1");
+      view.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+    } on PlatformException catch(e) {
+      print("Failed to set form field values '${e.message}'.");
+    }
+
+    String lastName;
+    try {
+      lastName = await view.getFormFieldValue("Name_Last");
+    } on PlatformException catch(e) {
+      print("Failed to get form field value '${e.message}'.");
+    }
+
+    if (lastName != null) {
+      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
     }
   }
 
@@ -436,6 +442,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         Divider(),
         GestureDetector(
+          onTap: showFormDocumentExampleForView,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_formExampleForView, style: title),
+                Text(_formExampleSubForView, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
               color: currentTheme.backgroundColor,
@@ -443,6 +460,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_importInstantJsonExample, style: title),
                 Text(_importInstantJsonExampleSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: importInstantJsonExampleForView,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_importInstantJsonExampleForView, style: title),
+                Text(_importInstantJsonExampleSubForView, style: subhead)
               ])),
         ),
         Divider(),

@@ -14,6 +14,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
+
 typedef PspdfkitWidgetCreatedCallback = void Function(PspdfkitView view);
 
 class PspdfkitWidget extends StatefulWidget {
@@ -55,41 +57,9 @@ class PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView._init(id, widget.documentPath, widget.configuration);
+    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitWidgetCreated != null) {
           widget.onPspdfkitWidgetCreated(this.view);
     }
   }
-}
-
-class PspdfkitView {
-  MethodChannel _channel;  
-  
-  PspdfkitView._init(
-    int id,
-    String documentPath,
-    dynamic configuration
-  ) {
-    _channel = new MethodChannel('com.pspdfkit.widget.$id');
-    _channel.invokeMethod<dynamic>('initializePlatformView', <String, dynamic>{'document': documentPath, 'configuration': configuration});
-  }
-
-  /// Sets the value of a form field by specifying its fully qualified field name.
-  Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
-    _channel.invokeMethod('setFormFieldValue', <String, dynamic>{'value': value, 'fullyQualifiedName': fullyQualifiedName});
-
-  /// Gets the form field value by specifying its fully qualified name.
-  Future<String> getFormFieldValue(String fullyQualifiedName) async =>
-    _channel.invokeMethod('getFormFieldValue', <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
-
-  /// Applies Instant document JSON to the presented document.
-  Future<bool> applyInstantJson(String annotationsJson) async =>
-    _channel.invokeMethod('applyInstantJson', <String, String>{'annotationsJson': annotationsJson});
-
-  /// Exports Instant document JSON from the presented document.
-  Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
-
-  /// Saves the document back to its original location if it has been changed.
-  /// If there were no changes to the document, the document file will not be modified.
-  Future<bool> save() async => _channel.invokeMethod('save');
 }
