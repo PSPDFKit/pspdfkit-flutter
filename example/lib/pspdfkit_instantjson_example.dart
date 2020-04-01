@@ -22,14 +22,12 @@ class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final String documentPath;
   final String instantJsonPath;
   final dynamic configuration;
-  final PspdfkitInstantJsonExampleWidgetCreatedCallback onPspdfkitInstantJsonExampleWidgetCreated;
 
   PspdfkitInstantJsonExampleWidget({
     Key key,
     @required this.documentPath,
     @required this.instantJsonPath,
     this.configuration = null,
-    this.onPspdfkitInstantJsonExampleWidgetCreated = null
   }) : super(key: key);
 
   @override
@@ -89,8 +87,5 @@ class PspdfkitInstantJsonExampleWidgetState extends State<PspdfkitInstantJsonExa
 
   Future<void> onPlatformViewCreated(int id) async {
     this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
-    if (widget.onPspdfkitInstantJsonExampleWidgetCreated != null) {
-          widget.onPspdfkitInstantJsonExampleWidgetCreated(this.view);
-    }
   }
 }
