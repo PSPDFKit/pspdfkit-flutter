@@ -16,8 +16,6 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
 
-typedef PspdfkitInstantJsonExampleWidgetCreatedCallback = void Function(PspdfkitView view);
-
 class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final String documentPath;
   final String instantJsonPath;

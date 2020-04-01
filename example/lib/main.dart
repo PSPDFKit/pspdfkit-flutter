@@ -23,12 +23,14 @@ import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
 import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
+import 'pspdfkit_annotation_processing_example.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit_Image_Example.jpg';
 const String _formPath = 'PDFs/Form_example.pdf';
 const String _instantDocumentJsonPath = 'PDFs/Instant/instant-document.json';
+const String _embeddedDocumentPath = 'PDFs/Embedded/PSPDFKit-processed.pdf';
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
@@ -48,6 +50,8 @@ const String _formExampleForView = 'Programmatic Form Filling Example (PspdfkitV
 const String _formExampleSubForView = 'Programmatically set and get the value of a form field using the PspdfkitView component.';
 const String _annotationsExample = 'Programmatically Add and Remove Annotations (PspdfkitView)';
 const String _annotationsExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
+const String _annotationProcessingExample = 'Process Annotations';
+const String _annotationProcessingExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
 const String _importInstantJsonExampleForView = 'Import Instant Document JSON (PspdfkitView)';
@@ -304,6 +308,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  void annotationProcessingExampleForView() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+          PspdfkitAnnotationProcessingExampleWidget(documentPath: extractedDocument.path, exportPath: _embeddedDocumentPath)
+        ));
+      } else {
+        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+          PspdfkitAnnotationProcessingExampleWidget(documentPath: extractedDocument.path, exportPath: _embeddedDocumentPath)
+        ));
+      }
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
   void pushTwoPspdfWidgetsSimultaneously() async {
     try {
       final File extractedDocument = await extractAsset(_documentPath);
@@ -507,6 +529,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_annotationsExample, style: title),
                 Text(_annotationsExampleSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: annotationProcessingExampleForView,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_annotationProcessingExample, style: title),
+                Text(_annotationProcessingExampleSub, style: subhead)
               ])),
         ),
         Divider(),

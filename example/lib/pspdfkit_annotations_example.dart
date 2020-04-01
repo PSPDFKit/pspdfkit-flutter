@@ -16,8 +16,6 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
 
-typedef PspdfkitAnnotationsExampleWidgetCreatedCallback = void Function(PspdfkitView view);
-
 class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
