@@ -74,11 +74,7 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                 ]))]))
       );
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return AndroidView(
-        viewType: 'com.pspdfkit.widget',
-        onPlatformViewCreated: onPlatformViewCreated,
-        creationParamsCodec: const StandardMessageCodec(),
-      );
+      return Text('TODO');
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
