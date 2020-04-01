@@ -35,6 +35,8 @@ const String _imageDocument = 'Image Document';
 const String _imageDocumentSub = 'Opens an image document.';
 const String _darkTheme = 'Dark Theme';
 const String _darkThemeSub = 'Opens a document in night mode with custom dark theme.';
+const String _customAppearance = 'Custom Appearance';
+const String _customAppearanceSub = 'Updates the appearance of PSPDFKit elements globally.';
 const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
@@ -121,6 +123,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
+    } on PlatformException catch (e) {
+      print("Failed to present document: '${e.message}'.");
+    }
+  }
+
+  void customiOSAppearance() async {
+    try {
+      final File extractedDocument = await extractAsset(_documentPath);
+      // Since this method updates the appearance globally, all the other
+      // examples opened after this gets called will have their appearance
+      // updated as well.
+      Pspdfkit.updateiOSAppearance();
+      Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -394,6 +409,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_imageDocument, style: title),
                 Text(_imageDocumentSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: customiOSAppearance,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_customAppearance, style: title),
+                Text(_customAppearanceSub, style: subhead)
               ])),
         ),
         Divider(),
