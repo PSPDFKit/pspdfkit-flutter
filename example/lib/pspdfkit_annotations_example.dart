@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2019 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2020 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_view.dart';
+import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
 
 class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
   final String documentPath;
