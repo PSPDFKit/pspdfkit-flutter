@@ -31,33 +31,35 @@ const String _imagePath = 'PDFs/PSPDFKit_Image_Example.jpg';
 const String _formPath = 'PDFs/Form_example.pdf';
 const String _instantDocumentJsonPath = 'PDFs/Instant/instant-document.json';
 const String _embeddedDocumentPath = 'PDFs/Embedded/PSPDFKit-processed.pdf';
+
 const String _pspdfkitFlutterPluginTitle = 'PSPDFKit Flutter Plugin example app';
+
+const String _formExampleForView = 'Programmatic Form Filling Example';
+const String _formExampleSubForView = 'Programmatically set and get the value of a form field using the PspdfkitView component.';
+const String _annotationsExample = 'Programmatically Add and Remove Annotations';
+const String _annotationsExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
+const String _annotationProcessingExample = 'Process Annotations';
+const String _annotationProcessingExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
+const String _importInstantJsonExampleForView = 'Import Instant Document JSON';
+const String _importInstantJsonExampleSubForView = 'Shows how to programmatically import Instant Document JSON using the PspdfkitView component.';
+const String _widgetExampleFullScreen = 'Show two PSPDFKit Widgets simultaneously';
+const String _widgetExampleFullScreenSub = 'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.';
+
 const String _basicExample = 'Basic Example';
 const String _basicExampleSub = 'Opens a PDF Document.';
 const String _imageDocument = 'Image Document';
 const String _imageDocumentSub = 'Opens an image document.';
 const String _darkTheme = 'Dark Theme';
 const String _darkThemeSub = 'Opens a document in night mode with custom dark theme.';
-const String _customAppearance = 'Custom Appearance';
-const String _customAppearanceSub = 'Updates the appearance of PSPDFKit elements globally.';
 const String _customConfiguration = 'Custom configuration options';
 const String _customConfigurationSub = 'Opens a document with custom configuration options.';
 const String _passwordProtectedDocument = 'Opens and unlocks a password protected document';
 const String _passwordProtectedDocumentSub = 'Programmatically unlocks a password protected document.';
 const String _formExample = 'Programmatic Form Filling Example';
 const String _formExampleSub = 'Programmatically set and get the value of a form field.';
-const String _formExampleForView = 'Programmatic Form Filling Example (PspdfkitView)';
-const String _formExampleSubForView = 'Programmatically set and get the value of a form field using the PspdfkitView component.';
-const String _annotationsExample = 'Programmatically Add and Remove Annotations (PspdfkitView)';
-const String _annotationsExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
-const String _annotationProcessingExample = 'Process Annotations';
-const String _annotationProcessingExampleSub = 'Programmatically add and remove annotations using the PspdfkitView component.';
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
-const String _importInstantJsonExampleForView = 'Import Instant Document JSON (PspdfkitView)';
-const String _importInstantJsonExampleSubForView = 'Shows how to programmatically import Instant Document JSON using the PspdfkitView component.';
-const String _widgetExampleFullScreen = 'Show two PSPDFKit Widgets simultaneously';
-const String _widgetExampleFullScreenSub = 'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.';
+
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 21.0;
 
@@ -130,19 +132,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
-    } on PlatformException catch (e) {
-      print("Failed to present document: '${e.message}'.");
-    }
-  }
-
-  void customiOSAppearance() async {
-    try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      // Since this method updates the appearance globally, all the other
-      // examples opened after this gets called will have their appearance
-      // updated as well.
-      Pspdfkit.updateiOSAppearance();
-      Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -432,84 +421,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       var crossAxisAlignment = CrossAxisAlignment.start;
       var padding = EdgeInsets.all(16.0);
       List<Widget> cupertinoListTiles = <Widget>[
-        Divider(),
-        GestureDetector(
-          onTap: showDocument,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_basicExample, style: title),
-                Text(_basicExampleSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: showImage,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_imageDocument, style: title),
-                Text(_imageDocumentSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: customiOSAppearance,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_customAppearance, style: title),
-                Text(_customAppearanceSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: applyDarkTheme,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_darkTheme, style: title),
-                Text(_darkThemeSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: applyCustomConfiguration,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_customConfiguration, style: title),
-                Text(_customConfigurationSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: unlockPasswordProtectedDocument,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_passwordProtectedDocument, style: title),
-                Text(_passwordProtectedDocumentSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
-          onTap: showFormDocumentExample,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_formExample, style: title),
-                Text(_formExampleSub, style: subhead)
-              ])),
-        ),
-        Divider(),
+        Container(
+        color: Colors.grey[200],
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+        child: Text("Pspdfkit View Component Examples",
+              style: themeData.textTheme.display1
+                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
+        )),
         GestureDetector(
           onTap: showFormDocumentExampleForView,
           child: Container(
@@ -544,17 +462,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
         Divider(),
         GestureDetector(
-          onTap: importInstantJsonExample,
-          child: Container(
-              color: currentTheme.backgroundColor,
-              padding: padding,
-              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-                Text(_importInstantJsonExample, style: title),
-                Text(_importInstantJsonExampleSub, style: subhead)
-              ])),
-        ),
-        Divider(),
-        GestureDetector(
           onTap: importInstantJsonExampleForView,
           child: Container(
               color: currentTheme.backgroundColor,
@@ -573,6 +480,89 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_widgetExampleFullScreen, style: title),
                 Text(_widgetExampleFullScreenSub, style: subhead)
+              ])),
+        ),
+        Container(
+        color: Colors.grey[200],
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+        child: Text("Pspdfkit Global Plugin Examples",
+              style: themeData.textTheme.display1
+                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
+        )),
+        GestureDetector(
+          onTap: showDocument,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_basicExample, style: title),
+                Text(_basicExampleSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: showImage,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_imageDocument, style: title),
+                Text(_imageDocumentSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: applyCustomConfiguration,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_customConfiguration, style: title),
+                Text(_customConfigurationSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: applyDarkTheme,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_darkTheme, style: title),
+                Text(_darkThemeSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: unlockPasswordProtectedDocument,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_passwordProtectedDocument, style: title),
+                Text(_passwordProtectedDocumentSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: showFormDocumentExample,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_formExample, style: title),
+                Text(_formExampleSub, style: subhead)
+              ])),
+        ),
+        Divider(),
+        GestureDetector(
+          onTap: importInstantJsonExample,
+          child: Container(
+              color: currentTheme.backgroundColor,
+              padding: padding,
+              child: Column(crossAxisAlignment: crossAxisAlignment, children: [
+                Text(_importInstantJsonExample, style: title),
+                Text(_importInstantJsonExampleSub, style: subhead)
               ])),
         ),
         Divider()

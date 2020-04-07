@@ -68,44 +68,6 @@
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
         result(@(YES));
-    } else if ([@"updateiOSAppearance" isEqualToString:call.method]) {
-        // Detailed guide on appearance customization:
-        // https://pspdfkit.com/guides/ios/current/customizing-the-interface/appearance-styling/
-        
-        UINavigationBar *navBarPopoverProxy = [UINavigationBar appearance];
-        UIToolbar *toolbarPopoverProxy = [UIToolbar appearance];
-
-        // Change the colors here as required.
-        UIColor *barColor = UIColor.systemYellowColor;
-
-        // On iOS 13 and later.
-        if (@available(iOS 13, *)) {
-            // For `UINavigationBar`.
-            UINavigationBarAppearance *navigationBarAppearance = [[UINavigationBarAppearance alloc] init];
-            navigationBarAppearance.backgroundColor = barColor;
-            navigationBarAppearance.titleTextAttributes = @{ NSForegroundColorAttributeName : [UIColor blackColor]};
-
-            // Use the same appearance for all navigation bar modes.
-            navBarPopoverProxy.standardAppearance = navigationBarAppearance;
-            navBarPopoverProxy.compactAppearance = navigationBarAppearance;
-            navBarPopoverProxy.scrollEdgeAppearance = navigationBarAppearance;
-
-            // For `UIToolbar`.
-            UIToolbarAppearance *toolbarAppearance = [[UIToolbarAppearance alloc] init];
-            toolbarAppearance.backgroundColor = barColor;
-
-            // Apply the same appearance styling to all sizes of `UIToolbar`.
-            toolbarPopoverProxy.standardAppearance = toolbarAppearance;
-            toolbarPopoverProxy.compactAppearance = toolbarAppearance;
-        } else {
-            // On iOS 12 and earlier.
-            navBarPopoverProxy.barTintColor = barColor;
-            toolbarPopoverProxy.barTintColor = barColor;
-        }
-
-        // Change the colors here as required.
-        navBarPopoverProxy.tintColor = UIColor.blackColor;
-        toolbarPopoverProxy.tintColor = UIColor.blackColor;
     } else {
         [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
