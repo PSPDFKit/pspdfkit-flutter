@@ -18,7 +18,7 @@
 @property (nonatomic) FlutterMethodChannel *channel;
 @property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
-@property (nonatomic) UINavigationController *navigationController;
+@property (nonatomic) PSPDFNavigationController *navigationController;
 @end
 
 @implementation PspdfPlatformView
@@ -32,7 +32,7 @@
     _platformViewId = viewId;
     _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
-    _navigationController = [UINavigationController new];
+    _navigationController = [PSPDFNavigationController new];
     _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
     // View controller containment

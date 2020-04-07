@@ -9,8 +9,5 @@
 #import <Flutter/Flutter.h>
 
 @interface PspdfPlatformView : NSObject<FlutterPlatformView>
-- (instancetype _Nonnull)initWithFrame:(CGRect)frame
-                        viewIdentifier:(int64_t)viewId
-                             arguments:(id _Nullable)args
-                             messenger:(NSObject<FlutterBinaryMessenger> * _Nonnull)messenger;
+- (instancetype _Nonnull)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id _Nullable)args messenger:(NSObject<FlutterBinaryMessenger> * _Nonnull)messenger;
 @end

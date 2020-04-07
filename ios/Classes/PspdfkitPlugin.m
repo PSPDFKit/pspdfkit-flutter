@@ -63,7 +63,7 @@
             [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[@"toolbarTitle"] forViewController:self.pdfViewController];
         }
 
-        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:self.pdfViewController];
+        PSPDFNavigationController *navigationController = [[PSPDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
         navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
