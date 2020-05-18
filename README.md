@@ -1,5 +1,7 @@
 # PSPDFKit Flutter
 
+![](https://pspdfkit.com/images/blog/2018/starting-with-flutter/article-header-bb5f1c40.png)
+
 PSPDFKit wrapper for Flutter.
 
 If you are new to Flutter, make sure to check our blog:
