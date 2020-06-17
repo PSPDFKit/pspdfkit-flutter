@@ -245,11 +245,17 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 ```diff
 # Uncomment this line to define a global platform for your project
 -   # platform :ios, '9.0'
-+   platform :ios, '11.0'
++   platform :ios, '12.0'
 ...
+```
+Add the podspec link for `PSPDFKit` in `ios/Podfile` as shown below:
+
+__Optional:__ If you wish to use a specific version of `PSPDFKit` or the nightly version, you should use the appropriate podspec link.
+
+```
 target 'Runner' do
   use_frameworks!
-+   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
++   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
 ...
 end  
 ``` 
