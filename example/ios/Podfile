@@ -63,7 +63,7 @@ target 'Runner' do
   pod 'Flutter', :path => 'Flutter'
 
   # Plugin Pods
-  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/nightly-framework.podspec'
+  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
 
   # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
   # referring to absolute paths on developers' machines.
