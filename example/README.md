@@ -15,15 +15,6 @@ pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
-3. __Optional:__ Replace the podspec link in `pspdfkit-flutter/example/iOS/Podfile` if you wish to use a specific version of `PSPDFKit`, or the nightly version.
-
-```bash
-...
-target 'Runner' do
-  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
-...  
-```
-
-4. cd `pspdfkit-flutter/example`
-5. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
-6. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
+3. cd `pspdfkit-flutter/example`
+4. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
+5. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
