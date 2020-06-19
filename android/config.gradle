@@ -36,7 +36,7 @@ if (pspdfkitPassword == null || pspdfkitPassword == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '6.2.0'
+    ext.pspdfkitVersion = '6.4.0'
 }
 
 def pspdfkitIsDemo = localProperties.getProperty('pspdfkit.demo')
@@ -54,7 +54,7 @@ ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 29
-ext.androidGradlePluginVersion = '3.5.3'
+ext.androidGradlePluginVersion = '3.6.3'
 
 // Returns true when version1 is more recent than or equals to version2.
 boolean isMoreRecentOrEqual(String version1, String version2) {

@@ -1,5 +1,7 @@
 # PSPDFKit Flutter
 
+![](https://pspdfkit.com/images/blog/2018/starting-with-flutter/article-header-bb5f1c40.png)
+
 PSPDFKit wrapper for Flutter.
 
 If you are new to Flutter, make sure to check our blog:
@@ -245,11 +247,11 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 ```diff
 # Uncomment this line to define a global platform for your project
 -   # platform :ios, '9.0'
-+   platform :ios, '11.0'
++   platform :ios, '12.0'
 ...
 target 'Runner' do
   use_frameworks!
-+   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
++   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
 ...
 end  
 ``` 
