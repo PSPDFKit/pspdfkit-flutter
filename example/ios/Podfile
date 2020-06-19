@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '11.0'
+platform :ios, '12.0'
 use_frameworks!
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
@@ -63,7 +63,7 @@ target 'Runner' do
   pod 'Flutter', :path => 'Flutter'
 
   # Plugin Pods
-  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
+  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
 
   # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
   # referring to absolute paths on developers' machines.

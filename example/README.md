@@ -15,15 +15,6 @@ pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
-3. Replace `YOUR_COCOAPODS_KEY_GOES_HERE` with your Cocoapods key in `pspdfkit-flutter/example/iOS/Podfile`
-
-```bash
-...
-target 'Runner' do
-  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/cocoapods/YOUR_COCOAPODS_KEY_GOES_HERE/pspdfkit/latest.podspec'
-...  
-```
-
-4. cd `pspdfkit-flutter/example`
-5. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
-6. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
+3. cd `pspdfkit-flutter/example`
+4. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
+5. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
