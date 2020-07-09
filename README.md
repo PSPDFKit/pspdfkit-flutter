@@ -34,7 +34,6 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 ```local.properties
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
 flutter.buildMode=debug
 ```
 
@@ -398,17 +397,3 @@ The verbose mode of flutter doctor is even more helpful; it prints out extensive
 ### CocoaPods Conflicts With Asdf
 
 If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneusly suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
-
-## Error When Running on Android: Cannot Find Symbol `PSPDFKit`
-
-Verify that your Maven key has been correctly inserted in your `myapp/android/local.properties`
-
-```local.properties
-sdk.dir=/path/to/your/Android/sdk
-flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
-flutter.buildMode=debug
-```
-
-Make sure that the Maven key has not been confused with the license key. The Maven key is generally shorter and for demo licenses it starts with `TRIAL-`.
-

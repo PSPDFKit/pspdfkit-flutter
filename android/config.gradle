@@ -24,29 +24,12 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
     ext.pspdfkitMavenUrl = 'https://customers.pspdfkit.com/maven/'
 }
 
-ext.pspdfkitUsername = localProperties.getProperty('pspdfkit.username')
-if (pspdfkitUsername == null || pspdfkitUsername == '') {
-    ext.pspdfkitUsername = 'pspdfkit'
-}
-
-ext.pspdfkitPassword = localProperties.getProperty('pspdfkit.password')
-if (pspdfkitPassword == null || pspdfkitPassword == '') {
-    throw new GradleException("PSPDFKit password was not specified. The password is required to download the PSPDFKit AAR file into your project. Please specify as pspdfkit.password inside the local.properties file.")
-}
-
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '6.4.0'
+    ext.pspdfkitVersion = '6.5.0'
 }
 
-def pspdfkitIsDemo = localProperties.getProperty('pspdfkit.demo')
-if (pspdfkitIsDemo == null) {
-    pspdfkitIsDemo = pspdfkitPassword.startsWith('TRIAL-')
-} else {
-    pspdfkitIsDemo = Boolean.parseBoolean(pspdfkitIsDemo)
-}
-
-ext.pspdfkitMavenModuleName = (pspdfkitIsDemo && !useUnifiedBinaries(ext.pspdfkitVersion)) ? 'pspdfkit-demo' : 'pspdfkit'
+ext.pspdfkitMavenModuleName = 'pspdfkit'
 
 ext.pspdfkitFlutterVersion = '1.9.0-SNAPSHOT'
 

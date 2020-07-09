@@ -18,11 +18,7 @@ Upon opening the Flutter example project for the first time inside Android Studi
 sdk.dir=/path/to/your/android/sdk
 ndk.dir=/path/to/your/android/sdk/ndk-bundle
 flutter.sdk=/path/to/your/flutter/sdk
-
-pspdfkit.password=YOUR_PSPDFKIT_MAVEN_PASSWORD
 ```
-
-The `pspdfkit.password` should be set to the PSPDFKit Maven download credentials that you received while [requesting a PSPDFKit demo](https://pspdfkit.com/try) or from your [PSPDFKit customer portal](https://customers.pspdfkit.com).
 
 ## Troubleshooting
 
