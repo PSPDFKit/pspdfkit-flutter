@@ -38,19 +38,3 @@ ext.androidBuildToolsVersion = '29.0.1'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 29
 ext.androidGradlePluginVersion = '3.6.3'
-
-// Returns true when version1 is more recent than or equals to version2.
-boolean isMoreRecentOrEqual(String version1, String version2) {
-    [version1,version2]*.tokenize('.')*.collect { it as int }.with { u, v ->
-       Integer result = [u,v].transpose().findResult{ x,y -> x <=> y ?: null } ?: u.size() <=> v.size()
-       return (result == 1 || result == 0)
-    } 
-}
-
-// Starting from version 5.5.0 we moved to a simplified model
-// that uses unified binaries when on trial and in production
-// https://pspdfkit.com/blog/2019/pspdfkit-android-5-5/#simplified-integration
-boolean useUnifiedBinaries(String version) {
-String versionUnified = '5.5.0'
-return isMoreRecentOrEqual(version, versionUnified)
-}
