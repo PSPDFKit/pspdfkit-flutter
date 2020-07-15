@@ -26,10 +26,6 @@ rootProject.allprojects {
     repositories {
         maven {
             url pspdfkitMavenUrl
-            credentials {
-                username pspdfkitUsername
-                password pspdfkitPassword
-            }
         }
         google()
         jcenter()

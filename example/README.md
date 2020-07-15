@@ -11,7 +11,6 @@ This is a brief example of how to use the PSPDFKit with Flutter.
 ```local.properties
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_PASSWORD_GOES_HERE
 flutter.buildMode=debug
 ```
 
