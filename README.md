@@ -226,7 +226,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 <strong>Spaces are important</strong>, so don't forget them.
 
 5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
-6. Make sure the `iOS Deployment Target` is set to 11.0 or higher. 
+6. Make sure the `iOS Deployment Target` is set to 12.0 or higher. 
 
 ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
