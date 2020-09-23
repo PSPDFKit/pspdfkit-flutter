@@ -268,12 +268,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
-      var title = themeData.textTheme.title.copyWith(color: currentTheme.primaryColor);
-      var subhead = themeData.textTheme.subhead.copyWith(color: currentTheme.primaryColor);      
+      var title = Theme.of(context).textTheme.title.copyWith(color: currentTheme.primaryColor);
+      var subhead = Theme.of(context).textTheme.subhead.copyWith(color: currentTheme.primaryColor);      
       var crossAxisAlignment = CrossAxisAlignment.start;
       var padding = EdgeInsets.all(16.0);
 
@@ -361,7 +360,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 middle: Text(_pspdfkitFlutterPluginTitle)),
               child: SafeArea(
                 bottom: false,
-                child: ExampleListView(themeData, frameworkVersion(), cupertinoListTiles))
+                child: ExampleListView(currentTheme, frameworkVersion(), cupertinoListTiles))
               );
     } else {
       List<Widget> listTiles = <Widget>[
@@ -403,7 +402,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ];
       return Scaffold(
               appBar: AppBar(title: Text(_pspdfkitFlutterPluginTitle)),
-              body: ExampleListView(themeData, frameworkVersion(), listTiles)
+              body: ExampleListView(currentTheme, frameworkVersion(), listTiles)
             );
     }
   }
@@ -420,12 +419,12 @@ class ExampleListView extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
       Container(
-        color: Colors.grey[300],
+        color: Colors.transparent,
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
               style: _themeData.textTheme.display1
-                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)),
+                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold, color: _themeData.primaryColor)),
         ),
       ),
       Expanded(
