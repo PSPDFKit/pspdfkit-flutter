@@ -215,7 +215,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 #### Getting Started
 
-1. Run `flutter create --org com.example.myapp myapp`.
+1. Run `flutter create --org com.example.myapp myapp`
 2. Step into your newly created app folder: `cd myapp`
 3. Open `pubspec.yaml` and under `dependencies` add
 
@@ -248,7 +248,23 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 ![Always Embed Swift Standard Libraries](screenshots/ios-always-embed-swift-standard-libraries.png)
 
 9. Run `flutter packages get` to install the packages.
-10. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
+10. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
+
+```diff
+# Uncomment this line to define a global platform for your project
+- # platform :ios, '9.0'
++ platform :ios, '12.0'
+...
+target 'Runner' do
+   use_frameworks!
+   use_modular_headers!
+
+   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
++  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
+end
+``` 
+
+11. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
 
 ```dart
 import 'dart:io';
@@ -352,9 +368,9 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-11. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-12. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
-13. Run `flutter run`.
+12. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
+13. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
+14. Run `flutter run`.
 
 # Example
 
