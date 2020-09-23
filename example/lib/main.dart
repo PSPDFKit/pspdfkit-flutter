@@ -37,17 +37,40 @@ const String _formExampleSub = 'Programmatically set and get the value of a form
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
 const String _pspdfkitFor = 'PSPDFKit for';
-const double _fontSize = 21.0;
+const double _fontSize = 18.0;
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      return CupertinoApp(home: HomePage());
+    } else {
+      return MaterialApp(home: HomePage());
+    }
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  static final ThemeData lightTheme = ThemeData(
+    backgroundColor: Colors.transparent,
+    primaryColor: Colors.black,
+    dividerColor: Colors.grey[400]
+  );
+
+  static final ThemeData darkTheme = ThemeData(
+    backgroundColor: Colors.transparent,
+    primaryColor: Colors.white,
+    dividerColor: Colors.grey[800]
+  );
   String _frameworkVersion = '';
+  ThemeData currentTheme = lightTheme;
 
   Future<File> extractAsset(String assetPath) async {
     final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
@@ -200,7 +223,23 @@ class _MyAppState extends State<MyApp> {
   @override
   initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initPlatformState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    currentTheme = WidgetsBinding.instance.window.platformBrightness == Brightness.light ? lightTheme : darkTheme;
+    setState(() {
+      build(context);
+    });
+    super.didChangePlatformBrightness();
   }
 
   String frameworkVersion() {
@@ -231,97 +270,101 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
+    currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
-      var title = themeData.textTheme.title;
-      var subhead = themeData.textTheme.subhead;
+      var title = Theme.of(context).textTheme.title.copyWith(color: currentTheme.primaryColor);
+      var subhead = Theme.of(context).textTheme.subhead.copyWith(color: currentTheme.primaryColor);      
       var crossAxisAlignment = CrossAxisAlignment.start;
       var padding = EdgeInsets.all(16.0);
+
       List<Widget> cupertinoListTiles = <Widget>[
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showDocument,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_basicExample, style: title),
                 Text(_basicExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showImage,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_imageDocument, style: title),
                 Text(_imageDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyDarkTheme,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
                 Text(_darkTheme, style: title),
                 Text(_darkThemeSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_customConfiguration, style: title),
                 Text(_customConfigurationSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: unlockPasswordProtectedDocument,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_passwordProtectedDocument, style: title),
                 Text(_passwordProtectedDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showFormDocumentExample,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_formExample, style: title),
                 Text(_formExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
+              color: currentTheme.backgroundColor,
               padding: padding,
               child: Column(crossAxisAlignment: crossAxisAlignment, children: [
-
                 Text(_importInstantJsonExample, style: title),
                 Text(_importInstantJsonExampleSub, style: subhead)
               ])),
         ),
-        Divider()
+        Divider(color: currentTheme.dividerColor)
       ];
-      return CupertinoApp(
-          home: CupertinoPageScaffold(
+      return CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(
-                  middle: Text(_pspdfkitFlutterPluginTitle,
-                      style: themeData.textTheme.title)),
-              child: ExampleListView(
-                  themeData, frameworkVersion(), cupertinoListTiles)));
+                middle: Text(_pspdfkitFlutterPluginTitle)),
+              child: SafeArea(
+                bottom: false,
+                child: ExampleListView(currentTheme, frameworkVersion(), cupertinoListTiles))
+              );
     } else {
       List<Widget> listTiles = <Widget>[
         ListTile(
@@ -360,13 +403,10 @@ class _MyAppState extends State<MyApp> {
             onTap: () => importInstantJsonExample()),
         Divider(),
       ];
-      return MaterialApp(
-        home: Scaffold(
-            appBar: AppBar(
-              title: Text(_pspdfkitFlutterPluginTitle),
-            ),
-            body: ExampleListView(themeData, frameworkVersion(), listTiles)),
-      );
+      return Scaffold(
+              appBar: AppBar(title: Text(_pspdfkitFlutterPluginTitle)),
+              body: ExampleListView(currentTheme, frameworkVersion(), listTiles)
+            );
     }
   }
 }
@@ -382,11 +422,12 @@ class ExampleListView extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
       Container(
+        color: Colors.transparent,
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
               style: _themeData.textTheme.display1
-                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)),
+                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold, color: _themeData.primaryColor)),
         ),
       ),
       Expanded(
