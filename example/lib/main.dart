@@ -37,7 +37,7 @@ const String _formExampleSub = 'Programmatically set and get the value of a form
 const String _importInstantJsonExample = 'Import Instant Document JSON';
 const String _importInstantJsonExampleSub = 'Shows how to programmatically import Instant Document JSON.';
 const String _pspdfkitFor = 'PSPDFKit for';
-const double _fontSize = 21.0;
+const double _fontSize = 18.0;
 
 void main() => runApp(MyApp());
 
@@ -60,12 +60,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static final ThemeData lightTheme = ThemeData(
     backgroundColor: Colors.transparent,
-    primaryColor: Colors.black
+    primaryColor: Colors.black,
+    dividerColor: Colors.grey[400]
   );
 
   static final ThemeData darkTheme = ThemeData(
-    backgroundColor: Colors.grey[900],
-    primaryColor: Colors.white
+    backgroundColor: Colors.transparent,
+    primaryColor: Colors.white,
+    dividerColor: Colors.grey[800]
   );
   String _frameworkVersion = '';
   ThemeData currentTheme = lightTheme;
@@ -277,6 +279,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       var padding = EdgeInsets.all(16.0);
 
       List<Widget> cupertinoListTiles = <Widget>[
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showDocument,
           child: Container(
@@ -287,7 +290,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_basicExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showImage,
           child: Container(
@@ -298,7 +301,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_imageDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyDarkTheme,
           child: Container(
@@ -309,7 +312,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_darkThemeSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
@@ -320,7 +323,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_customConfigurationSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: unlockPasswordProtectedDocument,
           child: Container(
@@ -331,7 +334,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_passwordProtectedDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showFormDocumentExample,
           child: Container(
@@ -342,7 +345,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_formExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
@@ -353,7 +356,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_importInstantJsonExampleSub, style: subhead)
               ])),
         ),
-        Divider()
+        Divider(color: currentTheme.dividerColor)
       ];
       return CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(
