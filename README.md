@@ -204,9 +204,18 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 9. The app is ready to start! From `myapp` run `flutter run`.
 
-## iOS
+### iOS
 
-1. Run `flutter create --org com.example.myapp myapp`.
+#### Requirements
+
+ - Xcode 12
+ - PSPDFKit 10.0.0 for iOS or later
+ - Flutter 1.21.0-9.2.pre or later
+ - CocoaPods 1.10.0.rc.1 or later
+
+#### Getting Started
+
+1. Run `flutter create --org com.example.myapp myapp`
 2. Step into your newly created app folder: `cd myapp`
 3. Open `pubspec.yaml` and under `dependencies` add
 
@@ -243,14 +252,16 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 ```diff
 # Uncomment this line to define a global platform for your project
--   # platform :ios, '9.0'
-+   platform :ios, '12.0'
+- # platform :ios, '9.0'
++ platform :ios, '12.0'
 ...
 target 'Runner' do
-  use_frameworks!
-+   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
-...
-end  
+   use_frameworks!
+   use_modular_headers!
+
+   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
++  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
+end
 ``` 
 
 11. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:

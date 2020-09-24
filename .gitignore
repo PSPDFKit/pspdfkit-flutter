@@ -86,6 +86,7 @@ unlinked_spec.ds
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+/example/ios/Flutter/.last_build_id
 /example/ios/Flutter/flutter_export_environment.sh
 /example/ios/Flutter/Flutter.podspec
 /example/.flutter-plugins-dependencies
