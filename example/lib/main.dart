@@ -74,7 +74,7 @@ const String _importInstantJsonExampleGlobal = 'Import Instant Document JSON';
 const String _importInstantJsonExampleGlobalSub = 'Shows how to programmatically import Instant Document JSON.';
 
 const String _pspdfkitFor = 'PSPDFKit for';
-const double _fontSize = 21.0;
+const double _fontSize = 18.0;
 
 void main() => runApp(MyApp());
 
@@ -97,14 +97,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static final ThemeData lightTheme = ThemeData(
     backgroundColor: Colors.transparent,
-    primaryColor: Colors.black
+    primaryColor: Colors.black,
+    dividerColor: Colors.grey[400]
   );
 
   static final ThemeData darkTheme = ThemeData(
-    backgroundColor: Colors.grey[900],
-    primaryColor: Colors.white
+    backgroundColor: Colors.transparent,
+    primaryColor: Colors.white,
+    dividerColor: Colors.grey[800]
   );
-
   String _frameworkVersion = '';
   ThemeData currentTheme = lightTheme;
 
@@ -557,19 +558,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
+    currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
-      var title = themeData.textTheme.title.copyWith(color: currentTheme.primaryColor);
-      var subhead = themeData.textTheme.subhead.copyWith(color: currentTheme.primaryColor);
+      var title = Theme.of(context).textTheme.title.copyWith(color: currentTheme.primaryColor);
+      var subhead = Theme.of(context).textTheme.subhead.copyWith(color: currentTheme.primaryColor);      
       var crossAxisAlignment = CrossAxisAlignment.start;
       var padding = EdgeInsets.all(16.0);
+
       List<Widget> cupertinoListTiles = <Widget>[
         Container(
         color: Colors.grey[200],
         padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
         child: Text("Pspdfkit Widget Examples",
-              style: themeData.textTheme.display1
+              style: currentTheme.textTheme.display1
                   .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
         )),
         GestureDetector(
@@ -582,7 +584,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_basicExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showImage,
           child: Container(
@@ -593,7 +595,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_imageDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyCustomConfiguration,
           child: Container(
@@ -604,7 +606,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_customConfigurationSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyDarkTheme,
           child: Container(
@@ -615,7 +617,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_darkThemeSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: unlockPasswordProtectedDocument,
           child: Container(
@@ -626,7 +628,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_passwordProtectedDocumentSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showFormDocumentExample,
           child: Container(
@@ -637,7 +639,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_formExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: annotationsExample,
           child: Container(
@@ -648,7 +650,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_annotationsExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: annotationProcessingExample,
           child: Container(
@@ -659,7 +661,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_annotationProcessingExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: importInstantJsonExample,
           child: Container(
@@ -670,7 +672,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_importInstantJsonExampleSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: pushTwoPspdfWidgetsSimultaneously,
           child: Container(
@@ -685,7 +687,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         color: Colors.grey[200],
         padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
         child: Text("Pspdfkit Global Plugin View Examples",
-              style: themeData.textTheme.display1
+              style: currentTheme.textTheme.display1
                   .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
         )),
         GestureDetector(
@@ -698,7 +700,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_basicExampleGlobalSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: showImageGlobal,
           child: Container(
@@ -709,7 +711,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_imageDocumentGlobalSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyCustomConfigurationGlobal,
           child: Container(
@@ -720,7 +722,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_customConfigurationGlobalSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: applyDarkThemeGlobal,
           child: Container(
@@ -731,7 +733,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_darkThemeGlobalSub, style: subhead)
               ])),
         ),
-        Divider(),
+        Divider(color: currentTheme.dividerColor),
         GestureDetector(
           onTap: unlockPasswordProtectedDocumentGlobal,
           child: Container(
@@ -764,14 +766,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Text(_importInstantJsonExampleGlobalSub, style: subhead)
               ])),
         ),
-        Divider()
+        Divider(color: currentTheme.dividerColor)
       ];
       return CupertinoPageScaffold(
               navigationBar: CupertinoNavigationBar(
                 middle: Text(_pspdfkitFlutterPluginTitle)),
               child: SafeArea(
                 bottom: false,
-                child: ExampleListView(themeData, frameworkVersion(), cupertinoListTiles))
+                child: ExampleListView(currentTheme, frameworkVersion(), cupertinoListTiles))
               );
     } else {
       List<Widget> listTiles = <Widget>[
@@ -813,7 +815,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ];
       return Scaffold(
               appBar: AppBar(title: Text(_pspdfkitFlutterPluginTitle)),
-              body: ExampleListView(themeData, frameworkVersion(), listTiles)
+              body: ExampleListView(currentTheme, frameworkVersion(), listTiles)
             );
     }
   }
@@ -830,12 +832,12 @@ class ExampleListView extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return Column(mainAxisSize: MainAxisSize.max, children: [
       Container(
-        color: Colors.grey[300],
+        color: Colors.transparent,
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
               style: _themeData.textTheme.display1
-                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)),
+                  .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold, color: _themeData.primaryColor)),
         ),
       ),
       Expanded(

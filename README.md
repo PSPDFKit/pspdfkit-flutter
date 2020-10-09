@@ -34,7 +34,6 @@ Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit
 ```local.properties
 sdk.dir=/path/to/your/Android/sdk
 flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
 flutter.buildMode=debug
 ```
 
@@ -205,9 +204,18 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 9. The app is ready to start! From `myapp` run `flutter run`.
 
-## iOS
+### iOS
 
-1. Run `flutter create --org com.example.myapp myapp`.
+#### Requirements
+
+ - Xcode 12
+ - PSPDFKit 10.0.0 for iOS or later
+ - Flutter 1.21.0-9.2.pre or later
+ - CocoaPods 1.10.0.rc.1 or later
+
+#### Getting Started
+
+1. Run `flutter create --org com.example.myapp myapp`
 2. Step into your newly created app folder: `cd myapp`
 3. Open `pubspec.yaml` and under `dependencies` add
 
@@ -227,7 +235,7 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 <strong>Spaces are important</strong>, so don't forget them.
 
 5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
-6. Make sure the `iOS Deployment Target` is set to 11.0 or higher. 
+6. Make sure the `iOS Deployment Target` is set to 12.0 or higher. 
 
 ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
@@ -246,14 +254,16 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 ```diff
 # Uncomment this line to define a global platform for your project
--   # platform :ios, '9.0'
-+   platform :ios, '12.0'
+- # platform :ios, '9.0'
++ platform :ios, '12.0'
 ...
 target 'Runner' do
-  use_frameworks!
-+   pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest-framework.podspec'
-...
-end  
+   use_frameworks!
+   use_modular_headers!
+
+   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
++  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
+end
 ``` 
 
 12. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
@@ -400,17 +410,3 @@ The verbose mode of flutter doctor is even more helpful; it prints out extensive
 ### CocoaPods Conflicts With Asdf
 
 If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneusly suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
-
-## Error When Running on Android: Cannot Find Symbol `PSPDFKit`
-
-Verify that your Maven key has been correctly inserted in your `myapp/android/local.properties`
-
-```local.properties
-sdk.dir=/path/to/your/Android/sdk
-flutter.sdk=/path/to/your/flutter/sdk
-pspdfkit.password=YOUR_MAVEN_KEY_GOES_HERE
-flutter.buildMode=debug
-```
-
-Make sure that the Maven key has not been confused with the license key. The Maven key is generally shorter and for demo licenses it starts with `TRIAL-`.
-
