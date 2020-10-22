@@ -9,6 +9,7 @@
 library pspdfkit;
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -92,5 +93,30 @@ class Pspdfkit {
       default:
         return AndroidPermissionStatus.notDetermined;
     }
+  }
+
+  static VoidCallback pdfViewControllerWillDismiss;
+  static VoidCallback pdfViewControllerDidDismiss;
+
+  static Future<void> _platformCallHandler(MethodCall call) {
+    try {
+      switch (call.method) {
+        case 'pdfViewControllerWillDismiss':
+          pdfViewControllerWillDismiss();
+          break;
+        case 'pdfViewControllerDidDismiss':
+          pdfViewControllerDidDismiss();
+          break;
+        default:
+          print('Unknowm method ${call.method} ');
+      }
+    } catch (e) {
+      print(e);
+    }
+    return Future.value();
+  }
+
+  static void setupPlatformCallHandler() {
+    _channel.setMethodCallHandler(_platformCallHandler);
   }
 }

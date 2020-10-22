@@ -268,8 +268,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Pspdfkit.setLicenseKey("LICENSE_KEY_GOES_HERE");
   }
 
+  void pdfViewControllerWillDismissHandler() {
+    print("pdfViewControllerWillDismissHandler");
+  }
+
+  void pdfViewControllerDidDismissHandler() {
+    print("pdfViewControllerDidDismissHandler");
+  }
+
   @override
   Widget build(BuildContext context) {
+    Pspdfkit.setupPlatformCallHandler();
+    Pspdfkit.pdfViewControllerWillDismiss = () => pdfViewControllerWillDismissHandler();
+    Pspdfkit.pdfViewControllerDidDismiss = () => pdfViewControllerDidDismissHandler();
+
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
