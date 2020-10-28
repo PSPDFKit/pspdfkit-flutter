@@ -7,7 +7,7 @@ This is a brief example of how to use the PSPDFKit with Flutter.
 ## Android
 
 - Android SDK 29.0.3 or later
-- PSPDFKit 6.5.2 for Android or later
+- PSPDFKit 6.5.3 for Android or later
 - Flutter 1.22.0-12.1.pre or later
 
 ## iOS
