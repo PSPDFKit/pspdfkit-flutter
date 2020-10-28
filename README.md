@@ -20,7 +20,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 #### Requirements
 
  - Android SDK 29.0.3 or later
- - PSPDFKit 6.5.2 for Android or later
+ - PSPDFKit 6.5.3 for Android or later
  - Flutter 1.22.0-12.1.pre or later
 
 Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit plugin.
