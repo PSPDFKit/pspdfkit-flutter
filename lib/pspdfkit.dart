@@ -95,12 +95,16 @@ class Pspdfkit {
     }
   }
 
+  static VoidCallback flutterPdfActivityOnPause;
   static VoidCallback pdfViewControllerWillDismiss;
   static VoidCallback pdfViewControllerDidDismiss;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
       switch (call.method) {
+        case 'flutterPdfActivityOnPause':
+          flutterPdfActivityOnPause();
+          break;
         case 'pdfViewControllerWillDismiss':
           pdfViewControllerWillDismiss();
           break;

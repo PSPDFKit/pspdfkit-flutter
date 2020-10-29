@@ -63,6 +63,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     private static final String FILE_SCHEME = "file:///";
     private final Context context;
     private final Registrar registrar;
+    private static MethodChannel channel;
     /** Atomic reference that prevents sending twice the permission result and throwing exception. */
     private AtomicReference<Result> permissionRequestResult;
 
@@ -76,7 +77,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
+        channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         PspdfkitPlugin pspdfkitPlugin = new PspdfkitPlugin(registrar);
         channel.setMethodCallHandler(pspdfkitPlugin);
         registrar.addRequestPermissionsResultListener(pspdfkitPlugin);
@@ -87,6 +88,8 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         String fullyQualifiedName;
         FlutterPdfActivity flutterPdfActivity;
         PdfDocument document;
+
+        FlutterPdfActivity.setMethodChannel(channel);
 
         switch (call.method) {
             case "frameworkVersion":

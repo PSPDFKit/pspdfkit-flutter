@@ -9,6 +9,8 @@ import com.pspdfkit.ui.PdfActivity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 /**
@@ -18,16 +20,27 @@ import io.flutter.plugin.common.MethodChannel.Result;
 public class FlutterPdfActivity extends PdfActivity {
 
     private static FlutterPdfActivity currentActivity;
+    private static MethodChannel channel;
     private static AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
     }
 
+    public static void setMethodChannel(MethodChannel methodChannel) {
+        channel = methodChannel;
+    }
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         bindActivity();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        channel.invokeMethod("flutterPdfActivityOnPause", null, null);
     }
 
     @Override
