@@ -59,13 +59,13 @@ import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNot
  * PSPDFKit plugin to load PDF and image documents.
  */
 public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
+    @NonNull private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
     private static final String FILE_SCHEME = "file:///";
-    private final Context context;
-    private final Registrar registrar;
-    private static MethodChannel channel;
+    @NonNull private final Context context;
+    @NonNull private final Registrar registrar;
     /** Atomic reference that prevents sending twice the permission result and throwing exception. */
-    private AtomicReference<Result> permissionRequestResult;
+    @NonNull private final AtomicReference<Result> permissionRequestResult;
 
     private PspdfkitPlugin(Registrar registrar) {
         this.context = registrar.activeContext();
@@ -77,19 +77,17 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-        channel = new MethodChannel(registrar.messenger(), "pspdfkit");
+        MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         PspdfkitPlugin pspdfkitPlugin = new PspdfkitPlugin(registrar);
         channel.setMethodCallHandler(pspdfkitPlugin);
+        eventDispatcher.setChannel(channel);
         registrar.addRequestPermissionsResultListener(pspdfkitPlugin);
     }
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         String fullyQualifiedName;
-        FlutterPdfActivity flutterPdfActivity;
         PdfDocument document;
-
-        FlutterPdfActivity.setMethodChannel(channel);
 
         switch (call.method) {
             case "frameworkVersion":
