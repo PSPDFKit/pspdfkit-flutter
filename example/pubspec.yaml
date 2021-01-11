@@ -1,6 +1,6 @@
 name: pspdfkit_example
 description: Demonstrates how to use the pspdfkit plugin.
-version: 1.10.2
+version: 1.10.3
 author: PSPDFKit
 homepage: https://pspdfkit.com/
 environment:
