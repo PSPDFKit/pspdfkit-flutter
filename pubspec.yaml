@@ -1,7 +1,6 @@
 name: pspdfkit_flutter
 description: PSPDFKit flutter plugin.
-version: 1.10.3
-author: PSPDFKit
+version: 1.10.4
 author: PSPDFKit <support@pspdfkit.com>
 homepage: https://pspdfkit.com/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
