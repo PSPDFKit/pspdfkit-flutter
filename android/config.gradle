@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2019 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -26,12 +26,12 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '6.5.0'
+    ext.pspdfkitVersion = '6.5.3'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
 
-ext.pspdfkitFlutterVersion = '1.9.0-SNAPSHOT'
+ext.pspdfkitFlutterVersion = '1.10.0'
 
 ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'

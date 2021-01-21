@@ -17,6 +17,12 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 
 ### Android
 
+#### Requirements
+
+ - Android SDK 29.0.3 or later
+ - PSPDFKit 6.5.3 for Android or later
+ - Flutter 1.22.0-12.1.pre or later
+
 Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit plugin.
 
 1. Run `flutter create --org com.example.myapp myapp`.
@@ -51,7 +57,7 @@ flutter.buildMode=debug
 ```diff
 ...
 android {
-     compileSdkVersion 28
+     compileSdkVersion 29
      
 +    compileOptions {
 +       sourceCompatibility 1.8
@@ -67,11 +73,10 @@ android {
         applicationId "com.example.myapp"
 -       minSdkVersion 16
 +       minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
 +       multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 ...
 ```
@@ -208,10 +213,10 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 #### Requirements
 
- - Xcode 12
- - PSPDFKit 10.0.0 for iOS or later
- - Flutter 1.21.0-9.2.pre or later
- - CocoaPods 1.10.0.rc.1 or later
+ - The latest [Xcode](https://developer.apple.com/xcode/)
+ - PSPDFKit 10.1.0 for iOS or later
+ - Flutter 1.23.0-18.1.pre or later
+ - CocoaPods 1.10.0 or later (Update cocoapods with: `gem install cocoapods`)
 
 #### Getting Started
 
