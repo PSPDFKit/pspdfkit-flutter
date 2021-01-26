@@ -3,6 +3,7 @@ package com.pspdfkit.flutter.pspdfkit;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivity;
@@ -17,8 +18,8 @@ import io.flutter.plugin.common.MethodChannel.Result;
  */
 public class FlutterPdfActivity extends PdfActivity {
 
-    private static FlutterPdfActivity currentActivity;
-    private static AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
+    @Nullable private static FlutterPdfActivity currentActivity;
+    @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
@@ -28,6 +29,13 @@ public class FlutterPdfActivity extends PdfActivity {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         bindActivity();
+    }
+
+    @Override
+    protected void onPause() {
+        // Notify the Flutter PSPDFKit plugin that the activity is going to enter the onPause state.
+        EventDispatcher.getInstance().notifyActivityOnPause();
+        super.onPause();
     }
 
     @Override
@@ -66,6 +74,7 @@ public class FlutterPdfActivity extends PdfActivity {
         currentActivity = null;
     }
 
+    @Nullable
     public static FlutterPdfActivity getCurrentActivity() {
         return currentActivity;
     }

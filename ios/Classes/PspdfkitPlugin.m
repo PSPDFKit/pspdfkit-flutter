@@ -11,15 +11,17 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
-@interface PspdfkitPlugin()
+static FlutterMethodChannel *channel;
+
+@interface PspdfkitPlugin() <PSPDFViewControllerDelegate>
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @end
 
 @implementation PspdfkitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    FlutterMethodChannel* channel = [FlutterMethodChannel
-                                     methodChannelWithName:@"pspdfkit"
-                                     binaryMessenger:[registrar messenger]];
+    channel = [FlutterMethodChannel
+               methodChannelWithName:@"pspdfkit"
+               binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -88,6 +90,7 @@
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:psPdfConfiguration];
         self.pdfViewController.appearanceModeManager.appearanceMode = [self appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [self pageIndex:configurationDictionary];
+        self.pdfViewController.delegate = self;
         
         if ((id)configurationDictionary != NSNull.null) {
             [self setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"]];
@@ -175,6 +178,15 @@
     }];
 }
 
+#pragma mark - PSPDFViewControllerDelegate
+
+- (void)pdfViewControllerWillDismiss:(PSPDFViewController *)pdfController {
+    [channel invokeMethod:@"pdfViewControllerWillDismiss" arguments:nil];
+}
+
+- (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
+    [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
+}
 
 #pragma mark - Customize the Toolbar
 
