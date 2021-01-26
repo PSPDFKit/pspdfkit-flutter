@@ -282,7 +282,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    Pspdfkit.setupPlatformCallHandler();
     Pspdfkit.flutterPdfActivityOnPause = () => flutterPdfActivityOnPauseHandler();
     Pspdfkit.pdfViewControllerWillDismiss = () => pdfViewControllerWillDismissHandler();
     Pspdfkit.pdfViewControllerDidDismiss = () => pdfViewControllerDidDismissHandler();

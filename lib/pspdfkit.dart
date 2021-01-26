@@ -18,7 +18,15 @@ part 'configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
-  static const MethodChannel _channel = const MethodChannel('pspdfkit');
+  static MethodChannel _privateChannel = null;
+
+  static MethodChannel get _channel {
+    if (_privateChannel == null) {
+      _privateChannel = const MethodChannel('pspdfkit');
+      _privateChannel.setMethodCallHandler(_platformCallHandler);
+    }
+    return _privateChannel;
+  }
 
   /// Gets the PSPDFKit framework version.
   static Future<String> get frameworkVersion async =>
@@ -118,9 +126,5 @@ class Pspdfkit {
       print(e);
     }
     return Future.value();
-  }
-
-  static void setupPlatformCallHandler() {
-    _channel.setMethodCallHandler(_platformCallHandler);
   }
 }
