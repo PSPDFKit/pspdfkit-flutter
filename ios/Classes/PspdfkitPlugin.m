@@ -14,6 +14,8 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
+static FlutterMethodChannel *channel;
+
 @interface PspdfkitPlugin() <PSPDFViewControllerDelegate>
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @end
@@ -24,7 +26,7 @@
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
     [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
 
-    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
+    channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
@@ -73,11 +75,16 @@
     }
 }
 
-# pragma mark - PSPDFViewControllerDelegate
+#pragma mark - PSPDFViewControllerDelegate
+
+- (void)pdfViewControllerWillDismiss:(PSPDFViewController *)pdfController {
+    [channel invokeMethod:@"pdfViewControllerWillDismiss" arguments:nil];
+}
 
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
     // Don't hold on to the view controller object after dismissal.
     self.pdfViewController = nil;
+    [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
 }
 
 @end

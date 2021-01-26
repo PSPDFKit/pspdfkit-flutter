@@ -9,6 +9,7 @@
 library pspdfkit;
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -17,7 +18,15 @@ part 'configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
-  static const MethodChannel _channel = const MethodChannel('com.pspdfkit.global');
+  static MethodChannel _privateChannel = null;
+
+  static MethodChannel get _channel {
+    if (_privateChannel == null) {
+      _privateChannel = const MethodChannel('com.pspdfkit.global');
+      _privateChannel.setMethodCallHandler(_platformCallHandler);
+    }
+    return _privateChannel;
+  }
 
   /// Gets the PSPDFKit framework version.
   static Future<String> get frameworkVersion async =>
@@ -122,5 +131,30 @@ class Pspdfkit {
       default:
         return AndroidPermissionStatus.notDetermined;
     }
+  }
+
+  static VoidCallback flutterPdfActivityOnPause;
+  static VoidCallback pdfViewControllerWillDismiss;
+  static VoidCallback pdfViewControllerDidDismiss;
+
+  static Future<void> _platformCallHandler(MethodCall call) {
+    try {
+      switch (call.method) {
+        case 'flutterPdfActivityOnPause':
+          flutterPdfActivityOnPause();
+          break;
+        case 'pdfViewControllerWillDismiss':
+          pdfViewControllerWillDismiss();
+          break;
+        case 'pdfViewControllerDidDismiss':
+          pdfViewControllerDidDismiss();
+          break;
+        default:
+          print('Unknowm method ${call.method} ');
+      }
+    } catch (e) {
+      print(e);
+    }
+    return Future.value();
   }
 }

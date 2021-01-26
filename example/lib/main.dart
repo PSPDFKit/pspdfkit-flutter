@@ -562,8 +562,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Pspdfkit.setLicenseKey(PSPDFKIT_LICENSE_KEY);
   }
 
+  void flutterPdfActivityOnPauseHandler() {
+    print("flutterPdfActivityOnPauseHandler");
+  }
+
+  void pdfViewControllerWillDismissHandler() {
+    print("pdfViewControllerWillDismissHandler");
+  }
+
+  void pdfViewControllerDidDismissHandler() {
+    print("pdfViewControllerDidDismissHandler");
+  }
+
   @override
   Widget build(BuildContext context) {
+    Pspdfkit.flutterPdfActivityOnPause = () => flutterPdfActivityOnPauseHandler();
+    Pspdfkit.pdfViewControllerWillDismiss = () => pdfViewControllerWillDismissHandler();
+    Pspdfkit.pdfViewControllerDidDismiss = () => pdfViewControllerDidDismissHandler();
+
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
     bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
