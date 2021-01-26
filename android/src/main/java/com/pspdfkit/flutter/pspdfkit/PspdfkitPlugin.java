@@ -77,7 +77,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-        MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
+        final MethodChannel channel = new MethodChannel(registrar.messenger(), "pspdfkit");
         PspdfkitPlugin pspdfkitPlugin = new PspdfkitPlugin(registrar);
         channel.setMethodCallHandler(pspdfkitPlugin);
         eventDispatcher.setChannel(channel);
