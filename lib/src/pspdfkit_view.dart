@@ -10,6 +10,8 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
+/// This platform implementation for this class currently only works on iOS. 
+/// Support for Android is coming soon.
 class PspdfkitView {
   MethodChannel _channel;  
   

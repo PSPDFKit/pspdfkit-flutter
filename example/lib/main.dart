@@ -132,7 +132,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               bottom: false,
               child: PspdfkitWidget(documentPath: extractedDocument.path)))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
@@ -150,7 +151,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               bottom: false,
               child: PspdfkitWidget(documentPath: extractedImage.path)))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present image document: '${e.message}'.");
@@ -171,7 +173,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
               })))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present image document: '${e.message}'.");
@@ -226,7 +229,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 isFirstPageAlwaysSingle: true
               })))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present image document: '${e.message}'.");
@@ -246,7 +250,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 password: 'test123'
               })))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present image document: '${e.message}'.");
@@ -341,7 +346,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 Expanded(child: PspdfkitWidget(documentPath: extractedFormDocument.path, onPspdfkitWidgetCreated: onWidgetCreated))
               ])))));
       } else {
-        // TODO: Android
+        // PspdfkitWidget is only supported in iOS at the moment.
+        // Support for Android is coming soon.
       }
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");

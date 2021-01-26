@@ -18,6 +18,8 @@ import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(PspdfkitView view);
 
+/// This widget is currently only supported for iOS.
+/// Support for Android is coming soon.
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;

@@ -109,7 +109,9 @@ class PspdfkitAnnotationsExampleWidgetState extends State<PspdfkitAnnotationsExa
                 ]))]))
       );
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return Text('TODO');
+      // PspdfkitView is only supported in iOS at the moment.
+      // Support for Android is coming soon.
+      return Text('Unsupported Widget');
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
