@@ -1,3 +1,8 @@
+## [2.0.0] - 26 Jan 2021
+
+- First pub.dev published version.
+- Updates the minimum required Flutter SDK version to 1.12.0.
+
 ## [1.10.3] - 11 Jan 2021
 
 - Updates copyright year to 2021. (#75)
