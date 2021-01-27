@@ -4,7 +4,7 @@
 
 ## [1.10.2] - 20 Nov 2020
 
-- Update for PSPDFKit 10.1 for iOS and Xcode 12.2. (#74)
+- Updates for PSPDFKit for iOS 10.1 and Xcode 12.2. (#74)
 
 ## [1.10.1] - 28 Oct 2020
 
