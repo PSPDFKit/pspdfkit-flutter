@@ -6,6 +6,17 @@
  *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
  *   This notice may not be removed from this file.
  */
+
+@Grab('org.yaml:snakeyaml:1.17')
+
+import groovy.yaml
+
+Yaml parser = new Yaml()
+List example = parser.load(("example.yaml" as File).text)
+
+example.each{println it.subject}
+
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -30,6 +41,12 @@ if (pspdfkitVersion == null || pspdfkitVersion == '') {
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
+
+// Get our library version from the pubspec.yaml file.
+def pubspecFile = rootProject.file('../pubspec.yaml')
+if (!pubspecFile.exists()) {
+    throw new GradleException("pubspec.yaml not found")
+}
 
 ext.pspdfkitFlutterVersion = '1.10.3'
 
