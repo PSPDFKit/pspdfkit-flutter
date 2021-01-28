@@ -22,7 +22,7 @@ class Pspdfkit {
 
   static MethodChannel get _channel {
     if (_privateChannel == null) {
-      _privateChannel = const MethodChannel('pspdfkit');
+      _privateChannel = const MethodChannel('com.pspdfkit.global');
       _privateChannel.setMethodCallHandler(_platformCallHandler);
     }
     return _privateChannel;
@@ -34,15 +34,11 @@ class Pspdfkit {
 
   /// Sets the license key.
   static Future<void> setLicenseKey(String licenseKey) async =>
-    await _channel.invokeMethod('setLicenseKey', <String, String>{'licenseKey': licenseKey});
+      await _channel.invokeMethod('setLicenseKey', <String, String>{'licenseKey': licenseKey});
 
   /// Loads a [document] with a supported format using a given [configuration].
-  static Future<bool> present(String document, [dynamic configuration]) async {
-    await _channel.invokeMethod(
-        'present',
-        <String, dynamic>{'document': document, 'configuration': configuration}
-    );
-  }
+  static Future<bool> present(String document, [dynamic configuration]) async =>
+      await _channel.invokeMethod('present', <String, dynamic>{'document': document, 'configuration': configuration});
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   static Future<bool> setFormFieldValue(String value, String fullyQualifiedName) async =>
@@ -59,6 +55,40 @@ class Pspdfkit {
   /// Exports Instant document JSON from the presented document.
   static Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
 
+  /// Adds the given annotation to the presented document. 
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  static Future<bool> addAnnotation(dynamic jsonAnnotation) async => 
+      _channel.invokeMethod('addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+
+  /// Removes the given annotation from the presented document. 
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  static Future<bool> removeAnnotation(dynamic jsonAnnotation) async => 
+      _channel.invokeMethod('removeAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+
+  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
+  static Future<dynamic> getAnnotations(int pageIndex, String type) async =>
+      _channel.invokeMethod<dynamic>('getAnnotations', <String, dynamic>{'pageIndex': pageIndex, 'type': type});
+
+  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  static Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
+
+  /// Processes annotations of the given type with the provided processing 
+  /// mode and stores the PDF at the given destination path.
+  static Future<bool> processAnnotations(String type, String processingMode, String destinationPath) async =>
+      _channel.invokeMethod('processAnnotations', <String, String>{
+        'type': type,
+        'processingMode': processingMode,
+        'destinationPath': destinationPath}
+      );
+
+  /// Imports annotations from the XFDF file at the given path.
+  static Future<bool> importXfdf(String xfdfPath) async => 
+      _channel.invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
+
+  /// Exports annotations to the XFDF file at the given path.
+  static Future<bool> exportXfdf(String xfdfPath) async => 
+      _channel.invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
+
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() async => _channel.invokeMethod('save');
@@ -73,8 +103,10 @@ class Pspdfkit {
 
   /// Requests the external storage permission for writing on Android only.
   static Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
-    final status = await _channel.invokeMethod(
-        "requestPermission", {"permission": "WRITE_EXTERNAL_STORAGE"});
+    final dynamic status = await _channel.invokeMethod<dynamic>(
+      "requestPermission", 
+      {"permission": "WRITE_EXTERNAL_STORAGE"}
+    );
 
     return status is int
         ? _intToAndroidPermissionStatus(status)
@@ -84,9 +116,7 @@ class Pspdfkit {
   }
 
   /// Opens the Android settings.
-  static Future<void> openAndroidSettings() async {
-    _channel.invokeMethod("openSettings");
-  }
+  static Future<void> openAndroidSettings() async => _channel.invokeMethod("openSettings");
 
   static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
     switch (status) {

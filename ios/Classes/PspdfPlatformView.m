@@ -6,38 +6,72 @@
 //  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 //  This notice may not be removed from this file.
 //
-#import "PspdfkitPlugin.h"
-#import "PspdfPlatformViewFactory.h"
+#import "PspdfPlatformView.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
 
-static FlutterMethodChannel *channel;
-
-@interface PspdfkitPlugin() <PSPDFViewControllerDelegate>
+@interface PspdfPlatformView() <PSPDFViewControllerDelegate>
+@property int64_t platformViewId;
+@property (nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
+@property (nonatomic) PSPDFNavigationController *navigationController;
 @end
 
-@implementation PspdfkitPlugin
+@implementation PspdfPlatformView
 
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
-    [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
+- (nonnull UIView *)view {
+    return self.navigationController.view ?: [UIView new];
+}
 
-    channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
-    PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
-    [registrar addMethodCallDelegate:instance channel:channel];
+- (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
+    NSString *name = [NSString stringWithFormat:@"com.pspdfkit.widget.%lld",viewId];
+    _platformViewId = viewId;
+    _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
+
+    _navigationController = [PSPDFNavigationController new];
+    _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
+    // View controller containment
+    _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    if (_flutterViewController == nil) {
+        NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
+    }
+    [_flutterViewController addChildViewController:_navigationController];
+    [_flutterViewController.view addSubview:_navigationController.view];
+    [_navigationController didMoveToParentViewController:_flutterViewController];
+
+    _pdfViewController = [[PSPDFViewController alloc] init];
+    [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
+
+    self = [super init];
+
+    __weak id weakSelf = self;
+    [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+        [weakSelf handleMethodCall:call result:result];
+    }];
+
+    return self;
+}
+
+- (void)dealloc {
+    [self cleanup];
+}
+
+- (void)cleanup {
+    self.pdfViewController.document = nil;
+    [self.pdfViewController.view removeFromSuperview];
+    [self.pdfViewController removeFromParentViewController];
+    [self.navigationController.navigationBar removeFromSuperview];
+    [self.navigationController.view removeFromSuperview];
+    [self.navigationController removeFromParentViewController];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    if ([@"frameworkVersion" isEqualToString:call.method]) {
-        result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
-    } else if ([@"setLicenseKey" isEqualToString:call.method]) {
-        NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKitGlobal setLicenseKey:licenseKey];
-    } else if ([@"present" isEqualToString:call.method]) {
+    if ([@"initializePlatformView" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
         if (documentPath == nil || documentPath.length <= 0) {
@@ -65,26 +99,18 @@ static FlutterMethodChannel *channel;
             [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[@"toolbarTitle"] forViewController:self.pdfViewController];
         }
 
-        PSPDFNavigationController *navigationController = [[PSPDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
-        navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-        UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-        [presentingViewController presentViewController:navigationController animated:YES completion:nil];
+        [self.navigationController setViewControllers:@[self.pdfViewController] animated:NO];
         result(@(YES));
     } else {
         [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
 }
 
-#pragma mark - PSPDFViewControllerDelegate
-
-- (void)pdfViewControllerWillDismiss:(PSPDFViewController *)pdfController {
-    [channel invokeMethod:@"pdfViewControllerWillDismiss" arguments:nil];
-}
+# pragma mark - PSPDFViewControllerDelegate
 
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
     // Don't hold on to the view controller object after dismissal.
-    self.pdfViewController = nil;
-    [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
+    [self cleanup];
 }
 
 @end
