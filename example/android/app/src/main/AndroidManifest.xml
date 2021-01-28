@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
+        android:name="com.pspdfkit.flutter.example.FlutterExampleApplication"
         android:label="pspdfkit_example"
         android:icon="@mipmap/ic_launcher">
         <activity
