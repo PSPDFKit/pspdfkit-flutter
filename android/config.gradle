@@ -31,7 +31,7 @@ if (pspdfkitVersion == null || pspdfkitVersion == '') {
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
 
-ext.pspdfkitFlutterVersion = '1.10.0'
+ext.pspdfkitFlutterVersion = '1.10.3'
 
 ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'
