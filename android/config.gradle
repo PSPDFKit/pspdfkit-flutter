@@ -7,15 +7,16 @@
  *   This notice may not be removed from this file.
  */
 
-@Grab('org.yaml:snakeyaml:1.17')
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.yaml:snakeyaml:1.27"
+    }
+}
 
-import groovy.yaml
-
-Yaml parser = new Yaml()
-List example = parser.load(("example.yaml" as File).text)
-
-example.each{println it.subject}
-
+import org.yaml.snakeyaml.Yaml
 
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
@@ -42,13 +43,14 @@ if (pspdfkitVersion == null || pspdfkitVersion == '') {
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
 
-// Get our library version from the pubspec.yaml file.
-def pubspecFile = rootProject.file('../pubspec.yaml')
+// Get our library version from the top level pubspec.yaml file.
+def pubspecFilePath = '../pubspec.yaml'
+def pubspecFile = rootProject.file(pubspecFilePath)
 if (!pubspecFile.exists()) {
-    throw new GradleException("pubspec.yaml not found")
+    throw new GradleException("'pubspec.yaml' file not found. Expected at the top level of the Flutter repository.")
 }
-
-ext.pspdfkitFlutterVersion = '1.10.3'
+def pubspecYaml = new Yaml().load( pubspecFile.newInputStream() )
+ext.pspdfkitFlutterVersion = pubspecYaml.version
 
 ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'
