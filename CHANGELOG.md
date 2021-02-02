@@ -1,8 +1,11 @@
 ## Next Release
 
-- Fixes versioning system to not require a manual update in two places. (#80)
+## [1.10.4] - 2 Feb 2021
+
 - Updates Gradle version and enable AndroidX for Android plugin and example. (#80)
+- Updates for PSPDFKit 10.2 for iOS and Xcode 12.4.(#81)
 - Changes open source license to modified BSD instead of Apache. (#79)
+- Fixes versioning system to not require a manual update in two places. (#80)
 
 ## [1.10.3] - 11 Jan 2021
 
