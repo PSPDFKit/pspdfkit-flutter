@@ -49,7 +49,7 @@ def pubspecFile = rootProject.file(pubspecFilePath)
 if (!pubspecFile.exists()) {
     throw new GradleException("'pubspec.yaml' file not found. Expected at the top level of the Flutter repository.")
 }
-def pubspecYaml = new Yaml().load( pubspecFile.newInputStream() )
+def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
 ext.pspdfkitFlutterVersion = pubspecYaml.version
 
 ext.androidCompileSdkVersion = 29
