@@ -6,6 +6,18 @@
  *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
  *   This notice may not be removed from this file.
  */
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.yaml:snakeyaml:1.27"
+    }
+}
+
+import org.yaml.snakeyaml.Yaml
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -31,10 +43,17 @@ if (pspdfkitVersion == null || pspdfkitVersion == '') {
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
 
-ext.pspdfkitFlutterVersion = '1.10.3'
+// Get our library version from the top level pubspec.yaml file.
+def pubspecFilePath = '../pubspec.yaml'
+def pubspecFile = rootProject.file(pubspecFilePath)
+if (!pubspecFile.exists()) {
+    throw new GradleException("'pubspec.yaml' file not found. Expected at the top level of the Flutter repository.")
+}
+def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
+ext.pspdfkitFlutterVersion = pubspecYaml.version
 
 ext.androidCompileSdkVersion = 29
 ext.androidBuildToolsVersion = '29.0.1'
 ext.androidMinSdkVersion = 19
 ext.androidTargetSdkVersion = 29
-ext.androidGradlePluginVersion = '3.6.3'
+ext.androidGradlePluginVersion = '4.1.1'
