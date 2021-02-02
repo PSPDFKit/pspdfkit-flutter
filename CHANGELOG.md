@@ -1,5 +1,9 @@
 ## Next Release
 
+## [1.10.5] - 2 Feb 2021
+
+- Fixes the license key in the example project. (#82)
+
 ## [1.10.4] - 2 Feb 2021
 
 - Updates Gradle version and enable AndroidX for Android plugin and example. (#80)

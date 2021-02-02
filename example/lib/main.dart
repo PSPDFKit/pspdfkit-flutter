@@ -25,7 +25,7 @@ import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 
-const String PSPDFKIT_LICENSE_KEY = "License key goes here";
+const String PSPDFKIT_LICENSE_KEY = "LICENSE_KEY_GOES_HERE";
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
