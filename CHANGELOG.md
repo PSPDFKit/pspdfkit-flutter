@@ -1,3 +1,9 @@
+## Next Release
+
+- Fixes versioning system to not require a manual update in two places. (#80)
+- Updates Gradle version and enable AndroidX for Android plugin and example. (#80)
+- Changes open source license to modified BSD instead of Apache. (#79)
+
 ## [1.10.3] - 11 Jan 2021
 
 - Updates copyright year to 2021. (#75)
