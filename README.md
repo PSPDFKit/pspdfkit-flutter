@@ -398,6 +398,40 @@ showDocument() async {
 
 Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
 
+# Migrating from Version 1.10.3
+
+Q: I updated the Flutter plugin and I am getting the following error:
+
+```bash
+lib/main.dart:8:8: Error: Error when reading '../../.pub-cache/git/pspdfkit-flutter-b6241555b1ee3e816a0dce65145991c1a4477d94/lib/pspdfkit.dart': No such file or directory
+import 'package:pspdfkit_flutter/pspdfkit.dart';                        
+       ^                                                                
+lib/main.dart:37:7: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
+      Pspdfkit.present(tempDocumentPath);                               
+      ^^^^^^^^                                                          
+lib/main.dart:58:32: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
+      frameworkVersion = await Pspdfkit.frameworkVersion;               
+                               ^^^^^^^^                                 
+lib/main.dart:73:5: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
+    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");               
+    ^^^^^^^^                                                            
+                                                                        
+                                                                        
+FAILURE: Build failed with an exception. 
+````
+A: If you were using version [1.10.3](https://github.com/PSPDFKit/pspdfkit-flutter/releases/tag/1.10.3) or earlier, you will need to update the imports in your Dart files like so:
+
+```diff
+- import 'package:pspdfkit_flutter/pspdfkit.dart';
++ import 'package:pspdfkit_flutter/src/main.dart';
+```
+
 # Troubleshooting
 
 ## Flutter Updates
