@@ -1,5 +1,11 @@
 ## Next Release
 
+## [1.10.6] - 9 Feb 2021
+
+- Adds “Migrating from Version 1.10.3” section in the main README. (#83)
+- Fixes import in getting started code snippets for iOS and Android. (#83)
+- Updates the requirements in the iOS README. (#83)
+
 ## [1.10.5] - 2 Feb 2021
 
 - Fixes the license key in the example project. (#82)
