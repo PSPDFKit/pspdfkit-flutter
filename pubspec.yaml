@@ -1,10 +1,15 @@
 name: pspdfkit_flutter
 description: PSPDFKit flutter plugin.
-version: 1.10.6
-author: PSPDFKit
+version: 2.0.0
 homepage: https://pspdfkit.com/
+repository: https://github.com/PSPDFKit/pspdfkit-flutter
+issue_tracker: https://github.com/PSPDFKit/pspdfkit-flutter/issues
+documentation: https://github.com/PSPDFKit/pspdfkit-flutter/blob/master/README.md
 environment:
   sdk: '>=2.0.0 <3.0.0'
+  # Flutter versions prior to 1.12 did not support the
+  # flutter.plugin.platforms map.
+  flutter: '>=1.12.0'
 
 dependencies:
   flutter:
@@ -16,5 +21,9 @@ dependencies:
 # The following section is specific to Flutter.
 flutter:
   plugin:
-    androidPackage: com.pspdfkit.flutter.pspdfkit
-    pluginClass: PspdfkitPlugin
+    platforms:
+      android:
+        package: com.pspdfkit.flutter.pspdfkit
+        pluginClass: PspdfkitPlugin
+      ios:
+        pluginClass: PspdfkitPlugin
