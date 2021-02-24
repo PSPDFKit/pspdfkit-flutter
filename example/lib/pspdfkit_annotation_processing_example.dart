@@ -9,7 +9,6 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -30,7 +29,7 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
     Key key,
     @required this.documentPath,
     @required this.exportPath,
-    this.configuration = null
+    this.configuration
   }) : super(key: key);
 
   @override
@@ -41,17 +40,17 @@ class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnot
   PspdfkitView view;
 
   Future<File> extractAsset(String assetPath) async {
-    final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
-    final Uint8List list = bytes.buffer.asUint8List();
-    final String tempDocumentPath = await getExportPath(assetPath);
-    final File file = await File(tempDocumentPath).create(recursive: true);
+    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
+    final list = bytes.buffer.asUint8List();
+    final tempDocumentPath = await getExportPath(assetPath);
+    final file = await File(tempDocumentPath).create(recursive: true);
     file.writeAsBytesSync(list);
     return file;
   }
 
   Future<String> getExportPath(String assetPath) async {
-    final Directory tempDir = await getTemporaryDirectory();
-    final String tempDocumentPath = '${tempDir.path}/$assetPath';
+    final tempDir = await getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
     return tempDocumentPath;
   }
 
@@ -73,27 +72,27 @@ class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnot
                 children: <Widget>[
                   Container(width: 20),
                   CupertinoButton(child: Text('Flatten Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "flatten", exportPath);
-                    Pspdfkit.present(exportPath);
+                    final exportPath = await getExportPath(widget.exportPath);
+                    await view.processAnnotations('all', 'flatten', exportPath);
+                    await Pspdfkit.present(exportPath);
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Remove Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "remove", exportPath);
-                    Pspdfkit.present(exportPath);
+                    final exportPath = await getExportPath(widget.exportPath);
+                    await view.processAnnotations('all', 'remove', exportPath);
+                    await Pspdfkit.present(exportPath);
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Embed Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "embed", exportPath);
-                    Pspdfkit.present(exportPath);
+                    final exportPath = await getExportPath(widget.exportPath);
+                    await view.processAnnotations('all', 'embed', exportPath);
+                    await Pspdfkit.present(exportPath);
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Print Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "print", exportPath);
-                    Pspdfkit.present(exportPath);
+                    final exportPath = await getExportPath(widget.exportPath);
+                    await view.processAnnotations('all', 'print', exportPath);
+                    await Pspdfkit.present(exportPath);
                   })
                 ]))]))
       );
@@ -107,6 +106,6 @@ class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnot
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
   }
 }

@@ -1,3 +1,8 @@
+## [2.0.1] - 24 Feb 2021
+
+- Updates package description for pub.dev. (#28225)
+- Adds pedantic static analysis check and addresses the analysis warnings. (#28225)
+
 ## [2.0.0] - 17 Feb 2021
 
 - First pub.dev published version.

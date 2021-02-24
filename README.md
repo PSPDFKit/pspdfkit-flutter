@@ -2,7 +2,7 @@
 
 ![](https://pspdfkit.com/images/blog/2018/starting-with-flutter/article-header-bb5f1c40.png)
 
-PSPDFKit wrapper for Flutter.
+PSPDFKit wrapper for Flutter. [Available here in pub.dev](https://pub.dev/packages/pspdfkit_flutter).
 
 If you are new to Flutter, make sure to check our blog:
 
@@ -26,7 +26,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit plugin.
 
 1. Run `flutter create --org com.example.myapp myapp`.
-2. Open `myapp/pubspec.yaml` and under `dependencies` add 
+2. Open `myapp/pubspec.yaml` and under `dependencies` add
 ```yaml
   pspdfkit_flutter:
     git:
@@ -43,22 +43,22 @@ flutter.sdk=/path/to/your/flutter/sdk
 flutter.buildMode=debug
 ```
 
-5. Open `myapp/android/app/build.gradle` and modify `minSdkVersion` from `16` to `21`, enable multiDex, and add compile options to enable desugaring 
-  
+5. Open `myapp/android/app/build.gradle` and modify `minSdkVersion` from `16` to `21`, enable multiDex, and add compile options to enable desugaring
+
   ```groovy
   compileOptions {
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
   ```
-  
+
 **Three changes** to edit:
 
 ```diff
 ...
 android {
      compileSdkVersion 29
-     
+
 +    compileOptions {
 +       sourceCompatibility 1.8
 +       targetCompatibility 1.8
@@ -235,12 +235,12 @@ adb push /path/to/your/document.pdf /sdcard/document.pdf
 
 ```yaml
   assets:
-    - PDFs/   
+    - PDFs/
 ```
 <strong>Spaces are important</strong>, so don't forget them.
 
 5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
-6. Make sure the `iOS Deployment Target` is set to 12.0 or higher. 
+6. Make sure the `iOS Deployment Target` is set to 12.0 or higher.
 
 ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
@@ -269,7 +269,7 @@ target 'Runner' do
    flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
 end
-``` 
+```
 
 12. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
 
@@ -385,7 +385,7 @@ To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 
 Showing a PDF document inside your Flutter app is as simple as this:
 
-```MyApp.dart 
+```MyApp.dart
 showDocument() async {
     try {
         Pspdfkit.present("file:///document.pdf");
@@ -404,26 +404,26 @@ Q: I updated the Flutter plugin and I am getting the following error:
 
 ```bash
 lib/main.dart:8:8: Error: Error when reading '../../.pub-cache/git/pspdfkit-flutter-b6241555b1ee3e816a0dce65145991c1a4477d94/lib/pspdfkit.dart': No such file or directory
-import 'package:pspdfkit_flutter/pspdfkit.dart';                        
-       ^                                                                
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+       ^
 lib/main.dart:37:7: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
 Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-      Pspdfkit.present(tempDocumentPath);                               
-      ^^^^^^^^                                                          
+      Pspdfkit.present(tempDocumentPath);
+      ^^^^^^^^
 lib/main.dart:58:32: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
 Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-      frameworkVersion = await Pspdfkit.frameworkVersion;               
-                               ^^^^^^^^                                 
+      frameworkVersion = await Pspdfkit.frameworkVersion;
+                               ^^^^^^^^
 lib/main.dart:73:5: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').   
+ - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
 Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");               
-    ^^^^^^^^                                                            
-                                                                        
-                                                                        
-FAILURE: Build failed with an exception. 
+    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
+    ^^^^^^^^
+
+
+FAILURE: Build failed with an exception.
 ````
 A: If you were using version [1.10.3](https://github.com/PSPDFKit/pspdfkit-flutter/releases/tag/1.10.3) or earlier, you will need to update the imports in your Dart files like so:
 

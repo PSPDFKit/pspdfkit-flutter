@@ -7,7 +7,6 @@
 ///  This notice may not be removed from this file.
 ///
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
@@ -25,7 +24,7 @@ import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 
-const String PSPDFKIT_LICENSE_KEY = "LICENSE_KEY_GOES_HERE";
+const String PSPDFKIT_LICENSE_KEY = 'LICENSE_KEY_GOES_HERE';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -110,22 +109,22 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   ThemeData currentTheme = lightTheme;
 
   Future<File> extractAsset(String assetPath) async {
-    final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
-    final Uint8List list = bytes.buffer.asUint8List();
+    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
+    final list = bytes.buffer.asUint8List();
 
-    final Directory tempDir = await getTemporaryDirectory();
-    final String tempDocumentPath = '${tempDir.path}/$assetPath';
+    final tempDir = await getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
 
-    final File file = await File(tempDocumentPath).create(recursive: true);
+    final file = await File(tempDocumentPath).create(recursive: true);
     file.writeAsBytesSync(list);
     return file;
   }
 
   void showDocument() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -142,9 +141,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void showImage() async {
     try {
-      final File extractedImage = await extractAsset(_imagePath);
+      final extractedImage = await extractAsset(_imagePath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -161,9 +160,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyDarkTheme() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -183,9 +182,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyCustomConfiguration() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -239,9 +238,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void unlockPasswordProtectedDocument() async {
     try {
-      final File extractedLockedDocument = await extractAsset(_lockedDocumentPath);
+      final extractedLockedDocument = await extractAsset(_lockedDocumentPath);
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -260,14 +259,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void showFormDocumentExample() async {
     try {
-      final File extractedFormDocument = await extractAsset(_formPath);
+      final extractedFormDocument = await extractAsset(_formPath);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           PspdfkitFormExampleWidget(documentPath: extractedFormDocument.path, onPspdfkitFormExampleWidgetCreated: onWidgetCreated)
         ));
       } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) =>
           PspdfkitFormExampleWidget(documentPath: extractedFormDocument.path, onPspdfkitFormExampleWidgetCreated: onWidgetCreated)
         ));
       }
@@ -278,14 +277,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void importInstantJsonExample() async {
     try {
-      final File extractedFormDocument = await extractAsset(_documentPath);
+      final extractedFormDocument = await extractAsset(_documentPath);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           PspdfkitInstantJsonExampleWidget(documentPath: extractedFormDocument.path, instantJsonPath: _instantDocumentJsonPath)
         ));
       } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) =>
           PspdfkitInstantJsonExampleWidget(documentPath: extractedFormDocument.path, instantJsonPath: _instantDocumentJsonPath)
         ));
       }
@@ -296,14 +295,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void annotationsExample() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           PspdfkitAnnotationsExampleWidget(documentPath: extractedDocument.path)
         ));
       } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) =>
           PspdfkitAnnotationsExampleWidget(documentPath: extractedDocument.path)
         ));
       }
@@ -314,14 +313,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void annotationProcessingExample() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           PspdfkitAnnotationProcessingExampleWidget(documentPath: extractedDocument.path, exportPath: _processedDocumentPath)
         ));
       } else {
-        Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(builder: (_) =>
           PspdfkitAnnotationProcessingExampleWidget(documentPath: extractedDocument.path, exportPath: _processedDocumentPath)
         ));
       }
@@ -332,11 +331,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void pushTwoPspdfWidgetsSimultaneously() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      final File extractedFormDocument = await extractAsset(_formPath);
+      final extractedDocument = await extractAsset(_documentPath);
+      final extractedFormDocument = await extractAsset(_formPath);
 
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) => 
+        await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(builder: (_) =>
           CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(),
             child: SafeArea(
@@ -356,32 +355,32 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void onWidgetCreated(PspdfkitView view) async {
     try {
-      view.setFormFieldValue("Lastname", "Name_Last");
-      view.setFormFieldValue("0123456789", "Telephone_Home");
-      view.setFormFieldValue("City", "City");
-      view.setFormFieldValue("selected", "Sex.0");
-      view.setFormFieldValue("deselected", "Sex.1");
-      view.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+      await view.setFormFieldValue('Lastname', 'Name_Last');
+      await view.setFormFieldValue('0123456789', 'Telephone_Home');
+      await view.setFormFieldValue('City', 'City');
+      await view.setFormFieldValue('selected', 'Sex.0');
+      await view.setFormFieldValue('deselected', 'Sex.1');
+      await view.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
     } on PlatformException catch(e) {
       print("Failed to set form field values '${e.message}'.");
     }
 
     String lastName;
     try {
-      lastName = await view.getFormFieldValue("Name_Last");
+      lastName = await view.getFormFieldValue('Name_Last');
     } on PlatformException catch(e) {
       print("Failed to get form field value '${e.message}'.");
     }
 
     if (lastName != null) {
-      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
+      print("Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
     }
   }
 
   void showDocumentGlobal() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      Pspdfkit.present(extractedDocument.path);
+      final extractedDocument = await extractAsset(_documentPath);
+      await Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -389,8 +388,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void showImageGlobal() async {
     try {
-      final File extractedImage = await extractAsset(_imagePath);
-      Pspdfkit.present(extractedImage.path);
+      final extractedImage = await extractAsset(_imagePath);
+      await Pspdfkit.present(extractedImage.path);
     } on PlatformException catch (e) {
       print("Failed to present image document: '${e.message}'.");
     }
@@ -398,8 +397,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyDarkThemeGlobal() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      Pspdfkit.present(extractedDocument.path, {
+      final extractedDocument = await extractAsset(_documentPath);
+      await Pspdfkit.present(extractedDocument.path, {
         appearanceMode: appearanceModeNight,
         androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
       });
@@ -410,8 +409,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyCustomConfigurationGlobal() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
-      Pspdfkit.present(extractedDocument.path, {
+      final extractedDocument = await extractAsset(_documentPath);
+      await Pspdfkit.present(extractedDocument.path, {
         pageScrollDirection: pageScrollDirectionVertical,
         pageScrollContinuous: false,
         fitPageToWidth: true,
@@ -456,8 +455,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void unlockPasswordProtectedDocumentGlobal() async {
     try {
-      final File extractedLockedDocument = await extractAsset(_lockedDocumentPath);
-      Pspdfkit.present(extractedLockedDocument.path, {
+      final extractedLockedDocument = await extractAsset(_lockedDocumentPath);
+      await Pspdfkit.present(extractedLockedDocument.path, {
         password: 'test123'
       });
     } on PlatformException catch (e) {
@@ -467,55 +466,55 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void showFormDocumentExampleGlobal() async {
     try {
-      final File formDocument = await extractAsset(_formPath);
+      final formDocument = await extractAsset(_formPath);
       await Pspdfkit.present(formDocument.path);
     } on PlatformException catch(e) {
       print("Failed to present document: '${e.message}'.");
     }
 
     try {
-      Pspdfkit.setFormFieldValue("Lastname", "Name_Last");
-      Pspdfkit.setFormFieldValue("0123456789", "Telephone_Home");
-      Pspdfkit.setFormFieldValue("City", "City");
-      Pspdfkit.setFormFieldValue("selected", "Sex.0");
-      Pspdfkit.setFormFieldValue("deselected", "Sex.1");
-      Pspdfkit.setFormFieldValue("selected", "HIGH SCHOOL DIPLOMA");
+      await Pspdfkit.setFormFieldValue('Lastname', 'Name_Last');
+      await Pspdfkit.setFormFieldValue('0123456789', 'Telephone_Home');
+      await Pspdfkit.setFormFieldValue('City', 'City');
+      await Pspdfkit.setFormFieldValue('selected', 'Sex.0');
+      await Pspdfkit.setFormFieldValue('deselected', 'Sex.1');
+      await Pspdfkit.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
     } on PlatformException catch(e) {
       print("Failed to set form field values '${e.message}'.");
     }
 
     String lastName;
     try {
-      lastName = await Pspdfkit.getFormFieldValue("Name_Last");
+      lastName = await Pspdfkit.getFormFieldValue('Name_Last');
     } on PlatformException catch(e) {
       print("Failed to get form field value '${e.message}'.");
     }
 
     if (lastName != null) {
-      print("Retrieved form field for fully qualified name \"Name_Last\" is $lastName.");
+      print("Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
     }
   }
 
   void importInstantJsonExampleGlobal() async {
     try {
-      final File extractedDocument = await extractAsset(_documentPath);
+      final extractedDocument = await extractAsset(_documentPath);
       await Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch(e) {
       print("Failed to present document: '${e.message}'.");
     }
 
     // Extract a string from a file.
-    final String annotationsJson = await DefaultAssetBundle.of(context).loadString(_instantDocumentJsonPath);
+    final annotationsJson = await DefaultAssetBundle.of(context).loadString(_instantDocumentJsonPath);
 
     try {
-      Pspdfkit.applyInstantJson(annotationsJson);
+      await Pspdfkit.applyInstantJson(annotationsJson);
     } on PlatformException catch(e) {
       print("Failed to import Instant Document JSON '${e.message}'.");
     }
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     initPlatformState();
@@ -559,19 +558,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _frameworkVersion = frameworkVersion;
     });
 
-    Pspdfkit.setLicenseKey(PSPDFKIT_LICENSE_KEY);
+    await Pspdfkit.setLicenseKey(PSPDFKIT_LICENSE_KEY);
   }
 
   void flutterPdfActivityOnPauseHandler() {
-    print("flutterPdfActivityOnPauseHandler");
+    print('flutterPdfActivityOnPauseHandler');
   }
 
   void pdfViewControllerWillDismissHandler() {
-    print("pdfViewControllerWillDismissHandler");
+    print('pdfViewControllerWillDismissHandler');
   }
 
   void pdfViewControllerDidDismissHandler() {
-    print("pdfViewControllerDidDismissHandler");
+    print('pdfViewControllerDidDismissHandler');
   }
 
   @override
@@ -581,19 +580,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Pspdfkit.pdfViewControllerDidDismiss = () => pdfViewControllerDidDismissHandler();
 
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light ? lightTheme : darkTheme;
-    bool isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     if (isIOS) {
-      var title = Theme.of(context).textTheme.title.copyWith(color: currentTheme.primaryColor);
-      var subhead = Theme.of(context).textTheme.subhead.copyWith(color: currentTheme.primaryColor);      
-      var crossAxisAlignment = CrossAxisAlignment.start;
-      var padding = EdgeInsets.all(16.0);
+      final title = Theme.of(context).textTheme.headline6.copyWith(color: currentTheme.primaryColor);
+      final subhead = Theme.of(context).textTheme.subtitle1.copyWith(color: currentTheme.primaryColor);
+      final crossAxisAlignment = CrossAxisAlignment.start;
+      final padding = EdgeInsets.all(16.0);
 
-      List<Widget> cupertinoListTiles = <Widget>[
+      final cupertinoListTiles = <Widget>[
         Container(
         color: Colors.grey[200],
         padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-        child: Text("Pspdfkit Widget Examples",
-              style: currentTheme.textTheme.display1
+        child: Text('Pspdfkit Widget Examples',
+              style: currentTheme.textTheme.headline4
                   .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
         )),
         GestureDetector(
@@ -708,8 +707,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         Container(
         color: Colors.grey[200],
         padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-        child: Text("Pspdfkit Global Plugin View Examples",
-              style: currentTheme.textTheme.display1
+        child: Text('Pspdfkit Global Plugin View Examples',
+              style: currentTheme.textTheme.headline4
                   .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold)
         )),
         GestureDetector(
@@ -798,7 +797,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 child: ExampleListView(currentTheme, frameworkVersion(), cupertinoListTiles))
               );
     } else {
-      List<Widget> listTiles = <Widget>[
+      final listTiles = <Widget>[
         ListTile(
             title: Text(_basicExampleGlobal),
             subtitle: Text(_basicExampleGlobalSub),
@@ -858,7 +857,7 @@ class ExampleListView extends StatelessWidget {
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
-              style: _themeData.textTheme.display1
+              style: _themeData.textTheme.headline4
                   .copyWith(fontSize: _fontSize, fontWeight: FontWeight.bold, color: _themeData.primaryColor)),
         ),
       ),

@@ -5,13 +5,14 @@
 #   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 #   This notice may not be removed from this file.
 
+include: package:pedantic/analysis_options.yaml
+
 analyzer:
   errors:
-    invalid_assignment: warning
+    invalid_assignment: error
     missing_return: error
     dead_code: warning
 
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
-    

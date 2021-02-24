@@ -25,7 +25,7 @@ class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
     Key key,
     @required this.documentPath,
     @required this.instantJsonPath,
-    this.configuration = null,
+    this.configuration,
   }) : super(key: key);
 
   @override
@@ -53,20 +53,20 @@ class PspdfkitInstantJsonExampleWidgetState extends State<PspdfkitInstantJsonExa
                 children: <Widget>[
                   Container(width: 20),
                   CupertinoButton(child: Text('Apply Instant JSON'), onPressed: () async {
-                    final String annotationsJson = await DefaultAssetBundle.of(context).loadString(widget.instantJsonPath);
-                    this.view.applyInstantJson(annotationsJson);
+                    final annotationsJson = await DefaultAssetBundle.of(context).loadString(widget.instantJsonPath);
+                    await view.applyInstantJson(annotationsJson);
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Export Instant JSON'), onPressed: () async {
-                    String title = "Exported Instant JSON";
-                    String exportedInstantJson = await this.view.exportInstantJson();
-                    showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context, 
-                      builder: (BuildContext context) => new CupertinoAlertDialog(
-                        title: new Text(title),
-                        content: new Text(exportedInstantJson),
+                    final title = 'Exported Instant JSON';
+                    final exportedInstantJson = await view.exportInstantJson();
+                    await showCupertinoDialog<CupertinoAlertDialog>(
+                      context: context,
+                      builder: (BuildContext context) => CupertinoAlertDialog(
+                        title: Text(title),
+                        content: Text(exportedInstantJson),
                         actions: [
-                           new FlatButton(onPressed: () {Navigator.of(context).pop();}, child: new Text("OK"))
+                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
                           ],
                       ));
                     })
@@ -82,6 +82,6 @@ class PspdfkitInstantJsonExampleWidgetState extends State<PspdfkitInstantJsonExa
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
   }
 }

@@ -18,7 +18,7 @@ part 'configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
-  static MethodChannel _privateChannel = null;
+  static MethodChannel _privateChannel;
 
   static MethodChannel get _channel {
     if (_privateChannel == null) {
@@ -55,14 +55,14 @@ class Pspdfkit {
   /// Exports Instant document JSON from the presented document.
   static Future<String> exportInstantJson() async => _channel.invokeMethod('exportInstantJson');
 
-  /// Adds the given annotation to the presented document. 
+  /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  static Future<bool> addAnnotation(dynamic jsonAnnotation) async => 
+  static Future<bool> addAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod('addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
-  /// Removes the given annotation from the presented document. 
+  /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  static Future<bool> removeAnnotation(dynamic jsonAnnotation) async => 
+  static Future<bool> removeAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod('removeAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
   /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
@@ -72,7 +72,7 @@ class Pspdfkit {
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
   static Future<dynamic> getAllUnsavedAnnotations() async => _channel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
 
-  /// Processes annotations of the given type with the provided processing 
+  /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
   static Future<bool> processAnnotations(String type, String processingMode, String destinationPath) async =>
       _channel.invokeMethod('processAnnotations', <String, String>{
@@ -82,30 +82,30 @@ class Pspdfkit {
       );
 
   /// Imports annotations from the XFDF file at the given path.
-  static Future<bool> importXfdf(String xfdfPath) async => 
+  static Future<bool> importXfdf(String xfdfPath) async =>
       _channel.invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Exports annotations to the XFDF file at the given path.
-  static Future<bool> exportXfdf(String xfdfPath) async => 
+  static Future<bool> exportXfdf(String xfdfPath) async =>
       _channel.invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool> save() async => _channel.invokeMethod('save');
-  
+
   /// Checks the external storage permission for writing on Android only.
   static Future<bool> checkAndroidWriteExternalStoragePermission() async {
     return _channel.invokeMethod(
-        "checkPermission",
-        {"permission": "WRITE_EXTERNAL_STORAGE"}
+        'checkPermission',
+        {'permission': 'WRITE_EXTERNAL_STORAGE'}
     );
   }
 
   /// Requests the external storage permission for writing on Android only.
   static Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
     final dynamic status = await _channel.invokeMethod<dynamic>(
-      "requestPermission", 
-      {"permission": "WRITE_EXTERNAL_STORAGE"}
+      'requestPermission',
+      {'permission': 'WRITE_EXTERNAL_STORAGE'}
     );
 
     return status is int
@@ -116,7 +116,7 @@ class Pspdfkit {
   }
 
   /// Opens the Android settings.
-  static Future<void> openAndroidSettings() async => _channel.invokeMethod("openSettings");
+  static Future<void> openAndroidSettings() async => _channel.invokeMethod('openSettings');
 
   static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
     switch (status) {

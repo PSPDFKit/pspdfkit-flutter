@@ -23,7 +23,7 @@ class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
   PspdfkitAnnotationsExampleWidget({
     Key key,
     @required this.documentPath,
-    this.configuration = null
+    this.configuration
   }) : super(key: key);
 
   @override
@@ -52,57 +52,57 @@ class PspdfkitAnnotationsExampleWidgetState extends State<PspdfkitAnnotationsExa
                   Container(width: 20),
                   CupertinoButton(child: Text('Add Annotation'), onPressed: () async {
                     dynamic annotation = {
-                      "uuid": "A92AA288-B11D-490C-847B-D1A0BC64D3E9",
-                      "bbox": [267.4294738769531, 335.1297607421875, 97.16720581054688, 10.305419921875],
-                      "blendMode": "normal", 
-                      "updatedAt": "2020-04-01T12:31:15Z", 
-                      "pageIndex": 0,
-                      "lineWidth": 4,
-                      "lines": {
-                        "points": [[[269.4294738769531, 343.4351806640625], [308.458984375, 341.7537841796875], [341.19342041015625, 339.6519775390625], [358.81964111328125, 339.6519775390625], [360.9179992675781, 339.2315673828125], [362.5966796875, 338.81121826171875], [361.7573547363281, 337.1297607421875]]],
-                        "intensities": [[1, 0.42835134267807007, 0.635690450668335, 0.827924370765686, 0.9846339821815491, 0.9947978258132935, 0.9675101041793823]]}, 
-                        "strokeColor": "#2492FB", 
-                        "isDrawnNaturally": false,
-                        "opacity": 1,
-                        "type": "pspdfkit/ink",
-                        "creatorName": "pspdfkit",
-                        "createdAt": "2020-04-01T12:31:15Z",
-                        "name": "A92AA288-B11D-490C-847B-D1A0BC64D3E9", 
-                        "v": 1};
-                      await this.view.addAnnotation(annotation);
+                      'uuid': 'A92AA288-B11D-490C-847B-D1A0BC64D3E9',
+                      'bbox': [267.4294738769531, 335.1297607421875, 97.16720581054688, 10.305419921875],
+                      'blendMode': 'normal',
+                      'updatedAt': '2020-04-01T12:31:15Z',
+                      'pageIndex': 0,
+                      'lineWidth': 4,
+                      'lines': {
+                        'points': [[[269.4294738769531, 343.4351806640625], [308.458984375, 341.7537841796875], [341.19342041015625, 339.6519775390625], [358.81964111328125, 339.6519775390625], [360.9179992675781, 339.2315673828125], [362.5966796875, 338.81121826171875], [361.7573547363281, 337.1297607421875]]],
+                        'intensities': [[1, 0.42835134267807007, 0.635690450668335, 0.827924370765686, 0.9846339821815491, 0.9947978258132935, 0.9675101041793823]]},
+                        'strokeColor': '#2492FB',
+                        'isDrawnNaturally': false,
+                        'opacity': 1,
+                        'type': 'pspdfkit/ink',
+                        'creatorName': 'pspdfkit',
+                        'createdAt': '2020-04-01T12:31:15Z',
+                        'name': 'A92AA288-B11D-490C-847B-D1A0BC64D3E9',
+                        'v': 1};
+                      await view.addAnnotation(annotation);
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Remove Annotation'), onPressed: () async {
-                    dynamic annotationsJson = await this.view.getAnnotations(0, "all");
-                    this.view.removeAnnotation({"uuid": annotationsJson[0]["uuid"] as String});
+                    dynamic annotationsJson = await view.getAnnotations(0, 'all');
+                    await view.removeAnnotation({'uuid': annotationsJson[0]['uuid'] as String});
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Get Annotations'), onPressed: () async {
-                    String title = "Annotation JSON";
-                    dynamic annotationsJson = await this.view.getAnnotations(0, "all");
+                    final title = 'Annotation JSON';
+                    dynamic annotationsJson = await view.getAnnotations(0, 'all');
                     print(annotationsJson);
-                    showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context, 
-                      builder: (BuildContext context) => new CupertinoAlertDialog(
-                        title: new Text(title),
-                        content: new Text("$annotationsJson"),
+                    await showCupertinoDialog<CupertinoAlertDialog>(
+                      context: context,
+                      builder: (BuildContext context) => CupertinoAlertDialog(
+                        title: Text(title),
+                        content: Text('$annotationsJson'),
                         actions: [
-                           new FlatButton(onPressed: () {Navigator.of(context).pop();}, child: new Text("OK"))
+                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
                           ],
                       ));
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Get All Unsaved Annotations'), onPressed: () async {
-                    String title = "Unsaved Annotations";
-                    dynamic annotationsJson = await this.view.getAllUnsavedAnnotations();
+                    final title = 'Unsaved Annotations';
+                    dynamic annotationsJson = await view.getAllUnsavedAnnotations();
                     print(annotationsJson);
-                    showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context, 
-                      builder: (BuildContext context) => new CupertinoAlertDialog(
-                        title: new Text(title),
-                        content: new Text("$annotationsJson"),
+                    await showCupertinoDialog<CupertinoAlertDialog>(
+                      context: context,
+                      builder: (BuildContext context) => CupertinoAlertDialog(
+                        title: Text(title),
+                        content: Text('$annotationsJson'),
                         actions: [
-                           new FlatButton(onPressed: () {Navigator.of(context).pop();}, child: new Text("OK"))
+                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
                           ],
                       ));
                   })
@@ -118,6 +118,6 @@ class PspdfkitAnnotationsExampleWidgetState extends State<PspdfkitAnnotationsExa
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
   }
 }

@@ -28,8 +28,8 @@ class PspdfkitWidget extends StatefulWidget {
   PspdfkitWidget({
     Key key,
     @required this.documentPath,
-    this.configuration = null,
-    this.onPspdfkitWidgetCreated = null
+    this.configuration,
+    this.onPspdfkitWidgetCreated
   }) : super(key: key);
 
   @override
@@ -59,9 +59,9 @@ class PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitWidgetCreated != null) {
-      widget.onPspdfkitWidgetCreated(this.view);
+      widget.onPspdfkitWidgetCreated(view);
     }
   }
 }

@@ -26,8 +26,8 @@ class PspdfkitFormExampleWidget extends StatefulWidget {
   PspdfkitFormExampleWidget({
     Key key,
     @required this.documentPath,
-    this.configuration = null,
-    this.onPspdfkitFormExampleWidgetCreated = null
+    this.configuration,
+    this.onPspdfkitFormExampleWidgetCreated
   }) : super(key: key);
 
   @override
@@ -55,19 +55,19 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                 children: <Widget>[
                   Container(width: 20),
                   CupertinoButton(child: Text('Set form field value'), onPressed: () {
-                    this.view.setFormFieldValue("Updated Form Field Value", "Name_Last");
+                    view.setFormFieldValue('Updated Form Field Value', 'Name_Last');
                   }),
                   Container(width: 20),
                   CupertinoButton(child: Text('Get form field value'), onPressed: () async {
-                    String title = "Form Field Value";
-                    String formFieldValue = await this.view.getFormFieldValue("Name_Last");
-                    showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context, 
-                      builder: (BuildContext context) => new CupertinoAlertDialog(
-                        title: new Text(title),
-                        content: new Text(formFieldValue),
+                    final title = 'Form Field Value';
+                    final formFieldValue = await view.getFormFieldValue('Name_Last');
+                    await showCupertinoDialog<CupertinoAlertDialog>(
+                      context: context,
+                      builder: (BuildContext context) => CupertinoAlertDialog(
+                        title: Text(title),
+                        content: Text(formFieldValue),
                         actions: [
-                           new FlatButton(onPressed: () {Navigator.of(context).pop();}, child: new Text("OK"))
+                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
                           ],
                       ));
                     })
@@ -83,9 +83,9 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitFormExampleWidgetCreated != null) {
-          widget.onPspdfkitFormExampleWidgetCreated(this.view);
+          widget.onPspdfkitFormExampleWidgetCreated(view);
     }
   }
 }
