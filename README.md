@@ -2,12 +2,14 @@
 
 ![](https://pspdfkit.com/images/blog/2018/starting-with-flutter/article-header-bb5f1c40.png)
 
-PSPDFKit wrapper for Flutter. [Available here in pub.dev](https://pub.dev/packages/pspdfkit_flutter).
+PSPDFKit wrapper for Flutter. Available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
 
 If you are new to Flutter, make sure to check our blog:
 
 - [How I Got Started With Flutter](https://pspdfkit.com/blog/2018/starting-with-flutter/).
 - [Getting Started with PSPDFKit Flutter](https://pspdfkit.com/blog/2019/getting-started-with-pspdfkit-flutter/).
+
+For our quick-start guides, [check out our website](https://pspdfkit.com/getting-started/mobile/?frontend=flutter).
 
 Platform specific README exists for [Android](android/) and [iOS](ios/).
 
@@ -19,365 +21,219 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 
 #### Requirements
 
- - Android SDK 29.0.3 or later
- - PSPDFKit 6.5.3 for Android or later
- - Flutter 1.22.0-12.1.pre or later
+- The [latest stable version of Flutter][install-flutter]
+- The [latest stable version of Android Studio][android studio]
+- The [Android NDK][install ndk]
+- An [Android Virtual Device][managing avds] or a hardware device
 
-Let's create a simple app that integrates PSPDFKit and uses the Flutter pspdfkit plugin.
+1. Create a Flutter project called `pspdfkit_demo` with the `flutter` CLI:
 
-1. Run `flutter create --org com.example.myapp myapp`.
-2. Open `myapp/pubspec.yaml` and under `dependencies` add
-```yaml
-  pspdfkit_flutter:
-    git:
-      url: git://github.com/PSPDFKit/pspdfkit-flutter.git
-```
-<strong>Spaces are important</strong>, so don't forget them.
+    ```bash
+    flutter create --org com.example.pspdfkit_demo pspdfkit_demo
+    ```
 
-3. From `myapp` run `flutter packages get` to install the packages.
-4. Open `myapp/android/local.properties` and specify the following properties
+2. In the terminal app, change the location of the current working directory to your project:
 
-```local.properties
-sdk.dir=/path/to/your/Android/sdk
-flutter.sdk=/path/to/your/flutter/sdk
-flutter.buildMode=debug
-```
+    ```bash
+    cd pspdfkit_demo
+    ```
 
-5. Open `myapp/android/app/build.gradle` and modify `minSdkVersion` from `16` to `21`, enable multiDex, and add compile options to enable desugaring
+3. Open the app’s Gradle build file, `android/app/build.gradle`:
 
-  ```groovy
-  compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+    ```bash
+    open android/app/build.gradle
+    ```
+
+4. Modify the minimum SDK version, enable `multidex`, and set the Java compatibility to Java 8 to enable desugaring. All this is done inside the `android` section:
+
+    ```diff
+    android {
+        defaultConfig {
+    -        minSdkVersion 16
+    +        minSdkVersion 21
+    ...
+    +        multiDexEnabled true
+    ...
+    +    compileOptions {
+    +        sourceCompatibility 1.8
+    +        targetCompatibility 1.8
+    +    }
+    ...
     }
-  ```
+    ```
 
-**Three changes** to edit:
+5. Open `pubspec.yaml`:
 
-```diff
-...
-android {
-     compileSdkVersion 29
+    ```bash
+    open pubspec.yaml
+    ```
 
-+    compileOptions {
-+       sourceCompatibility 1.8
-+       targetCompatibility 1.8
-+   }
+6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
 
-    lintOptions {
-        disable 'InvalidPackage'
-    }
+    ```diff
+    dependencies:
+    flutter:
+        sdk: flutter
+    +  pspdfkit_flutter:
+    +  path_provider: ^0.4.1
+    ```
 
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.myapp"
--       minSdkVersion 16
-+       minSdkVersion 21
-        targetSdkVersion 29
-+       multiDexEnabled true
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-    }
-...
-```
+7. From the terminal app, run the following command to get all the packages:
 
+    ```bash
+    flutter pub get
+    ```
 
-6. Open `myapp/lib/main.dart` and replace the whole content with a simple example that will load a pdf document from local device filesystem
+8. Then run the command below to upgrade the dependencies:
 
-```dart
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:pspdfkit_flutter/src/main.dart';
+    ```bash
+    flutter pub upgrade
+    ```
 
-void main() => runApp(new MyApp());
+9. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => new _MyAppState();
-}
+10. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
 
-class _MyAppState extends State<MyApp> {
-  String _frameworkVersion = '';
+11. Add the PDF document you want to display in your project’s `assets` directory.
+    - First create a `PDFs` directory:
 
-  void present() {
-    Pspdfkit.present("file:///sdcard/document.pdf");
-  }
+        ```bash
+        mkdir PDFs
+        ```
 
-  void showDocument(BuildContext context) async {
-    try {
-      if (await Pspdfkit.checkAndroidWriteExternalStoragePermission()) {
-        present();
-      } else {
-        AndroidPermissionStatus permissionStatus =
-        await Pspdfkit.requestAndroidWriteExternalStoragePermission();
-        if (permissionStatus == AndroidPermissionStatus.authorized) {
-          present();
-        } else if (permissionStatus == AndroidPermissionStatus.deniedNeverAsk) {
-          _showToast(context);
-        }
-      }
-    } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
-    }
-  }
+    - Add a sample document into the newly created `PDFs` directory called `Document.pdf`:
 
-  @override
-  initState() {
-    super.initState();
-    initPlatformState();
-  }
+        ```bash
+        cp ~/Downloads/Document.pdf PDFs/Document.pdf
+        ```
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  void initPlatformState() async {
-    String frameworkVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      frameworkVersion = await Pspdfkit.frameworkVersion;
-    } on PlatformException {
-      frameworkVersion = 'Failed to get platform version. ';
-    }
+12. Specify the `assets` directory in `pubspec.yaml`:
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+    ```diff
+    # The following section is specific to Flutter.
+    flutter:
+    +  assets:
+    +    - PDFs/
+    ...
+    ```
 
-    setState(() {
-      _frameworkVersion = frameworkVersion;
-    });
+13. [Start your Android emulator][start-the-emulator], or connect a device.
 
-    // Replace
-    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
-  }
+14. Run the app with:
 
-  void _openSettings(ScaffoldState scaffold) {
-    scaffold.hideCurrentSnackBar();
-    Pspdfkit.openAndroidSettings();
-  }
-
-  void _showToast(BuildContext context) {
-    final scaffold = Scaffold.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: const Text('PSPDFKit Flutter example requires file system permissions to open a PDF document into the sdcard folder.'),
-        action: SnackBarAction(
-            label: 'Open Settings', onPressed: () => _openSettings(scaffold)
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-
-    return new MaterialApp(
-      home: new Scaffold(
-          appBar: new AppBar(
-            title: new Text('PSPDFKit Flutter Plugin example app'),
-          ),
-          body: Builder(
-            // Create an inner BuildContext so that the onPressed methods
-            // can refer to the Scaffold with Scaffold.of().
-            builder: (BuildContext context) {
-              return Center(
-                  child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        new Text('PSPDFKit for $_frameworkVersion\n',
-                            style: themeData.textTheme.display1
-                                .copyWith(fontSize: 21.0)),
-                        new RaisedButton(
-                            child: new Text('Tap to Open Document',
-                                style: themeData.textTheme.display1
-                                    .copyWith(fontSize: 21.0)),
-                            onPressed: () => showDocument(context))
-                      ]));
-            },
-          )),
-    );
-  }
-}
-```
-
-7. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-
-8. Before launching the app you need to copy a PDF document onto your development device or emulator
-```bash
-adb push /path/to/your/document.pdf /sdcard/document.pdf
-```
-
-9. The app is ready to start! From `myapp` run `flutter run`.
+    ```bash
+    flutter run
+    ```
 
 ### iOS
 
 #### Requirements
 
- - The latest [Xcode](https://developer.apple.com/xcode/)
- - PSPDFKit 10.2.0 for iOS or later
- - Flutter 1.22.6 or later
- - CocoaPods 1.10.1 or later (Update cocoapods with: `gem install cocoapods`)
+- The [latest stable version of Flutter][install-flutter]
+- The [latest stable version of Xcode][xcode]
+- The [latest stable version of CocoaPods][cocoapods releases]
 
 #### Getting Started
 
-1. Run `flutter create --org com.example.myapp myapp`
-2. Step into your newly created app folder: `cd myapp`
-3. Open `pubspec.yaml` and under `dependencies` add
+1. Create a Flutter project called `pspdfkit_demo` with the `flutter` CLI:
 
-```yaml
-  path_provider: ^0.4.1
-  pspdfkit_flutter:
-    git:
-      url: git://github.com/PSPDFKit/pspdfkit-flutter.git
-```
+    ```bash
+    flutter create --org com.example.pspdfkit_demo pspdfkit_demo
+    ```
 
-4. Add a `PDFs` directory with a document in it in the root directory: `myapp/PDFs/PSPDFKit.pdf` and specify it in your `pubspec.yaml`:
+2. In the terminal app, change the location of the current working directory to your project:
 
-```yaml
-  assets:
-    - PDFs/
-```
-<strong>Spaces are important</strong>, so don't forget them.
+    ```bash
+    cd pspdfkit_demo
+    ```
 
-5. Open the `Runner.xcworkspace` from the `ios` folder in Xcode: `open ios/Runner.xcworkspace`
-6. Make sure the `iOS Deployment Target` is set to 12.0 or higher.
+3. Open `Runner.xcworkspace` from the `ios` folder in Xcode:
 
-![iOS Deployment Target](screenshots/ios-deployment-target.png)
+    ```bash
+    open ios/Runner.xcworkspace
+    ```
 
-7. Change "View controller-based status bar appearance" to YES in `Info.plist`.
+4. Make sure the `iOS Deployment Target` is set to 12.0 or higher.
 
-![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
+    ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
-8. In the `Info.plist`, create a new row with key: `io.flutter.embedded_views_preview` and type: `Boolean`. Set its value to `YES`.
+5. Change "View controller-based status bar appearance" to YES in `Info.plist`.
 
-9. If your application is targeting iOS versions **prior to iOS 12.2** and your application **does not already contain any Swift code**, then you need to make sure Xcode bundles Swift standard libraries with your application distribution. To to so, open your target Build Settings and enable `Always Embed Swift Standard Libraries`:
+    ![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
 
-![Always Embed Swift Standard Libraries](screenshots/ios-always-embed-swift-standard-libraries.png)
+6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
 
-10. Run `flutter packages get` to install the packages.
-11. Open the `Podfile`: `open ios/Podfile` and edit it as follows:
+    ```diff
+    dependencies:
+    flutter:
+        sdk: flutter
+    +  pspdfkit_flutter:
+    +  path_provider: ^0.4.1
+    ```
 
-```diff
-# Uncomment this line to define a global platform for your project
-- # platform :ios, '9.0'
-+ platform :ios, '12.0'
-...
-target 'Runner' do
-   use_frameworks!
-   use_modular_headers!
+7. From the terminal app, run the following command to get all the packages:
 
-   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-+  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
-end
-```
+    ```bash
+    flutter pub get
+    ```
 
-12. Open `lib/main.dart` and replace the whole content with a simple example that will load a PDF document from local device filesystem:
+8. Then run the command below to upgrade the dependencies:
 
-```dart
-import 'dart:io';
-import 'dart:typed_data';
+    ```bash
+    flutter pub upgrade
+    ```
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pspdfkit_flutter/src/main.dart';
+9. Open your project’s Podfile in a text editor:
 
-const String DOCUMENT_PATH = 'PDFs/PSPDFKit.pdf';
-const String PSPDFKIT_FLUTTER_PLUGIN_TITLE = 'PSPDFKit Flutter Plugin example app';
-const String OPEN_DOCUMENT_BUTTON = 'Tap to Open Document';
-const String PSPDFKIT_FOR = 'PSPDFKit for';
-const double FONT_SIZE = 21.0;
+    ```bash
+    open ios/Podfile
+    ```
 
-void main() => runApp(new MyApp());
+10. Update the platform to iOS 12 and add the PSPDFKit Podspec:
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => new _MyAppState();
-}
+    ```diff
+    -# platform :ios, '9.0'
+    +platform :ios, '12.0'
+    ...
+    flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+    +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
+    end
+    ```
 
-class _MyAppState extends State<MyApp> {
-  String _frameworkVersion = '';
+11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart](doc/demo_project_main.dart). This simple example will load a PDF document from local device filesystem.
 
-  void showDocument() async {
-    try {
-      final ByteData bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
-      final Uint8List list = bytes.buffer.asUint8List();
+12. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
 
-      final tempDir = await getTemporaryDirectory();
-      final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
+13. Add the PDF document you want to display in your project’s `assets` directory.
+    - First create a `PDFs` directory:
 
-      final file = await new File(tempDocumentPath).create(recursive: true);
-      file.writeAsBytesSync(list);
+        ```bash
+        mkdir PDFs
+        ```
 
-      Pspdfkit.present(tempDocumentPath);
-    } on PlatformException catch (e) {
-      print("Failed to open document: '${e.message}'.");
-    }
-  }
+    - Add a sample document into the newly created `PDFs` directory called `Document.pdf`:
 
-  @override
-  initState() {
-    super.initState();
-    initPlatformState();
-  }
+        ```bash
+        cp ~/Downloads/Document.pdf PDFs/Document.pdf
+        ```
 
-  String frameworkVersion() {
-    return '$PSPDFKIT_FOR $_frameworkVersion\n';
-  }
+14. Specify the `assets` directory in `pubspec.yaml`:
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  void initPlatformState() async {
-    String frameworkVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      frameworkVersion = await Pspdfkit.frameworkVersion;
-    } on PlatformException {
-      frameworkVersion = 'Failed to get platform version. ';
-    }
+    ```diff
+    # The following section is specific to Flutter.
+    flutter:
+    +  assets:
+    +    - PDFs/
+    ...
+    ```
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
+15. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
 
-    setState(() {
-      _frameworkVersion = frameworkVersion;
-    });
+16. Run the app with:
 
-    // Replace
-    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-    return new CupertinoApp(
-      home: new CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-            middle: Text(PSPDFKIT_FLUTTER_PLUGIN_TITLE,
-                style: themeData.textTheme.title
-            )
-        ),
-        child: new Center(
-            child: new Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  new Text(frameworkVersion(),
-                      style: themeData.textTheme.display1.copyWith(fontSize: FONT_SIZE)),
-                  new CupertinoButton(
-                      child: new Text(OPEN_DOCUMENT_BUTTON),
-                      onPressed: showDocument)
-                ])),
-      ),
-    );
-  }
-}
-```
-
-13. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-14. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
-15. Run `flutter run`.
+    ```bash
+    flutter run
+    ```
 
 # Example
 
@@ -385,15 +241,10 @@ To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 
 Showing a PDF document inside your Flutter app is as simple as this:
 
-```MyApp.dart
-showDocument() async {
-    try {
-        Pspdfkit.present("file:///document.pdf");
-    } on PlatformException catch (e) {
-        print("Failed to open document: '${e.message}'.");
-    }
-}
-```
+    ```dart
+    Pspdfkit.present('file:///path/to/Document.pdf');
+    ```
+
 # Contributing
 
 Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
@@ -449,3 +300,13 @@ The verbose mode of flutter doctor is even more helpful; it prints out extensive
 ### CocoaPods Conflicts With Asdf
 
 If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneusly suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
+
+
+
+[install-flutter]: https://flutter.dev/docs/get-started/install
+[android studio]: https://developer.android.com/studio
+[install ndk]: https://developer.android.com/studio/projects/install-ndk
+[managing avds]: https://developer.android.com/studio/run/managing-avds.html
+[xcode]: https://apps.apple.com/us/app/xcode/id497799835?mt=12
+[cocoapods releases]: https://github.com/CocoaPods/CocoaPods/releases
+[start-the-emulator]: https://developer.android.com/studio/run/emulator#runningemulator

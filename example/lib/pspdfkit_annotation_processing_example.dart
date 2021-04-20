@@ -25,18 +25,20 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String exportPath;
   final dynamic configuration;
 
-  PspdfkitAnnotationProcessingExampleWidget({
-    Key key,
-    @required this.documentPath,
-    @required this.exportPath,
-    this.configuration
-  }) : super(key: key);
+  PspdfkitAnnotationProcessingExampleWidget(
+      {Key key,
+      @required this.documentPath,
+      @required this.exportPath,
+      this.configuration})
+      : super(key: key);
 
   @override
-  PspdfkitAnnotationProcessingExampleWidgetState createState() => PspdfkitAnnotationProcessingExampleWidgetState();
+  PspdfkitAnnotationProcessingExampleWidgetState createState() =>
+      PspdfkitAnnotationProcessingExampleWidgetState();
 }
 
-class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnotationProcessingExampleWidget> {
+class PspdfkitAnnotationProcessingExampleWidgetState
+    extends State<PspdfkitAnnotationProcessingExampleWidget> {
   PspdfkitView view;
 
   Future<File> extractAsset(String assetPath) async {
@@ -58,44 +60,60 @@ class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnot
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(),
-        child: SafeArea(
-          bottom: false,
-          child: Column(children: <Widget>[
-            Expanded(child: UiKitView(
-              viewType: 'com.pspdfkit.widget',
-              onPlatformViewCreated: onPlatformViewCreated,
-              creationParamsCodec: const StandardMessageCodec())),
-            Container(
-              height: 80,
-              child: Row(
-                children: <Widget>[
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Flatten Annotations'), onPressed: () async {
-                    final exportPath = await getExportPath(widget.exportPath);
-                    await view.processAnnotations('all', 'flatten', exportPath);
-                    await Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Remove Annotations'), onPressed: () async {
-                    final exportPath = await getExportPath(widget.exportPath);
-                    await view.processAnnotations('all', 'remove', exportPath);
-                    await Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Embed Annotations'), onPressed: () async {
-                    final exportPath = await getExportPath(widget.exportPath);
-                    await view.processAnnotations('all', 'embed', exportPath);
-                    await Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Print Annotations'), onPressed: () async {
-                    final exportPath = await getExportPath(widget.exportPath);
-                    await view.processAnnotations('all', 'print', exportPath);
-                    await Pspdfkit.present(exportPath);
-                  })
-                ]))]))
-      );
+          navigationBar: CupertinoNavigationBar(),
+          child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(
+                    child: UiKitView(
+                        viewType: 'com.pspdfkit.widget',
+                        onPlatformViewCreated: onPlatformViewCreated,
+                        creationParamsCodec: const StandardMessageCodec())),
+                Container(
+                    height: 80,
+                    child: Row(children: <Widget>[
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final exportPath =
+                                await getExportPath(widget.exportPath);
+                            await view.processAnnotations(
+                                'all', 'flatten', exportPath);
+                            await Pspdfkit.present(exportPath);
+                          },
+                          child: Text('Flatten Annotations')),
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final exportPath =
+                                await getExportPath(widget.exportPath);
+                            await view.processAnnotations(
+                                'all', 'remove', exportPath);
+                            await Pspdfkit.present(exportPath);
+                          },
+                          child: Text('Remove Annotations')),
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final exportPath =
+                                await getExportPath(widget.exportPath);
+                            await view.processAnnotations(
+                                'all', 'embed', exportPath);
+                            await Pspdfkit.present(exportPath);
+                          },
+                          child: Text('Embed Annotations')),
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final exportPath =
+                                await getExportPath(widget.exportPath);
+                            await view.processAnnotations(
+                                'all', 'print', exportPath);
+                            await Pspdfkit.present(exportPath);
+                          },
+                          child: Text('Print Annotations'))
+                    ]))
+              ])));
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       // PspdfkitView is only supported in iOS at the moment.
       // Support for Android is coming soon.

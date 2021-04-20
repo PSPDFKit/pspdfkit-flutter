@@ -16,22 +16,25 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
 
-typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(PspdfkitView view);
+typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(
+    PspdfkitView view);
 
 class PspdfkitFormExampleWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
-  final PspdfkitFormExampleWidgetCreatedCallback onPspdfkitFormExampleWidgetCreated;
+  final PspdfkitFormExampleWidgetCreatedCallback
+      onPspdfkitFormExampleWidgetCreated;
 
-  PspdfkitFormExampleWidget({
-    Key key,
-    @required this.documentPath,
-    this.configuration,
-    this.onPspdfkitFormExampleWidgetCreated
-  }) : super(key: key);
+  PspdfkitFormExampleWidget(
+      {Key key,
+      @required this.documentPath,
+      this.configuration,
+      this.onPspdfkitFormExampleWidgetCreated})
+      : super(key: key);
 
   @override
-  PspdfkitFormExampleWidgetState createState() => PspdfkitFormExampleWidgetState();
+  PspdfkitFormExampleWidgetState createState() =>
+      PspdfkitFormExampleWidgetState();
 }
 
 class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
@@ -41,38 +44,49 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(),
-        child: SafeArea(
-          bottom: false,
-          child: Column(children: <Widget>[
-            Expanded(child: UiKitView(
-              viewType: 'com.pspdfkit.widget',
-              onPlatformViewCreated: onPlatformViewCreated,
-              creationParamsCodec: const StandardMessageCodec())),
-            Container(
-              height: 80,
-              child: Row(
-                children: <Widget>[
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Set form field value'), onPressed: () {
-                    view.setFormFieldValue('Updated Form Field Value', 'Name_Last');
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Get form field value'), onPressed: () async {
-                    final title = 'Form Field Value';
-                    final formFieldValue = await view.getFormFieldValue('Name_Last');
-                    await showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context,
-                      builder: (BuildContext context) => CupertinoAlertDialog(
-                        title: Text(title),
-                        content: Text(formFieldValue),
-                        actions: [
-                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
-                          ],
-                      ));
-                    })
-                ]))]))
-      );
+          navigationBar: CupertinoNavigationBar(),
+          child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(
+                    child: UiKitView(
+                        viewType: 'com.pspdfkit.widget',
+                        onPlatformViewCreated: onPlatformViewCreated,
+                        creationParamsCodec: const StandardMessageCodec())),
+                Container(
+                    height: 80,
+                    child: Row(children: <Widget>[
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () {
+                            view.setFormFieldValue(
+                                'Updated Form Field Value', 'Name_Last');
+                          },
+                          child: Text('Set form field value')),
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final title = 'Form Field Value';
+                            final formFieldValue =
+                                await view.getFormFieldValue('Name_Last');
+                            await showCupertinoDialog<CupertinoAlertDialog>(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    CupertinoAlertDialog(
+                                      title: Text(title),
+                                      content: Text(formFieldValue),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('OK'))
+                                      ],
+                                    ));
+                          },
+                          child: Text('Get form field value'))
+                    ]))
+              ])));
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       // PspdfkitView is only supported in iOS at the moment.
       // Support for Android is coming soon.
@@ -85,7 +99,7 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
   Future<void> onPlatformViewCreated(int id) async {
     view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitFormExampleWidgetCreated != null) {
-          widget.onPspdfkitFormExampleWidgetCreated(view);
+      widget.onPspdfkitFormExampleWidgetCreated(view);
     }
   }
 }

@@ -237,6 +237,8 @@
         return pdfViewController.activityButtonItem;
     } else if ([barButtonItem isEqualToString:@"settingsButtonItem"]) {
         return pdfViewController.settingsButtonItem;
+    } else if ([barButtonItem isEqualToString:@"readerViewButtonItem"]) {
+        return pdfViewController.readerViewButtonItem;
     } else {
         return nil;
     }

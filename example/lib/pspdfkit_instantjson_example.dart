@@ -29,49 +29,63 @@ class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  PspdfkitInstantJsonExampleWidgetState createState() => PspdfkitInstantJsonExampleWidgetState();
+  PspdfkitInstantJsonExampleWidgetState createState() =>
+      PspdfkitInstantJsonExampleWidgetState();
 }
 
-class PspdfkitInstantJsonExampleWidgetState extends State<PspdfkitInstantJsonExampleWidget> {
+class PspdfkitInstantJsonExampleWidgetState
+    extends State<PspdfkitInstantJsonExampleWidget> {
   PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(),
-        child: SafeArea(
-          bottom: false,
-          child: Column(children: <Widget>[
-            Expanded(child: UiKitView(
-              viewType: 'com.pspdfkit.widget',
-              onPlatformViewCreated: onPlatformViewCreated,
-              creationParamsCodec: const StandardMessageCodec())),
-            Container(
-              height: 80,
-              child: Row(
-                children: <Widget>[
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Apply Instant JSON'), onPressed: () async {
-                    final annotationsJson = await DefaultAssetBundle.of(context).loadString(widget.instantJsonPath);
-                    await view.applyInstantJson(annotationsJson);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Export Instant JSON'), onPressed: () async {
-                    final title = 'Exported Instant JSON';
-                    final exportedInstantJson = await view.exportInstantJson();
-                    await showCupertinoDialog<CupertinoAlertDialog>(
-                      context: context,
-                      builder: (BuildContext context) => CupertinoAlertDialog(
-                        title: Text(title),
-                        content: Text(exportedInstantJson),
-                        actions: [
-                           TextButton(onPressed: () {Navigator.of(context).pop();}, child: Text('OK'))
-                          ],
-                      ));
-                    })
-                ]))]))
-      );
+          navigationBar: CupertinoNavigationBar(),
+          child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(
+                    child: UiKitView(
+                        viewType: 'com.pspdfkit.widget',
+                        onPlatformViewCreated: onPlatformViewCreated,
+                        creationParamsCodec: const StandardMessageCodec())),
+                Container(
+                    height: 80,
+                    child: Row(children: <Widget>[
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final annotationsJson =
+                                await DefaultAssetBundle.of(context)
+                                    .loadString(widget.instantJsonPath);
+                            await view.applyInstantJson(annotationsJson);
+                          },
+                          child: Text('Apply Instant JSON')),
+                      Container(width: 20),
+                      CupertinoButton(
+                          onPressed: () async {
+                            final title = 'Exported Instant JSON';
+                            final exportedInstantJson =
+                                await view.exportInstantJson();
+                            await showCupertinoDialog<CupertinoAlertDialog>(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    CupertinoAlertDialog(
+                                      title: Text(title),
+                                      content: Text(exportedInstantJson),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('OK'))
+                                      ],
+                                    ));
+                          },
+                          child: Text('Export Instant JSON'))
+                    ]))
+              ])));
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       // PspdfkitView is only supported in iOS at the moment.
       // Support for Android is coming soon.

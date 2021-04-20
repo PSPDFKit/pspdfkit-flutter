@@ -25,12 +25,12 @@ class PspdfkitWidget extends StatefulWidget {
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback onPspdfkitWidgetCreated;
 
-  PspdfkitWidget({
-    Key key,
-    @required this.documentPath,
-    this.configuration,
-    this.onPspdfkitWidgetCreated
-  }) : super(key: key);
+  PspdfkitWidget(
+      {Key key,
+      @required this.documentPath,
+      this.configuration,
+      this.onPspdfkitWidgetCreated})
+      : super(key: key);
 
   @override
   PspdfkitWidgetState createState() => PspdfkitWidgetState();

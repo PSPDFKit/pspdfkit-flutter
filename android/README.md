@@ -1,6 +1,6 @@
 # PSPDFKit Flutter for Android
 
-## Setup
+## Requirements
 
 ### Dependencies
 
@@ -19,6 +19,14 @@ sdk.dir=/path/to/your/android/sdk
 ndk.dir=/path/to/your/android/sdk/ndk-bundle
 flutter.sdk=/path/to/your/flutter/sdk
 ```
+
+## Setup
+
+See the [setup instructions](../README.md#android) in the main README.
+
+## Example Project
+
+Please take a look how to run our example project [here](../example/README.md#running-the-example-project).
 
 ## Troubleshooting
 
