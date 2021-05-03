@@ -1,3 +1,7 @@
+## [2.2.1] - 03 May 2021
+
+- Reverts some unneeded file changes. (#29286)
+
 ## [2.2.0] - 03 May 2021
 
 - Updates the minimum required Dart version to 2.12.0. (#28465)
