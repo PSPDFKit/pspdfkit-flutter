@@ -21,7 +21,7 @@ class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
   final dynamic configuration;
 
   PspdfkitAnnotationsExampleWidget(
-      {Key key, @required this.documentPath, this.configuration})
+      {Key? key, required this.documentPath, this.configuration})
       : super(key: key);
 
   @override
@@ -31,7 +31,7 @@ class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
 
 class PspdfkitAnnotationsExampleWidgetState
     extends State<PspdfkitAnnotationsExampleWidget> {
-  PspdfkitView view;
+  late PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {

@@ -26,9 +26,9 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final dynamic configuration;
 
   PspdfkitAnnotationProcessingExampleWidget(
-      {Key key,
-      @required this.documentPath,
-      @required this.exportPath,
+      {Key? key,
+      required this.documentPath,
+      required this.exportPath,
       this.configuration})
       : super(key: key);
 
@@ -39,7 +39,7 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
 
 class PspdfkitAnnotationProcessingExampleWidgetState
     extends State<PspdfkitAnnotationProcessingExampleWidget> {
-  PspdfkitView view;
+  late PspdfkitView view;
 
   Future<File> extractAsset(String assetPath) async {
     final bytes = await DefaultAssetBundle.of(context).load(assetPath);

@@ -415,7 +415,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       print("Failed to set form field values '${e.message}'.");
     }
 
-    String lastName;
+    String? lastName;
     try {
       lastName = await view.getFormFieldValue('Name_Last');
     } on PlatformException catch (e) {
@@ -545,7 +545,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       print("Failed to set form field values '${e.message}'.");
     }
 
-    String lastName;
+    String? lastName;
     try {
       lastName = await Pspdfkit.getFormFieldValue('Name_Last');
     } on PlatformException catch (e) {
@@ -580,20 +580,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance?.addObserver(this);
     initPlatformState();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangePlatformBrightness() {
     currentTheme =
-        WidgetsBinding.instance.window.platformBrightness == Brightness.light
+        WidgetsBinding.instance?.window.platformBrightness == Brightness.light
             ? lightTheme
             : darkTheme;
     setState(() {
@@ -608,7 +608,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   void initPlatformState() async {
-    String frameworkVersion;
+    String? frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       frameworkVersion = await Pspdfkit.frameworkVersion;
@@ -622,7 +622,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (!mounted) return;
 
     setState(() {
-      _frameworkVersion = frameworkVersion;
+      _frameworkVersion = frameworkVersion ?? '';
     });
 
     await Pspdfkit.setLicenseKey(PSPDFKIT_LICENSE_KEY);
@@ -657,11 +657,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final title = Theme.of(context)
           .textTheme
           .headline6
-          .copyWith(color: currentTheme.primaryColor);
+          ?.copyWith(color: currentTheme.primaryColor);
       final subhead = Theme.of(context)
           .textTheme
           .subtitle1
-          .copyWith(color: currentTheme.primaryColor);
+          ?.copyWith(color: currentTheme.primaryColor);
       final crossAxisAlignment = CrossAxisAlignment.start;
       final padding = EdgeInsets.all(16.0);
 
@@ -670,7 +670,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             color: Colors.grey[200],
             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: Text('Pspdfkit Widget Examples',
-                style: currentTheme.textTheme.headline4.copyWith(
+                style: currentTheme.textTheme.headline4?.copyWith(
                     fontSize: _fontSize, fontWeight: FontWeight.bold))),
         GestureDetector(
           onTap: showDocument,
@@ -785,7 +785,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             color: Colors.grey[200],
             padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
             child: Text('Pspdfkit Global Plugin View Examples',
-                style: currentTheme.textTheme.headline4.copyWith(
+                style: currentTheme.textTheme.headline4?.copyWith(
                     fontSize: _fontSize, fontWeight: FontWeight.bold))),
         GestureDetector(
           onTap: showDocumentGlobal,
@@ -932,7 +932,7 @@ class ExampleListView extends StatelessWidget {
         padding: EdgeInsets.only(top: 24),
         child: Center(
           child: Text(_frameworkVersion,
-              style: _themeData.textTheme.headline4.copyWith(
+              style: _themeData.textTheme.headline4?.copyWith(
                   fontSize: _fontSize,
                   fontWeight: FontWeight.bold,
                   color: _themeData.primaryColor)),

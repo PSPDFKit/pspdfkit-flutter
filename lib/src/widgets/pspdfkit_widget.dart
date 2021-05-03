@@ -23,11 +23,11 @@ typedef PspdfkitWidgetCreatedCallback = void Function(PspdfkitView view);
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
-  final PspdfkitWidgetCreatedCallback onPspdfkitWidgetCreated;
+  final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
 
   PspdfkitWidget(
-      {Key key,
-      @required this.documentPath,
+      {Key? key,
+      required this.documentPath,
       this.configuration,
       this.onPspdfkitWidgetCreated})
       : super(key: key);
@@ -37,7 +37,7 @@ class PspdfkitWidget extends StatefulWidget {
 }
 
 class PspdfkitWidgetState extends State<PspdfkitWidget> {
-  PspdfkitView view;
+  late PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class PspdfkitWidgetState extends State<PspdfkitWidget> {
   Future<void> onPlatformViewCreated(int id) async {
     view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitWidgetCreated != null) {
-      widget.onPspdfkitWidgetCreated(view);
+      widget.onPspdfkitWidgetCreated!(view);
     }
   }
 }

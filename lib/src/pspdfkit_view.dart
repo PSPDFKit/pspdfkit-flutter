@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 /// This platform implementation for this class currently only works on iOS.
 /// Support for Android is coming soon.
 class PspdfkitView {
-  MethodChannel _channel;
+  late MethodChannel _channel;
 
   PspdfkitView.init(int id, String documentPath, dynamic configuration) {
     _channel = MethodChannel('com.pspdfkit.widget.$id');
@@ -24,7 +24,7 @@ class PspdfkitView {
   }
 
   /// Sets the value of a form field by specifying its fully qualified field name.
-  Future<bool> setFormFieldValue(
+  Future<bool?> setFormFieldValue(
           String value, String fullyQualifiedName) async =>
       _channel.invokeMethod('setFormFieldValue', <String, dynamic>{
         'value': value,
@@ -32,28 +32,28 @@ class PspdfkitView {
       });
 
   /// Gets the form field value by specifying its fully qualified name.
-  Future<String> getFormFieldValue(String fullyQualifiedName) async =>
+  Future<String?> getFormFieldValue(String fullyQualifiedName) async =>
       _channel.invokeMethod('getFormFieldValue',
           <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
 
   /// Applies Instant document JSON to the presented document.
-  Future<bool> applyInstantJson(String annotationsJson) async =>
+  Future<bool?> applyInstantJson(String annotationsJson) async =>
       _channel.invokeMethod('applyInstantJson',
           <String, String>{'annotationsJson': annotationsJson});
 
   /// Exports Instant document JSON from the presented document.
-  Future<String> exportInstantJson() async =>
+  Future<String?> exportInstantJson() async =>
       _channel.invokeMethod('exportInstantJson');
 
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  Future<bool> addAnnotation(dynamic jsonAnnotation) async =>
+  Future<bool?> addAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod(
           'addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  Future<bool> removeAnnotation(dynamic jsonAnnotation) async =>
+  Future<bool?> removeAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod('removeAnnotation',
           <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
@@ -68,7 +68,7 @@ class PspdfkitView {
 
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
-  Future<bool> processAnnotations(
+  Future<bool?> processAnnotations(
           String type, String processingMode, String destinationPath) async =>
       _channel.invokeMethod('processAnnotations', <String, String>{
         'type': type,
@@ -77,14 +77,14 @@ class PspdfkitView {
       });
 
   /// Imports annotations from the XFDF file at the given path.
-  Future<bool> importXfdf(String xfdfPath) async => _channel
+  Future<bool?> importXfdf(String xfdfPath) async => _channel
       .invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Exports annotations to the XFDF file at the given path.
-  Future<bool> exportXfdf(String xfdfPath) async => _channel
+  Future<bool?> exportXfdf(String xfdfPath) async => _channel
       .invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
-  Future<bool> save() async => _channel.invokeMethod('save');
+  Future<bool?> save() async => _channel.invokeMethod('save');
 }

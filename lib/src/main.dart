@@ -18,18 +18,18 @@ part 'configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
-  static MethodChannel _privateChannel;
+  static MethodChannel? _privateChannel;
 
   static MethodChannel get _channel {
     if (_privateChannel == null) {
       _privateChannel = const MethodChannel('com.pspdfkit.global');
-      _privateChannel.setMethodCallHandler(_platformCallHandler);
+      _privateChannel!.setMethodCallHandler(_platformCallHandler);
     }
-    return _privateChannel;
+    return _privateChannel!;
   }
 
   /// Gets the PSPDFKit framework version.
-  static Future<String> get frameworkVersion async =>
+  static Future<String?> get frameworkVersion async =>
       _channel.invokeMethod('frameworkVersion');
 
   /// Sets the license key.
@@ -38,14 +38,14 @@ class Pspdfkit {
           'setLicenseKey', <String, String>{'licenseKey': licenseKey});
 
   /// Loads a [document] with a supported format using a given [configuration].
-  static Future<bool> present(String document, [dynamic configuration]) async =>
+  static Future<bool?> present(String document, [dynamic configuration]) async =>
       await _channel.invokeMethod('present', <String, dynamic>{
         'document': document,
         'configuration': configuration
       });
 
   /// Sets the value of a form field by specifying its fully qualified field name.
-  static Future<bool> setFormFieldValue(
+  static Future<bool?> setFormFieldValue(
           String value, String fullyQualifiedName) async =>
       _channel.invokeMethod('setFormFieldValue', <String, dynamic>{
         'value': value,
@@ -53,28 +53,28 @@ class Pspdfkit {
       });
 
   /// Gets the form field value by specifying its fully qualified name.
-  static Future<String> getFormFieldValue(String fullyQualifiedName) async =>
+  static Future<String?> getFormFieldValue(String fullyQualifiedName) async =>
       _channel.invokeMethod('getFormFieldValue',
           <String, dynamic>{'fullyQualifiedName': fullyQualifiedName});
 
   /// Applies Instant document JSON to the presented document.
-  static Future<bool> applyInstantJson(String annotationsJson) async =>
+  static Future<bool?> applyInstantJson(String annotationsJson) async =>
       _channel.invokeMethod('applyInstantJson',
           <String, String>{'annotationsJson': annotationsJson});
 
   /// Exports Instant document JSON from the presented document.
-  static Future<String> exportInstantJson() async =>
+  static Future<String?> exportInstantJson() async =>
       _channel.invokeMethod('exportInstantJson');
 
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  static Future<bool> addAnnotation(dynamic jsonAnnotation) async =>
+  static Future<bool?> addAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod(
           'addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
-  static Future<bool> removeAnnotation(dynamic jsonAnnotation) async =>
+  static Future<bool?> removeAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod('removeAnnotation',
           <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
@@ -89,7 +89,7 @@ class Pspdfkit {
 
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
-  static Future<bool> processAnnotations(
+  static Future<bool?> processAnnotations(
           String type, String processingMode, String destinationPath) async =>
       _channel.invokeMethod('processAnnotations', <String, String>{
         'type': type,
@@ -98,19 +98,19 @@ class Pspdfkit {
       });
 
   /// Imports annotations from the XFDF file at the given path.
-  static Future<bool> importXfdf(String xfdfPath) async => _channel
+  static Future<bool?> importXfdf(String xfdfPath) async => _channel
       .invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Exports annotations to the XFDF file at the given path.
-  static Future<bool> exportXfdf(String xfdfPath) async => _channel
+  static Future<bool?> exportXfdf(String xfdfPath) async => _channel
       .invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
 
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
-  static Future<bool> save() async => _channel.invokeMethod('save');
+  static Future<bool?> save() async => _channel.invokeMethod('save');
 
   /// Checks the external storage permission for writing on Android only.
-  static Future<bool> checkAndroidWriteExternalStoragePermission() async {
+  static Future<bool?> checkAndroidWriteExternalStoragePermission() async {
     return _channel.invokeMethod(
         'checkPermission', {'permission': 'WRITE_EXTERNAL_STORAGE'});
   }
@@ -149,9 +149,9 @@ class Pspdfkit {
     }
   }
 
-  static VoidCallback flutterPdfActivityOnPause;
-  static VoidCallback pdfViewControllerWillDismiss;
-  static VoidCallback pdfViewControllerDidDismiss;
+  static late VoidCallback flutterPdfActivityOnPause;
+  static late VoidCallback pdfViewControllerWillDismiss;
+  static late VoidCallback pdfViewControllerDidDismiss;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {

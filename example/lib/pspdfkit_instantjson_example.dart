@@ -22,9 +22,9 @@ class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final dynamic configuration;
 
   PspdfkitInstantJsonExampleWidget({
-    Key key,
-    @required this.documentPath,
-    @required this.instantJsonPath,
+    Key? key,
+    required this.documentPath,
+    required this.instantJsonPath,
     this.configuration,
   }) : super(key: key);
 
@@ -35,7 +35,7 @@ class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
 
 class PspdfkitInstantJsonExampleWidgetState
     extends State<PspdfkitInstantJsonExampleWidget> {
-  PspdfkitView view;
+  late PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class PspdfkitInstantJsonExampleWidgetState
                           onPressed: () async {
                             final title = 'Exported Instant JSON';
                             final exportedInstantJson =
-                                await view.exportInstantJson();
+                                await view.exportInstantJson() ?? '';
                             await showCupertinoDialog<CupertinoAlertDialog>(
                                 context: context,
                                 builder: (BuildContext context) =>

@@ -22,12 +22,12 @@ typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(
 class PspdfkitFormExampleWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
-  final PspdfkitFormExampleWidgetCreatedCallback
+  final PspdfkitFormExampleWidgetCreatedCallback?
       onPspdfkitFormExampleWidgetCreated;
 
   PspdfkitFormExampleWidget(
-      {Key key,
-      @required this.documentPath,
+      {Key? key,
+      required this.documentPath,
       this.configuration,
       this.onPspdfkitFormExampleWidgetCreated})
       : super(key: key);
@@ -38,7 +38,7 @@ class PspdfkitFormExampleWidget extends StatefulWidget {
 }
 
 class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
-  PspdfkitView view;
+  late PspdfkitView view;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                           onPressed: () async {
                             final title = 'Form Field Value';
                             final formFieldValue =
-                                await view.getFormFieldValue('Name_Last');
+                                await view.getFormFieldValue('Name_Last') ?? '';
                             await showCupertinoDialog<CupertinoAlertDialog>(
                                 context: context,
                                 builder: (BuildContext context) =>
@@ -99,7 +99,7 @@ class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
   Future<void> onPlatformViewCreated(int id) async {
     view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
     if (widget.onPspdfkitFormExampleWidgetCreated != null) {
-      widget.onPspdfkitFormExampleWidgetCreated(view);
+      widget.onPspdfkitFormExampleWidgetCreated!(view);
     }
   }
 }

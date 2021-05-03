@@ -1,3 +1,8 @@
+## [2.2.0] - 03 May 2021
+
+- Updates the minimum required Dart version to 2.12.0. (#28465)
+- Migrates the plugin and the examples to support Sound Null Safety. (#28465)
+
 ## [2.1.0] - 20 Apr 2021
 
 - Adds a string for the reader view button in iOS so that it can be used in PSPDFViewController's toolbar. (#28465)
