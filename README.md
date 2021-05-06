@@ -1,6 +1,6 @@
 # PSPDFKit Flutter
 
-![](https://pspdfkit.com/images/blog/2018/starting-with-flutter/article-header-bb5f1c40.png)
+![Flutter Intro](screenshots/flutter-intro.png)
 
 PSPDFKit wrapper for Flutter. Available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
 

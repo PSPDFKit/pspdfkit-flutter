@@ -1,11 +1,15 @@
+## [2.2.2] - 06 May 2021
+
+- Adds a title image for the plugin frontpage. (#29330)
+
 ## [2.2.1] - 03 May 2021
 
 - Reverts some unneeded file changes. (#29286)
 
 ## [2.2.0] - 03 May 2021
 
-- Updates the minimum required Dart version to 2.12.0. (#28465)
-- Migrates the plugin and the examples to support Sound Null Safety. (#28465)
+- Updates the minimum required Dart version to 2.12.0. (#29277)
+- Migrates the plugin and the examples to support Sound Null Safety. (#29277)
 
 ## [2.1.0] - 20 Apr 2021
 
