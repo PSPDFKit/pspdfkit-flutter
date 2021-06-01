@@ -24,8 +24,6 @@ import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 
-const String PSPDFKIT_LICENSE_KEY = 'LICENSE_KEY_GOES_HERE';
-
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit_Image_Example.jpg';
@@ -625,7 +623,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _frameworkVersion = frameworkVersion ?? '';
     });
 
-    await Pspdfkit.setLicenseKey(PSPDFKIT_LICENSE_KEY);
+    // By default, this example doesn't set a license key, but instead runs in trial mode (which is the default, and which requires no
+    // specific initialization). If you want to use a different license key for evaluation (e.g. a production license), you can uncomment
+    // the next line and set the license key.
+    // await Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
   }
 
   void flutterPdfActivityOnPauseHandler() {

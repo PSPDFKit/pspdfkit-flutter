@@ -26,6 +26,8 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 - The [Android NDK][install ndk]
 - An [Android Virtual Device][managing avds] or a hardware device
 
+#### Getting Started
+
 1. Create a Flutter project called `pspdfkit_demo` with the `flutter` CLI:
 
     ```bash
@@ -47,19 +49,19 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 4. Modify the minimum SDK version, enable `multidex`, and set the Java compatibility to Java 8 to enable desugaring. All this is done inside the `android` section:
 
     ```diff
-    android {
-        defaultConfig {
+     android {
+         defaultConfig {
     -        minSdkVersion 16
     +        minSdkVersion 21
-    ...
+             ...
     +        multiDexEnabled true
-    ...
+         }
+  
     +    compileOptions {
     +        sourceCompatibility 1.8
     +        targetCompatibility 1.8
     +    }
-    ...
-    }
+     }
     ```
 
 5. Open `pubspec.yaml`:
@@ -71,9 +73,9 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
 
     ```diff
-    dependencies:
-    flutter:
-        sdk: flutter
+     dependencies:
+       flutter:
+         sdk: flutter
     +  pspdfkit_flutter:
     +  path_provider: ^0.4.1
     ```
@@ -92,9 +94,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 
 9. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
 
-10. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-
-11. Add the PDF document you want to display in your project’s `assets` directory.
+10. Add the PDF document you want to display in your project’s `assets` directory.
     - First create a `PDFs` directory:
 
         ```bash
@@ -107,19 +107,19 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         cp ~/Downloads/Document.pdf PDFs/Document.pdf
         ```
 
-12. Specify the `assets` directory in `pubspec.yaml`:
+11. Specify the `assets` directory in `pubspec.yaml`:
 
     ```diff
-    # The following section is specific to Flutter.
-    flutter:
+     # The following section is specific to Flutter.
+     flutter:
     +  assets:
     +    - PDFs/
-    ...
+     ...
     ```
 
-13. [Start your Android emulator][start-the-emulator], or connect a device.
+12. [Start your Android emulator][start-the-emulator], or connect a device.
 
-14. Run the app with:
+13. Run the app with:
 
     ```bash
     flutter run
@@ -164,9 +164,9 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
 
     ```diff
-    dependencies:
-    flutter:
-        sdk: flutter
+     dependencies:
+       flutter:
+         sdk: flutter
     +  pspdfkit_flutter:
     +  path_provider: ^0.4.1
     ```
@@ -194,17 +194,15 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```diff
     -# platform :ios, '9.0'
     +platform :ios, '12.0'
-    ...
-    flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+     ...
+     flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
     +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
-    end
+     end
     ```
 
 11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart](doc/demo_project_main.dart). This simple example will load a PDF document from local device filesystem.
 
-12. In `lib/main.dart` replace `YOUR_LICENSE_KEY_GOES_HERE` with your PSPDFKit license key.
-
-13. Add the PDF document you want to display in your project’s `assets` directory.
+12. Add the PDF document you want to display in your project’s `assets` directory.
     - First create a `PDFs` directory:
 
         ```bash
@@ -217,25 +215,25 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         cp ~/Downloads/Document.pdf PDFs/Document.pdf
         ```
 
-14. Specify the `assets` directory in `pubspec.yaml`:
+13. Specify the `assets` directory in `pubspec.yaml`:
 
     ```diff
-    # The following section is specific to Flutter.
-    flutter:
+     # The following section is specific to Flutter.
+     flutter:
     +  assets:
     +    - PDFs/
-    ...
+     ...
     ```
 
-15. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
+14. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
 
-16. Run the app with:
+15. Run the app with:
 
     ```bash
     flutter run
     ```
 
-# Example
+# Example App
 
 To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
 
@@ -244,6 +242,15 @@ Showing a PDF document inside your Flutter app is as simple as this:
     ```dart
     Pspdfkit.present('file:///path/to/Document.pdf');
     ```
+
+# Upgrading to a Full PSPDFKit License Key
+
+PSPDFKit is a commercial product and requires the purchase of a license key when used in production. By default, this library will 
+initialize in demo mode, placing a watermark on each PDF and limiting usage to 60 minutes. 
+
+To purchase a license for production use, please reach out to us via https://pspdfkit.com/sales/form/.
+
+To initialize PSPDFKit using a license key, call `Pspdfkit.setLicenseKey("...")` before using any other PSPDFKit APIs or features.
 
 # Contributing
 
@@ -279,8 +286,8 @@ FAILURE: Build failed with an exception.
 A: If you were using version [1.10.3](https://github.com/PSPDFKit/pspdfkit-flutter/releases/tag/1.10.3) or earlier, you will need to update the imports in your Dart files like so:
 
 ```diff
-- import 'package:pspdfkit_flutter/pspdfkit.dart';
-+ import 'package:pspdfkit_flutter/src/main.dart';
+-import 'package:pspdfkit_flutter/pspdfkit.dart';
++import 'package:pspdfkit_flutter/src/main.dart';
 ```
 
 # Troubleshooting

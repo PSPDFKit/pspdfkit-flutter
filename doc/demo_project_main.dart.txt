@@ -30,7 +30,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initPlatformState() async {
-    await Pspdfkit.setLicenseKey('YOUR_LICENSE_KEY_GOES_HERE');
+    // By default, this example doesn't set a license key, but instead runs in trial mode (which is the default, and which requires no
+    // specific initialization). If you want to use a different license key for evaluation (e.g. a production license), you can uncomment
+    // the next line and set the license key.
+    // await Pspdfkit.setLicenseKey('YOUR_LICENSE_KEY_GOES_HERE');
   }
 
   void showDocument(BuildContext context) async {

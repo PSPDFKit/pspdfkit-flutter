@@ -1,3 +1,8 @@
+## [2.3.0] - 01 Jun 2021
+
+- Removes the need of a trial key for running PSPDFKit Flutter in demo mode. (#28297)
+- Updates to PSPDFKit for Android 6.6.2 (#29523)
+
 ## [2.2.2] - 06 May 2021
 
 - Adds a title image for the plugin frontpage. (#29330)
