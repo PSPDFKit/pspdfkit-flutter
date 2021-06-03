@@ -77,7 +77,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
        flutter:
          sdk: flutter
     +  pspdfkit_flutter:
-    +  path_provider: ^0.4.1
+    +  path_provider: ^2.0.2
     ```
 
 7. From the terminal app, run the following command to get all the packages:
@@ -168,7 +168,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
        flutter:
          sdk: flutter
     +  pspdfkit_flutter:
-    +  path_provider: ^0.4.1
+    +  path_provider: ^2.0.2
     ```
 
 7. From the terminal app, run the following command to get all the packages:
@@ -195,7 +195,11 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     -# platform :ios, '9.0'
     +platform :ios, '12.0'
      ...
-     flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+     target 'Runner' do
+       use_frameworks!
+       use_modular_headers!`
+       
+       flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
     +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
      end
     ```

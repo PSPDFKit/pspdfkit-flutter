@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
                 children: [
                   ElevatedButton(
                     child: Text('Tap to Open Document',
-                      style: themeData.textTheme.headline4.copyWith(fontSize: 21.0)),
+                      style: themeData.textTheme.headline4?.copyWith(fontSize: 21.0)),
                       onPressed: () => showDocument(context))
                 ]));
           },

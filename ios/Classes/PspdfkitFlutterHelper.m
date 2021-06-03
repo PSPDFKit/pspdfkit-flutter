@@ -12,7 +12,20 @@
 @implementation PspdfkitFlutterHelper
 
 + (void)processMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result forViewController:(PSPDFViewController *)pdfViewController {
-    if ([@"setFormFieldValue" isEqualToString:call.method]) {
+    if ([@"save" isEqualToString:call.method]) {
+        PSPDFDocument *document = pdfViewController.document;
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        [document saveWithOptions:nil completionHandler:^(NSError * _Nullable error, NSArray<__kindof PSPDFAnnotation *> * _Nonnull savedAnnotations) {
+            if (error == nil) {
+                result(@(YES));
+            } else {
+                result([FlutterError errorWithCode:@"" message:error.description details:nil]);
+            }
+        }];
+    } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
         NSString *value = call.arguments[@"value"];
         NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
         result([PspdfkitFlutterHelper setFormFieldValue:value forFieldWithFullyQualifiedName:fullyQualifiedName forViewController:pdfViewController]);

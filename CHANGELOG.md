@@ -1,3 +1,8 @@
+## [2.3.1] - 03 Jun 2021
+
+- Updates readme example to enable running with sound null safety. (#29631)
+- Adds the implementation for the `save` method on iOS. (#29644)
+
 ## [2.3.0] - 01 Jun 2021
 
 - Removes the need of a trial key for running PSPDFKit Flutter in demo mode. (#28297)
