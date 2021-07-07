@@ -1,3 +1,7 @@
+## [2.3.2] - 07 Jul 2021
+
+- Updates the deployment target of iOS to 13 for PSPDFKit 10.5 for iOS. (#30057)
+
 ## [2.3.1] - 03 Jun 2021
 
 - Updates readme example to enable running with sound null safety. (#29631)

@@ -4,10 +4,15 @@
 
 PSPDFKit wrapper for Flutter. Available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
 
-If you are new to Flutter, make sure to check our blog:
+If you are new to Flutter, make sure to check our Flutter blog posts:
 
 - [How I Got Started With Flutter](https://pspdfkit.com/blog/2018/starting-with-flutter/).
 - [Getting Started with PSPDFKit Flutter](https://pspdfkit.com/blog/2019/getting-started-with-pspdfkit-flutter/).
+- [Opening a PDF in Flutter](https://pspdfkit.com/blog/2019/opening-a-pdf-in-flutter/).
+- [How to Bridge Native iOS Code to Flutter](https://pspdfkit.com/blog/2021/how-to-bridge-native-ios-code-to-flutter/).
+- [How to Customize Our Flutter PDF SDK for Android](https://pspdfkit.com/blog/2021/how-to-customize-our-flutter-pdf-sdk/).
+- [Advances in Hybrid Wrappers](https://pspdfkit.com/blog/2019/advances-in-hybrid-wrappers/).
+- [How We Maintain Our Public Flutter Project Using a Private Monorepo](https://pspdfkit.com/blog/2021/maintaining-open-source-repo-from-monorepo/).
 
 For our quick-start guides, [check out our website](https://pspdfkit.com/getting-started/mobile/?frontend=flutter).
 
@@ -101,10 +106,10 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         mkdir PDFs
         ```
 
-    - Add a sample document into the newly created `PDFs` directory called `Document.pdf`:
+    - Move a [sample document](example/PDFs/PSPDFKit.pdf) into the newly created `PDFs` directory, and rename it as `Document.pdf`: 
 
         ```bash
-        cp ~/Downloads/Document.pdf PDFs/Document.pdf
+        cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
         ```
 
 11. Specify the `assets` directory in `pubspec.yaml`:
@@ -153,7 +158,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Runner.xcworkspace
     ```
 
-4. Make sure the `iOS Deployment Target` is set to 12.0 or higher.
+4. Make sure the `iOS Deployment Target` is set to 13.0 or higher.
 
     ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
@@ -189,11 +194,11 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Podfile
     ```
 
-10. Update the platform to iOS 12 and add the PSPDFKit Podspec:
+10. Update the platform to iOS 13 and add the PSPDFKit Podspec:
 
     ```diff
     -# platform :ios, '9.0'
-    +platform :ios, '12.0'
+    + platform :ios, '13.0'
      ...
      target 'Runner' do
        use_frameworks!
@@ -204,7 +209,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      end
     ```
 
-11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart](doc/demo_project_main.dart). This simple example will load a PDF document from local device filesystem.
+11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
 
 12. Add the PDF document you want to display in your project’s `assets` directory.
     - First create a `PDFs` directory:
@@ -213,10 +218,10 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         mkdir PDFs
         ```
 
-    - Add a sample document into the newly created `PDFs` directory called `Document.pdf`:
+    - Move a [sample document](example/PDFs/PSPDFKit.pdf) into the newly created `PDFs` directory, and rename it as `Document.pdf`:
 
         ```bash
-        cp ~/Downloads/Document.pdf PDFs/Document.pdf
+        cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
         ```
 
 13. Specify the `assets` directory in `pubspec.yaml`:
