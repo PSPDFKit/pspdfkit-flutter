@@ -51,7 +51,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open android/app/build.gradle
     ```
 
-4. Modify the minimum SDK version, enable `multidex`, and set the Java compatibility to Java 8 to enable desugaring. All this is done inside the `android` section:
+4. Modify the minimum SDK version, and enable `multidex`. All this is done inside the `android` section:
 
     ```diff
      android {
@@ -61,11 +61,6 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
              ...
     +        multiDexEnabled true
          }
-  
-    +    compileOptions {
-    +        sourceCompatibility 1.8
-    +        targetCompatibility 1.8
-    +    }
      }
     ```
 
@@ -315,7 +310,7 @@ The verbose mode of flutter doctor is even more helpful; it prints out extensive
 
 ### CocoaPods Conflicts With Asdf
 
-If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneusly suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
+If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneously suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
 
 
 

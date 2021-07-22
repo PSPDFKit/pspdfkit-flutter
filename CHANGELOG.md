@@ -1,3 +1,7 @@
+## [2.3.3] - 19 Jul 2021
+
+- Improves readme file removing `compileOptions` section as not required anymore. (#30258)
+
 ## [2.3.2] - 07 Jul 2021
 
 - Updates the deployment target of iOS to 13 for PSPDFKit 10.5 for iOS. (#30057)
