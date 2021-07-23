@@ -47,6 +47,7 @@
 
     _pdfViewController = [[PSPDFViewController alloc] init];
     [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
+    [_navigationController layoutIfNeeded];
 
     self = [super init];
 
