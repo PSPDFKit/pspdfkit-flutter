@@ -1,3 +1,8 @@
+## [2.4.0] - 22 Jul 2021
+
+- Updates to PSPDFKit for Android 7.0. (#30286)
+- Bump minimum SDK version `androidMinSdkVersion` to API 21. (#30286)
+
 ## [2.3.3] - 19 Jul 2021
 
 - Improves readme file removing `compileOptions` section as not required anymore. (#30258)
