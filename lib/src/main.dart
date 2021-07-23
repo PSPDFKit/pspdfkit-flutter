@@ -12,8 +12,7 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
-import 'src/android_permission_status.dart';
-import 'src/configuration_options.dart';
+import 'android_permission_status.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
