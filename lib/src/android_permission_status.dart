@@ -6,7 +6,6 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-part of pspdfkit;
 
 /// Permission status enumeration used only by Android platform.
 ///

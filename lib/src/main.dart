@@ -6,15 +6,14 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-library pspdfkit;
 
 import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
-part 'android_permission_status.dart';
-part 'configuration_options.dart';
+import 'src/android_permission_status.dart';
+import 'src/configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
