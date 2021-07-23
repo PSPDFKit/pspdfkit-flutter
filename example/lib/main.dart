@@ -15,9 +15,7 @@ import 'package:flutter/services.dart';
 
 import 'package:path_provider/path_provider.dart';
 
-import 'package:pspdfkit_flutter/src/main.dart';
-import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';

@@ -16,9 +16,10 @@
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
-@property (nonatomic, weak) UIViewController *flutterViewController;
+@property (nonatomic, weak) FlutterViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
+
 @end
 
 @implementation PspdfPlatformView
