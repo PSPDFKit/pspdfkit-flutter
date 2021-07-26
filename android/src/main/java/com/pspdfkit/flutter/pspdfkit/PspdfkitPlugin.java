@@ -125,6 +125,35 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                     context.startActivity(intent);
                 }
                 break;
+            case "presentWithWatermark":
+                documentPath = call.argument("document");
+                String watermarkString = call.argument("watermarkString");
+                FlutterWatermarkActivity.watermarkString = watermarkString;
+                requireNotNullNotEmpty(documentPath, "Document path");
+
+                configurationMap = call.argument("configuration");
+                configurationAdapter = new ConfigurationAdapter(context, configurationMap);
+
+                documentPath = addFileSchemeIfMissing(documentPath);
+
+                FlutterWatermarkActivity.setLoadedDocumentResult(result);
+                imageDocument = isImageDocument(documentPath);
+                if (imageDocument) {
+                    Intent intent = PdfActivityIntentBuilder.fromImageUri(context, Uri.parse(documentPath))
+                            .activityClass(FlutterWatermarkActivity.class)
+                            .configuration(configurationAdapter.build())
+                            .build();
+                    context.startActivity(intent);
+
+                } else {
+                    Intent intent = PdfActivityIntentBuilder.fromUri(context, Uri.parse(documentPath))
+                            .activityClass(FlutterWatermarkActivity.class)
+                            .configuration(configurationAdapter.build())
+                            .passwords(configurationAdapter.getPassword())
+                            .build();
+                    context.startActivity(intent);
+                }
+                break;
             case "checkPermission":
                 final String permissionToCheck;
                 permissionToCheck = call.argument("permission");
