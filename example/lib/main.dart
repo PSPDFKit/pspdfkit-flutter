@@ -427,7 +427,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void showDocumentGlobal() async {
     try {
       final extractedDocument = await extractAsset(_documentPath);
-      await Pspdfkit.presentWithWatermark(extractedDocument.path, "NOTICE");
+      await Pspdfkit.present(extractedDocument.path);
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -627,43 +627,26 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     // await Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
   }
 
-  void flutterPdfActivityOnCreatedHandler() {
-    print('NOTICE::EXAMPLE::MAIN::flutterPdfActivityOnCreatedHandler');
-  }
-
-  void flutterPdfActivityOnDocumentLoadedHandler() {
-    print('NOTICE::EXAMPLE::MAIN::flutterPdfActivityOnDocumentLoadedHandler');
-  }
-
-  void flutterPdfActivityOnDocumentLoadFailedHandler() {
-    print('NOTICE::EXAMPLE::MAIN::flutterPdfActivityOnDocumentLoadFailedHandler');
-  }
-
   void flutterPdfActivityOnPauseHandler() {
-    print('NOTICE::EXAMPLE::MAIN::flutterPdfActivityOnPauseHandler');
-  }
-
-  void flutterPdfActivityOnEndedHandler() {
-    print('NOTICE::EXAMPLE::MAIN::flutterPdfActivityOnEndedHandler');
+    print('flutterPdfActivityOnPauseHandler');
   }
 
   void pdfViewControllerWillDismissHandler() {
-    print('NOTICE::EXAMPLE::MAIN::pdfViewControllerWillDismissHandler');
+    print('pdfViewControllerWillDismissHandler');
   }
 
   void pdfViewControllerDidDismissHandler() {
-    print('NOTICE::EXAMPLE::MAIN::pdfViewControllerDidDismissHandler');
+    print('pdfViewControllerDidDismissHandler');
   }
 
   @override
   Widget build(BuildContext context) {
-    Pspdfkit.flutterPdfActivityOnCreate = () => flutterPdfActivityOnCreatedHandler();
-    Pspdfkit.flutterPdfActivityOnDocumentLoaded = () => flutterPdfActivityOnDocumentLoadedHandler();
-    Pspdfkit.flutterPdfActivityOnDocumentLoadFailed = () => flutterPdfActivityOnDocumentLoadFailedHandler();
-    Pspdfkit.flutterPdfActivityOnPause = () => flutterPdfActivityOnPauseHandler();
-    Pspdfkit.flutterPdfActivityOnDestroy = () => flutterPdfActivityOnEndedHandler();
-    Pspdfkit.pdfViewControllerWillDismiss = () => pdfViewControllerWillDismissHandler();
-    Pspdfkit.pdfViewControllerDidDismiss = () => pdfViewControllerDidDismissHandler();
+    Pspdfkit.flutterPdfActivityOnPause =
+        () => flutterPdfActivityOnPauseHandler();
+    Pspdfkit.pdfViewControllerWillDismiss =
+        () => pdfViewControllerWillDismissHandler();
+    Pspdfkit.pdfViewControllerDidDismiss =
+        () => pdfViewControllerDidDismissHandler();
 
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light
         ? lightTheme

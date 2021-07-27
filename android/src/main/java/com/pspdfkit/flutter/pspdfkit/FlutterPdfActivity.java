@@ -27,51 +27,25 @@ public class FlutterPdfActivity extends PdfActivity {
 
     @Override
     protected void onCreate(Bundle bundle) {
-        EventDispatcher.getInstance().notifyActivityOnCreate();
         super.onCreate(bundle);
         bindActivity();
     }
 
     @Override
-    protected void onStart() {
-        EventDispatcher.getInstance().notifyActivityOnStart();
-        super.onStart();
-    }
-
-    @Override
     protected void onPause() {
+        // Notify the Flutter PSPDFKit plugin that the activity is going to enter the onPause state.
         EventDispatcher.getInstance().notifyActivityOnPause();
         super.onPause();
     }
 
     @Override
-    protected void onResume() {
-        EventDispatcher.getInstance().notifyActivityOnResume();
-        super.onResume();
-    }
-
-    @Override
-    protected void onStop() {
-        EventDispatcher.getInstance().notifyActivityOnStop();
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart() {
-        EventDispatcher.getInstance().notifyActivityOnRestart();
-        super.onRestart();
-    }
-
-    @Override
     protected void onDestroy() {
-        EventDispatcher.getInstance().notifyActivityOnDestroy();
         super.onDestroy();
         releaseActivity();
     }
 
     @Override
     public void onDocumentLoaded(@NonNull PdfDocument pdfDocument) {
-        EventDispatcher.getInstance().notifyActivityOnDocumentLoaded();
         super.onDocumentLoaded(pdfDocument);
         Result result = loadedDocumentResult.getAndSet(null);
         if (result != null) {
@@ -81,7 +55,6 @@ public class FlutterPdfActivity extends PdfActivity {
 
     @Override
     public void onDocumentLoadFailed(@NonNull Throwable throwable) {
-        EventDispatcher.getInstance().notifyActivityOnDocumentLoadFailed();
         super.onDocumentLoadFailed(throwable);
         Result result = loadedDocumentResult.getAndSet(null);
         if (result != null) {

@@ -42,13 +42,6 @@ class Pspdfkit {
         'configuration': configuration
       });
 
-  static Future<bool?> presentWithWatermark(String document, String watermarkString, [dynamic configuration]) async =>
-      await _channel.invokeMethod('presentWithWatermark', <String, dynamic>{
-        'document': document,
-        'watermarkString': watermarkString,
-        'configuration': configuration
-      });
-
   /// Sets the value of a form field by specifying its fully qualified field name.
   static Future<bool?> setFormFieldValue(
           String value, String fullyQualifiedName) async =>
@@ -154,54 +147,21 @@ class Pspdfkit {
     }
   }
 
-  static late VoidCallback flutterPdfActivityOnCreate;
-  static late VoidCallback flutterPdfActivityOnStart;
   static late VoidCallback flutterPdfActivityOnPause;
-  static late VoidCallback flutterPdfActivityOnResume;
-  static late VoidCallback flutterPdfActivityOnStop;
-  static late VoidCallback flutterPdfActivityOnRestart;
-  static late VoidCallback flutterPdfActivityOnDestroy;
-  static late VoidCallback pdfViewControllerWillDisplay;
   static late VoidCallback pdfViewControllerWillDismiss;
   static late VoidCallback pdfViewControllerDidDismiss;
-  static late VoidCallback flutterPdfActivityOnDocumentLoaded;
-  static late VoidCallback flutterPdfActivityOnDocumentLoadFailed;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
       switch (call.method) {
-        case 'flutterPdfActivityCreated':
-          flutterPdfActivityOnCreate();
-          break;
-        case 'flutterPdfActivityStarted':
-          flutterPdfActivityOnStart();
-          break;
-        case 'flutterPdfActivityPause':
+        case 'flutterPdfActivityOnPause':
           flutterPdfActivityOnPause();
-          break;
-        case 'flutterPdfActivityResumed':
-          flutterPdfActivityOnResume();
-          break;
-        case 'flutterPdfActivityStopped':
-          flutterPdfActivityOnStop();
-          break;
-        case 'flutterPdfActivityRestarted':
-          flutterPdfActivityOnRestart();
-          break;
-        case 'flutterPdfActivityDestroyed':
-          flutterPdfActivityOnDestroy();
           break;
         case 'pdfViewControllerWillDismiss':
           pdfViewControllerWillDismiss();
           break;
         case 'pdfViewControllerDidDismiss':
           pdfViewControllerDidDismiss();
-          break;
-        case 'flutterPdfActivityDocumentLoaded':
-          flutterPdfActivityOnDocumentLoaded();
-          break;
-        case 'flutterPdfActivityDocumentLoadFailed':
-          flutterPdfActivityOnDocumentLoadFailed();
           break;
         default:
           print('Unknowm method ${call.method} ');

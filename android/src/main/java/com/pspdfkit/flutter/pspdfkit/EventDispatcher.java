@@ -42,40 +42,8 @@ public class EventDispatcher {
         this.channel = channel;
     }
 
-    public void notifyActivityOnCreate() {
-        sendEvent("flutterPdfActivityCreated");
-    }
-
-    public void notifyActivityOnStart() {
-        sendEvent("flutterPdfActivityStarted");
-    }
-
     public void notifyActivityOnPause() {
-        sendEvent("flutterPdfActivityPaused");
-    }
-
-    public void notifyActivityOnResume() {
-        sendEvent("flutterPdfActivityResumed");
-    }
-
-    public void notifyActivityOnStop() {
-        sendEvent("flutterPdfActivityStopped");
-    }
-
-    public void notifyActivityOnRestart() {
-        sendEvent("flutterPdfActivityRestarted");
-    }
-
-    public void notifyActivityOnDestroy() {
-        sendEvent("flutterPdfActivityDestroyed");
-    }
-
-    public void notifyActivityOnDocumentLoaded() {
-        sendEvent("flutterPdfActivityDocumentLoaded");
-    }
-
-    public void notifyActivityOnDocumentLoadFailed() {
-        sendEvent("flutterPdfActivityDocumentLoadFailed");
+        sendEvent("flutterPdfActivityOnPause");
     }
 
     private void sendEvent(@NonNull final String method) {
