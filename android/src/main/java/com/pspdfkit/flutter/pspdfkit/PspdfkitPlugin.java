@@ -43,12 +43,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -58,36 +61,65 @@ import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNot
 /**
  * PSPDFKit plugin to load PDF and image documents.
  */
-public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
+public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener,
+        FlutterPlugin, ActivityAware {
     @NonNull private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
     private static final String FILE_SCHEME = "file:///";
-    @NonNull private final Context context;
-    @NonNull private final Registrar registrar;
     /** Atomic reference that prevents sending twice the permission result and throwing exception. */
     @NonNull private final AtomicReference<Result> permissionRequestResult;
 
-    private PspdfkitPlugin(Registrar registrar) {
-        this.context = registrar.activeContext();
-        this.registrar = registrar;
+    @Nullable private ActivityPluginBinding activityPluginBinding;
+
+    public PspdfkitPlugin() {
         this.permissionRequestResult = new AtomicReference<>();
     }
 
     /**
-     * Plugin registration.
+     * This {@code FlutterPlugin} has been associated with a {@link FlutterEngine} instance.
+     *
+     * <p>Relevant resources that this {@code FlutterPlugin} may need are provided via the {@code
+     * binding}. The {@code binding} may be cached and referenced until {@link
+     * #onDetachedFromEngine(FlutterPluginBinding)} is invoked and returns.
+     *
+     * @param binding
      */
-    public static void registerWith(Registrar registrar) {
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "com.pspdfkit.global");
-        PspdfkitPlugin pspdfkitPlugin = new PspdfkitPlugin(registrar);
-        channel.setMethodCallHandler(pspdfkitPlugin);
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "com.pspdfkit.global");
+        channel.setMethodCallHandler(this);
         eventDispatcher.setChannel(channel);
-        registrar.addRequestPermissionsResultListener(pspdfkitPlugin);
+    }
+
+    /**
+     * This {@code FlutterPlugin} has been removed from a {@link FlutterEngine} instance.
+     *
+     * <p>The {@code binding} passed to this method is the same instance that was passed in {@link
+     * #onAttachedToEngine(FlutterPluginBinding)}. It is provided again in this method as a
+     * convenience. The {@code binding} may be referenced during the execution of this method, but it
+     * must not be cached or referenced after this method returns.
+     *
+     * <p>{@code FlutterPlugin}s should release all resources in this method.
+     *
+     * @param binding
+     */
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        eventDispatcher.setChannel(null);
     }
 
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         String fullyQualifiedName;
         PdfDocument document;
+
+        if (activityPluginBinding == null) {
+            throw new IllegalStateException("There is no activity attached. Make sure " +
+                    "`onAttachedToActivity` is called before handling any method calls received " +
+                    "from Flutter");
+        }
+
+        final Activity activity = activityPluginBinding.getActivity();
 
         switch (call.method) {
             case "frameworkVersion":
@@ -96,48 +128,53 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             case "setLicenseKey":
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
-                PSPDFKit.initialize(context, licenseKey);
+                PSPDFKit.initialize(activity, licenseKey);
+                break;
+            case "setLicenseKeys":
+                String androidLicenseKey = call.argument("androidLicenseKey");
+                requireNotNullNotEmpty(androidLicenseKey, "Android License key");
+                PSPDFKit.initialize(activity, androidLicenseKey);
                 break;
             case "present":
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
 
                 HashMap<String, Object> configurationMap = call.argument("configuration");
-                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(context, configurationMap);
+                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(activity, configurationMap);
 
                 documentPath = addFileSchemeIfMissing(documentPath);
 
                 FlutterPdfActivity.setLoadedDocumentResult(result);
                 boolean imageDocument = isImageDocument(documentPath);
                 if (imageDocument) {
-                    Intent intent = PdfActivityIntentBuilder.fromImageUri(context, Uri.parse(documentPath))
+                    Intent intent = PdfActivityIntentBuilder.fromImageUri(activity, Uri.parse(documentPath))
                             .activityClass(FlutterPdfActivity.class)
                             .configuration(configurationAdapter.build())
                             .build();
-                    context.startActivity(intent);
+                    activity.startActivity(intent);
 
                 } else {
-                    Intent intent = PdfActivityIntentBuilder.fromUri(context, Uri.parse(documentPath))
+                    Intent intent = PdfActivityIntentBuilder.fromUri(activity, Uri.parse(documentPath))
                             .activityClass(FlutterPdfActivity.class)
                             .configuration(configurationAdapter.build())
                             .passwords(configurationAdapter.getPassword())
                             .build();
-                    context.startActivity(intent);
+                    activity.startActivity(intent);
                 }
                 break;
             case "checkPermission":
                 final String permissionToCheck;
                 permissionToCheck = call.argument("permission");
-                result.success(checkPermission(permissionToCheck));
+                result.success(checkPermission(activity, permissionToCheck));
                 break;
             case "requestPermission":
                 final String permissionToRequest;
                 permissionToRequest = call.argument("permission");
                 permissionRequestResult.set(result);
-                requestPermission(permissionToRequest);
+                requestPermission(activity, permissionToRequest);
                 break;
             case "openSettings":
-                openSettings();
+                openSettings(activity);
                 result.success(true);
                 break;
             case "applyInstantJson":
@@ -277,10 +314,18 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                         .subscribe(result::success);
 
                 break;
+            case "getTemporaryDirectory":
+                result.success(getTemporaryDirectory(activity));
+                break;
             default:
                 result.notImplemented();
                 break;
         }
+    }
+
+    @NonNull
+    private String getTemporaryDirectory(@NonNull final Activity activity) {
+        return activity.getCacheDir().getPath();
     }
 
     private boolean areValidIndexes(String value, List<Integer> selectedIndexes) {
@@ -306,8 +351,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         return documentPath;
     }
 
-    private void requestPermission(String permission) {
-        Activity activity = registrar.activity();
+    private void requestPermission(@NonNull final Activity activity, String permission) {
         permission = getManifestPermission(permission);
         if (permission == null) {
             return;
@@ -317,8 +361,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         ActivityCompat.requestPermissions(activity, perm, 0);
     }
 
-    private boolean checkPermission(String permission) {
-        Activity activity = registrar.activity();
+    private boolean checkPermission(@NonNull final Activity activity, String permission) {
         permission = getManifestPermission(permission);
         if (permission == null) {
             return false;
@@ -338,8 +381,7 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         return res;
     }
 
-    private void openSettings() {
-        Activity activity = registrar.activity();
+    private void openSettings(@NonNull final Activity activity) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse("package:" + activity.getPackageName()));
         intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -358,16 +400,24 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
 
     @Override
     public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (activityPluginBinding == null) {
+            throw new IllegalStateException("There is no activity attached. Make sure " +
+                    "`onAttachedToActivity` is called before handling any method calls received " +
+                    "from Flutter");
+        }
+
+        final Activity activity = activityPluginBinding.getActivity();
+
         if (permissions.length == 0) return false;
 
         int status = 0;
         String permission = permissions[0];
         if (requestCode == 0 && grantResults.length > 0) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(registrar.activity(), permission)) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
                 // Permission denied.
                 status = 1;
             } else {
-                if (ActivityCompat.checkSelfPermission(registrar.context(), permission) == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
                     // Permission allowed.
                     status = 2;
                 } else {
@@ -384,6 +434,35 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             result.success(status);
         }
         return status == 2;
+    }
+
+    @Override
+    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        activityPluginBinding = binding;
+        binding.addRequestPermissionsResultListener(this);
+    }
+
+    @Override
+    public void onDetachedFromActivityForConfigChanges() {
+        detachActivityPluginBinding();
+    }
+
+    @Override
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        activityPluginBinding = binding;
+        binding.addRequestPermissionsResultListener(this);
+    }
+
+    @Override
+    public void onDetachedFromActivity() {
+        detachActivityPluginBinding();
+    }
+
+    private void detachActivityPluginBinding() {
+        if (activityPluginBinding != null) {
+            activityPluginBinding.removeRequestPermissionsResultListener(this);
+            activityPluginBinding = null;
+        }
     }
 
     /** A small in-memory data provider for loading the Document instant JSON from a string. */

@@ -15,8 +15,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:path_provider/path_provider.dart';
-
 import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
 
@@ -51,7 +49,7 @@ class PspdfkitAnnotationProcessingExampleWidgetState
   }
 
   Future<String> getExportPath(String assetPath) async {
-    final tempDir = await getTemporaryDirectory();
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
     final tempDocumentPath = '${tempDir.path}/$assetPath';
     return tempDocumentPath;
   }

@@ -11,6 +11,8 @@ library pspdfkit;
 import 'dart:async';
 import 'dart:ui';
 
+import 'dart:io' show Directory;
+
 import 'package:flutter/services.dart';
 
 part 'android_permission_status.dart';
@@ -37,8 +39,17 @@ class Pspdfkit {
       await _channel.invokeMethod(
           'setLicenseKey', <String, String>{'licenseKey': licenseKey});
 
+  /// Sets the license keys for both platforms.
+  static Future<void> setLicenseKeys(
+          String? androidLicenseKey, String? iOSLicenseKey) async =>
+      await _channel.invokeMethod('setLicenseKeys', <String, String?>{
+        'androidLicenseKey': androidLicenseKey,
+        'iOSLicenseKey': iOSLicenseKey,
+      });
+
   /// Loads a [document] with a supported format using a given [configuration].
-  static Future<bool?> present(String document, [dynamic configuration]) async =>
+  static Future<bool?> present(String document,
+          [dynamic configuration]) async =>
       await _channel.invokeMethod('present', <String, dynamic>{
         'document': document,
         'configuration': configuration
@@ -149,6 +160,30 @@ class Pspdfkit {
     }
   }
 
+  /// Path to the temporary directory on the device that is not backed up and is
+  /// suitable for storing caches of downloaded files.
+  ///
+  /// Files in this directory may be cleared at any time. This does *not* return
+  /// a new temporary directory. Instead, the caller is responsible for creating
+  /// (and cleaning up) files or directories within this directory. This
+  /// directory is scoped to the calling application.
+  ///
+  /// On iOS, this uses the `NSCachesDirectory` API.
+  ///
+  /// On Android, this uses the `getCacheDir` API on the context.
+  ///
+  /// Throws a `MissingPlatformDirectoryException` if the system is unable to
+  /// provide the directory.
+  static Future<Directory> getTemporaryDirectory() async {
+    final String? path =
+        await _channel.invokeMethod<String>('getTemporaryDirectory');
+    if (path == null) {
+      throw MissingPlatformDirectoryException(
+          'Unable to get temporary directory');
+    }
+    return Directory(path);
+  }
+
   static late VoidCallback flutterPdfActivityOnPause;
   static late VoidCallback pdfViewControllerWillDismiss;
   static late VoidCallback pdfViewControllerDidDismiss;
@@ -172,5 +207,26 @@ class Pspdfkit {
       print(e);
     }
     return Future.value();
+  }
+}
+
+/// An exception thrown when a directory that should always be available on
+/// the current platform cannot be obtained.
+class MissingPlatformDirectoryException implements Exception {
+  /// Creates a new exception
+  MissingPlatformDirectoryException(this.message, {this.details});
+
+  /// The explanation of the exception.
+  final String message;
+
+  /// Added details, if any.
+  ///
+  /// E.g., an error object from the platform implementation.
+  final Object? details;
+
+  @override
+  String toString() {
+    final String detailsAddition = details == null ? '' : ': $details';
+    return 'MissingPlatformDirectoryException($message)$detailsAddition';
   }
 }

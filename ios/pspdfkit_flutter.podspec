@@ -2,21 +2,22 @@
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
 #
 Pod::Spec.new do |s|
-  s.name             = 'pspdfkit_flutter'
-  s.version          = '0.0.1'
-  s.summary          = 'PSPDFKit flutter plugin.'
-  s.description      = <<-DESC
-PSPDFKit flutter plugin.
-                       DESC
-  s.homepage         = 'http://example.com'
-  s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
-  s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+  s.name                  = 'pspdfkit_flutter'
+  s.version               = '3.0.0'
+  s.homepage              = 'https://PSPDFKit.com'
+  s.documentation_url     = 'https://pspdfkit.com/guides/flutter'
+  s.license               = { :type => 'Commercial', :file => '../LICENSE' }
+  s.author                = { 'PSPDFKit GmbH' => 'support@pspdfkit.com' } 
+  s.summary               = 'Flutter PDF Library by PSPDFKit'
+  s.description           = <<-DESC
+                            A high-performance viewer, extensive annotation and document editing tools, digital signatures, and more.
+                            DESC
+  s.source                = { :path => '.' }
+  s.source_files          = 'Classes/**/*.{h,m,swift}'
+  s.public_header_files   = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.dependency 'PSPDFKit'
-  s.swift_version = '5.0'
+  s.swift_version         = '5.0'
+  s.platform              = :ios, '13.0'
   s.ios.deployment_target = '13.0'
 end
-

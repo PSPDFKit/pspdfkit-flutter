@@ -114,7 +114,7 @@
 
 + (BOOL)isImageDocument:(NSString *)path {
     NSString *fileExtension = path.pathExtension.lowercaseString;
-    return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
+    return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"] || [fileExtension isEqualToString:@"tiff"] || [fileExtension isEqualToString:@"tif"];
 }
 
 # pragma mark - File Helpers

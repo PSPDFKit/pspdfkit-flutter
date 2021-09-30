@@ -2,7 +2,7 @@
 
 ![Flutter Intro](screenshots/flutter-intro.png)
 
-PSPDFKit wrapper for Flutter. Available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
+PSPDFKit for Flutter is available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
 
 If you are new to Flutter, make sure to check our Flutter blog posts:
 
@@ -11,7 +11,7 @@ If you are new to Flutter, make sure to check our Flutter blog posts:
 - [Opening a PDF in Flutter](https://pspdfkit.com/blog/2019/opening-a-pdf-in-flutter/).
 - [How to Bridge Native iOS Code to Flutter](https://pspdfkit.com/blog/2021/how-to-bridge-native-ios-code-to-flutter/).
 - [How to Customize Our Flutter PDF SDK for Android](https://pspdfkit.com/blog/2021/how-to-customize-our-flutter-pdf-sdk/).
-- [Advances in Hybrid Wrappers](https://pspdfkit.com/blog/2019/advances-in-hybrid-wrappers/).
+- [Advances in Hybrid Technologies](https://pspdfkit.com/blog/2019/advances-in-hybrid-technologies/).
 - [How We Maintain Our Public Flutter Project Using a Private Monorepo](https://pspdfkit.com/blog/2021/maintaining-open-source-repo-from-monorepo/).
 
 For our quick-start guides, [check out our website](https://pspdfkit.com/getting-started/mobile/?frontend=flutter).
@@ -70,14 +70,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open pubspec.yaml
     ```
 
-6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
+6. Add the PSPDFKit dependency in `pubspec.yaml`:
 
     ```diff
      dependencies:
        flutter:
          sdk: flutter
-    +  pspdfkit_flutter:
-    +  path_provider: ^2.0.2
+    +  pspdfkit_flutter: any
     ```
 
 7. From the terminal app, run the following command to get all the packages:
@@ -161,14 +160,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 
     ![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
 
-6. Add the PSPDFKit and `path_provider` dependencies in `pubspec.yaml`:
+6. Add the PSPDFKit dependency in `pubspec.yaml`:
 
     ```diff
      dependencies:
        flutter:
          sdk: flutter
     +  pspdfkit_flutter:
-    +  path_provider: ^2.0.2
     ```
 
 7. From the terminal app, run the following command to get all the packages:
@@ -254,15 +252,21 @@ initialize in demo mode, placing a watermark on each PDF and limiting usage to 6
 
 To purchase a license for production use, please reach out to us via https://pspdfkit.com/sales/form/.
 
-To initialize PSPDFKit using a license key, call `Pspdfkit.setLicenseKey("...")` before using any other PSPDFKit APIs or features.
+To initialize PSPDFKit using a license key, call either of the following before using any other PSPDFKit APIs or features:
 
-# Contributing
+To set the license key for both Android and iOS, use:
+```
+await Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE", "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE");
+```
 
-Please ensure [you signed our CLA](https://pspdfkit.com/guides/web/current/miscellaneous/contributing/) so we can accept your contributions.
+To set the license key for the currently running platform, use:
+```
+await Pspdfkit.setLicenseKey("YOUR_FLUTTER_LICENSE_KEY_GOES_HERE");
+```
 
 # Migrating from Version 1.10.3
 
-Q: I updated the Flutter plugin and I am getting the following error:
+Q: I updated the Flutter library and I am getting the following error:
 
 ```bash
 lib/main.dart:8:8: Error: Error when reading '../../.pub-cache/git/pspdfkit-flutter-b6241555b1ee3e816a0dce65145991c1a4477d94/lib/pspdfkit.dart': No such file or directory

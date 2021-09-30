@@ -5,7 +5,7 @@
 #   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 #   This notice may not be removed from this file.
 
-include: package:pedantic/analysis_options.yaml
+include: package:flutter_lints/flutter.yaml
 
 analyzer:
   errors:
@@ -16,3 +16,14 @@ analyzer:
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
+
+linter:
+  rules:
+    - always_declare_return_types
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - unawaited_futures
+    - unsafe_html
+    - use_full_hex_values_for_flutter_colors
+    
+

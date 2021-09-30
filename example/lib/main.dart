@@ -13,8 +13,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:path_provider/path_provider.dart';
-
 import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
@@ -126,7 +124,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final bytes = await DefaultAssetBundle.of(context).load(assetPath);
     final list = bytes.buffer.asUint8List();
 
-    final tempDir = await getTemporaryDirectory();
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
     final tempDocumentPath = '${tempDir.path}/$assetPath';
 
     final file = await File(tempDocumentPath).create(recursive: true);
@@ -626,7 +624,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     // By default, this example doesn't set a license key, but instead runs in trial mode (which is the default, and which requires no
     // specific initialization). If you want to use a different license key for evaluation (e.g. a production license), you can uncomment
     // the next line and set the license key.
-    // await Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
+    //
+    // To set the license key for both platforms, use:
+    // await Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE", "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE");
+    //
+    // To set the license key for the currently running platform, use:
+    // await Pspdfkit.setLicenseKey("YOUR_FLUTTER_LICENSE_KEY_GOES_HERE");
   }
 
   void flutterPdfActivityOnPauseHandler() {

@@ -9,7 +9,7 @@
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "org.yaml:snakeyaml:1.27"
@@ -53,7 +53,7 @@ def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
 ext.pspdfkitFlutterVersion = pubspecYaml.version
 
 ext.androidCompileSdkVersion = 29
-ext.androidBuildToolsVersion = '29.0.1'
+ext.androidBuildToolsVersion = '29.0.3'
 ext.androidMinSdkVersion = 21
 ext.androidTargetSdkVersion = 29
 ext.androidGradlePluginVersion = '4.1.1'

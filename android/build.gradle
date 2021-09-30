@@ -11,7 +11,7 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -28,7 +28,7 @@ rootProject.allprojects {
             url pspdfkitMavenUrl
         }
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 

@@ -37,7 +37,10 @@ static FlutterMethodChannel *channel;
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
         [PSPDFKitGlobal setLicenseKey:licenseKey];
-    } else if ([@"present" isEqualToString:call.method]) {
+    } else if ([@"setLicenseKeys" isEqualToString:call.method]) {
+        NSString *iOSLicenseKey = call.arguments[@"iOSLicenseKey"];
+        [PSPDFKitGlobal setLicenseKey:iOSLicenseKey];
+    }else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
         if (documentPath == nil || documentPath.length <= 0) {
@@ -70,9 +73,16 @@ static FlutterMethodChannel *channel;
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
         result(@(YES));
+    } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
+        result([self getTemporaryDirectory]);
     } else {
         [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
+}
+
+- (NSString*)getTemporaryDirectory {
+  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+  return paths.firstObject;
 }
 
 #pragma mark - PSPDFViewControllerDelegate
