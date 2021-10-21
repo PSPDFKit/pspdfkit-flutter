@@ -45,13 +45,32 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     cd pspdfkit_demo
     ```
 
-3. Open the app’s Gradle build file, `android/app/build.gradle`:
+3. Open the project’s Gradle build file, `android/build.gradle`:
+   
+   ```bash
+   open android/build.gradle
+   ```
+
+4. Modify the Kotlin version inside the `buildscript` section:
+   
+    ```diff
+     buildscript {
+    -    ext.kotlin_version = '1.3.50'
+    +    ext.kotlin_version = '1.5.31'
+         repositories {
+             google()
+             mavenCentral()
+         }
+     ...
+    ```
+
+5. Open the app’s Gradle build file, `android/app/build.gradle`:
 
     ```bash
     open android/app/build.gradle
     ```
 
-4. Modify the minimum SDK version, and enable `multidex`. All this is done inside the `android` section:
+6. Modify the minimum SDK version, and enable `multidex`. All this is done inside the `android` section:
 
     ```diff
      android {
@@ -64,13 +83,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      }
     ```
 
-5. Open `pubspec.yaml`:
+7. Open `pubspec.yaml`:
 
     ```bash
     open pubspec.yaml
     ```
 
-6. Add the PSPDFKit dependency in `pubspec.yaml`:
+8. Add the PSPDFKit dependency in `pubspec.yaml`:
 
     ```diff
      dependencies:
@@ -79,21 +98,21 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     +  pspdfkit_flutter: any
     ```
 
-7. From the terminal app, run the following command to get all the packages:
+9.  From the terminal app, run the following command to get all the packages:
 
     ```bash
     flutter pub get
     ```
 
-8. Then run the command below to upgrade the dependencies:
+10. Then run the command below to upgrade the dependencies:
 
     ```bash
     flutter pub upgrade
     ```
 
-9. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
+11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
 
-10. Add the PDF document you want to display in your project’s `assets` directory.
+12. Add the PDF document you want to display in your project’s `assets` directory.
     - First create a `PDFs` directory:
 
         ```bash
@@ -106,7 +125,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
         ```
 
-11. Specify the `assets` directory in `pubspec.yaml`:
+13. Specify the `assets` directory in `pubspec.yaml`:
 
     ```diff
      # The following section is specific to Flutter.
@@ -116,9 +135,9 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      ...
     ```
 
-12. [Start your Android emulator][start-the-emulator], or connect a device.
+14. [Start your Android emulator][start-the-emulator], or connect a device.
 
-13. Run the app with:
+15. Run the app with:
 
     ```bash
     flutter run

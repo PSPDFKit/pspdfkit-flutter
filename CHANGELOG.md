@@ -1,5 +1,12 @@
 ## Newest Release
 
+### 3.0.1 - 21 Oct 2021
+
+- Update to PSPDFKit for Android 8.
+- PSPDFKit now requires Flutter 2.5.3 or later. (#31360)
+
+## Previous Releases
+
 ### 3.0.0 - 28 Sep 2021
 
 - Adds the ability to open TIFF images as Image Documents. (#28630)
@@ -9,8 +16,6 @@
 - PSPDFKit now requires Xcode 13 or later. (#31008)
 - Migrates Flutter APIs to Android embedding v2. (#30680)
 - Removes `path_provider` as a dependency. (#30680)
-
-## Previous Releases
 
 ### 2.4.0 - 22 Jul 2021
 
