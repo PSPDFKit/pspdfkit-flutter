@@ -38,7 +38,7 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '8.0.0'
+    ext.pspdfkitVersion = '8.0.1'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'

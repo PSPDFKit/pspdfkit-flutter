@@ -283,59 +283,16 @@ To set the license key for the currently running platform, use:
 await Pspdfkit.setLicenseKey("YOUR_FLUTTER_LICENSE_KEY_GOES_HERE");
 ```
 
-# Migrating from Version 1.10.3
+# Migrating from Previous Version
 
-Q: I updated the Flutter library and I am getting the following error:
-
-```bash
-lib/main.dart:8:8: Error: Error when reading '../../.pub-cache/git/pspdfkit-flutter-b6241555b1ee3e816a0dce65145991c1a4477d94/lib/pspdfkit.dart': No such file or directory
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-       ^
-lib/main.dart:37:7: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
-Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-      Pspdfkit.present(tempDocumentPath);
-      ^^^^^^^^
-lib/main.dart:58:32: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
-Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-      frameworkVersion = await Pspdfkit.frameworkVersion;
-                               ^^^^^^^^
-lib/main.dart:73:5: Error: The getter 'Pspdfkit' isn't defined for the class '_MyAppState'.
- - '_MyAppState' is from 'package:myapp/main.dart' ('lib/main.dart').
-Try correcting the name to the name of an existing getter, or defining a getter or field named 'Pspdfkit'.
-    Pspdfkit.setLicenseKey("YOUR_LICENSE_KEY_GOES_HERE");
-    ^^^^^^^^
-
-
-FAILURE: Build failed with an exception.
-````
-A: If you were using version [1.10.3](https://github.com/PSPDFKit/pspdfkit-flutter/releases/tag/1.10.3) or earlier, you will need to update the imports in your Dart files like so:
-
-```diff
--import 'package:pspdfkit_flutter/pspdfkit.dart';
-+import 'package:pspdfkit_flutter/src/main.dart';
-```
+To upgrade PSPDFKit for Flutter in your app, please refer to the [Upgrade and Migration Guides][flutter upgrade] section.
 
 # Troubleshooting
 
-## Flutter Updates
-
-To update Flutter to the latest version, all you have to do is run `flutter upgrade`.
-
-## Flutter Configuration Problems
-
-Among the tools provided by Flutter, there is `flutter doctor`, a very handy program that checks your system configuration for you and provides step-by-step actions to take in case of problems.
-
-![Flutter doctor example](screenshots/flutter-doctor.png)
-
-The verbose mode of flutter doctor is even more helpful; it prints out extensive information about the nature of an issue and how to fix it. To run the verbose mode, all you have to do is type `flutter doctor -d`.
-
-### CocoaPods Conflicts With Asdf
-
-If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might create problems when running Cocoapods, and Flutter will erroneously suggest to install CocoaPods via brew with `brew install cocoapods`. This won't work because for this specific configuration CocoaPods needs to be installed via [RubyGems](https://rubygems.org/). To fix this configuration issue just type `gem install cocoapods && pod setup`.
+For Troubleshooting common issues you might encounter when setting up PSPDFKit for Flutter, please refer to the [Troubleshooting][] section.
 
 
+<!-- References -->
 
 [install-flutter]: https://flutter.dev/docs/get-started/install
 [android studio]: https://developer.android.com/studio
@@ -344,3 +301,5 @@ If [asdf](https://github.com/asdf-vm/asdf) is installed in your machine it might
 [xcode]: https://apps.apple.com/us/app/xcode/id497799835?mt=12
 [cocoapods releases]: https://github.com/CocoaPods/CocoaPods/releases
 [start-the-emulator]: https://developer.android.com/studio/run/emulator#runningemulator
+[flutter upgrade]: https://pspdfkit.com/guides/flutter/upgrade/
+[troubleshooting]: https://pspdfkit.com/guides/flutter/troubleshoot/

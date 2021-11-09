@@ -1,11 +1,17 @@
 ## Newest Release
 
+### 3.0.2 - 02 Nov 2021
+
+- Updates for PSPDFKit 11.1 for iOS. (#31654)
+- Updates for PSPDFKit 8.0.1 for Android. (#31743)
+- Improves the repository's README. (#31633)
+
+## Previous Releases
+
 ### 3.0.1 - 21 Oct 2021
 
 - Update to PSPDFKit for Android 8.
 - PSPDFKit now requires Flutter 2.5.3 or later. (#31360)
-
-## Previous Releases
 
 ### 3.0.0 - 28 Sep 2021
 
