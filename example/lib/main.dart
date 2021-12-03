@@ -208,7 +208,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     bottom: false,
                     child: PspdfkitWidget(
                         documentPath: extractedDocument.path,
-                        configuration: {
+                        configuration: const {
+                          fullname : 'Alberto Marcone',
                           pageScrollDirection: pageScrollDirectionVertical,
                           pageScrollContinuous: false,
                           fitPageToWidth: true,

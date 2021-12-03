@@ -59,6 +59,9 @@
         if (dictionary[@"iOSSettingsMenuItems"]) {
             builder.settingsOptions = [PspdfkitFlutterConverter settingsOptions:dictionary[@"iOSSettingsMenuItems"]];
         }
+        
+        builder.shouldAskForAnnotationUsername = NO;
+        
     }];
 }
 

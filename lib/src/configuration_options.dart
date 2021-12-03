@@ -15,6 +15,7 @@ const String pageScrollDirection = 'pageScrollDirection';
 const String pageScrollDirectionHorizontal = 'horizontal';
 const String pageScrollDirectionVertical = 'vertical';
 
+const String fullname = '';
 const String pageScrollContinuous = 'scrollContinuously';
 
 const String fitPageToWidth = 'fitPageToWidth';

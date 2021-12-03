@@ -13,6 +13,7 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
+
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
@@ -40,11 +41,13 @@
     if (_flutterViewController == nil) {
         NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
     }
+
     [_flutterViewController addChildViewController:_navigationController];
     [_flutterViewController.view addSubview:_navigationController.view];
     [_navigationController didMoveToParentViewController:_flutterViewController];
 
     _pdfViewController = [[PSPDFViewController alloc] init];
+
     [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
 
     self = [super init];
@@ -83,6 +86,12 @@
         NSDictionary *configurationDictionary = call.arguments[@"configuration"];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+        
+        if (configurationDictionary[@"fullname"]) {
+            PSPDFUsernameHelper.defaultAnnotationUsername = configurationDictionary[@"fullname"];
+            document.defaultAnnotationUsername = configurationDictionary[@"fullname"];
+        }
+        
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
@@ -92,6 +101,9 @@
         self.pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
         self.pdfViewController.delegate = self;
+        
+        // only these two menus
+        self.pdfViewController.documentInfoCoordinator.availableControllerOptions = @[PSPDFDocumentInfoOptionOutline, PSPDFDocumentInfoOptionAnnotations];
 
         if ((id)configurationDictionary != NSNull.null) {
             [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"] forViewController:self.pdfViewController];
