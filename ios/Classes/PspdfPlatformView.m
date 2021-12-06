@@ -87,9 +87,10 @@
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
         
-        if (configurationDictionary[@"fullname"]) {
-            PSPDFUsernameHelper.defaultAnnotationUsername = configurationDictionary[@"fullname"];
-            document.defaultAnnotationUsername = configurationDictionary[@"fullname"];
+        
+        if ( [configurationDictionary objectForKey:@"fullname"]!= [NSNull null]) {
+            PSPDFUsernameHelper.defaultAnnotationUsername = [configurationDictionary objectForKey:@"fullname"];
+            document.defaultAnnotationUsername = [configurationDictionary objectForKey:@"fullname"];
         }
         
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
@@ -97,10 +98,99 @@
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
         PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
 
+       
+        
+        
+        __weak typeof(NSDictionary) *weakConfiguration = configurationDictionary;
+        
+        PSPDFRenderDrawBlock renderBlock = ^(CGContextRef context, PSPDFPageIndex pageIndex, CGRect cropBox, PSPDFRenderOptions *options) {
+                       Boolean *watermarkEnabled = [[configurationDictionary valueForKey:@"watermarkEnabled"] boolValue];
+                           if (watermarkEnabled) {
+                               CGContextSaveGState(context);
+                               NSString *text = [configurationDictionary valueForKey:@"fullname"];
+                               NSString *opacity = [configurationDictionary valueForKey:@"watermarkOpacity"];
+                               NSString *color = [configurationDictionary valueForKey:@"watermarkColor"];
+                               NSString *fontSize = [configurationDictionary valueForKey:@"watermarkFontSize"];
+            
+            
+                                
+                               for (int i = 1; i <= 10; i++)
+                               {
+                                   
+                                   text= [text stringByAppendingString:[NSString stringWithFormat:@"%@%@",@"   ",text]];
+                               }
+                               
+                                CGContextSaveGState(context);
+            
+                                
+                               unsigned int c;
+                               if ([color characterAtIndex:0] == '#') {
+                                   [[NSScanner scannerWithString:[color substringFromIndex:1]] scanHexInt:&c];
+                               } else {
+                                   [[NSScanner scannerWithString:color] scanHexInt:&c];
+                               }
+                               UIColor *watermarkColor = [UIColor colorWithRed:((c & 0xff0000) >> 16) / 255.0
+                                                                         green:((c & 0xff00) >> 8) / 255.0
+                                                                          blue:(c & 0xff) / 255.0 alpha:1.0];
+            
+            
+                               CGFloat watermarkColorAlpha = (CGFloat) [opacity floatValue] ;
+                               NSStringDrawingContext *stringDrawingContext = [NSStringDrawingContext new];
+                               stringDrawingContext.minimumScaleFactor = 0.1f;
+                               //calcolo di quanta rotazione bisogna applicare per averlo diagonale alla pagina
+                               CGFloat xDiff = cropBox.size.width;
+                               CGFloat yDiff = cropBox.size.height;
+                               CGFloat rads = atan2(yDiff, xDiff);
+                               CGContextTranslateCTM(context, -80, -165);
+                               CGContextRotateCTM(context, rads);
+            
+                               NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+                               paragraphStyle.lineBreakMode = NSLineBreakByClipping;
+                               cropBox.size.width = cropBox.size.width * 2;
+                               [text drawWithRect:cropBox
+                                          options:NSStringDrawingUsesLineFragmentOrigin
+                                       attributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:[fontSize floatValue]],
+                                               NSForegroundColorAttributeName: [watermarkColor colorWithAlphaComponent:watermarkColorAlpha],
+                                               NSParagraphStyleAttributeName: paragraphStyle
+                                       }
+                                          context:stringDrawingContext];
+                               CGContextRestoreGState(context);
+                           }
+                           /*NSString *protocolNumberOptions = [weakSelf valueForKey:@"protocolNumber"];
+                           if ([protocolNumberOptions length] > 0) {
+                               //salvo il context
+                               CGContextSaveGState(context);
+                               NSString *protocolText = [NSString stringWithFormat:@"Protocollo n. %@", protocolNumberOptions];
+                               NSStringDrawingContext *stringDrawingContext = [NSStringDrawingContext new];
+                               stringDrawingContext.minimumScaleFactor = 0.1f;
+                               //sposto la label in alto
+                               CGContextTranslateCTM(context, -120, 10);
+                               NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+                               style.alignment = kCTRightTextAlignment;
+                               [protocolText drawWithRect:cropBox
+                                                  options:NSStringDrawingUsesLineFragmentOrigin
+                                               attributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:14],
+                                                       NSForegroundColorAttributeName: [UIColor.blackColor colorWithAlphaComponent:1.0f],
+                                                       NSParagraphStyleAttributeName: style
+                                               }
+                                                  context:stringDrawingContext];
+                               CGContextRestoreGState(context);
+                           }*/
+                       };
+
+        
+        
+        //configuration.drawOnAllCurrentPages(renderDrawBlock)
+        
+        if ([configurationDictionary[@"watermarkEnabled"] boolValue]) [document updateRenderOptionsForType:PSPDFRenderTypeAll withBlock:^(PSPDFRenderOptions * options){
+                               options.drawBlock = renderBlock;
+                           }];
+        
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
         self.pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
         self.pdfViewController.delegate = self;
+        
         
         // only these two menus
         self.pdfViewController.documentInfoCoordinator.availableControllerOptions = @[PSPDFDocumentInfoOptionOutline, PSPDFDocumentInfoOptionAnnotations];

@@ -15,8 +15,13 @@ const String pageScrollDirection = 'pageScrollDirection';
 const String pageScrollDirectionHorizontal = 'horizontal';
 const String pageScrollDirectionVertical = 'vertical';
 
-const String fullname = '';
+const String fullname = 'fullname';
 const String pageScrollContinuous = 'scrollContinuously';
+
+const String watermarkEnabled = 'watermarkEnabled';
+const String watermarkColor = 'watermarkColor';
+const String watermarkOpacity = 'watermarkOpacity';
+const String watermarkFontSize = 'watermarkFontSize';
 
 const String fitPageToWidth = 'fitPageToWidth';
 
