@@ -101,10 +101,11 @@
        
         
         
-        __weak typeof(NSDictionary) *weakConfiguration = configurationDictionary;
+        //__weak typeof(NSDictionary) *weakConfiguration = configurationDictionary;
         
         PSPDFRenderDrawBlock renderBlock = ^(CGContextRef context, PSPDFPageIndex pageIndex, CGRect cropBox, PSPDFRenderOptions *options) {
-                       Boolean *watermarkEnabled = [[configurationDictionary valueForKey:@"watermarkEnabled"] boolValue];
+                       bool watermarkEnabled = [[configurationDictionary valueForKey:@"watermarkEnabled"] boolValue];
+            
                            if (watermarkEnabled) {
                                CGContextSaveGState(context);
                                NSString *text = [configurationDictionary valueForKey:@"fullname"];
