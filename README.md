@@ -44,14 +44,32 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```bash
     cd pspdfkit_demo
     ```
+3. Open the project’s main activity class, `android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt`:
 
-3. Open the project’s Gradle build file, `android/build.gradle`:
+    ```bash
+    open android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt
+    ```
+    
+4. Modify the base from `FlutterActivity` to `FlutterFragmentActivity`:
+
+    ```diff
+     package com.example.pspdfkit_demo.pspdfkit_demo
+
+    -import io.flutter.embedding.android.FlutterActivity
+    +import io.flutter.embedding.android.FlutterFragmentActivity
+
+    -class MainActivity: FlutterActivity() {
+    +class MainActivity: FlutterFragmentActivity() {
+     }
+    ```
+
+5. Open the project’s Gradle build file, `android/build.gradle`:
    
    ```bash
    open android/build.gradle
    ```
 
-4. Modify the Kotlin version inside the `buildscript` section:
+6. Modify the Kotlin version inside the `buildscript` section:
    
     ```diff
      buildscript {
@@ -64,18 +82,18 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      ...
     ```
 
-5. Open the app’s Gradle build file, `android/app/build.gradle`:
+7. Open the app’s Gradle build file, `android/app/build.gradle`:
 
     ```bash
     open android/app/build.gradle
     ```
 
-6. Modify the minimum SDK version, and enable `multidex`. All this is done inside the `android` section:
+8. Modify the minimum SDK version, and enable `multidex`. All this is done inside the `android` section:
 
     ```diff
      android {
          defaultConfig {
-    -        minSdkVersion 16
+    -        minSdkVersion flutter.minSdkVersion
     +        minSdkVersion 21
              ...
     +        multiDexEnabled true
@@ -83,13 +101,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      }
     ```
 
-7. Open `pubspec.yaml`:
+9. Open `pubspec.yaml`:
 
     ```bash
     open pubspec.yaml
     ```
 
-8. Add the PSPDFKit dependency in `pubspec.yaml`:
+10. Add the PSPDFKit dependency in `pubspec.yaml`:
 
     ```diff
      dependencies:
@@ -98,21 +116,21 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     +  pspdfkit_flutter: any
     ```
 
-9.  From the terminal app, run the following command to get all the packages:
+11.  From the terminal app, run the following command to get all the packages:
 
     ```bash
     flutter pub get
     ```
 
-10. Then run the command below to upgrade the dependencies:
+12. Then run the command below to upgrade the dependencies:
 
     ```bash
     flutter pub upgrade
     ```
 
-11. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
+13. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
 
-12. Add the PDF document you want to display in your project’s `assets` directory.
+14. Add the PDF document you want to display in your project’s `assets` directory.
     - First create a `PDFs` directory:
 
         ```bash
@@ -125,7 +143,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
         ```
 
-13. Specify the `assets` directory in `pubspec.yaml`:
+15. Specify the `assets` directory in `pubspec.yaml`:
 
     ```diff
      # The following section is specific to Flutter.
@@ -135,9 +153,9 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
      ...
     ```
 
-14. [Start your Android emulator][start-the-emulator], or connect a device.
+16. [Start your Android emulator][start-the-emulator], or connect a device.
 
-15. Run the app with:
+17. Run the app with:
 
     ```bash
     flutter run

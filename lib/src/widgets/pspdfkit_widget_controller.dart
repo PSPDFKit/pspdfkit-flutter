@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -10,18 +10,11 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-/// This platform implementation for this class currently only works on iOS.
-/// Support for Android is coming soon.
-class PspdfkitView {
-  late MethodChannel _channel;
+class PspdfkitWidgetController {
+  final MethodChannel _channel;
 
-  PspdfkitView.init(int id, String documentPath, dynamic configuration) {
-    _channel = MethodChannel('com.pspdfkit.widget.$id');
-    _channel.invokeMethod<dynamic>('initializePlatformView', <String, dynamic>{
-      'document': documentPath,
-      'configuration': configuration
-    });
-  }
+  PspdfkitWidgetController(int id)
+      : _channel = MethodChannel('com.pspdfkit.widget.$id');
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   Future<bool?> setFormFieldValue(
@@ -46,13 +39,13 @@ class PspdfkitView {
       _channel.invokeMethod('exportInstantJson');
 
   /// Adds the given annotation to the presented document.
-  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> addAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod(
           'addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
 
   /// Removes the given annotation from the presented document.
-  /// `jsonAnnotation` can either be a JSON string or a valid JSON dictionary.
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> removeAnnotation(dynamic jsonAnnotation) async =>
       _channel.invokeMethod('removeAnnotation',
           <String, dynamic>{'jsonAnnotation': jsonAnnotation});

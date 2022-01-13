@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -103,6 +103,10 @@
         url = [NSURL fileURLWithPath:path];
     } else {
         url = [NSBundle.mainBundle URLForResource:path withExtension:nil];
+    }
+    
+    if (url == nil) {
+        return nil;
     }
 
     if ([PspdfkitFlutterHelper isImageDocument:path]) {

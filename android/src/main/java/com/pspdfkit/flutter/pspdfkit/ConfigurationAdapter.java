@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -36,54 +36,142 @@ import static io.flutter.util.Preconditions.checkNotNull;
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
 
-    private static final String PAGE_LAYOUT_MODE = "pageLayoutMode";
-    private static final String PAGE_LAYOUT_MODE_SINGLE = "single";
-    private static final String PAGE_LAYOUT_MODE_DOUBLE = "double";
-    private static final String PAGE_LAYOUT_MODE_AUTO = "automatic";
-    private static final String PAGE_SCROLL_DIRECTION = "pageScrollDirection";
-    private static final String PAGE_SCROLL_DIRECTION_HORIZONTAL = "horizontal";
-    private static final String PAGE_SCROLL_DIRECTION_VERTICAL = "vertical";
-    private static final String PAGE_SCROLL_CONTINUOUS = "scrollContinuously";
-    private static final String FIT_PAGE_TO_WIDTH = "fitPageToWidth";
-    private static final String IMMERSIVE_MODE = "immersiveMode";
+    // Document Interaction Options
+    private static final String SCROLL_DIRECTION = "scrollDirection";
+    private static final String PAGE_TRANSITION = "pageTransition";
+    private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
+    
+    // Document Presentation Options
+    private static final String PAGE_MODE = "pageMode";
+    private static final String SPREAD_FITTING = "spreadFitting";
+    private static final String SHOW_PAGE_LABELS = "showPageLabels";
+    private static final String START_PAGE = "startPage";
+    private static final String DOCUMENT_LABEL_ENABLED = "documentLabelEnabled";
+    private static final String FIRST_PAGE_ALWAYS_SINGLE = "firstPageAlwaysSingle";
+    private static final String INVERT_COLORS = "invertColors";
+    private static final String PASSWORD = "password";
+    private static final String GRAY_SCALE = "grayScale";
+
+    // User Interface Options
+    private static final String INLINE_SEARCH = "inlineSearch";
+    private static final String TOOLBAR_TITLE = "toolbarTitle";
+    private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
     private static final String USER_INTERFACE_VIEW_MODE = "userInterfaceViewMode";
+    private static final String IMMERSIVE_MODE = "immersiveMode";
+    private static final String APPEARANCE_MODE = "appearanceMode";
+    private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
+    private static final String SHOW_SEARCH_ACTION = "showSearchAction";
+    private static final String SHOW_OUTLINE_ACTION = "showOutlineAction";
+    private static final String SHOW_BOOKMARKS_ACTION = "showBookmarksAction";
+    private static final String SHOW_SHARE_ACTION = "showShareAction";
+    private static final String SHOW_PRINT_ACTION = "showPrintAction";
+    private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
+    private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
+    private static final String DARK_THEME_RESOURCE = "darkThemeResource";
+    private static final String DEFAULT_THEME_RESOURCE = "defaultThemeResource";
+
+    // Thumbnail Options
+    private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
+    private static final String SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
+
+    // Annotation, Forms and Bookmark Options
+    private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
+    private static final String SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
+
+    // Deprecated Options
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code SCROLL_DIRECTION} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String PAGE_SCROLL_DIRECTION = "pageScrollDirection";
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code PAGE_TRANSITION} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String PAGE_SCROLL_CONTINUOUS = "scrollContinuously";
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code PAGE_MODE} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String PAGE_LAYOUT_MODE = "pageLayoutMode";
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code SPREAD_FITTING} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String FIT_PAGE_TO_WIDTH = "fitPageToWidth";
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code SHOW_PAGE_LABELS} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
+    /**
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code DOCUMENT_LABEL_ENABLED} instead, which replaces it.
+     */
+    @Deprecated
+    private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
+    /** 
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code FIRST_PAGE_ALWAYS_SINGLE} instead, which replaces it.
+     */
+    private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
+    /** 
+     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * Use {@code SHOW_BOOKMARKS_ACTION} instead, which replaces it.
+     */
+    private static final String ENABLE_BOOKMARK_LIST = "enableBookmarkList";
+
+    // Document Interaction Values
+    private static final String SCROLL_DIRECTION_HORIZONTAL = "horizontal";
+    private static final String SCROLL_DIRECTION_VERTICAL = "vertical";
+    private static final String PAGE_TRANSITION_SCROLL_PER_SPREAD = "scrollPerSpread";
+    private static final String PAGE_TRANSITION_SCROLL_CONTINUOUS = "scrollContinuous";
+    private static final String PAGE_TRANSITION_CURL = "curl";
+    
+    // Document Presentation Values
+    private static final String PAGE_MODE_AUTOMATIC = "automatic";
+    private static final String PAGE_MODE_SINGLE = "single";
+    private static final String PAGE_MODE_DOUBLE = "double";
+    private static final String SPREAD_FITTING_FIT = "fit";
+    private static final String SPREAD_FITTING_FILL = "fill";
+    private static final String SPREAD_FITTING_ADAPTIVE = "adaptive";
+
+    // User Interface Values
     private static final String USER_INTERFACE_VIEW_MODE_AUTOMATIC = "automatic";
     private static final String USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES = "automaticBorderPages";
+    private static final String USER_INTERFACE_VIEW_MODE_AUTOMATIC_NO_FIRST_LAST_PAGE = "automaticNoFirstLastPage";
+    private static final String USER_INTERFACE_VIEW_MODE_ALWAYS = "always";
     private static final String USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE = "alwaysVisible";
     private static final String USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN = "alwaysHidden";
-    private static final String ANDROID_SHOW_SEARCH_ACTION = "showSearchAction";
-    private static final String INLINE_SEARCH = "inlineSearch";
-    private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
-    private static final String SHOW_THUMBNAIL_BAR_FLOATING = "floating";
-    private static final String SHOW_THUMBNAIL_BAR_PINNED = "pinned";
-    private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
-    private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
-    private static final String ANDROID_SHOW_THUMBNAIL_GRID_ACTION = "showThumbnailGridAction";
-    private static final String ANDROID_SHOW_OUTLINE_ACTION = "showOutlineAction";
-    private static final String ANDROID_SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
-    private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
-    private static final String SHOW_PAGE_LABELS = "showPageLabels";
-    private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
-    private static final String TOOLBAR_TITLE = "toolbarTitle";
-    private static final String INVERT_COLORS = "invertColors";
-    private static final String GRAY_SCALE = "grayScale";
-    private static final String START_PAGE = "startPage";
-    private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
-    private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
-    private static final String ANDROID_ENABLE_BOOKMARK_LIST = "androidEnableBookmarkList";
-    private static final String ANDROID_ENABLE_DOCUMENT_EDITOR = "androidEnableDocumentEditor";
-    private static final String ANDROID_SHOW_SHARE_ACTION = "showShareAction";
-    private static final String ANDROID_SHOW_PRINT_ACTION = "showPrintAction";
-    private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
-    private static final String APPEARANCE_MODE = "appearanceMode";
+    private static final String USER_INTERFACE_VIEW_MODE_NEVER = "never";
     private static final String APPEARANCE_MODE_DEFAULT = "default";
     private static final String APPEARANCE_MODE_NIGHT = "night";
-    private static final String ANDROID_DARK_THEME_RESOURCE = "darkThemeResource";
-    private static final String ANDROID_DEFAULT_THEME_RESOURCE = "defaultThemeResource";
-    private static final String PASSWORD = "password";
-    private static final String SETTINGS_MENU_ITEMS = "androidSettingsMenuItems";
-    private static final String SHOW_ACTION_NAVIGATION_BUTTONS = "showActionNavigationButtons";
-    private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
+    private static final String APPEARANCE_MODE_SEPIA = "sepia";
+    private static final String SETTINGS_MENU_ITEM_THEME = "theme";
+    private static final String SETTINGS_MENU_ITEM_ANDROID_THEME = "androidTheme";
+    private static final String SETTINGS_MENU_ITEM_SCREEN_AWAKE = "screenAwake";
+    private static final String SETTINGS_MENU_ITEM_ANDROID_SCREEN_AWAKE = "androidScreenAwake";
+    private static final String SETTINGS_MENU_ITEM_PAGE_LAYOUT = "pageLayout";
+    private static final String SETTINGS_MENU_ITEM_ANDROID_PAGE_LAYOUT = "androidPageLayout";
+    private static final String SETTINGS_MENU_ITEM_PAGE_TRANSITION = "pageTransition";
+    private static final String SETTINGS_MENU_ITEM_SCROLL_DIRECTION = "scrollDirection";
+    private static final String SETTINGS_MENU_ITEM_IOS_APPEARANCE = "iOSAppearance";
+    private static final String SETTINGS_MENU_ITEM_IOS_PAGE_MODE = "iOSPageMode";
+    private static final String SETTINGS_MENU_ITEM_IOS_SPREAD_FITTING = "iOSSpreadFitting";
+    private static final String SETTINGS_MENU_ITEM_IOS_BRIGHTNESS = "iOSBrightness";
+
+    // Thumbnail Options
+    private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
+    private static final String SHOW_THUMBNAIL_BAR_DEFAULT = "default";
+    private static final String SHOW_THUMBNAIL_BAR_FLOATING = "floating";
+    private static final String SHOW_THUMBNAIL_BAR_PINNED = "pinned";
+    private static final String SHOW_THUMBNAIL_BAR_SCRUBBER_BAR = "scrubberBar";
+    private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
 
     @NonNull private final PdfActivityConfiguration.Builder configuration;
     @Nullable private String password = null;
@@ -92,145 +180,235 @@ class ConfigurationAdapter {
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
         if (configurationMap != null && !configurationMap.isEmpty()) {
-            if (containsKeyOfType(configurationMap, PAGE_LAYOUT_MODE, String.class)) {
-                configurePageLayoutMode((String) configurationMap.get(PAGE_LAYOUT_MODE));
+            String key = null;
+
+            key = getKeyOfType(configurationMap, PAGE_MODE, String.class);
+            if (key != null) {
+                configurePageMode((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, PAGE_SCROLL_DIRECTION, String.class)) {
-                configurePageScrollDirection((String) configurationMap.get(PAGE_SCROLL_DIRECTION));
+            key = getKeyOfType(configurationMap, PAGE_LAYOUT_MODE, String.class);
+            if (key != null) {
+                configurePageMode((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, PAGE_SCROLL_CONTINUOUS, Boolean.class)) {
-                configurePageScrollContinuous((Boolean) configurationMap.get(PAGE_SCROLL_CONTINUOUS));
+            key = getKeyOfType(configurationMap, PAGE_TRANSITION, String.class);
+            if (key != null) {
+                configurePageTransition((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, FIT_PAGE_TO_WIDTH, Boolean.class)) {
-                configureFitPageToWidth((Boolean) configurationMap.get(FIT_PAGE_TO_WIDTH));
+            key = getKeyOfType(configurationMap, SCROLL_DIRECTION, String.class);
+            if (key != null) {
+                configurePageScrollDirection((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, INLINE_SEARCH, Boolean.class)) {
-                configureInlineSearch((Boolean) configurationMap.get(INLINE_SEARCH));
+            key = getKeyOfType(configurationMap, PAGE_SCROLL_DIRECTION, String.class);
+            if (key != null) {
+                configurePageScrollDirection((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, USER_INTERFACE_VIEW_MODE, String.class)) {
-                configureUserInterfaceViewMode((String) configurationMap.get(USER_INTERFACE_VIEW_MODE));
+            key = getKeyOfType(configurationMap, PAGE_SCROLL_CONTINUOUS, Boolean.class);
+            if (key != null) {
+                configurePageScrollContinuous((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, START_PAGE, Integer.class)) {
-                configureStartPage((Integer) configurationMap.get(START_PAGE));
+            key = getKeyOfType(configurationMap, SPREAD_FITTING, String.class);
+            if (key != null) {
+                configureSpreadFitting((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_SEARCH_ACTION, Boolean.class)) {
-                configureShowSearchAction((Boolean) configurationMap.get(ANDROID_SHOW_SEARCH_ACTION));
+            key = getKeyOfType(configurationMap, FIT_PAGE_TO_WIDTH, Boolean.class);
+            if (key != null) {
+                configureFitPageToWidth((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, IMMERSIVE_MODE, Boolean.class)) {
-                configureImmersiveMode((Boolean) configurationMap.get(IMMERSIVE_MODE));
+            key = getKeyOfType(configurationMap, INLINE_SEARCH, Boolean.class);
+            if (key != null) {
+                configureInlineSearch((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_THUMBNAIL_GRID_ACTION, Boolean.class)) {
-                configureShowThumbnailGridAction((Boolean) configurationMap.get(ANDROID_SHOW_THUMBNAIL_GRID_ACTION));
+            key = getKeyOfType(configurationMap, USER_INTERFACE_VIEW_MODE, String.class);
+            if (key != null) {
+                configureUserInterfaceViewMode((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_OUTLINE_ACTION, Boolean.class)) {
-                configureShowOutlineAction((Boolean) configurationMap.get(ANDROID_SHOW_OUTLINE_ACTION));
+            key = getKeyOfType(configurationMap, START_PAGE, Integer.class);
+            if (key != null) {
+                configureStartPage((Integer) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_ANNOTATION_LIST_ACTION, Boolean.class)) {
-                configureShowAnnotationListAction((Boolean) configurationMap.get(ANDROID_SHOW_ANNOTATION_LIST_ACTION));
+            key = getKeyOfType(configurationMap, SHOW_SEARCH_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowSearchAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_PAGE_NUMBER_OVERLAY, Boolean.class)) {
-                configureShowPageNumberOverlay((Boolean) configurationMap.get(SHOW_PAGE_NUMBER_OVERLAY));
+            key = getKeyOfType(configurationMap, IMMERSIVE_MODE, Boolean.class);
+            if (key != null) {
+                configureImmersiveMode((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_PAGE_LABELS, Boolean.class)) {
-                configureShowPageLabels((Boolean) configurationMap.get(SHOW_PAGE_LABELS));
+            key = getKeyOfType(configurationMap, SHOW_THUMBNAIL_GRID_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowThumbnailGridAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_LABEL, Boolean.class)) {
-                configureShowDocumentLabel((Boolean) configurationMap.get(SHOW_DOCUMENT_LABEL));
+            key = getKeyOfType(configurationMap, SHOW_OUTLINE_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowOutlineAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, TOOLBAR_TITLE, String.class)) {
-                configureToolbarTitle((String) configurationMap.get(TOOLBAR_TITLE));
+            key = getKeyOfType(configurationMap, SHOW_ANNOTATION_LIST_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowAnnotationListAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, GRAY_SCALE, Boolean.class)) {
-                configureGrayScale((Boolean) configurationMap.get(GRAY_SCALE));
+            key = getKeyOfType(configurationMap, SHOW_PAGE_NUMBER_OVERLAY, Boolean.class);
+            if (key != null) {
+                configureShowPageLabels((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, INVERT_COLORS, Boolean.class)) {
-                configureInvertColors((Boolean) configurationMap.get(INVERT_COLORS));
+            key = getKeyOfType(configurationMap, SHOW_PAGE_LABELS, Boolean.class);
+            if (key != null) {
+                configureShowPageLabels((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ENABLE_ANNOTATION_EDITING, Boolean.class)) {
-                configureEnableAnnotationEditing((Boolean) configurationMap.get(ENABLE_ANNOTATION_EDITING));
+            key = getKeyOfType(configurationMap, SHOW_DOCUMENT_LABEL, Boolean.class);
+            if (key != null) {
+                configureDocumentLabelEnabled((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_SHARE_ACTION, Boolean.class)) {
-                configureShowShareAction((Boolean) configurationMap.get(ANDROID_SHOW_SHARE_ACTION));
+            key = getKeyOfType(configurationMap, DOCUMENT_LABEL_ENABLED, Boolean.class);
+            if (key != null) {
+                configureDocumentLabelEnabled((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_SHOW_PRINT_ACTION, Boolean.class)) {
-                configureShowPrintAction((Boolean) configurationMap.get(ANDROID_SHOW_PRINT_ACTION));
+            key = getKeyOfType(configurationMap, TOOLBAR_TITLE, String.class);
+            if (key != null) {
+                configureToolbarTitle((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ENABLE_TEXT_SELECTION, Boolean.class)) {
-                configureEnableTextSelection((Boolean) configurationMap.get(ENABLE_TEXT_SELECTION));
+            key = getKeyOfType(configurationMap, GRAY_SCALE, Boolean.class);
+            if (key != null) {
+                configureGrayScale((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_BOOKMARK_LIST, Boolean.class)) {
-                configureEnableBookmarkList((Boolean) configurationMap.get(ANDROID_ENABLE_BOOKMARK_LIST));
+            key = getKeyOfType(configurationMap, INVERT_COLORS, Boolean.class);
+            if (key != null) {
+                configureInvertColors((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_ENABLE_DOCUMENT_EDITOR, Boolean.class)) {
-                configureEnableDocumentEditor((Boolean) configurationMap.get(ANDROID_ENABLE_DOCUMENT_EDITOR));
+            key = getKeyOfType(configurationMap, ENABLE_ANNOTATION_EDITING, Boolean.class);
+            if (key != null) {
+                configureEnableAnnotationEditing((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_THUMBNAIL_BAR, String.class)) {
-                configureShowThumbnailBar((String) configurationMap.get(SHOW_THUMBNAIL_BAR));
+            key = getKeyOfType(configurationMap, SHOW_SHARE_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowShareAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_DOCUMENT_INFO_VIEW, Boolean.class)) {
-                configureDocumentInfoView((Boolean) configurationMap.get(SHOW_DOCUMENT_INFO_VIEW));
+            key = getKeyOfType(configurationMap, SHOW_PRINT_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowPrintAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, APPEARANCE_MODE, String.class)) {
-                configureThemeMode((String) configurationMap.get(APPEARANCE_MODE));
+            key = getKeyOfType(configurationMap, ENABLE_TEXT_SELECTION, Boolean.class);
+            if (key != null) {
+                configureEnableTextSelection((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_DARK_THEME_RESOURCE, String.class)) {
-                configureDarkThemeRes((String) configurationMap.get(ANDROID_DARK_THEME_RESOURCE), context);
+            key = getKeyOfType(configurationMap, SHOW_BOOKMARKS_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowBookmarksAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, ANDROID_DEFAULT_THEME_RESOURCE, String.class)) {
-                configureDefaultThemeRes((String) configurationMap.get(ANDROID_DEFAULT_THEME_RESOURCE), context);
+            key = getKeyOfType(configurationMap, ENABLE_BOOKMARK_LIST, Boolean.class);
+            if (key != null) {
+                configureShowBookmarksAction((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class)) {
-                configureSettingsMenuItems((ArrayList<?>) configurationMap.get(SETTINGS_MENU_ITEMS));
+            key = getKeyOfType(configurationMap, ENABLE_DOCUMENT_EDITOR, Boolean.class);
+            if (key != null) {
+                configureEnableDocumentEditor((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class)) {
-                configureShowNavigationButtons((Boolean) configurationMap.get(SHOW_ACTION_NAVIGATION_BUTTONS));
+            key = getKeyOfType(configurationMap, SHOW_THUMBNAIL_BAR, String.class);
+            if (key != null) {
+                configureShowThumbnailBar((String) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, PASSWORD, String.class)) {
-                this.password = ((String) configurationMap.get(PASSWORD));
+            key = getKeyOfType(configurationMap, SHOW_DOCUMENT_INFO_VIEW, Boolean.class);
+            if (key != null) {
+                configureDocumentInfoView((Boolean) configurationMap.get(key));
             }
-            if (containsKeyOfType(configurationMap, IS_FIRST_PAGE_ALWAYS_SINGLE, Boolean.class)) {
-                configureFirstPageAlwaysSingle((Boolean) configurationMap.get(IS_FIRST_PAGE_ALWAYS_SINGLE));
+            key = getKeyOfType(configurationMap, APPEARANCE_MODE, String.class);
+            if (key != null) {
+                configureAppearanceMode((String) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, DARK_THEME_RESOURCE, String.class);
+            if (key != null) {
+                configureDarkThemeRes((String) configurationMap.get(key), context);
+            }
+            key = getKeyOfType(configurationMap, DEFAULT_THEME_RESOURCE, String.class);
+            if (key != null) {
+                configureDefaultThemeRes((String) configurationMap.get(key), context);
+            }
+            key = getKeyOfType(configurationMap, SETTINGS_MENU_ITEMS, ArrayList.class);
+            if (key != null) {
+                configureSettingsMenuItems((ArrayList<?>) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, SHOW_ACTION_NAVIGATION_BUTTONS, Boolean.class);
+            if (key != null) {
+                configureShowNavigationButtons((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, PASSWORD, String.class);
+            if (key != null) {
+                this.password = ((String) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, FIRST_PAGE_ALWAYS_SINGLE, Boolean.class);
+            if (key != null) {
+                configureFirstPageAlwaysSingle((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, IS_FIRST_PAGE_ALWAYS_SINGLE, Boolean.class);
+            if (key != null) {
+                configureFirstPageAlwaysSingle((Boolean) configurationMap.get(key));
             }
         }
     }
 
-    private void configureShowPageNumberOverlay(boolean showPageNumberOverlay) {
-        if (showPageNumberOverlay) {
-            configuration.showPageNumberOverlay();
-        } else {
-            configuration.hidePageNumberOverlay();
+    private void configurePageTransition(@NonNull final String transition) {
+        switch (transition) {
+            case PAGE_TRANSITION_SCROLL_PER_SPREAD:
+                configuration.scrollMode(PageScrollMode.PER_PAGE);
+                break;
+            case PAGE_TRANSITION_SCROLL_CONTINUOUS:
+                configuration.scrollMode(PageScrollMode.CONTINUOUS);
+                break;
+            case PAGE_TRANSITION_CURL:
+                // NO-OP. Only supported on iOS.
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined page transition for " + transition);
         }
     }
 
-    private void configurePageLayoutMode(@NonNull final String pageLayoutMode) {
-        requireNotNullNotEmpty(pageLayoutMode, "pageLayoutMode");
-        switch (pageLayoutMode) {
-            case PAGE_LAYOUT_MODE_AUTO:
+    private void configurePageMode(@NonNull final String pageMode) {
+        switch (pageMode) {
+            case PAGE_MODE_AUTOMATIC:
                 configuration.layoutMode(PageLayoutMode.AUTO);
                 break;
-            case PAGE_LAYOUT_MODE_SINGLE:
+            case PAGE_MODE_SINGLE:
                 configuration.layoutMode(PageLayoutMode.SINGLE);
                 break;
-            case PAGE_LAYOUT_MODE_DOUBLE:
+            case PAGE_MODE_DOUBLE:
                 configuration.layoutMode(PageLayoutMode.DOUBLE);
                 break;
             default:
-                throw new IllegalArgumentException("Undefined page layout mode for " + pageLayoutMode);
+                throw new IllegalArgumentException("Undefined page layout mode for " + pageMode);
         }
     }
 
     private void configurePageScrollDirection(@NonNull final String pageScrollDirection) {
-        requireNotNullNotEmpty(pageScrollDirection, "pageScrollDirection");
-        if (pageScrollDirection.equals(PAGE_SCROLL_DIRECTION_HORIZONTAL)) {
-            configuration.scrollDirection(PageScrollDirection.HORIZONTAL);
-        } else if (pageScrollDirection.equals(PAGE_SCROLL_DIRECTION_VERTICAL)) {
-            configuration.scrollDirection(PageScrollDirection.VERTICAL);
+        switch (pageScrollDirection) {
+            case SCROLL_DIRECTION_HORIZONTAL:
+                configuration.scrollDirection(PageScrollDirection.HORIZONTAL);
+                break;
+            case SCROLL_DIRECTION_VERTICAL:
+                configuration.scrollDirection(PageScrollDirection.VERTICAL);
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined page scroll direction for " + pageScrollDirection);
         }
     }
 
     private void configurePageScrollContinuous(final boolean pageScrollContinuous) {
         final PageScrollMode pageScrollMode = pageScrollContinuous ? PageScrollMode.CONTINUOUS : PageScrollMode.PER_PAGE;
         configuration.scrollMode(pageScrollMode);
+    }
+
+    private void configureSpreadFitting(@NonNull final String mode) {
+        switch (mode) {
+            case SPREAD_FITTING_FIT:
+                configuration.fitMode(PageFitMode.FIT_TO_WIDTH);
+                break;
+            case SPREAD_FITTING_FILL:
+                configuration.fitMode(PageFitMode.FIT_TO_SCREEN);
+                break;
+            case SPREAD_FITTING_ADAPTIVE:
+                // NO-OP. Only supported on iOS.
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined spread fitting for " + mode);
+        }
     }
 
     private void configureFitPageToWidth(boolean fitPageToWidth) {
@@ -248,19 +426,20 @@ class ConfigurationAdapter {
     }
 
     private void configureUserInterfaceViewMode(@NonNull String userInterfaceViewMode) {
-        requireNotNullNotEmpty(userInterfaceViewMode, "userInterfaceViewMode");
-
         switch (userInterfaceViewMode) {
             case USER_INTERFACE_VIEW_MODE_AUTOMATIC:
                 configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC);
                 break;
             case USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES:
+            case USER_INTERFACE_VIEW_MODE_AUTOMATIC_NO_FIRST_LAST_PAGE:
                 configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_AUTOMATIC_BORDER_PAGES);
                 break;
+            case USER_INTERFACE_VIEW_MODE_ALWAYS:
             case USER_INTERFACE_VIEW_MODE_ALWAYS_VISIBLE:
                 configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_VISIBLE);
                 break;
             case USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN:
+            case USER_INTERFACE_VIEW_MODE_NEVER:
                 configuration.setUserInterfaceViewMode(UserInterfaceViewMode.USER_INTERFACE_VIEW_MODE_HIDDEN);
                 break;
             default:
@@ -281,26 +460,24 @@ class ConfigurationAdapter {
     }
 
     private void configureShowThumbnailBar(@NonNull String showThumbnailBar) {
-        requireNotNullNotEmpty(showThumbnailBar, "showThumbnailBar");
-
-        ThumbnailBarMode thumbnailBarMode;
         switch (showThumbnailBar) {
+            case SHOW_THUMBNAIL_BAR_NONE:
+                configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE);
+                break;
+            case SHOW_THUMBNAIL_BAR_DEFAULT:
             case SHOW_THUMBNAIL_BAR_FLOATING:
-                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_FLOATING;
+                configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_FLOATING);
                 break;
             case SHOW_THUMBNAIL_BAR_PINNED:
-                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_PINNED;
+            case SHOW_THUMBNAIL_BAR_SCRUBBER_BAR:
+                configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_PINNED);
                 break;
             case SHOW_THUMBNAIL_BAR_SCROLLABLE:
-                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE;
-                break;
-            case SHOW_THUMBNAIL_BAR_NONE:
-                thumbnailBarMode = ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE;
+                configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_SCROLLABLE);
                 break;
             default:
                 throw new IllegalArgumentException("Undefined thumbnail bar mode for " + showThumbnailBar);
         }
-        configuration.setThumbnailBarMode(thumbnailBarMode);
     }
 
     private void configureShowThumbnailGridAction(boolean showThumbnailGridAction) {
@@ -329,14 +506,16 @@ class ConfigurationAdapter {
 
     private void configureShowPageLabels(boolean showPageLabels) {
         if (showPageLabels) {
+            configuration.showPageNumberOverlay();
             configuration.showPageLabels();
         } else {
+            configuration.hidePageNumberOverlay();
             configuration.hidePageLabels();
         }
     }
 
-    private void configureShowDocumentLabel(boolean showDocumentLabel) {
-        if (showDocumentLabel) {
+    private void configureDocumentLabelEnabled(boolean documentLabelEnabled) {
+        if (documentLabelEnabled) {
             configuration.showDocumentTitleOverlay();
         } else {
             configuration.hideDocumentTitleOverlay();
@@ -383,7 +562,7 @@ class ConfigurationAdapter {
         configuration.textSelectionEnabled(enableTextSelection);
     }
 
-    private void configureEnableBookmarkList(boolean enableBookmarkList) {
+    private void configureShowBookmarksAction(boolean enableBookmarkList) {
         if (enableBookmarkList) {
             configuration.enableBookmarkList();
         } else {
@@ -407,22 +586,24 @@ class ConfigurationAdapter {
         }
     }
 
-    private void configureThemeMode(@NonNull String themeMode) {
-        requireNotNullNotEmpty(themeMode, "themeMode");
-
-        ThemeMode result;
-        if (themeMode.equals(APPEARANCE_MODE_DEFAULT)) {
-            result = ThemeMode.DEFAULT;
-        } else if (themeMode.equals(APPEARANCE_MODE_NIGHT)) {
-            result = ThemeMode.NIGHT;
-        } else {
-            throw new IllegalArgumentException("Undefined theme mode for " + themeMode);
+    private void configureAppearanceMode(@NonNull String appearanceMode) {
+        switch (appearanceMode) {
+            case APPEARANCE_MODE_DEFAULT:
+                configuration.themeMode(ThemeMode.DEFAULT);
+                break;
+            case APPEARANCE_MODE_NIGHT:
+                configuration.themeMode(ThemeMode.NIGHT);
+                break;
+            case APPEARANCE_MODE_SEPIA:
+                // NO-OP. Only supported on iOS.
+                break;
+            default:
+                throw new IllegalArgumentException("Undefined appearance mode for " + appearanceMode);
         }
-        configuration.themeMode(result);
     }
 
     private void configureDarkThemeRes(@NonNull String darkThemeResource, @NonNull Context context) {
-        requireNotNullNotEmpty(darkThemeResource, "darkThemeResource");
+        requireNotNullNotEmpty(darkThemeResource, DARK_THEME_RESOURCE);
         checkNotNull(context);
 
         @StyleRes int darkThemeId = getStyleResourceId(darkThemeResource, context);
@@ -432,7 +613,7 @@ class ConfigurationAdapter {
     }
 
     private void configureDefaultThemeRes(@NonNull String defaultThemeResource, @NonNull Context context) {
-        requireNotNullNotEmpty(defaultThemeResource, "defaultThemeResource");
+        requireNotNullNotEmpty(defaultThemeResource, DEFAULT_THEME_RESOURCE);
         checkNotNull(context);
 
         @StyleRes int defaultThemeId = getStyleResourceId(defaultThemeResource, context);
@@ -469,18 +650,33 @@ class ConfigurationAdapter {
                 throw new IllegalArgumentException("Provided settingMenuItem " + settingsMenuItem + " must be a String.");
             }
             String menuType = (String) settingsMenuItem;
-            if (menuType.equalsIgnoreCase("theme")) {
-                settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
-            } else if (menuType.equalsIgnoreCase("screenAwake")) {
-                settingsMenuItemTypes.add(SettingsMenuItemType.SCREEN_AWAKE);
-            } else if (menuType.equalsIgnoreCase("pageLayout")) {
-                settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_LAYOUT);
-            } else if (menuType.equalsIgnoreCase("pageTransition")) {
-                settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_TRANSITION);
-            } else if (menuType.equalsIgnoreCase("scrollDirection")) {
-                settingsMenuItemTypes.add(SettingsMenuItemType.SCROLL_DIRECTION);
-            } else {
-                throw new IllegalArgumentException("Provided settingMenuItem " + menuType + " is unknown.");
+            switch (menuType) {
+                case SETTINGS_MENU_ITEM_THEME:
+                case SETTINGS_MENU_ITEM_ANDROID_THEME:
+                    settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
+                break;
+                case SETTINGS_MENU_ITEM_SCREEN_AWAKE:
+                case SETTINGS_MENU_ITEM_ANDROID_SCREEN_AWAKE:
+                    settingsMenuItemTypes.add(SettingsMenuItemType.SCREEN_AWAKE);
+                break;
+                case SETTINGS_MENU_ITEM_PAGE_LAYOUT:
+                case SETTINGS_MENU_ITEM_ANDROID_PAGE_LAYOUT:
+                    settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_LAYOUT);
+                break;
+                case SETTINGS_MENU_ITEM_PAGE_TRANSITION:
+                    settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_TRANSITION);
+                break;
+                case SETTINGS_MENU_ITEM_SCROLL_DIRECTION:
+                    settingsMenuItemTypes.add(SettingsMenuItemType.SCROLL_DIRECTION);
+                break;
+                case SETTINGS_MENU_ITEM_IOS_APPEARANCE:
+                case SETTINGS_MENU_ITEM_IOS_BRIGHTNESS:
+                case SETTINGS_MENU_ITEM_IOS_PAGE_MODE:
+                case SETTINGS_MENU_ITEM_IOS_SPREAD_FITTING:
+                    // NO-OP. Only supported on iOS.
+                break;
+                default:
+                    throw new IllegalArgumentException("Undefined settings menu item " + menuType);
             }
         }
         configuration.setSettingsMenuItems(settingsMenuItemTypes);
@@ -505,6 +701,37 @@ class ConfigurationAdapter {
             throw new ClassCastException(String.format("Value for the key %s must be of type %s.",
                     key, javaToDartTypeConverted(clazz)));
         }
+    }
+
+    /**
+     * When reading configuration options, we check not only for the given configuration string,
+     * but also for a string with the `android` prefix. For instance if the user enters
+     * `androidPageScrollDirection`, it is considered a valid string equal to `pageScrollDirection`.
+     * 
+     * When documenting, we always prefer configuration option strings:
+     * 
+     * - No prefix          : If the key works for both iOS and Android.
+     * - `android` prefix   : If the key works only for Android.
+     * - `iOS` prefix       : If the key works only for iOS.
+     */ 
+    private String addAndroidPrefix(String key) {
+        // Capitalize the first letter.
+        String cap = String.valueOf(key.charAt(0)).toUpperCase() + key.substring(1);
+        return "android" + cap;
+    }
+
+    @Nullable
+    private <T> String getKeyOfType(@NonNull HashMap<String, Object> configurationMap,
+                                @NonNull String key,
+                                @NonNull Class<T> clazz) {
+        if (containsKeyOfType(configurationMap, key, clazz)) {
+            return key;
+        }
+        String prefixedKey = addAndroidPrefix(key);
+        if (containsKeyOfType(configurationMap, prefixedKey, clazz)) {
+            return prefixedKey;
+        }
+        return null;
     }
 
     /**

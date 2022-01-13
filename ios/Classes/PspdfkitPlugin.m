@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -49,7 +49,7 @@ static FlutterMethodChannel *channel;
             return;
         }
 
-        NSDictionary *configurationDictionary = call.arguments[@"configuration"];
+        NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:call.arguments[@"configuration"]];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
@@ -63,9 +63,24 @@ static FlutterMethodChannel *channel;
         self.pdfViewController.delegate = self;
 
         if ((id)configurationDictionary != NSNull.null) {
-            [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"] forViewController:self.pdfViewController];
-            [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"] forViewController:self.pdfViewController];
-            [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[@"toolbarTitle"] forViewController:self.pdfViewController];
+            NSString *key;
+
+            key = @"leftBarButtonItems";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
+            key = @"rightBarButtonItems";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
+            key = @"invertColors";
+            if (configurationDictionary[key]) {
+                self.pdfViewController.appearanceModeManager.appearanceMode = [configurationDictionary[key] boolValue] ? PSPDFAppearanceModeNight : PSPDFAppearanceModeDefault;
+            }
+            key = @"toolbarTitle";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
         }
 
         PSPDFNavigationController *navigationController = [[PSPDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
@@ -85,7 +100,7 @@ static FlutterMethodChannel *channel;
   return paths.firstObject;
 }
 
-#pragma mark - PSPDFViewControllerDelegate
+// MARK: - PSPDFViewControllerDelegate
 
 - (void)pdfViewControllerWillDismiss:(PSPDFViewController *)pdfController {
     [channel invokeMethod:@"pdfViewControllerWillDismiss" arguments:nil];
