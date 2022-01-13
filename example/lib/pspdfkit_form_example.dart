@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,13 +11,15 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
+import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(
-    PspdfkitView view);
+    PspdfkitWidgetController view);
 
 class PspdfkitFormExampleWidget extends StatefulWidget {
   final String documentPath;
@@ -25,7 +27,7 @@ class PspdfkitFormExampleWidget extends StatefulWidget {
   final PspdfkitFormExampleWidgetCreatedCallback?
       onPspdfkitFormExampleWidgetCreated;
 
-  PspdfkitFormExampleWidget(
+  const PspdfkitFormExampleWidget(
       {Key? key,
       required this.documentPath,
       this.configuration,
@@ -33,71 +35,136 @@ class PspdfkitFormExampleWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  PspdfkitFormExampleWidgetState createState() =>
-      PspdfkitFormExampleWidgetState();
+  _PspdfkitFormExampleWidgetState createState() =>
+      _PspdfkitFormExampleWidgetState();
 }
 
-class PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
-  late PspdfkitView view;
+class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
+  late PspdfkitWidgetController view;
+  bool _keyboardVisible = false;
 
   @override
   Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return CupertinoPageScaffold(
-          navigationBar: CupertinoNavigationBar(),
-          child: SafeArea(
+    _keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
+    // This is used in the platform side to register the view.
+    const String viewType = 'com.pspdfkit.widget';
+    // Pass parameters to the platform side.
+    final Map<String, dynamic> creationParams = <String, dynamic>{
+      'document': widget.documentPath,
+      'configuration': widget.configuration
+    };
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return Scaffold(
+          extendBodyBehindAppBar:
+              defaultTargetPlatform == TargetPlatform.android,
+          // Do not resize the the document view on Android or
+          // it won't be rendered correctly when filling forms.
+          resizeToAvoidBottomInset: defaultTargetPlatform == TargetPlatform.iOS,
+          appBar: AppBar(),
+          body: SafeArea(
+              top: false,
               bottom: false,
-              child: Column(children: <Widget>[
-                Expanded(
-                    child: UiKitView(
-                        viewType: 'com.pspdfkit.widget',
-                        onPlatformViewCreated: onPlatformViewCreated,
-                        creationParamsCodec: const StandardMessageCodec())),
-                Container(
-                    height: 80,
-                    child: Row(children: <Widget>[
-                      Container(width: 20),
-                      CupertinoButton(
-                          onPressed: () {
-                            view.setFormFieldValue(
-                                'Updated Form Field Value', 'Name_Last');
-                          },
-                          child: Text('Set form field value')),
-                      Container(width: 20),
-                      CupertinoButton(
-                          onPressed: () async {
-                            final title = 'Form Field Value';
-                            final formFieldValue =
-                                await view.getFormFieldValue('Name_Last') ?? '';
-                            await showCupertinoDialog<CupertinoAlertDialog>(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    CupertinoAlertDialog(
-                                      title: Text(title),
-                                      content: Text(formFieldValue),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text('OK'))
-                                      ],
-                                    ));
-                          },
-                          child: Text('Get form field value'))
-                    ]))
-              ])));
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      // PspdfkitView is only supported in iOS at the moment.
-      // Support for Android is coming soon.
-      return Text('Unsupported Widget');
+              child: Container(
+                  padding: defaultTargetPlatform == TargetPlatform.iOS
+                      ? null
+                      : const EdgeInsets.only(top: kToolbarHeight),
+                  child: Column(children: <Widget>[
+                    Expanded(
+                        child: defaultTargetPlatform == TargetPlatform.android
+                            ? PlatformViewLink(
+                                viewType: viewType,
+                                surfaceFactory: (BuildContext context,
+                                    PlatformViewController controller) {
+                                  return AndroidViewSurface(
+                                    controller:
+                                        controller as AndroidViewController,
+                                    gestureRecognizers: const <
+                                        Factory<
+                                            OneSequenceGestureRecognizer>>{},
+                                    hitTestBehavior:
+                                        PlatformViewHitTestBehavior.opaque,
+                                  );
+                                },
+                                onCreatePlatformView:
+                                    (PlatformViewCreationParams params) {
+                                  return PlatformViewsService
+                                      .initSurfaceAndroidView(
+                                    id: params.id,
+                                    viewType: viewType,
+                                    layoutDirection: TextDirection.ltr,
+                                    creationParams: creationParams,
+                                    creationParamsCodec:
+                                        const StandardMessageCodec(),
+                                    onFocus: () {
+                                      params.onFocusChanged(true);
+                                    },
+                                  )
+                                    ..addOnPlatformViewCreatedListener(
+                                        params.onPlatformViewCreated)
+                                    ..addOnPlatformViewCreatedListener(
+                                        onPlatformViewCreated)
+                                    ..create();
+                                },
+                              )
+                            : UiKitView(
+                                viewType: viewType,
+                                layoutDirection: TextDirection.ltr,
+                                creationParams: creationParams,
+                                onPlatformViewCreated: onPlatformViewCreated,
+                                creationParamsCodec:
+                                    const StandardMessageCodec())),
+                    // On Android do not show the buttons when the Keyboard
+                    // is visible. PSPDFKit for Android automatically
+                    // fills the space available and re-render the document view.
+                    if (!_keyboardVisible ||
+                        defaultTargetPlatform == TargetPlatform.iOS)
+                      SizedBox(
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                            ElevatedButton(
+                                onPressed: () {
+                                  view.setFormFieldValue(
+                                      'Updated Form Field Value', 'Name_Last');
+                                },
+                                child: const Text('Set form field value')),
+                            ElevatedButton(
+                                onPressed: () async {
+                                  const title = 'Form Field Value';
+                                  final formFieldValue = await view
+                                          .getFormFieldValue('Name_Last') ??
+                                      '';
+                                  await showDialog<AlertDialog>(
+                                      context: context,
+                                      builder: (BuildContext context) =>
+                                          AlertDialog(
+                                            title: const Text(title),
+                                            content: Text(formFieldValue),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text('OK'))
+                                            ],
+                                          ));
+                                },
+                                child: const Text('Get form field value'))
+                          ]))
+                  ]))));
     } else {
-      return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
+      return Text(
+          '$defaultTargetPlatform is not yet supported by PSPDFKit for Flutter.');
     }
   }
 
+  bool isKeyboardVisible() {
+    return MediaQuery.of(context).viewInsets.bottom == 0;
+  }
+
   Future<void> onPlatformViewCreated(int id) async {
-    view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitWidgetController(id);
     if (widget.onPspdfkitFormExampleWidgetCreated != null) {
       widget.onPspdfkitFormExampleWidgetCreated!(view);
     }

@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -33,6 +33,7 @@ rootProject.allprojects {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion androidCompileSdkVersion
@@ -55,4 +56,7 @@ android {
 
 dependencies {
     implementation "com.pspdfkit:$pspdfkitMavenModuleName:$pspdfkitVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "androidx.fragment:fragment-ktx:1.3.6"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 }

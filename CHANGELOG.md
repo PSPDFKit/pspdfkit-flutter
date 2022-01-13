@@ -1,12 +1,40 @@
 ## Newest Release
 
+### 3.1.0 - 06 Jan 2022
+
+- Adds Flutter widget support for Android. (#23824)
+- Adds `tiff` support for image documents for Android. (#23824)
+- Adds documentation for all the configuration options. (#32246)
+- Unifies the configuration options on Android and iOS. (#32246)
+- Adds a new example that shows how to open a PDF document using the appropriate platform style. (#32100)
+- Adds new Flutter APIs in `pspdfkit_widget.dart`. (#23824)
+- Implements Android support for `PspdfkitWidget.applyInstantJson` method. (#23824)
+- Implements Android support for `PspdfkitWidget.exportInstantJson` method. (#23824)
+- Implements Android support for `PspdfkitWidget.setFormFieldValue` method. (#23824)
+- Implements Android support for `PspdfkitWidget.getFormFieldValue` method. (#23824)
+- Implements Android support for `PspdfkitWidget.addAnnotation` method. (#23824)
+- Implements Android support for `PspdfkitWidget.getAnnotations` method. (#23824)
+- Implements Android support for `PspdfkitWidget.getAllUnsavedAnnotations` method. (#23824)
+- Implements Android support for `PspdfkitWidget.save` method. (#23824)
+- Improves logic in `AnnotationTypeAdapter` for converting an Instant JSON annotation type into a proper `AnnotationType`. (#23824)
+- Improves the layout in the Programmatic form filling example. (#23824)
+- Unifies Dart examples and removes Cupertino widgets in favor of Material widgets. (#32100)
+- PSPDFKit now requires Flutter 2.8.1 or later. (#32494)
+- Updates for PSPDFKit 11.2 for iOS. (#32494)
+- Renames `pspdfkit_view.dart` into `pspdfkit_widget_controller.dart`. (#23824)
+- Fixes button overflow issue on iOS devices in the Flutter example. (#31198)
+
+## Previous Releases
+
+### 3.0.3 - 07 Dec 2021
+
+- Updates for PSPDFKit 8.0.2 for Android. (#32165)
+
 ### 3.0.2 - 02 Nov 2021
 
 - Updates for PSPDFKit 11.1 for iOS. (#31654)
 - Updates for PSPDFKit 8.0.1 for Android. (#31743)
 - Improves the repository's README. (#31633)
-
-## Previous Releases
 
 ### 3.0.1 - 21 Oct 2021
 
