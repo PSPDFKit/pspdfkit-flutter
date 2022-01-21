@@ -56,6 +56,9 @@
         _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
         _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
         _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
+
+        _pdfViewController.documentInfoCoordinator.availableControllerOptions = @[PSPDFDocumentInfoOptionOutline, PSPDFDocumentInfoOptionAnnotations];
+
         _pdfViewController.delegate = self;
 
 
