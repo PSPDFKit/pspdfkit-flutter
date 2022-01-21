@@ -359,7 +359,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final extractedDocument = await extractAsset(_documentPath);
       final extractedFormDocument = await extractAsset(_formPath);
 
-      if (isCupertino(context)) {
+      // if (isCupertino(context)) {
         await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
             builder: (_) => CupertinoPageScaffold(
                 navigationBar: CupertinoNavigationBar(),
@@ -374,10 +374,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               documentPath: extractedFormDocument.path,
                               onPspdfkitWidgetCreated: onWidgetCreated))
                     ])))));
-      } else {
+     /* } else {
         // This example is only supported in iOS at the moment.
         // Support for Android is coming soon.
-      }
+      }*/
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
     }
@@ -663,7 +663,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             subtitle: const Text(_importInstantJsonExampleSub),
             onTap: () => importInstantJsonExample()),
       // The push two PspdfWidgets simultaneously example is supported by iOS only for now.
-      if (isCupertino(context))
+      // if (isCupertino(context))
         ListTile(
             title: const Text(_widgetExampleFullScreen),
             subtitle: const Text(_widgetExampleFullScreenSub),
