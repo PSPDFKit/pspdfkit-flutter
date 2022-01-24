@@ -36,9 +36,13 @@ static FlutterMethodChannel *channel;
         result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKitGlobal setLicenseKey:licenseKey];
+        [PSPDFKitGlobal setLicenseKey:licenseKey ];
     } else if ([@"setLicenseKeys" isEqualToString:call.method]) {
         NSString *iOSLicenseKey = call.arguments[@"iOSLicenseKey"];
+        
+        //PSPDFApplicationPolicyKey : [PSCDisallowCopyApplicationPolicy new]
+        
+        //[PSPDFKitGlobal setLicenseKey:iOSLicenseKey  options:[[NSDictionary alloc] initWithObjectsAndKeys:PSPDFApplicationPolicyKey, [PSCDisallowCopyApplicationPolicy new], nil]];
         [PSPDFKitGlobal setLicenseKey:iOSLicenseKey];
     }else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
