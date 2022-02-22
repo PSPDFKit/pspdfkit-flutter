@@ -181,6 +181,11 @@
             builder.showForwardActionButton = [dictionary[key] boolValue];
             builder.showBackForwardActionButtonLabels = [dictionary[key] boolValue];
         }
+
+        key = @"disableAutosave";
+        if (dictionary[key]){
+            builder.autosaveEnabled = ![dictionary[key] boolValue];
+        }
     }];
 }
 

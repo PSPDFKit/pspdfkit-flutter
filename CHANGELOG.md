@@ -1,5 +1,16 @@
 ## Newest Release
 
+### 3.2.0 - 14 Feb 2022
+
+- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/flutter/migration-guides/flutter-3-2-0-migration-guide) for this release.
+- PSPDFKit now requires Flutter 2.10.1 or later. (#33016)
+- Adds a new configuration option to disable autosave. (#32857)
+- Adds a new example illustrating manual saving of documents with autosave disabled. (#32857)
+- Updates for PSPDFKit 8.1.1 for Android. (#33016)
+- Updates for PSPDFKit 11.2.2 for iOS. (#33016)
+
+## Previous Releases
+
 ### 3.1.0 - 06 Jan 2022
 
 - Adds Flutter widget support for Android. (#23824)
@@ -23,8 +34,6 @@
 - Updates for PSPDFKit 11.2 for iOS. (#32494)
 - Renames `pspdfkit_view.dart` into `pspdfkit_widget_controller.dart`. (#23824)
 - Fixes button overflow issue on iOS devices in the Flutter example. (#31198)
-
-## Previous Releases
 
 ### 3.0.3 - 07 Dec 2021
 

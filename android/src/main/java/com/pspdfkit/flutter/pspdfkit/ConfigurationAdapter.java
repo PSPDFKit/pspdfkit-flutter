@@ -40,7 +40,9 @@ class ConfigurationAdapter {
     private static final String SCROLL_DIRECTION = "scrollDirection";
     private static final String PAGE_TRANSITION = "pageTransition";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
-    
+    private static final String DISABLE_AUTOSAVE = "disableAutosave";
+
+
     // Document Presentation Options
     private static final String PAGE_MODE = "pageMode";
     private static final String SPREAD_FITTING = "spreadFitting";
@@ -341,6 +343,11 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, IS_FIRST_PAGE_ALWAYS_SINGLE, Boolean.class);
             if (key != null) {
                 configureFirstPageAlwaysSingle((Boolean) configurationMap.get(key));
+            }
+
+            key = getKeyOfType(configurationMap, DISABLE_AUTOSAVE, Boolean.class);
+            if (key != null) {
+                configureAutosaveEnabled(!(Boolean) configurationMap.get(key));
             }
         }
     }
@@ -684,6 +691,10 @@ class ConfigurationAdapter {
 
     private void configureFirstPageAlwaysSingle(final boolean firstPageAlwaysSingle) {
         configuration.firstPageAlwaysSingle(firstPageAlwaysSingle);
+    }
+
+    private void configureAutosaveEnabled(boolean autosaveEnabled) {
+        configuration.autosaveEnabled(autosaveEnabled);
     }
 
     private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,

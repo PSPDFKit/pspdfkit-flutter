@@ -13,6 +13,7 @@ If you are new to Flutter, make sure to check our Flutter blog posts:
 - [How to Customize Our Flutter PDF SDK for Android](https://pspdfkit.com/blog/2021/how-to-customize-our-flutter-pdf-sdk/).
 - [Advances in Hybrid Technologies](https://pspdfkit.com/blog/2019/advances-in-hybrid-technologies/).
 - [How We Maintain Our Public Flutter Project Using a Private Monorepo](https://pspdfkit.com/blog/2021/maintaining-open-source-repo-from-monorepo/).
+- [How to Download and Display a PDF Document in Flutter with PSPDFKit](https://pspdfkit.com/blog/2022/download-and-display-pdf-in-flutter-with-pspdfkit/).
 
 For our quick-start guides, [check out our website](https://pspdfkit.com/getting-started/mobile/?frontend=flutter).
 

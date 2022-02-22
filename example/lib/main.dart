@@ -20,6 +20,7 @@ import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
 import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
+import 'pspdfkit_manual_save_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
@@ -57,6 +58,9 @@ const String _annotationsExample =
     'Programmatically Adds and Removes Annotations';
 const String _annotationsExampleSub =
     'Programmatically adds and removes annotations using a custom Widget.';
+const String _manualSaveExample = 'Manual Save';
+const String _manualSaveExampleSub =
+    'Add a save button at the bottom and disable automatic saving.';
 const String _annotationProcessingExample = 'Process Annotations';
 const String _annotationProcessingExampleSub =
     'Programmatically adds and removes annotations using a custom Widget.';
@@ -125,15 +129,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   String _frameworkVersion = '';
   ThemeData currentTheme = lightTheme;
 
-  Future<File> extractAsset(String assetPath) async {
+  Future<File> extractAsset(String assetPath,
+      {bool shouldOverwrite = true, String prefix = ''}) async {
     final bytes = await DefaultAssetBundle.of(context).load(assetPath);
     final list = bytes.buffer.asUint8List();
 
     final tempDir = await Pspdfkit.getTemporaryDirectory();
-    final tempDocumentPath = '${tempDir.path}/$assetPath';
+    final tempDocumentPath = '${tempDir.path}/$prefix$assetPath';
+    final file = File(tempDocumentPath);
 
-    final file = await File(tempDocumentPath).create(recursive: true);
-    file.writeAsBytesSync(list);
+    if (shouldOverwrite || !file.existsSync()) {
+      await file.create(recursive: true);
+      file.writeAsBytesSync(list);
+    }
     return file;
   }
 
@@ -339,6 +347,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitAnnotationsExampleWidget(
             documentPath: extractedDocument.path)));
+  }
+
+  void manualSaveExample() async {
+    final extractedWritableDocument =
+        await extractAsset(_documentPath, shouldOverwrite: false, prefix: 'persist');
+
+    // Automatic Saving of documents is enabled by default in certain scenarios [see for details: https://pspdfkit.com/guides/flutter/save-a-document/#auto-save]
+    // In order to manually save documents, you might consider disabling automatic saving with disableAutosave: true in the config
+    await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
+        builder: (_) => PspdfkitManualSaveExampleWidget(
+            documentPath: extractedWritableDocument.path,
+            configuration: const {disableAutosave: true})));
   }
 
   void annotationProcessingExample() async {
@@ -645,6 +665,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_annotationsExample),
           subtitle: const Text(_annotationsExampleSub),
           onTap: () => annotationsExample()),
+      ListTile(
+          title: const Text(_manualSaveExample),
+          subtitle: const Text(_manualSaveExampleSub),
+          onTap: () => manualSaveExample()),
       // The annotation processing example is supported by iOS only for now.
       if (isCupertino(context))
         ListTile(
