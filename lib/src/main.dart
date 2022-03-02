@@ -187,6 +187,7 @@ class Pspdfkit {
   static late VoidCallback flutterPdfActivityOnPause;
   static late VoidCallback pdfViewControllerWillDismiss;
   static late VoidCallback pdfViewControllerDidDismiss;
+  static late void Function(dynamic) spreadIndexDidChange;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
@@ -199,6 +200,9 @@ class Pspdfkit {
           break;
         case 'pdfViewControllerDidDismiss':
           pdfViewControllerDidDismiss();
+          break;
+        case 'spreadIndexDidChange':
+          spreadIndexDidChange(call.arguments);
           break;
         default:
           print('Unknowm method ${call.method} ');

@@ -617,6 +617,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     print('pdfViewControllerDidDismissHandler');
   }
 
+  void spreadIndexDidChangeHandler(dynamic arguments) {
+    print('something changed');
+    print(arguments);
+  }
+
   @override
   Widget build(BuildContext context) {
     Pspdfkit.flutterPdfActivityOnPause =
@@ -625,6 +630,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         () => pdfViewControllerWillDismissHandler();
     Pspdfkit.pdfViewControllerDidDismiss =
         () => pdfViewControllerDidDismissHandler();
+    Pspdfkit.spreadIndexDidChange = (dynamic arguments) => spreadIndexDidChangeHandler(arguments);
 
     currentTheme = MediaQuery.of(context).platformBrightness == Brightness.light
         ? lightTheme

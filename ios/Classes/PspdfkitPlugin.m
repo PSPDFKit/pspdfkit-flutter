@@ -10,6 +10,7 @@
 #import "PspdfPlatformViewFactory.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
+#import "PspdfkitCustomButtonAnnotationToolbar.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -59,6 +60,11 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
         PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
 
+        // Update the configuration to override the default class with our custom one.
+        configuration = [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
+            [builder overrideClass:PSPDFAnnotationToolbar.class withClass:PspdfkitCustomButtonAnnotationToolbar.class];
+        }];
+
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
         self.pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
         self.pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
@@ -89,6 +95,8 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
+
         result(@(YES));
     } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
         result([self getTemporaryDirectory]);
@@ -112,6 +120,13 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
     // Don't hold on to the view controller object after dismissal.
     self.pdfViewController = nil;
     [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
+}
+
+- (void)spreadIndexDidChange:(NSNotification *)notification {
+    long oldPageIndex = [notification.userInfo[@"PSPDFDocumentViewControllerOldSpreadIndexKey"] longValue];
+    long currentPageIndex = [notification.userInfo[@"PSPDFDocumentViewControllerSpreadIndexKey"] longValue];
+    NSMutableDictionary *pageIndices = @{@"oldPageIndex": @(oldPageIndex), @"currentPageIndex": @(currentPageIndex)};
+    [channel invokeMethod:@"spreadIndexDidChange" arguments:pageIndices];
 }
 
 @end

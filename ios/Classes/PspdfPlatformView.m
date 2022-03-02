@@ -9,6 +9,7 @@
 #import "PspdfPlatformView.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
+#import "PspdfkitCustomButtonAnnotationToolbar.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -59,7 +60,12 @@
 
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
         PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
-        
+
+        // Update the configuration to override the default class with our custom one.
+        configuration = [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
+            [builder overrideClass:PSPDFAnnotationToolbar.class withClass:PspdfkitCustomButtonAnnotationToolbar.class];
+        }];
+
         _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
         _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
         _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
