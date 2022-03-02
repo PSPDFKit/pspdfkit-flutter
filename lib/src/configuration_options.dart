@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,93 +9,164 @@
 part of pspdfkit;
 
 /// Configuration options available that can be set by the Flutter plugin.
-///
-/// See `main.dart` in the example project to check how they are used.
-const String pageScrollDirection = "pageScrollDirection";
-const String pageScrollDirectionHorizontal = "horizontal";
-const String pageScrollDirectionVertical = "vertical";
 
-const String pageScrollContinuous = "scrollContinuously";
+/// Document Interaction Options
 
-const String fitPageToWidth = "fitPageToWidth";
+const String scrollDirection = 'scrollDirection';
+const String pageTransition = 'pageTransition';
+const String enableTextSelection = 'enableTextSelection';
+const String disableAutosave = 'disableAutosave';
 
-const String androidImmersiveMode = "immersiveMode";
+/// Document Presentation Options
 
-const String userInterfaceViewMode = "userInterfaceViewMode";
-const String userInterfaceViewModeAutomatic = "automatic";
-// Automatic border pages mode is supported on Android only.
-const String userInterfaceViewModeAutomaticBorderPages = "automaticBorderPages";
-const String userInterfaceViewModeAlwaysVisible = "alwaysVisible";
-const String userInterfaceViewModeAlwaysHidden = "alwaysHidden";
+const String pageMode = 'pageMode';
+const String spreadFitting = 'spreadFitting';
+const String showPageLabels = 'showPageLabels';
+const String startPage = 'startPage';
+const String documentLabelEnabled = 'documentLabelEnabled';
+const String firstPageAlwaysSingle = 'firstPageAlwaysSingle';
+const String invertColors = 'invertColors';
+const String password = 'password';
+const String androidGrayScale = 'androidGrayScale';
 
-const String androidShowSearchAction = "showSearchAction";
+/// User Interface Options
 
-const String inlineSearch = "inlineSearch";
+const String inlineSearch = 'inlineSearch';
+const String toolbarTitle = 'toolbarTitle';
+const String showActionNavigationButtons = 'showActionNavigationButtons';
+const String userInterfaceViewMode = 'userInterfaceViewMode';
+const String immersiveMode = 'immersiveMode';
+const String appearanceMode = 'appearanceMode';
+const String settingsMenuItems = 'settingsMenuItems';
+const String androidShowSearchAction = 'androidShowSearchAction';
+const String androidShowOutlineAction = 'androidShowOutlineAction';
+const String androidShowBookmarksAction = 'androidShowBookmarksAction';
+const String androidEnableDocumentEditor = 'androidEnableDocumentEditor';
+const String androidShowShareAction = 'androidShowShareAction';
+const String androidShowPrintAction = 'androidShowPrintAction';
+const String androidShowDocumentInfoView = 'androidShowDocumentInfoView';
+const String androidDarkThemeResource = 'androidDarkThemeResource';
+const String androidDefaultThemeResource = 'androidDefaultThemeResource';
+const String iOSLeftBarButtonItems = 'iOSLeftBarButtonItems';
+const String iOSRightBarButtonItems = 'iOSRightBarButtonItems';
+const String iOSAllowToolbarTitleChange = 'iOSAllowToolbarTitleChange';
 
-const String showThumbnailBar = "showThumbnailBar";
-const String showThumbnailBarFloating = "floating";
-const String showThumbnailBarPinned = "pinned";
-const String showThumbnailBarScrollable = "scrollable";
-const String showThumbnailBarNone = "none";
+/// Thumbnail Options
 
-const String androidShowThumbnailGridAction = "showThumbnailGridAction";
+const String showThumbnailBar = 'showThumbnailBar';
+const String androidShowThumbnailGridAction = 'androidShowThumbnailGridAction';
 
-const String androidShowOutlineAction = "showOutlineAction";
+/// Annotation, Forms and Bookmark Options
 
-const String androidShowAnnotationListAction = "showAnnotationListAction";
+const String enableAnnotationEditing = 'enableAnnotationEditing';
+const String androidShowAnnotationListAction =
+    'androidShowAnnotationListAction';
 
-const String showPageNumberOverlay = "showPageNumberOverlay";
+/// Deprecated Options - These options will be removed in a future release.
+/// Please use the suggested alternatives instead.
 
-const String showPageLabels = "showPageLabels";
+@Deprecated('Use scrollDirection instead.')
+const String pageScrollDirection = 'pageScrollDirection';
 
-const String showDocumentLabel = "showDocumentLabel";
+@Deprecated('Use pageTransition instead.')
+const String pageScrollContinuous = 'scrollContinuously';
 
-const String invertColors = "invertColors";
+@Deprecated('Use pageMode instead.')
+const String pageLayoutMode = 'pageLayoutMode';
 
-const String grayScale = "grayScale";
+@Deprecated('Use spreadFitting instead.')
+const String fitPageToWidth = 'fitPageToWidth';
 
-const String startPage = "startPage";
+@Deprecated('Use showPageLabels instead.')
+const String showPageNumberOverlay = 'showPageNumberOverlay';
 
-const String enableAnnotationEditing = "enableAnnotationEditing";
+@Deprecated('Use documentLabelEnabled instead.')
+const String showDocumentLabel = 'showDocumentLabel';
 
-const String enableTextSelection = "enableTextSelection";
+@Deprecated('Use firstPageAlwaysSingle instead.')
+const String isFirstPageAlwaysSingle = 'isFirstPageAlwaysSingle';
 
-const String androidEnableBookmarkList = "androidEnableBookmarkList";
+@Deprecated('Use androidGrayScale instead.')
+const String grayScale = 'grayScale';
 
-const String androidEnableDocumentEditor = "androidEnableDocumentEditor";
+@Deprecated('Use immersiveMode instead.')
+const String androidImmersiveMode = 'immersiveMode';
 
-const String androidShowShareAction = "showShareAction";
+@Deprecated('Use androidShowBookmarksAction instead.')
+const String androidEnableBookmarkList = 'androidEnableBookmarkList';
 
-const String androidShowPrintAction = "showPrintAction";
+@Deprecated('Use androidShowDocumentInfoView instead.')
+const String showDocumentInfoView = 'showDocumentInfoView';
 
-const String showDocumentInfoView = "showDocumentInfoView";
+@Deprecated('Use settingsMenuItems instead.')
+const String androidSettingsMenuItems = 'androidSettingsMenuItems';
 
-const String appearanceMode = "appearanceMode";
-const String appearanceModeDefault = "default";
-const String appearanceModeNight = "night";
-// Sepia mode is only supported on iOS.
-const String appearanceModeSepia = "sepia";
+@Deprecated('Use settingsMenuItems instead.')
+const String iOSSettingsMenuItems = 'iOSSettingsMenuItems';
 
-const String androidDarkThemeResource = "darkThemeResource";
-const String androidDefaultThemeResource = "defaultThemeResource";
+@Deprecated('Use showActionNavigationButtons instead.')
+const String iOSShowActionNavigationButtonLabels =
+    'iOSShowActionNavigationButtonLabels';
 
-const String password = "password";
+/// Deprecated Strings
 
-const String iOSLeftBarButtonItems = "leftBarButtonItems";
-const String iOSRightBarButtonItems = "rightBarButtonItems";
+@Deprecated('Directly use the String value instead.')
+const String horizontal = 'horizontal';
 
-const String iOSAllowToolbarTitleChange = "allowToolbarTitleChange";
+@Deprecated('Directly use the String value instead.')
+const String vertical = 'vertical';
 
-const String toolbarTitle = "toolbarTitle";
+@Deprecated('Directly use the String value instead.')
+const String pageScrollDirectionVertical = 'vertical';
 
-const String androidSettingsMenuItems = "androidSettingsMenuItems";
-const String iOSSettingsMenuItems = "iOSSettingsMenuItems";
+@Deprecated('Directly use the String value instead.')
+const String pageScrollDirectionHorizontal = 'vertical';
 
-const String showActionNavigationButtons = "showActionNavigationButtons";
-const String iOSShowActionNavigationButtonLabels = "iOSShowActionNavigationButtonLabels";
+@Deprecated('Directly use the String value instead.')
+const String scrollPerSpread = 'scrollPerSpread';
 
-const String pageLayoutMode = "pageLayoutMode";
-const String pageLayoutModeAutomatic = "automatic";
-const String pageLayoutModeSingle = "single";
-const String pageLayoutModeDouble = "double";
-const String isFirstPageAlwaysSingle = "isFirstPageAlwaysSingle";
+@Deprecated('Directly use the String value instead.')
+const String scrollContinuous = 'scrollContinuous';
+
+@Deprecated('Directly use the String value instead.')
+const String pageLayoutModeAutomatic = 'automatic';
+
+@Deprecated('Directly use the String value instead.')
+const String pageLayoutModeSingle = 'single';
+
+@Deprecated('Directly use the String value instead.')
+const String pageLayoutModeDouble = 'double';
+
+@Deprecated('Directly use the String value instead.')
+const String userInterfaceViewModeAutomatic = 'automatic';
+
+@Deprecated('Directly use the String value instead.')
+const String userInterfaceViewModeAutomaticBorderPages = 'automaticBorderPages';
+
+@Deprecated('Directly use the String value instead.')
+const String userInterfaceViewModeAlwaysVisible = 'alwaysVisible';
+
+@Deprecated('Directly use the String value instead.')
+const String userInterfaceViewModeAlwaysHidden = 'alwaysHidden';
+
+@Deprecated('Directly use the String value instead.')
+const String appearanceModeDefault = 'default';
+
+@Deprecated('Directly use the String value instead.')
+const String appearanceModeNight = 'night';
+
+@Deprecated('Directly use the String value instead.')
+const String appearanceModeSepia =
+    'sepia'; // Sepia mode is only supported on iOS.
+
+@Deprecated('Directly use the String value instead.')
+const String showThumbnailBarFloating = 'floating';
+
+@Deprecated('Directly use the String value instead.')
+const String showThumbnailBarPinned = 'pinned';
+
+@Deprecated('Directly use the String value instead.')
+const String showThumbnailBarScrollable = 'scrollable';
+
+@Deprecated('Directly use the String value instead.')
+const String showThumbnailBarNone = 'none';

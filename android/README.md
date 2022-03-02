@@ -1,14 +1,17 @@
 # PSPDFKit Flutter for Android
 
-## Setup
+## Requirements
 
 ### Dependencies
 
 In order to build the PSPDFKit Flutter wrapper and example project, you need to prepare a couple of dependencies:
 
-* Flutter SDK
-* Android Studio
-* `local.properties` file
+- The [latest stable version of Android Studio][https://developer.android.com/studio].
+- The [Android NDK][https://developer.android.com/studio/projects/install-ndk].
+- An [Android Virtual Device][https://developer.android.com/studio/run/managing-avds.html] or a hardware device.
+- The [latest stable version of PSPDFKit for Android][https://pspdfkit.com/guides/android/downloads/].
+- The [latest stable version of Flutter][https://flutter.dev/docs/get-started/install].
+- `local.properties` file
 
 #### `local.properties`
 
@@ -19,6 +22,14 @@ sdk.dir=/path/to/your/android/sdk
 ndk.dir=/path/to/your/android/sdk/ndk-bundle
 flutter.sdk=/path/to/your/flutter/sdk
 ```
+
+## Setup
+
+See the [setup instructions](../README.md#android) in the main README.
+
+## Example Project
+
+Please take a look how to run our example project [here](../example/README.md#running-the-example-project).
 
 ## Troubleshooting
 

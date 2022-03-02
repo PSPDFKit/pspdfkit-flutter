@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,6 +9,31 @@
 #import "PspdfkitFlutterConverter.h"
 
 @implementation PspdfkitFlutterConverter
+
++ (NSString *)removePrefixForKey:(NSString *)key {
+   // If the key length is less than 4, we return it without any modification.
+   if (([key hasPrefix:@"iOS"] || [key hasPrefix:@"ios"]) && key.length > 4) {
+      NSString *prefixRemoved = [key substringFromIndex:3]; // Discard the first 3 letters (iOS).
+      NSString *firstLetterLowerCase = [[prefixRemoved substringToIndex:1] lowercaseString]; // Extract and lowercase the first letter.
+      NSString *everythingExceptFirstLetter = [prefixRemoved substringFromIndex:1];  // Extract everything except the first letter.
+      NSString *cleanedKey = [NSString stringWithFormat:@"%@%@", firstLetterLowerCase, everythingExceptFirstLetter]; // Join the two strings.
+      return cleanedKey;
+   } else {
+      return key;
+   }
+}
+
++ (NSDictionary *)processConfigurationOptionsDictionaryForPrefix:(NSDictionary *)dictionary {
+   if (dictionary == NULL || [dictionary isKindOfClass:[NSNull class]]) {
+      return dictionary;
+   }
+   NSMutableDictionary *output = [NSMutableDictionary new];
+   for (NSString *key in dictionary) {
+      id value = [dictionary valueForKey:key];
+      [output setValue:value forKey:[self removePrefixForKey:key]];
+   }
+   return [NSDictionary dictionaryWithDictionary:output];
+}
 
 + (PSPDFConfiguration *)configuration:(NSDictionary *)dictionary isImageDocument:(BOOL)isImageDocument {
     PSPDFConfiguration *configuration;
@@ -23,80 +48,197 @@
     }
 
     return [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
-        builder.scrollDirection = [dictionary[@"pageScrollDirection"] isEqualToString:@"vertical"] ? PSPDFScrollDirectionVertical : PSPDFScrollDirectionHorizontal;
-        builder.pageTransition = [dictionary[@"scrollContinuously"] boolValue] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
-        builder.spreadFitting = [dictionary[@"fitPageToWidth"] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
-        builder.searchMode = [dictionary[@"inlineSearch"] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
-        builder.userInterfaceViewMode = [PspdfkitFlutterConverter userInterfaceViewMode:dictionary];
-        builder.thumbnailBarMode = [PspdfkitFlutterConverter thumbnailBarMode:dictionary];
-        builder.pageMode = [PspdfkitFlutterConverter pageMode:dictionary];
+        NSString *key = @"";
 
-        if (dictionary[@"showPageLabels"]) {
-            builder.pageLabelEnabled = [dictionary[@"showPageLabels"] boolValue];
+        // Document Interaction Options
+
+        key = @"scrollDirection";
+        if (dictionary[key]) {
+            builder.scrollDirection = [dictionary[key] isEqualToString: @"vertical"] ? PSPDFScrollDirectionVertical : PSPDFScrollDirectionHorizontal;
         }
-        if (dictionary[@"showDocumentLabel"]) {
+
+        key = @"pageTransition";
+        if (dictionary[key]) {
+            builder.pageTransition = [PspdfkitFlutterConverter pageTransition:dictionary forKey:key];
+        }
+
+        key = @"enableTextSelection";
+        if (dictionary[key]) {
+            builder.textSelectionEnabled = [dictionary[key] boolValue];
+        }
+
+        // Document Presentation Options
+
+        key = @"pageMode";
+        if (dictionary[key]) {
+            builder.pageMode = [PspdfkitFlutterConverter pageMode:dictionary forKey:key];
+        }
+
+        key = @"spreadFitting";
+        if (dictionary[key]) {
+            builder.spreadFitting = [PspdfkitFlutterConverter spreadFitting:dictionary forKey:key];
+        }
+
+        key = @"showPageLabels";
+        if (dictionary[key]) {
+            builder.pageLabelEnabled = [dictionary[key] boolValue];
+        }
+
+        key = @"documentLabelEnabled";
+        if (dictionary[key]) {
+            builder.documentLabelEnabled = [dictionary[key] boolValue];
+        }
+
+        key = @"firstPageAlwaysSingle";
+        if (dictionary[key]) {
+            builder.firstPageAlwaysSingle = [dictionary[key] boolValue];
+        }
+
+        // User Interface Options
+
+        key = @"inlineSearch";
+        if (dictionary[key]) {
+            builder.searchMode = [dictionary[key] boolValue] ? PSPDFSearchModeInline : PSPDFSearchModeModal;
+        }
+
+        key = @"showActionNavigationButtons";
+        if (dictionary[key]) {
+            builder.showBackActionButton = [dictionary[key] boolValue];
+            builder.showForwardActionButton = [dictionary[key] boolValue];
+            builder.showBackForwardActionButtonLabels = [dictionary[key] boolValue];
+        }
+
+        key = @"userInterfaceViewMode";
+        if (dictionary[key]) {
+            builder.userInterfaceViewMode = [PspdfkitFlutterConverter userInterfaceViewMode:dictionary forKey:key];
+        }
+
+        key = @"immersiveMode";
+        if (dictionary[key]) {
+            builder.userInterfaceViewMode = [dictionary[key] boolValue] ? PSPDFUserInterfaceViewModeNever : PSPDFUserInterfaceViewModeAutomatic;
+        }
+
+        key = @"settingsMenuItems";
+        if (dictionary[key]) {
+            builder.settingsOptions = [PspdfkitFlutterConverter settingsOptions:dictionary[key]];
+        }
+
+        key = @"allowToolbarTitleChange";
+        if (dictionary[key]) {
+            builder.allowToolbarTitleChange = [dictionary[key] boolValue];
+        }
+
+        // Thumbnail Options
+
+        key = @"showThumbnailBar";
+        if (dictionary[key]) {
+            builder.thumbnailBarMode = [PspdfkitFlutterConverter thumbnailBarMode:dictionary forKey:key];
+        }
+
+        // Annotation, Forms and Bookmark Options
+
+        key = @"enableAnnotationEditing";
+        if (dictionary[key]) {
+            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];
+            builder.editableAnnotationTypes = [dictionary[key] boolValue] ? editableAnnotations : nil;
+        }
+
+        // Deprecated Options
+
+        key = @"pageScrollDirection";
+        if (dictionary[key]) {
+            builder.scrollDirection = [dictionary[key] isEqualToString: @"vertical"] ? PSPDFScrollDirectionVertical : PSPDFScrollDirectionHorizontal;
+        }
+
+        key = @"scrollContinuously";
+        if (dictionary[key]) {
+            builder.pageTransition = [dictionary[key] boolValue] ? PSPDFPageTransitionScrollContinuous : PSPDFPageTransitionScrollPerSpread;
+        }
+
+        key = @"pageLayoutMode";
+        if (dictionary[key]) {
+            builder.pageMode = [PspdfkitFlutterConverter pageMode:dictionary forKey:key];
+        }
+
+        key = @"fitPageToWidth";
+        if (dictionary[key]) {
+            builder.spreadFitting = [dictionary[key] boolValue] ? PSPDFConfigurationSpreadFittingFill : PSPDFConfigurationSpreadFittingAdaptive;
+        }
+
+        key = @"showDocumentLabel";
+        if (dictionary[key]) {
             builder.documentLabelEnabled = [dictionary[@"showDocumentLabel"] boolValue];
         }
-        if (dictionary[@"allowToolbarTitleChange"]) {
-            builder.allowToolbarTitleChange = [dictionary[@"allowToolbarTitleChange"] boolValue];
+
+        key = @"isFirstPageAlwaysSingle";
+        if (dictionary[key]) {
+            builder.firstPageAlwaysSingle = [dictionary[key] boolValue];
         }
-        if (![dictionary[@"enableAnnotationEditing"] boolValue]) {
-            builder.editableAnnotationTypes = nil;
+
+        key = @"showActionNavigationButtonLabels";
+        if (dictionary[key]) {
+            builder.showBackActionButton = [dictionary[key] boolValue];
+            builder.showForwardActionButton = [dictionary[key] boolValue];
+            builder.showBackForwardActionButtonLabels = [dictionary[key] boolValue];
         }
-        if (dictionary[@"enableTextSelection"]) {
-            builder.textSelectionEnabled = [dictionary[@"enableTextSelection"] boolValue];
-        }
-        if (dictionary[@"showActionNavigationButtons"]) {
-            builder.showBackActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
-            builder.showForwardActionButton = [dictionary[@"showActionNavigationButtons"] boolValue];
-        }
-        if (dictionary[@"iOSShowActionNavigationButtonLabels"]) {
-            builder.showBackForwardActionButtonLabels = [dictionary[@"iOSShowActionNavigationButtonLabels"] boolValue];
-        }
-        if (dictionary[@"isFirstPageAlwaysSingle"]) {
-            builder.firstPageAlwaysSingle = [dictionary[@"isFirstPageAlwaysSingle"] boolValue];
-        }
-        if (dictionary[@"iOSSettingsMenuItems"]) {
-            builder.settingsOptions = [PspdfkitFlutterConverter settingsOptions:dictionary[@"iOSSettingsMenuItems"]];
+
+        key = @"disableAutosave";
+        if (dictionary[key]){
+            builder.autosaveEnabled = ![dictionary[key] boolValue];
         }
     }];
 }
 
-+ (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSDictionary *)dictionary {
-    PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFConfiguration.defaultConfiguration.userInterfaceViewMode;
-    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return userInterfaceMode;
++ (PSPDFPageTransition)pageTransition:(NSDictionary *)dictionary forKey:(NSString *)key {
+    PSPDFPageTransition transition = PSPDFConfiguration.defaultConfiguration.pageTransition;
+    NSString *value = dictionary[key];
+    if (value) {
+        if ([value isEqualToString:@"scrollPerSpread"]) {
+            transition = PSPDFPageTransitionScrollPerSpread;
+        } else if ([value isEqualToString:@"scrollContinuous"]) {
+            transition = PSPDFPageTransitionScrollContinuous;
+        } else if ([value isEqualToString:@"curl"]) {
+            transition = PSPDFPageTransitionCurl;
+        }
     }
+    return transition;
+}
 
-    NSString *value = dictionary[@"userInterfaceViewMode"];
++ (PSPDFUserInterfaceViewMode)userInterfaceViewMode:(NSDictionary *)dictionary forKey:(NSString *)key {
+    PSPDFUserInterfaceViewMode userInterfaceMode = PSPDFConfiguration.defaultConfiguration.userInterfaceViewMode;
+    NSString *value = dictionary[key];
     if (value) {
         if ([value isEqualToString:@"automatic"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeAutomatic;
+        } else if ([value isEqualToString:@"automaticBorderPages"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
+        } else if ([value isEqualToString:@"automaticNoFirstLastPage"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
+        } else if ([value isEqualToString:@"always"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeAlways;
         } else if ([value isEqualToString:@"alwaysVisible"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeAlways;
         } else if ([value isEqualToString:@"alwaysHidden"]) {
             userInterfaceMode = PSPDFUserInterfaceViewModeNever;
-        } else if ([value isEqualToString:@"automaticNoFirstLastPage"]) {
-            userInterfaceMode = PSPDFUserInterfaceViewModeAutomaticNoFirstLastPage;
+        } else if ([value isEqualToString:@"never"]) {
+            userInterfaceMode = PSPDFUserInterfaceViewModeNever;
         }
     }
     return userInterfaceMode;
 }
 
-+ (PSPDFThumbnailBarMode)thumbnailBarMode:(NSDictionary *)dictionary {
++ (PSPDFThumbnailBarMode)thumbnailBarMode:(NSDictionary *)dictionary forKey:(NSString *)key {
     PSPDFThumbnailBarMode thumbnailBarMode = PSPDFConfiguration.defaultConfiguration.thumbnailBarMode;
-    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return thumbnailBarMode;
-    }
-
-    NSString *value = dictionary[@"showThumbnailBar"];
+    NSString *value = dictionary[key];
     if (value) {
-        if ([value isEqualToString:@"default"]) {
-            thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
+        if ([value isEqualToString:@"default"] || [value isEqualToString:@"floating"]) {
+            thumbnailBarMode = PSPDFThumbnailBarModeFloatingScrubberBar;
         } else if ([value isEqualToString:@"scrollable"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeScrollable;
         } else if ([value isEqualToString:@"none"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeNone;
+        } else if ([value isEqualToString:@"scrubberBar"] || [value isEqualToString:@"pinned"]) {
+            thumbnailBarMode = PSPDFThumbnailBarModeScrubberBar;
         }
     }
     return thumbnailBarMode;
@@ -127,14 +269,9 @@
     return (PSPDFPageIndex)[dictionary[@"startPage"] unsignedLongValue];
 }
 
-+ (PSPDFPageMode)pageMode:(NSDictionary *)dictionary {
++ (PSPDFPageMode)pageMode:(NSDictionary *)dictionary forKey:(NSString *)key {
     PSPDFPageMode pageMode = PSPDFConfiguration.defaultConfiguration.pageMode;
-
-    if ((id)dictionary == NSNull.null || !dictionary || dictionary.count == 0) {
-        return pageMode;
-    }
-
-    NSString *value = dictionary[@"pageLayoutMode"];
+    NSString *value = dictionary[key];
     if (value) {
         if ([value isEqualToString:@"automatic"]) {
             pageMode = PSPDFPageModeAutomatic;
@@ -145,6 +282,21 @@
         }
     }
     return pageMode;
+}
+
++ (PSPDFConfigurationSpreadFitting)spreadFitting:(NSDictionary *)dictionary forKey:(NSString *)key {
+    PSPDFConfigurationSpreadFitting spreadFitting = PSPDFConfiguration.defaultConfiguration.spreadFitting;
+    NSString *value = dictionary[key];
+    if (value) {
+        if ([value isEqualToString:@"fit"]) {
+            spreadFitting = PSPDFConfigurationSpreadFittingFit;
+        } else if ([value isEqualToString:@"fill"]) {
+            spreadFitting = PSPDFConfigurationSpreadFittingFill;
+        } else if ([value isEqualToString:@"adaptive"]) {
+            spreadFitting = PSPDFConfigurationSpreadFittingAdaptive;
+        }
+    }
+    return spreadFitting;
 }
 
 + (PSPDFSettingsOptions)settingsOptions:(nullable NSArray <NSString *> *)options {
@@ -158,14 +310,16 @@
             finalOptions |= PSPDFSettingsOptionScrollDirection;
         } else if ([option isEqualToString:@"pageTransition"]) {
             finalOptions |= PSPDFSettingsOptionPageTransition;
-        } else if ([option isEqualToString:@"appearance"]) {
+        } else if ([option isEqualToString:@"appearance"] || [option isEqualToString:@"iOSAppearance"]) {
             finalOptions |= PSPDFSettingsOptionAppearance;
-        } else if ([option isEqualToString:@"brightness"]) {
+        } else if ([option isEqualToString:@"brightness"] || [option isEqualToString:@"iOSBrightness"]) {
             finalOptions |= PSPDFSettingsOptionBrightness;
-        } else if ([option isEqualToString:@"pageMode"]) {
+        } else if ([option isEqualToString:@"pageMode"] || [option isEqualToString:@"iOSPageMode"]) {
             finalOptions |= PSPDFSettingsOptionPageMode;
-        } else if ([option isEqualToString:@"spreadFitting"]) {
+        } else if ([option isEqualToString:@"spreadFitting"] || [option isEqualToString:@"iOSSpreadFitting"]) {
             finalOptions |= PSPDFSettingsOptionSpreadFitting;
+        } else if ([option isEqualToString:@"androidTheme"] || [option isEqualToString:@"androidPageLayout"] || [option isEqualToString:@"androidScreenAwake"]) {
+            // NO OP. Only supported on Android
         } else {
             NSLog(@"WARNING: '%@' is an invalid settings option. It will be ignored.", option);
         }
@@ -181,7 +335,7 @@
 
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
     if (!typeString) {
-        return PSPDFAnnotationTypeAll;
+        return PSPDFAnnotationTypeNone;
     } else if ([typeString isEqualToString:@"pspdfkit/ink"]) {
         return PSPDFAnnotationTypeInk;
     } else if ([typeString isEqualToString:@"pspdfkit/link"]) {
@@ -206,8 +360,12 @@
         return PSPDFAnnotationTypeSquare;
     } else if ([typeString isEqualToString:@"pspdfkit/text"]) {
         return PSPDFAnnotationTypeFreeText;
-    } else {
+    } else if ([typeString isEqualToString:@"pspdfkit/all"]) {
         return PSPDFAnnotationTypeAll;
+    } else if ([typeString isEqualToString:@"all"]) {
+        return PSPDFAnnotationTypeAll;
+    } else {
+        return PSPDFAnnotationTypeNone;
     }
 }
 

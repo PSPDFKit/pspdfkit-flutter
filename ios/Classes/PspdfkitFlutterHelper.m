@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -12,7 +12,20 @@
 @implementation PspdfkitFlutterHelper
 
 + (void)processMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result forViewController:(PSPDFViewController *)pdfViewController {
-    if ([@"setFormFieldValue" isEqualToString:call.method]) {
+    if ([@"save" isEqualToString:call.method]) {
+        PSPDFDocument *document = pdfViewController.document;
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        [document saveWithOptions:nil completionHandler:^(NSError * _Nullable error, NSArray<__kindof PSPDFAnnotation *> * _Nonnull savedAnnotations) {
+            if (error == nil) {
+                result(@(YES));
+            } else {
+                result([FlutterError errorWithCode:@"" message:error.description details:nil]);
+            }
+        }];
+    } else if ([@"setFormFieldValue" isEqualToString:call.method]) {
         NSString *value = call.arguments[@"value"];
         NSString *fullyQualifiedName = call.arguments[@"fullyQualifiedName"];
         result([PspdfkitFlutterHelper setFormFieldValue:value forFieldWithFullyQualifiedName:fullyQualifiedName forViewController:pdfViewController]);
@@ -91,6 +104,10 @@
     } else {
         url = [NSBundle.mainBundle URLForResource:path withExtension:nil];
     }
+    
+    if (url == nil) {
+        return nil;
+    }
 
     if ([PspdfkitFlutterHelper isImageDocument:path]) {
         return [[PSPDFImageDocument alloc] initWithImageURL:url];
@@ -101,7 +118,7 @@
 
 + (BOOL)isImageDocument:(NSString *)path {
     NSString *fileExtension = path.pathExtension.lowercaseString;
-    return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"];
+    return [fileExtension isEqualToString:@"png"] || [fileExtension isEqualToString:@"jpeg"] || [fileExtension isEqualToString:@"jpg"] || [fileExtension isEqualToString:@"tiff"] || [fileExtension isEqualToString:@"tif"];
 }
 
 # pragma mark - File Helpers
@@ -237,6 +254,8 @@
         return pdfViewController.activityButtonItem;
     } else if ([barButtonItem isEqualToString:@"settingsButtonItem"]) {
         return pdfViewController.settingsButtonItem;
+    } else if ([barButtonItem isEqualToString:@"readerViewButtonItem"]) {
+        return pdfViewController.readerViewButtonItem;
     } else {
         return nil;
     }

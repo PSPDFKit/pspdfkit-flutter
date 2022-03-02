@@ -1,17 +1,29 @@
-#   Copyright © 2019-2021 PSPDFKit GmbH. All rights reserved.
+#   Copyright © 2019-2022 PSPDFKit GmbH. All rights reserved.
 #
 #   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 #   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 #   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 #   This notice may not be removed from this file.
 
+include: package:flutter_lints/flutter.yaml
+
 analyzer:
   errors:
-    invalid_assignment: warning
+    invalid_assignment: error
     missing_return: error
     dead_code: warning
 
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
+
+linter:
+  rules:
+    - always_declare_return_types
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - unawaited_futures
+    - unsafe_html
+    - use_full_hex_values_for_flutter_colors
     
+

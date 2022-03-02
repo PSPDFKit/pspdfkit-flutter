@@ -2,10 +2,10 @@
 
 ## Requirements
 
-* Flutter SDK.
-* Xcode 10.1 or later.
-* PSPDFKit 8 for iOS
-* CocoaPods 1.5.3 or later.
+ - The [latest stable version of Xcode][https://developer.apple.com/xcode/].
+ - The [latest stable version of PSPDFKit for iOS][https://pspdfkit.com/guides/ios/downloads/].
+ - The [latest stable version of Flutter][https://flutter.dev/docs/get-started/install].
+ - The [latest stable version of CocoaPods][https://github.com/CocoaPods/CocoaPods/releases] (Update cocoapods with: `gem install cocoapods`).
 
 ## Setup
 

@@ -1,11 +1,23 @@
 /*
- *   Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
  *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
  *   This notice may not be removed from this file.
  */
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.yaml:snakeyaml:1.27"
+    }
+}
+
+import org.yaml.snakeyaml.Yaml
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -26,15 +38,23 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '6.5.3'
+    ext.pspdfkitVersion = '8.1.1'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
 
-ext.pspdfkitFlutterVersion = '1.10.0'
+// Get our library version from the top level pubspec.yaml file.
+def pubspecFilePath = '../pubspec.yaml'
+def pubspecFile = rootProject.file(pubspecFilePath)
+if (!pubspecFile.exists()) {
+    throw new GradleException("'pubspec.yaml' file not found. Expected at the top level of the Flutter repository.")
+}
+def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
+ext.pspdfkitFlutterVersion = pubspecYaml.version
 
-ext.androidCompileSdkVersion = 29
-ext.androidBuildToolsVersion = '29.0.1'
-ext.androidMinSdkVersion = 19
-ext.androidTargetSdkVersion = 29
-ext.androidGradlePluginVersion = '3.6.3'
+ext.androidCompileSdkVersion = 31
+ext.androidBuildToolsVersion = '30.0.3'
+ext.androidMinSdkVersion = 21
+ext.androidTargetSdkVersion = 30
+ext.androidGradlePluginVersion = '7.1.1'
+ext.kotlinVersion = "1.5.31"

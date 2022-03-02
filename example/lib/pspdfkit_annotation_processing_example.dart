@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,96 +9,116 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:path_provider/path_provider.dart';
-
 import 'package:pspdfkit_flutter/src/main.dart';
-import 'package:pspdfkit_flutter/src/pspdfkit_view.dart';
+import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
 
 class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String documentPath;
   final String exportPath;
   final dynamic configuration;
 
-  PspdfkitAnnotationProcessingExampleWidget({
-    Key key,
-    @required this.documentPath,
-    @required this.exportPath,
-    this.configuration = null
-  }) : super(key: key);
+  const PspdfkitAnnotationProcessingExampleWidget(
+      {Key? key,
+      required this.documentPath,
+      required this.exportPath,
+      this.configuration})
+      : super(key: key);
 
   @override
-  PspdfkitAnnotationProcessingExampleWidgetState createState() => PspdfkitAnnotationProcessingExampleWidgetState();
+  _PspdfkitAnnotationProcessingExampleWidgetState createState() =>
+      _PspdfkitAnnotationProcessingExampleWidgetState();
 }
 
-class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnotationProcessingExampleWidget> {
-  PspdfkitView view;
+class _PspdfkitAnnotationProcessingExampleWidgetState
+    extends State<PspdfkitAnnotationProcessingExampleWidget> {
+  late PspdfkitWidgetController view;
 
   Future<File> extractAsset(String assetPath) async {
-    final ByteData bytes = await DefaultAssetBundle.of(context).load(assetPath);
-    final Uint8List list = bytes.buffer.asUint8List();
-    final String tempDocumentPath = await getExportPath(assetPath);
-    final File file = await File(tempDocumentPath).create(recursive: true);
+    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
+    final list = bytes.buffer.asUint8List();
+    final tempDocumentPath = await getExportPath(assetPath);
+    final file = await File(tempDocumentPath).create(recursive: true);
     file.writeAsBytesSync(list);
     return file;
   }
 
   Future<String> getExportPath(String assetPath) async {
-    final Directory tempDir = await getTemporaryDirectory();
-    final String tempDocumentPath = '${tempDir.path}/$assetPath';
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
     return tempDocumentPath;
   }
 
   @override
   Widget build(BuildContext context) {
+    // This is used in the platform side to register the view.
+    const String viewType = 'com.pspdfkit.widget';
+    // Pass parameters to the platform side.
+    final Map<String, dynamic> creationParams = <String, dynamic>{
+      'document': widget.documentPath,
+      'configuration': widget.configuration
+    };
+
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(),
-        child: SafeArea(
-          bottom: false,
-          child: Column(children: <Widget>[
-            Expanded(child: UiKitView(
-              viewType: 'com.pspdfkit.widget',
-              onPlatformViewCreated: onPlatformViewCreated,
-              creationParamsCodec: const StandardMessageCodec())),
-            Container(
-              height: 80,
-              child: Row(
-                children: <Widget>[
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Flatten Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "flatten", exportPath);
-                    Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Remove Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "remove", exportPath);
-                    Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Embed Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "embed", exportPath);
-                    Pspdfkit.present(exportPath);
-                  }),
-                  Container(width: 20),
-                  CupertinoButton(child: Text('Print Annotations'), onPressed: () async {
-                    String exportPath = await getExportPath(widget.exportPath);
-                    this.view.processAnnotations("all", "print", exportPath);
-                    Pspdfkit.present(exportPath);
-                  })
-                ]))]))
-      );
+          navigationBar: const CupertinoNavigationBar(),
+          child: SafeArea(
+              bottom: false,
+              child: Column(children: <Widget>[
+                Expanded(
+                    child: UiKitView(
+                        viewType: viewType,
+                        layoutDirection: TextDirection.ltr,
+                        creationParams: creationParams,
+                        onPlatformViewCreated: onPlatformViewCreated,
+                        creationParamsCodec: const StandardMessageCodec())),
+                SizedBox(
+                    child: Column(children: <Widget>[
+                  CupertinoButton(
+                      onPressed: () async {
+                        final exportPath =
+                            await getExportPath(widget.exportPath);
+                        await view.processAnnotations(
+                            'all', 'flatten', exportPath);
+                        await Pspdfkit.present(exportPath);
+                      },
+                      child: const Text('Flatten Annotations')),
+                  CupertinoButton(
+                      onPressed: () async {
+                        final exportPath =
+                            await getExportPath(widget.exportPath);
+                        await view.processAnnotations(
+                            'all', 'remove', exportPath);
+                        await Pspdfkit.present(exportPath);
+                      },
+                      child: const Text('Remove Annotations')),
+                  CupertinoButton(
+                      onPressed: () async {
+                        final exportPath =
+                            await getExportPath(widget.exportPath);
+                        await view.processAnnotations(
+                            'all', 'embed', exportPath);
+                        await Pspdfkit.present(exportPath);
+                      },
+                      child: Text('Embed Annotations')),
+                  CupertinoButton(
+                      onPressed: () async {
+                        final exportPath =
+                            await getExportPath(widget.exportPath);
+                        await view.processAnnotations(
+                            'all', 'print', exportPath);
+                        await Pspdfkit.present(exportPath);
+                      },
+                      child: Text('Print Annotations'))
+                ]))
+              ])));
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      // PspdfkitView is only supported in iOS at the moment.
+      // This example is only supported in iOS at the moment.
       // Support for Android is coming soon.
       return Text('Unsupported Widget');
     } else {
@@ -107,6 +127,6 @@ class PspdfkitAnnotationProcessingExampleWidgetState extends State<PspdfkitAnnot
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    this.view = PspdfkitView.init(id, widget.documentPath, widget.configuration);
+    view = PspdfkitWidgetController(id);
   }
 }

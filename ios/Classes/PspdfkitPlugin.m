@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -22,6 +22,8 @@ static FlutterMethodChannel *channel;
 
 @implementation PspdfkitPlugin
 
+PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-environment";
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
     [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
@@ -36,8 +38,11 @@ static FlutterMethodChannel *channel;
         result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKitGlobal setLicenseKey:licenseKey];
-    } else if ([@"present" isEqualToString:call.method]) {
+        [PSPDFKitGlobal setLicenseKey:licenseKey options:@{PSPDFSettingKeyHybridEnvironment: @"Flutter"}];
+    } else if ([@"setLicenseKeys" isEqualToString:call.method]) {
+        NSString *iOSLicenseKey = call.arguments[@"iOSLicenseKey"];
+        [PSPDFKitGlobal setLicenseKey:iOSLicenseKey options:@{PSPDFSettingKeyHybridEnvironment: @"Flutter"}];
+    }else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 
         if (documentPath == nil || documentPath.length <= 0) {
@@ -46,7 +51,7 @@ static FlutterMethodChannel *channel;
             return;
         }
 
-        NSDictionary *configurationDictionary = call.arguments[@"configuration"];
+        NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:call.arguments[@"configuration"]];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
@@ -60,9 +65,24 @@ static FlutterMethodChannel *channel;
         self.pdfViewController.delegate = self;
 
         if ((id)configurationDictionary != NSNull.null) {
-            [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[@"leftBarButtonItems"] forViewController:self.pdfViewController];
-            [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[@"rightBarButtonItems"] forViewController:self.pdfViewController];
-            [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[@"toolbarTitle"] forViewController:self.pdfViewController];
+            NSString *key;
+
+            key = @"leftBarButtonItems";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
+            key = @"rightBarButtonItems";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
+            key = @"invertColors";
+            if (configurationDictionary[key]) {
+                self.pdfViewController.appearanceModeManager.appearanceMode = [configurationDictionary[key] boolValue] ? PSPDFAppearanceModeNight : PSPDFAppearanceModeDefault;
+            }
+            key = @"toolbarTitle";
+            if (configurationDictionary[key]) {
+                [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[key] forViewController:self.pdfViewController];
+            }
         }
 
         PSPDFNavigationController *navigationController = [[PSPDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
@@ -70,12 +90,19 @@ static FlutterMethodChannel *channel;
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
         result(@(YES));
+    } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
+        result([self getTemporaryDirectory]);
     } else {
         [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
     }
 }
 
-#pragma mark - PSPDFViewControllerDelegate
+- (NSString*)getTemporaryDirectory {
+  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+  return paths.firstObject;
+}
+
+// MARK: - PSPDFViewControllerDelegate
 
 - (void)pdfViewControllerWillDismiss:(PSPDFViewController *)pdfController {
     [channel invokeMethod:@"pdfViewControllerWillDismiss" arguments:nil];

@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2021 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -28,6 +28,11 @@
 
 - (NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args {
     return [[PspdfPlatformView alloc] initWithFrame:frame viewIdentifier:viewId arguments:args messenger:self.messenger];
+}
+
+// Required to pass the arguments to UiKitView.
+- (NSObject<FlutterMessageCodec> *)createArgsCodec {
+  return [FlutterStandardMessageCodec sharedInstance];
 }
 
 @end
