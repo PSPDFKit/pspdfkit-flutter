@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name                  = 'pspdfkit_flutter'
-  s.version               = '3.2.0'
+  s.version               = '3.2.1'
   s.homepage              = 'https://PSPDFKit.com'
   s.documentation_url     = 'https://pspdfkit.com/guides/flutter'
   s.license               = { :type => 'Commercial', :file => '../LICENSE' }
