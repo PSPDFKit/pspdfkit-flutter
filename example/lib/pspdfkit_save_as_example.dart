@@ -13,29 +13,34 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
-
 import 'platform_utils.dart';
 
-class PspdfkitManualSaveExampleWidget extends StatefulWidget {
+class PspdfkitSaveAsExampleWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
 
-  const PspdfkitManualSaveExampleWidget(
+  const PspdfkitSaveAsExampleWidget(
       {Key? key, required this.documentPath, this.configuration})
       : super(key: key);
 
   @override
-  _PspdfkitManualSaveExampleWidgetState createState() =>
-      _PspdfkitManualSaveExampleWidgetState();
+  _PspdfkitSaveAsExampleWidgetState createState() =>
+      _PspdfkitSaveAsExampleWidgetState();
 }
 
-class _PspdfkitManualSaveExampleWidgetState
-    extends State<PspdfkitManualSaveExampleWidget> {
+class _PspdfkitSaveAsExampleWidgetState
+    extends State<PspdfkitSaveAsExampleWidget> {
   late PspdfkitWidgetController pspdfkitWidgetController;
+
+  Future<String> getExportPath(String assetPath) async {
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
+    return tempDocumentPath;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,9 +110,28 @@ class _PspdfkitManualSaveExampleWidgetState
                         child: Column(children: <Widget>[
                       ElevatedButton(
                           onPressed: () async {
-                            await pspdfkitWidgetController.save();
+                            // Ensure that the path for the new document is a writable path
+                            // You can use a package like https://pub.dev/packages/filesystem_picker to allow users select the directory and name of the file to save
+                            final newDocumentPath = await getExportPath(
+                                'PDFs/Embedded/new_pdf_document.pdf');
+                            await pspdfkitWidgetController.processAnnotations(
+                                'all', 'embed', newDocumentPath);
+                            await showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Document Saved!'),
+                                content: Text('Document Saved Successfully at ' + newDocumentPath),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, 'OK'),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
-                          child: const Text('Save Document'))
+                          child: const Text('Save Document As'))
                     ]))
                   ]))));
     } else {

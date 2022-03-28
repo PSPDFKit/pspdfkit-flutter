@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
 
 import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
@@ -21,7 +22,9 @@ import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_manual_save_example.dart';
+import 'pspdfkit_save_as_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
+import 'platform_utils.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -59,8 +62,11 @@ const String _annotationsExample =
 const String _annotationsExampleSub =
     'Programmatically adds and removes annotations using a custom Widget.';
 const String _manualSaveExample = 'Manual Save';
+const String _saveAsExample = 'Save As';
 const String _manualSaveExampleSub =
     'Add a save button at the bottom and disable automatic saving.';
+const String _saveAsExampleSub =
+    'Embed and save the changes made to a document into a new file';
 const String _annotationProcessingExample = 'Process Annotations';
 const String _annotationProcessingExampleSub =
     'Programmatically adds and removes annotations using a custom Widget.';
@@ -145,31 +151,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return file;
   }
 
-  bool isCupertino(BuildContext context) {
-    final defaultTargetPlatform = Theme.of(context).platform;
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        return true;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        return false;
-    }
-  }
-
   void showDocument() async {
     final extractedDocument = await extractAsset(_documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar: isCupertino(context) ? false : true,
+            extendBodyBehindAppBar:
+                PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
                 bottom: false,
                 child: Container(
-                    padding: isCupertino(context)
+                    padding: PlatformUtils.isCupertino(context)
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child: PspdfkitWidget(
@@ -179,7 +172,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void showDocumentPlatformStyle() async {
     final extractedDocument = await extractAsset(_documentPath);
 
-    if (isCupertino(context)) {
+    if (PlatformUtils.isCupertino(context)) {
       await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
           builder: (_) => CupertinoPageScaffold(
               navigationBar: const CupertinoNavigationBar(),
@@ -206,13 +199,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedImage = await extractAsset(_imagePath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar: isCupertino(context) ? false : true,
+            extendBodyBehindAppBar:
+                PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
                 bottom: false,
                 child: Container(
-                    padding: isCupertino(context)
+                    padding: PlatformUtils.isCupertino(context)
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child:
@@ -223,13 +217,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedDocument = await extractAsset(_documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar: isCupertino(context) ? false : true,
+            extendBodyBehindAppBar:
+                PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
                 bottom: false,
                 child: Container(
-                    padding: isCupertino(context)
+                    padding: PlatformUtils.isCupertino(context)
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child: PspdfkitWidget(
@@ -245,13 +240,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedDocument = await extractAsset(_documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar: isCupertino(context) ? false : true,
+            extendBodyBehindAppBar:
+                PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
                 bottom: false,
                 child: Container(
-                    padding: isCupertino(context)
+                    padding: PlatformUtils.isCupertino(context)
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child: PspdfkitWidget(
@@ -312,13 +308,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedLockedDocument = await extractAsset(_lockedDocumentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar: isCupertino(context) ? false : true,
+            extendBodyBehindAppBar:
+                PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
                 bottom: false,
                 child: Container(
-                    padding: isCupertino(context)
+                    padding: PlatformUtils.isCupertino(context)
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child: PspdfkitWidget(
@@ -350,13 +347,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void manualSaveExample() async {
-    final extractedWritableDocument =
-        await extractAsset(_documentPath, shouldOverwrite: false, prefix: 'persist');
+    final extractedWritableDocument = await extractAsset(_documentPath,
+        shouldOverwrite: false, prefix: 'persist');
 
     // Automatic Saving of documents is enabled by default in certain scenarios [see for details: https://pspdfkit.com/guides/flutter/save-a-document/#auto-save]
     // In order to manually save documents, you might consider disabling automatic saving with disableAutosave: true in the config
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitManualSaveExampleWidget(
+            documentPath: extractedWritableDocument.path,
+            configuration: const {disableAutosave: true})));
+  }
+
+  void saveAsExample() async {
+    final extractedWritableDocument = await extractAsset(_documentPath,
+        shouldOverwrite: false, prefix: 'persist');
+
+    // Automatic Saving of documents is enabled by default in certain scenarios [see for details: https://pspdfkit.com/guides/flutter/save-a-document/#auto-save]
+    // In order to manually save documents, you might consider disabling automatic saving with disableAutosave: true in the config
+    await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
+        builder: (_) => PspdfkitSaveAsExampleWidget(
             documentPath: extractedWritableDocument.path,
             configuration: const {disableAutosave: true})));
   }
@@ -374,7 +383,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final extractedDocument = await extractAsset(_documentPath);
       final extractedFormDocument = await extractAsset(_formPath);
 
-      if (isCupertino(context)) {
+      if (PlatformUtils.isCupertino(context)) {
         await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
             builder: (_) => CupertinoPageScaffold(
                 navigationBar: CupertinoNavigationBar(),
@@ -669,20 +678,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_manualSaveExample),
           subtitle: const Text(_manualSaveExampleSub),
           onTap: () => manualSaveExample()),
+      if (PlatformUtils.isCupertino(context))
+        ListTile(
+            title: const Text(_saveAsExample),
+            subtitle: const Text(_saveAsExampleSub),
+            onTap: () => saveAsExample()),
       // The annotation processing example is supported by iOS only for now.
-      if (isCupertino(context))
+      if (PlatformUtils.isCupertino(context))
         ListTile(
             title: const Text(_annotationProcessingExample),
             subtitle: const Text(_annotationProcessingExampleSub),
             onTap: () => annotationProcessingExample()),
       // The import Instant JSON example is supported by iOS only for now.
-      if (isCupertino(context))
+      if (PlatformUtils.isCupertino(context))
         ListTile(
             title: const Text(_importInstantJsonExample),
             subtitle: const Text(_importInstantJsonExampleSub),
             onTap: () => importInstantJsonExample()),
       // The push two PspdfWidgets simultaneously example is supported by iOS only for now.
-      if (isCupertino(context))
+      if (PlatformUtils.isCupertino(context))
         ListTile(
             title: const Text(_widgetExampleFullScreen),
             subtitle: const Text(_widgetExampleFullScreenSub),

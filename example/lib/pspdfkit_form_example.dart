@@ -15,6 +15,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pspdfkit_example/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
 
@@ -53,25 +54,23 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
       'document': widget.documentPath,
       'configuration': widget.configuration
     };
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
-          extendBodyBehindAppBar:
-              defaultTargetPlatform == TargetPlatform.android,
+          extendBodyBehindAppBar: PlatformUtils.isAndroid(),
           // Do not resize the the document view on Android or
           // it won't be rendered correctly when filling forms.
-          resizeToAvoidBottomInset: defaultTargetPlatform == TargetPlatform.iOS,
+          resizeToAvoidBottomInset: PlatformUtils.isIOS(),
           appBar: AppBar(),
           body: SafeArea(
               top: false,
               bottom: false,
               child: Container(
-                  padding: defaultTargetPlatform == TargetPlatform.iOS
+                  padding: PlatformUtils.isIOS()
                       ? null
                       : const EdgeInsets.only(top: kToolbarHeight),
                   child: Column(children: <Widget>[
                     Expanded(
-                        child: defaultTargetPlatform == TargetPlatform.android
+                        child: PlatformUtils.isAndroid()
                             ? PlatformViewLink(
                                 viewType: viewType,
                                 surfaceFactory: (BuildContext context,
@@ -117,8 +116,7 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                     // On Android do not show the buttons when the Keyboard
                     // is visible. PSPDFKit for Android automatically
                     // fills the space available and re-render the document view.
-                    if (!_keyboardVisible ||
-                        defaultTargetPlatform == TargetPlatform.iOS)
+                    if (!_keyboardVisible || PlatformUtils.isIOS())
                       SizedBox(
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
