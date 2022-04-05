@@ -16,9 +16,9 @@
 #pragma mark - PSPDFApplicationPolicy
 
 - (BOOL)hasPermissionForEvent:(NSString *)event isUserAction:(BOOL)isUserAction {
-    if ([event isEqualToString:PSPDFPolicyEventPasteboard]) {
+    /*if ([event isEqualToString:PSPDFPolicyEventPasteboard]) {
         return NO;
-    }
+    }*/
     return YES;
 }
 
