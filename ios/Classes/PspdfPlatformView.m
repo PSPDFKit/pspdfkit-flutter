@@ -10,6 +10,7 @@
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
 #import "PspdfkitCustomButtonAnnotationToolbar.h"
+#import "CQAPspdfkitThumbnailViewController.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -26,7 +27,9 @@
 @implementation PspdfPlatformView
 
 - (nonnull UIView *)view {
-    return self.navigationController.view ?: [UIView new];
+    UIView *view = self.navigationController.view ?: [UIView new];
+    view.tintColor = UIColor.whiteColor;
+    return view;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
@@ -58,6 +61,7 @@
         // Update the configuration to override the default class with our custom one.
         configuration = [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
             [builder overrideClass:PSPDFAnnotationToolbar.class withClass:PspdfkitCustomButtonAnnotationToolbar.class];
+            [builder overrideClass:PSPDFThumbnailViewController.class withClass:CQAPspdfkitThumbnailViewController.class];
         }];
 
         _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
@@ -99,6 +103,7 @@
 
     return self;
 }
+
 
 - (void)dealloc {
     [self cleanup];

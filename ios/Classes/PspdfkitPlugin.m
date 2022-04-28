@@ -11,6 +11,7 @@
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
 #import "PspdfkitCustomButtonAnnotationToolbar.h"
+#import "CQAPspdfkitThumbnailViewController.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -52,6 +53,11 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
             return;
         }
 
+        // UIImage* (^imageLoadingHandler)(NSString*) = ^UIImage*(NSString *imageKey) {
+        //     return [UIImage systemImageNamed:@"multiply.circle.fill"];
+        // };
+        // PSPDFKitGlobal.sharedInstance.imageLoadingHandler = imageLoadingHandler;//imageLoadingHandler;
+
         NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:call.arguments[@"configuration"]];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
@@ -63,6 +69,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         // Update the configuration to override the default class with our custom one.
         configuration = [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder * _Nonnull builder) {
             [builder overrideClass:PSPDFAnnotationToolbar.class withClass:PspdfkitCustomButtonAnnotationToolbar.class];
+            [builder overrideClass:PSPDFThumbnailViewController.class withClass:CQAPspdfkitThumbnailViewController.class];
         }];
 
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
@@ -92,10 +99,16 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         }
 
         PSPDFNavigationController *navigationController = [[PSPDFNavigationController alloc] initWithRootViewController:self.pdfViewController];
+        
         navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
         UIViewController *presentingViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(spreadIndexDidChange:) name:PSPDFDocumentViewControllerSpreadIndexDidChangeNotification object:nil];
+
+        navigationController.navigationBar.standardAppearance = [[UINavigationBarAppearance alloc] init];
+        [navigationController.navigationBar.standardAppearance configureWithDefaultBackground];
+        navigationController.navigationBar.standardAppearance.backgroundColor = [UIColor colorWithRed:91.0/255.0 green:129.0/255.0 blue:74.0/255.0 alpha:1.0];
+        navigationController.navigationBar.standardAppearance.shadowColor = nil;
 
         result(@(YES));
     } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {

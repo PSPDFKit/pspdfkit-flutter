@@ -57,6 +57,8 @@
             builder.scrollDirection = [dictionary[key] isEqualToString: @"vertical"] ? PSPDFScrollDirectionVertical : PSPDFScrollDirectionHorizontal;
         }
 
+        builder.shouldAskForAnnotationUsername = NO;
+
         key = @"pageTransition";
         if (dictionary[key]) {
             builder.pageTransition = [PspdfkitFlutterConverter pageTransition:dictionary forKey:key];
@@ -139,7 +141,7 @@
 
         key = @"enableAnnotationEditing";
         if (dictionary[key]) {
-            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];
+            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringHighlight]];
             builder.editableAnnotationTypes = [dictionary[key] boolValue] ? editableAnnotations : nil;
         }
 
