@@ -175,3 +175,7 @@ const String watermarkColor = 'watermarkColor';
 const String watermarkOpacity = 'watermarkOpacity';
 const String watermarkFontSize = 'watermarkFontSize';
 
+const String creatorName = 'creatorName';
+
+const String editableAnnotationTypes = 'editableAnnotationTypes';
+

@@ -12,7 +12,7 @@
     <style name="PSPDFKit.Theme.Example" parent="PSPDFKit.Theme">
         <item name="colorPrimary">@color/teal</item>
         <item name="colorPrimaryDark">@color/dark_accent</item>
-        <item name="colorAccent">@color/red_light</item>
+        <!--<item name="colorAccent">@color/red_light</item>
 
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -20,13 +20,13 @@
 
         <item name="android:listDivider">@android:drawable/divider_horizontal_dark</item>
 
-        <!-- Default background color of PSPDFKit Views. PDF view background is controlled by a separate property pspdf__backgroundColor -->
+        &lt;!&ndash; Default background color of PSPDFKit Views. PDF view background is controlled by a separate property pspdf__backgroundColor &ndash;&gt;
         <item name="android:colorBackground">@color/signature_blue</item>
-        <!-- Default foreground color of PSPDFKit Views. -->
+        &lt;!&ndash; Default foreground color of PSPDFKit Views. &ndash;&gt;
         <item name="android:colorForeground">@color/dark_theme_orange</item>
 
 
         <item name="pspdf__backgroundColor">@color/dark_background_color</item>
-        <item name="pspdf__navigationHistoryIconColor">@color/dark_scrollbars</item>
+        <item name="pspdf__navigationHistoryIconColor">@color/dark_scrollbars</item>-->
     </style>
 </resources>

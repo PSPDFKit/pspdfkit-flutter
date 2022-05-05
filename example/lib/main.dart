@@ -249,6 +249,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: PspdfkitWidget(
                         documentPath: extractedDocument.path,
                         configuration: const {
+
+                          creatorName : "Alberto Ciaone",
                           fullname: "Alberto Marcone",
                           watermarkEnabled: true,
                           watermarkColor: "#ff00ff",
@@ -284,6 +286,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             'activityButtonItem',
                             'searchButtonItem',
                             'annotationButtonItem'
+                          ],
+                          editableAnnotationTypes : [
+                            'PSPDFAnnotationStringHighlight'
                           ],
                           iOSLeftBarButtonItems: ['settingsButtonItem'],
                           iOSAllowToolbarTitleChange: false,

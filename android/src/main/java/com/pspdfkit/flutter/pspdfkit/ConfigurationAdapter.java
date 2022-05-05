@@ -25,10 +25,13 @@ import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.settings.SettingsMenuItemType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
+import com.pspdfkit.annotations.AnnotationType;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+
+import com.pspdfkit.preferences.PSPDFKitPreferences;
 
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty;
 import static io.flutter.util.Preconditions.checkNotNull;
@@ -40,9 +43,11 @@ class ConfigurationAdapter {
     private static final String SCROLL_DIRECTION = "scrollDirection";
     private static final String PAGE_TRANSITION = "pageTransition";
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
-    
+
     // Document Presentation Options
     private static final String PAGE_MODE = "pageMode";
+    private static final String FULL_NAME = "fullname";
+
     private static final String SPREAD_FITTING = "spreadFitting";
     private static final String SHOW_PAGE_LABELS = "showPageLabels";
     private static final String START_PAGE = "startPage";
@@ -115,12 +120,12 @@ class ConfigurationAdapter {
      */
     @Deprecated
     private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
-    /** 
+    /**
      * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
      * Use {@code FIRST_PAGE_ALWAYS_SINGLE} instead, which replaces it.
      */
     private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
-    /** 
+    /**
      * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
      * Use {@code SHOW_BOOKMARKS_ACTION} instead, which replaces it.
      */
@@ -132,7 +137,7 @@ class ConfigurationAdapter {
     private static final String PAGE_TRANSITION_SCROLL_PER_SPREAD = "scrollPerSpread";
     private static final String PAGE_TRANSITION_SCROLL_CONTINUOUS = "scrollContinuous";
     private static final String PAGE_TRANSITION_CURL = "curl";
-    
+
     // Document Presentation Values
     private static final String PAGE_MODE_AUTOMATIC = "automatic";
     private static final String PAGE_MODE_SINGLE = "single";
@@ -173,14 +178,30 @@ class ConfigurationAdapter {
     private static final String SHOW_THUMBNAIL_BAR_SCRUBBER_BAR = "scrubberBar";
     private static final String SHOW_THUMBNAIL_BAR_SCROLLABLE = "scrollable";
 
-    @NonNull private final PdfActivityConfiguration.Builder configuration;
-    @Nullable private String password = null;
+    @NonNull
+    private final PdfActivityConfiguration.Builder configuration;
+    @Nullable
+    private String password = null;
 
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
+
         if (configurationMap != null && !configurationMap.isEmpty()) {
             String key = null;
+
+
+            key = getKeyOfType(configurationMap, FULL_NAME, String.class);
+            if (key != null) {
+                // Check if the annotation creator has already been set.
+                if (PSPDFKitPreferences.get(context).isAnnotationCreatorSet()) {
+                    PSPDFKitPreferences.get(context).setAnnotationCreator((String) configurationMap.get(key));
+                }
+            }
+
+
+
+
 
             key = getKeyOfType(configurationMap, PAGE_MODE, String.class);
             if (key != null) {
@@ -343,6 +364,28 @@ class ConfigurationAdapter {
                 configureFirstPageAlwaysSingle((Boolean) configurationMap.get(key));
             }
         }
+
+        // Create a list with all annotation types.
+        ArrayList<AnnotationType> excludedAnnotationTypes = new ArrayList<>(EnumSet.allOf(AnnotationType.class));
+
+        excludedAnnotationTypes.remove(AnnotationType.CIRCLE);
+        excludedAnnotationTypes.remove(AnnotationType.FREETEXT);
+        excludedAnnotationTypes.remove(AnnotationType.HIGHLIGHT);
+        excludedAnnotationTypes.remove(AnnotationType.INK);
+        excludedAnnotationTypes.remove(AnnotationType.LINE);
+        excludedAnnotationTypes.remove(AnnotationType.NOTE);
+        excludedAnnotationTypes.remove(AnnotationType.POLYGON);
+        excludedAnnotationTypes.remove(AnnotationType.POLYLINE);
+        excludedAnnotationTypes.remove(AnnotationType.SQUARE);
+        excludedAnnotationTypes.remove(AnnotationType.SQUIGGLY);
+//        excludedAnnotationTypes.remove(AnnotationType.STAMP);
+        excludedAnnotationTypes.remove(AnnotationType.STRIKEOUT);
+        excludedAnnotationTypes.remove(AnnotationType.UNDERLINE);
+
+        configuration.excludedAnnotationTypes(excludedAnnotationTypes);
+
+        Log.e(LOG_TAG, String.format("excludedAnnotationTypes size %s", excludedAnnotationTypes.toString()));
+
     }
 
     private void configurePageTransition(@NonNull final String transition) {
@@ -654,27 +697,27 @@ class ConfigurationAdapter {
                 case SETTINGS_MENU_ITEM_THEME:
                 case SETTINGS_MENU_ITEM_ANDROID_THEME:
                     settingsMenuItemTypes.add(SettingsMenuItemType.THEME);
-                break;
+                    break;
                 case SETTINGS_MENU_ITEM_SCREEN_AWAKE:
                 case SETTINGS_MENU_ITEM_ANDROID_SCREEN_AWAKE:
                     settingsMenuItemTypes.add(SettingsMenuItemType.SCREEN_AWAKE);
-                break;
+                    break;
                 case SETTINGS_MENU_ITEM_PAGE_LAYOUT:
                 case SETTINGS_MENU_ITEM_ANDROID_PAGE_LAYOUT:
                     settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_LAYOUT);
-                break;
+                    break;
                 case SETTINGS_MENU_ITEM_PAGE_TRANSITION:
                     settingsMenuItemTypes.add(SettingsMenuItemType.PAGE_TRANSITION);
-                break;
+                    break;
                 case SETTINGS_MENU_ITEM_SCROLL_DIRECTION:
                     settingsMenuItemTypes.add(SettingsMenuItemType.SCROLL_DIRECTION);
-                break;
+                    break;
                 case SETTINGS_MENU_ITEM_IOS_APPEARANCE:
                 case SETTINGS_MENU_ITEM_IOS_BRIGHTNESS:
                 case SETTINGS_MENU_ITEM_IOS_PAGE_MODE:
                 case SETTINGS_MENU_ITEM_IOS_SPREAD_FITTING:
                     // NO-OP. Only supported on iOS.
-                break;
+                    break;
                 default:
                     throw new IllegalArgumentException("Undefined settings menu item " + menuType);
             }
@@ -707,13 +750,13 @@ class ConfigurationAdapter {
      * When reading configuration options, we check not only for the given configuration string,
      * but also for a string with the `android` prefix. For instance if the user enters
      * `androidPageScrollDirection`, it is considered a valid string equal to `pageScrollDirection`.
-     * 
+     * <p>
      * When documenting, we always prefer configuration option strings:
-     * 
+     * <p>
      * - No prefix          : If the key works for both iOS and Android.
      * - `android` prefix   : If the key works only for Android.
      * - `iOS` prefix       : If the key works only for iOS.
-     */ 
+     */
     private String addAndroidPrefix(String key) {
         // Capitalize the first letter.
         String cap = String.valueOf(key.charAt(0)).toUpperCase() + key.substring(1);
@@ -722,8 +765,8 @@ class ConfigurationAdapter {
 
     @Nullable
     private <T> String getKeyOfType(@NonNull HashMap<String, Object> configurationMap,
-                                @NonNull String key,
-                                @NonNull Class<T> clazz) {
+                                    @NonNull String key,
+                                    @NonNull Class<T> clazz) {
         if (containsKeyOfType(configurationMap, key, clazz)) {
             return key;
         }

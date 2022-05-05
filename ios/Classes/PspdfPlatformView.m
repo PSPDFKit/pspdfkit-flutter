@@ -48,6 +48,7 @@
         NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];

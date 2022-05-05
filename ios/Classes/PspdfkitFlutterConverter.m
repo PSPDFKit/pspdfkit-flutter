@@ -139,9 +139,16 @@
 
         key = @"enableAnnotationEditing";
         if (dictionary[key]) {
-            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];
+           /* NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];*/
+            
+            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser]];
             builder.editableAnnotationTypes = [dictionary[key] boolValue] ? editableAnnotations : nil;
         }
+        
+        /*key = @"enableAnnotationEditing";
+        if (dictionary[key]) {
+            builder.editableAnnotationTypes = [PspdfkitFlutterConverter annotationTypeOptions:dictionary[key]];
+        }*/
 
         // Deprecated Options
 
@@ -169,6 +176,7 @@
         if (dictionary[key]) {
             builder.documentLabelEnabled = [dictionary[@"showDocumentLabel"] boolValue];
         }
+
 
         key = @"isFirstPageAlwaysSingle";
         if (dictionary[key]) {
@@ -304,6 +312,11 @@
 
     PSPDFSettingsOptions finalOptions = 0;
     for (NSString *option in options) {
+        
+        
+        
+        
+        
         if ([option isEqualToString:@"scrollDirection"]) {
             finalOptions |= PSPDFSettingsOptionScrollDirection;
         } else if ([option isEqualToString:@"pageTransition"]) {
@@ -330,6 +343,32 @@
 
     return finalOptions;
 }
+
++ (NSSet<PSPDFAnnotationString> *)annotationTypeOptions:(nullable NSArray <NSString *> *)options {
+    
+    NSMutableArray *annotations = [NSMutableArray array];
+    
+    NSSet *set = [NSSet set];
+    
+    if ((id)options == NSNull.null || !options || options.count == 0) {
+        return set;
+    }
+
+    for (NSString *option in options) {
+        
+       /* PSPDFAnnotationType type = [PspdfkitFlutterConverter annotationTypeFromString:option];
+        
+        NSSet *set = [NSSet setWithObject:type];
+        
+        NSArray *a = [NSArray arrayWithObject:[NSNumber numberWithInt:type]];
+        
+        [annotations addObjectsFromArray:a];*/
+        
+    }
+
+    return set;
+}
+
 
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
     if (!typeString) {

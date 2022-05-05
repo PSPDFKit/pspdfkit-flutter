@@ -10,6 +10,10 @@
 
 <resources>
     <color name="color_primary">#3C97C9</color>
+    <color name="dark_accent">#02355A</color>
+
+
+
     <color name="color_primary_dark">#306F8B</color>
 
     <!-- Elementary. -->
@@ -19,13 +23,12 @@
     <color name="gray">#A8A8A8</color>
     <color name="gray_light">#E0E0E0</color>
     <color name="red_light">#EF5350</color>
-    <color name="teal">#1DE9B6</color>
+    <color name="teal">#2C9B91</color>
 
     <!-- Dark theme. -->
     <color name="dark">#1E2428</color>
     <color name="dark_translucent">#c8000000</color>
     <color name="black_translucent">#64000000</color>
-    <color name="dark_accent">#D2ED4F</color>
 
     <color name="dark_status_bar">@color/dark</color>
     <color name="dark_background_color">#363D42</color>
