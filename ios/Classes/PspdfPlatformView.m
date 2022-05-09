@@ -93,13 +93,13 @@
                        bool watermarkEnabled = [[configurationDictionary valueForKey:@"watermarkEnabled"] boolValue];
 
                            if (watermarkEnabled) {
-                               CGContextSaveGState(context);
                                NSString *text = [configurationDictionary valueForKey:@"fullname"];
                                NSString *opacity = [configurationDictionary valueForKey:@"watermarkOpacity"];
                                NSString *color = [configurationDictionary valueForKey:@"watermarkColor"];
                                NSString *fontSize = [configurationDictionary valueForKey:@"watermarkFontSize"];
 
 
+                               CGContextSaveGState(context);
 
                                for (int i = 1; i <= 10; i++)
                                {
@@ -107,7 +107,7 @@
                                    text= [text stringByAppendingString:[NSString stringWithFormat:@"%@%@",@"   ",text]];
                                }
 
-                                CGContextSaveGState(context);
+                               // CGContextSaveGState(context);
 
 
                                unsigned int c;
@@ -130,8 +130,8 @@
                                CGFloat rads = atan2(yDiff, xDiff);
 
 
-                              /* CGContextTranslateCTM(context, -80, -165);
-                               CGContextRotateCTM(context, rads);*/
+                              /* CGContextTranslateCTM(context, -80, -165);*/
+                               CGContextRotateCTM(context, rads);
 
                                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
                                paragraphStyle.lineBreakMode = NSLineBreakByClipping;
