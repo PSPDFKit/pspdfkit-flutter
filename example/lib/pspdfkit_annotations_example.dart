@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
 
+import 'platform_utils.dart';
+
 const annotationJsonHashMap = {
   'uuid': 'A92AA288-B11D-490C-847B-D1A0BC64D3E9',
   'bbox': [
@@ -130,22 +132,20 @@ class _PspdfkitAnnotationsExampleWidgetState
       'document': widget.documentPath,
       'configuration': widget.configuration
     };
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
-          extendBodyBehindAppBar:
-              defaultTargetPlatform == TargetPlatform.android,
+          extendBodyBehindAppBar: PlatformUtils.isAndroid(),
           appBar: AppBar(),
           body: SafeArea(
               top: false,
               bottom: false,
               child: Container(
-                  padding: defaultTargetPlatform == TargetPlatform.iOS
+                  padding: PlatformUtils.isIOS()
                       ? null
                       : const EdgeInsets.only(top: kToolbarHeight),
                   child: Column(children: <Widget>[
                     Expanded(
-                        child: defaultTargetPlatform == TargetPlatform.android
+                        child: PlatformUtils.isAndroid()
                             ? PlatformViewLink(
                                 viewType: viewType,
                                 surfaceFactory: (BuildContext context,
@@ -197,7 +197,7 @@ class _PspdfkitAnnotationsExampleWidgetState
                             // E.g: `await view.addAnnotation(annotationJsonString);`
                           },
                           child: const Text('Add Annotation')),
-                      if (defaultTargetPlatform == TargetPlatform.iOS)
+                      if (PlatformUtils.isIOS())
                         ElevatedButton(
                             onPressed: () async {
                               dynamic annotationsJson =

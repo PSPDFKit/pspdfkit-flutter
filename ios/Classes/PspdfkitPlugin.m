@@ -22,6 +22,8 @@ static FlutterMethodChannel *channel;
 
 @implementation PspdfkitPlugin
 
+PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-environment";
+
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
     [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
@@ -36,14 +38,10 @@ static FlutterMethodChannel *channel;
         result([@"iOS " stringByAppendingString:PSPDFKitGlobal.versionNumber]);
     } else if ([@"setLicenseKey" isEqualToString:call.method]) {
         NSString *licenseKey = call.arguments[@"licenseKey"];
-        [PSPDFKitGlobal setLicenseKey:licenseKey ];
+        [PSPDFKitGlobal setLicenseKey:licenseKey options:@{PSPDFSettingKeyHybridEnvironment: @"Flutter"}];
     } else if ([@"setLicenseKeys" isEqualToString:call.method]) {
         NSString *iOSLicenseKey = call.arguments[@"iOSLicenseKey"];
-        
-        //PSPDFApplicationPolicyKey : [PSCDisallowCopyApplicationPolicy new]
-        
-        //[PSPDFKitGlobal setLicenseKey:iOSLicenseKey  options:[[NSDictionary alloc] initWithObjectsAndKeys:PSPDFApplicationPolicyKey, [PSCDisallowCopyApplicationPolicy new], nil]];
-        [PSPDFKitGlobal setLicenseKey:iOSLicenseKey];
+        [PSPDFKitGlobal setLicenseKey:iOSLicenseKey options:@{PSPDFSettingKeyHybridEnvironment: @"Flutter"}];
     }else if ([@"present" isEqualToString:call.method]) {
         NSString *documentPath = call.arguments[@"document"];
 

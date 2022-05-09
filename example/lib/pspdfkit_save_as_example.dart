@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2022 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -13,40 +13,37 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_example/platform_utils.dart';
 
+import 'package:pspdfkit_flutter/src/main.dart';
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'platform_utils.dart';
 
-typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(
-    PspdfkitWidgetController view);
-
-class PspdfkitFormExampleWidget extends StatefulWidget {
+class PspdfkitSaveAsExampleWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
-  final PspdfkitFormExampleWidgetCreatedCallback?
-      onPspdfkitFormExampleWidgetCreated;
 
-  const PspdfkitFormExampleWidget(
-      {Key? key,
-      required this.documentPath,
-      this.configuration,
-      this.onPspdfkitFormExampleWidgetCreated})
+  const PspdfkitSaveAsExampleWidget(
+      {Key? key, required this.documentPath, this.configuration})
       : super(key: key);
 
   @override
-  _PspdfkitFormExampleWidgetState createState() =>
-      _PspdfkitFormExampleWidgetState();
+  _PspdfkitSaveAsExampleWidgetState createState() =>
+      _PspdfkitSaveAsExampleWidgetState();
 }
 
-class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
-  late PspdfkitWidgetController view;
-  bool _keyboardVisible = false;
+class _PspdfkitSaveAsExampleWidgetState
+    extends State<PspdfkitSaveAsExampleWidget> {
+  late PspdfkitWidgetController pspdfkitWidgetController;
+
+  Future<String> getExportPath(String assetPath) async {
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
+    return tempDocumentPath;
+  }
 
   @override
   Widget build(BuildContext context) {
-    _keyboardVisible = MediaQuery.of(context).viewInsets.bottom != 0;
     // This is used in the platform side to register the view.
     const String viewType = 'com.pspdfkit.widget';
     // Pass parameters to the platform side.
@@ -57,9 +54,6 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
     if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
           extendBodyBehindAppBar: PlatformUtils.isAndroid(),
-          // Do not resize the the document view on Android or
-          // it won't be rendered correctly when filling forms.
-          resizeToAvoidBottomInset: PlatformUtils.isIOS(),
           appBar: AppBar(),
           body: SafeArea(
               top: false,
@@ -104,8 +98,7 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                                     ..addOnPlatformViewCreatedListener(
                                         onPlatformViewCreated)
                                     ..create();
-                                },
-                              )
+                                })
                             : UiKitView(
                                 viewType: viewType,
                                 layoutDirection: TextDirection.ltr,
@@ -113,43 +106,33 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                                 onPlatformViewCreated: onPlatformViewCreated,
                                 creationParamsCodec:
                                     const StandardMessageCodec())),
-                    // On Android do not show the buttons when the Keyboard
-                    // is visible. PSPDFKit for Android automatically
-                    // fills the space available and re-render the document view.
-                    if (!_keyboardVisible || PlatformUtils.isIOS())
-                      SizedBox(
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: <Widget>[
-                            ElevatedButton(
-                                onPressed: () {
-                                  view.setFormFieldValue(
-                                      'Updated Form Field Value', 'Name_Last');
-                                },
-                                child: const Text('Set form field value')),
-                            ElevatedButton(
-                                onPressed: () async {
-                                  const title = 'Form Field Value';
-                                  final formFieldValue = await view
-                                          .getFormFieldValue('Name_Last') ??
-                                      '';
-                                  await showDialog<AlertDialog>(
-                                      context: context,
-                                      builder: (BuildContext context) =>
-                                          AlertDialog(
-                                            title: const Text(title),
-                                            content: Text(formFieldValue),
-                                            actions: [
-                                              TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text('OK'))
-                                            ],
-                                          ));
-                                },
-                                child: const Text('Get form field value'))
-                          ]))
+                    SizedBox(
+                        child: Column(children: <Widget>[
+                      ElevatedButton(
+                          onPressed: () async {
+                            // Ensure that the path for the new document is a writable path
+                            // You can use a package like https://pub.dev/packages/filesystem_picker to allow users select the directory and name of the file to save
+                            final newDocumentPath = await getExportPath(
+                                'PDFs/Embedded/new_pdf_document.pdf');
+                            await pspdfkitWidgetController.processAnnotations(
+                                'all', 'embed', newDocumentPath);
+                            await showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Document Saved!'),
+                                content: Text('Document Saved Successfully at ' + newDocumentPath),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, 'OK'),
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: const Text('Save Document As'))
+                    ]))
                   ]))));
     } else {
       return Text(
@@ -157,14 +140,7 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
     }
   }
 
-  bool isKeyboardVisible() {
-    return MediaQuery.of(context).viewInsets.bottom == 0;
-  }
-
   Future<void> onPlatformViewCreated(int id) async {
-    view = PspdfkitWidgetController(id);
-    if (widget.onPspdfkitFormExampleWidgetCreated != null) {
-      widget.onPspdfkitFormExampleWidgetCreated!(view);
-    }
+    pspdfkitWidgetController = PspdfkitWidgetController(id);
   }
 }

@@ -38,7 +38,7 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '8.0.2'
+    ext.pspdfkitVersion = '8.1.2'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
@@ -56,5 +56,5 @@ ext.androidCompileSdkVersion = 31
 ext.androidBuildToolsVersion = '30.0.3'
 ext.androidMinSdkVersion = 21
 ext.androidTargetSdkVersion = 30
-ext.androidGradlePluginVersion = '7.1.0-alpha03'
+ext.androidGradlePluginVersion = '7.1.1'
 ext.kotlinVersion = "1.5.31"

@@ -15,6 +15,7 @@ part of pspdfkit;
 const String scrollDirection = 'scrollDirection';
 const String pageTransition = 'pageTransition';
 const String enableTextSelection = 'enableTextSelection';
+const String disableAutosave = 'disableAutosave';
 
 /// Document Presentation Options
 

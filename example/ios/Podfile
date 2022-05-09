@@ -29,8 +29,7 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  #pod 'PSPDFKit', '~> 11.2.0'
-  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/10.5.1.podspec'
+  pod 'PSPDFKit', '~> 11.3.0'
 end
 
 post_install do |installer|

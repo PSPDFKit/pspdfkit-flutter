@@ -139,16 +139,9 @@
 
         key = @"enableAnnotationEditing";
         if (dictionary[key]) {
-           /* NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];*/
-            
-            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser]];
+            NSSet *editableAnnotations = [NSSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];
             builder.editableAnnotationTypes = [dictionary[key] boolValue] ? editableAnnotations : nil;
         }
-        
-        /*key = @"enableAnnotationEditing";
-        if (dictionary[key]) {
-            builder.editableAnnotationTypes = [PspdfkitFlutterConverter annotationTypeOptions:dictionary[key]];
-        }*/
 
         // Deprecated Options
 
@@ -189,9 +182,14 @@
             builder.showForwardActionButton = [dictionary[key] boolValue];
             builder.showBackForwardActionButtonLabels = [dictionary[key] boolValue];
         }
-        
+
         builder.shouldAskForAnnotationUsername = NO;
-        
+
+
+        key = @"disableAutosave";
+        if (dictionary[key]){
+            builder.autosaveEnabled = ![dictionary[key] boolValue];
+        }
     }];
 }
 
@@ -312,11 +310,11 @@
 
     PSPDFSettingsOptions finalOptions = 0;
     for (NSString *option in options) {
-        
-        
-        
-        
-        
+
+
+
+
+
         if ([option isEqualToString:@"scrollDirection"]) {
             finalOptions |= PSPDFSettingsOptionScrollDirection;
         } else if ([option isEqualToString:@"pageTransition"]) {
@@ -345,25 +343,25 @@
 }
 
 + (NSSet<PSPDFAnnotationString> *)annotationTypeOptions:(nullable NSArray <NSString *> *)options {
-    
+
     NSMutableArray *annotations = [NSMutableArray array];
-    
+
     NSSet *set = [NSSet set];
-    
+
     if ((id)options == NSNull.null || !options || options.count == 0) {
         return set;
     }
 
     for (NSString *option in options) {
-        
+
        /* PSPDFAnnotationType type = [PspdfkitFlutterConverter annotationTypeFromString:option];
-        
+
         NSSet *set = [NSSet setWithObject:type];
-        
+
         NSArray *a = [NSArray arrayWithObject:[NSNumber numberWithInt:type]];
-        
+
         [annotations addObjectsFromArray:a];*/
-        
+
     }
 
     return set;

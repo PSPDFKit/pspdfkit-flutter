@@ -16,6 +16,8 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
 
+import 'platform_utils.dart';
+
 class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final String documentPath;
   final String instantJsonPath;
@@ -47,7 +49,7 @@ class _PspdfkitInstantJsonExampleWidgetState
       'configuration': widget.configuration,
     };
 
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (PlatformUtils.isIOS()) {
       return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(),
           child: SafeArea(
@@ -94,7 +96,7 @@ class _PspdfkitInstantJsonExampleWidgetState
                           child: Text('Export Instant JSON'))
                     ]))
               ])));
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
+    } else if (PlatformUtils.isAndroid()) {
       // This example is only supported in iOS at the moment.
       // Support for Android is coming soon.
       return Text('Unsupported Widget');

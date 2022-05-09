@@ -64,6 +64,10 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         FlutterPlugin, ActivityAware {
     @NonNull private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
+
+    /** Hybrid technology where the application is supposed to be working on. */
+    private static final String HYBRID_TECHNOLOGY = "Flutter";
+
     /** Atomic reference that prevents sending twice the permission result and throwing exception. */
     @NonNull private final AtomicReference<Result> permissionRequestResult;
 
@@ -125,12 +129,12 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             case "setLicenseKey":
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
-                PSPDFKit.initialize(activity, licenseKey);
+                PSPDFKit.initialize(activity, licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
                 break;
             case "setLicenseKeys":
                 String androidLicenseKey = call.argument("androidLicenseKey");
                 requireNotNullNotEmpty(androidLicenseKey, "Android License key");
-                PSPDFKit.initialize(activity, androidLicenseKey);
+                PSPDFKit.initialize(activity, androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
                 break;
             case "present":
                 String documentPath = call.argument("document");
