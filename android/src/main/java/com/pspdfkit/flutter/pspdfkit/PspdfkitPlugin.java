@@ -13,6 +13,7 @@ import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNot
 import static com.pspdfkit.flutter.pspdfkit.util.Utilities.addFileSchemeIfMissing;
 import static com.pspdfkit.flutter.pspdfkit.util.Utilities.areValidIndexes;
 import static com.pspdfkit.flutter.pspdfkit.util.Utilities.isImageDocument;
+import com.pspdfkit.flutter.pspdfkit.FlutterPdfActivity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -154,7 +155,12 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                             .configuration(configurationAdapter.build())
                             .build();
                 } else {
+
+
+
+
                     intent = PdfActivityIntentBuilder.fromUri(activity, Uri.parse(documentPath))
+                            //                            .activityClass(FlutterPdfActivity.class)
                             .activityClass(FlutterPdfActivity.class)
                             .configuration(configurationAdapter.build())
                             .passwords(configurationAdapter.getPassword())
@@ -195,6 +201,8 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                                         "Error while importing document Instant JSON",
                                         throwable.getMessage()));
                 break;
+
+
             case "exportInstantJson":
                 document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.exportInstantJson()");
 

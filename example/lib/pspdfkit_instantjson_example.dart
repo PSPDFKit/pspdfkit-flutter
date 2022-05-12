@@ -9,6 +9,8 @@
 
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
@@ -49,19 +51,55 @@ class _PspdfkitInstantJsonExampleWidgetState
       'configuration': widget.configuration,
     };
 
-    if (PlatformUtils.isIOS()) {
+    if (PlatformUtils.isIOS() || PlatformUtils.isAndroid()) {
       return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(),
           child: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
                 Expanded(
-                    child: UiKitView(
+                    child: PlatformUtils.isAndroid()
+                        ? PlatformViewLink(
+                        viewType: viewType,
+                        surfaceFactory: (BuildContext context,
+                            PlatformViewController controller) {
+                          return AndroidViewSurface(
+                            controller:
+                            controller as AndroidViewController,
+                            gestureRecognizers: const <
+                                Factory<
+                                    OneSequenceGestureRecognizer>>{},
+                            hitTestBehavior:
+                            PlatformViewHitTestBehavior.opaque,
+                          );
+                        },
+                        onCreatePlatformView:
+                            (PlatformViewCreationParams params) {
+                          return PlatformViewsService
+                              .initSurfaceAndroidView(
+                            id: params.id,
+                            viewType: viewType,
+                            layoutDirection: TextDirection.ltr,
+                            creationParams: creationParams,
+                            creationParamsCodec:
+                            const StandardMessageCodec(),
+                            onFocus: () {
+                              params.onFocusChanged(true);
+                            },
+                          )
+                            ..addOnPlatformViewCreatedListener(
+                                params.onPlatformViewCreated)
+                            ..addOnPlatformViewCreatedListener(
+                                onPlatformViewCreated)
+                            ..create();
+                        })
+                        : UiKitView(
                         viewType: viewType,
                         layoutDirection: TextDirection.ltr,
                         creationParams: creationParams,
                         onPlatformViewCreated: onPlatformViewCreated,
-                        creationParamsCodec: const StandardMessageCodec())),
+                        creationParamsCodec:
+                        const StandardMessageCodec())),
                 SizedBox(
                     height: 80,
                     child: Row(children: <Widget>[

@@ -128,9 +128,6 @@
                                CGFloat xDiff = cropBox.size.width;
                                CGFloat yDiff = cropBox.size.height;
                                CGFloat rads = atan2(yDiff, xDiff);
-
-
-                              /* CGContextTranslateCTM(context, -80, -165);*/
                                CGContextRotateCTM(context, rads);
 
                                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];

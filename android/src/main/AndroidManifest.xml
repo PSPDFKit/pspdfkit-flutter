@@ -16,5 +16,8 @@
         <activity
             android:name=".FlutterPdfActivity"
             android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".WatermarkActivity"
+            android:windowSoftInputMode="adjustNothing" />
     </application>
 </manifest>

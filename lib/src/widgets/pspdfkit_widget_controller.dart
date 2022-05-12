@@ -34,6 +34,14 @@ class PspdfkitWidgetController {
       _channel.invokeMethod('applyInstantJson',
           <String, String>{'annotationsJson': annotationsJson});
 
+  /// Applies Instant document JSON to the presented document.
+  Future<bool?> applyWatermark(String name, String color, int size, double opacity) async {
+
+    print("entro in controller");
+    return _channel.invokeMethod('applyWatermark',
+          <String, String>{'name': name, 'color':color, 'size':size.toString(), 'opacity':opacity.toString()});
+  }
+
   /// Exports Instant document JSON from the presented document.
   Future<String?> exportInstantJson() async =>
       _channel.invokeMethod('exportInstantJson');

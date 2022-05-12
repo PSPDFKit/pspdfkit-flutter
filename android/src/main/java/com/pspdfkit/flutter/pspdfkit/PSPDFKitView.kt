@@ -1,7 +1,9 @@
 package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
+import android.graphics.*
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
@@ -29,6 +31,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import com.pspdfkit.ui.drawable.PdfDrawable
+import com.pspdfkit.ui.drawable.PdfDrawableProvider
+import androidx.annotation.UiThread
+import androidx.core.graphics.toRectF
+import com.pspdfkit.document.PdfBox
 
 internal class PSPDFKitView(
     context: Context,
@@ -40,6 +47,12 @@ internal class PSPDFKitView(
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
     private val methodChannel: MethodChannel
     private val pdfUiFragment: PdfUiFragment
+
+    override fun getView(): View {
+        return fragmentContainerView
+            ?: throw IllegalStateException("Fragment container view can't be null.")
+    }
+
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -66,6 +79,9 @@ internal class PSPDFKitView(
             }
         }
 
+
+        /*  */
+
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View?) {
@@ -85,24 +101,59 @@ internal class PSPDFKitView(
         }
     }
 
-    override fun getView(): View {
-        return fragmentContainerView
-            ?: throw IllegalStateException("Fragment container view can't be null.")
-    }
-
     override fun dispose() {
         fragmentContainerView = null
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+
+        Log.i(LOG_TAG, "*********** onMethodCall")
         // Return if the fragment or the document
         // are not ready.
         if (!pdfUiFragment.isAdded) {
             return
         }
+
+        Log.i(LOG_TAG, "*********** isAdded")
         val document = pdfUiFragment.document ?: return
 
+        Log.i(LOG_TAG, "*********** lets go")
+
         when (call.method) {
+            "applyWatermark" -> {
+
+                val watermarkName: String? = call.argument("name")
+                val watermarkColor: String? = call.argument("color")
+                val watermarkSize: String? = call.argument("size")
+                val watermarkOpacity: String? = call.argument("opacity")
+
+//                        Log.i(LOG_TAG, "*********** applyWatermark")
+                val pdfDrawableProvider: PdfDrawableProvider = object : PdfDrawableProvider() {
+                    override fun getDrawablesForPage(
+                        context: Context,
+                        pdfDocument: com.pspdfkit.document.PdfDocument,
+                        pageNumber: Int
+                    ): MutableList<PdfDrawable> {
+                        val pageBox : RectF = pdfDocument.getPageBox(pageNumber, PdfBox.CROP_BOX)
+                        val mutableList = mutableListOf<PdfDrawable>()
+                        with(mutableList) {
+                            add(WatermarkDrawable(watermarkName, watermarkColor, watermarkSize?.toInt(), watermarkOpacity?.toDouble(), pageBox))
+                        }
+                        return mutableList;
+                    }
+                }
+
+                pdfUiFragment.requirePdfFragment().addDrawableProvider(pdfDrawableProvider)
+
+                // Also register drawable provider on thumbnail bar, thumbnail grid.
+                pdfUiFragment.pspdfKitViews.thumbnailBarView?.addDrawableProvider(pdfDrawableProvider)
+                pdfUiFragment.pspdfKitViews.thumbnailGridView?.addDrawableProvider(pdfDrawableProvider)
+
+                // Outline displays page previews in bookmarks list. Bookmarks are enabled in this example
+                // so we need to register our drawable provider on the outline view too.
+                pdfUiFragment.pspdfKitViews.outlineView?.addDrawableProvider(pdfDrawableProvider)
+            }
+
             "applyInstantJson" -> {
                 val annotationsJson: String? = call.argument("annotationsJson")
                 val documentJsonDataProvider = DocumentJsonDataProvider(
@@ -183,8 +234,8 @@ internal class PSPDFKitView(
                                     result.error(
                                         LOG_TAG,
                                         "\"value\" argument needs a list of " +
-                                            "integers to set selected indexes for a choice " +
-                                            "form element (e.g.: \"1, 3, 5\").",
+                                                "integers to set selected indexes for a choice " +
+                                                "form element (e.g.: \"1, 3, 5\").",
                                         null
                                     )
                                 }
@@ -370,6 +421,83 @@ internal class PSPDFKitView(
 
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
+    }
+}
+
+private class TwoSquaresDrawable(private val pageCoordinates: RectF) : PdfDrawable() {
+
+    private val redPaint = Paint().apply {
+        color = Color.RED
+        style = Paint.Style.FILL
+        alpha = 50
+    }
+
+    private val bluePaint = Paint().apply {
+        color = Color.BLUE
+        style = Paint.Style.FILL
+        alpha = 50
+    }
+
+    private val screenCoordinates = RectF()
+
+    /**
+     * This method performs all the drawing required by this drawable.
+     * Keep this method fast to maintain performant UI.
+     */
+    override fun draw(canvas: Canvas) {
+        val bounds = bounds.toRectF()
+        canvas.drawRect(
+            bounds.left,
+            bounds.top,
+            bounds.right - bounds.width() / 2f,
+            bounds.bottom - bounds.height() / 2f,
+            redPaint
+        )
+        canvas.drawRect(
+            bounds.left + bounds.width() / 2f,
+            bounds.top + bounds.height() / 2f,
+            bounds.right,
+            bounds.bottom,
+            bluePaint
+        )
+    }
+
+    /**
+     * PSPDFKit calls this method every time the page was moved or resized on screen.
+     * It will provide a fresh transformation for calculating screen coordinates from
+     * PDF coordinates.
+     */
+    override fun updatePdfToViewTransformation(matrix: Matrix) {
+        super.updatePdfToViewTransformation(matrix)
+        updateScreenCoordinates()
+    }
+
+    private fun updateScreenCoordinates() {
+        // Calculate the screen coordinates by applying the PDF-to-view transformation.
+        getPdfToPageTransformation().mapRect(screenCoordinates, pageCoordinates)
+
+        // Rounding out to ensure that content does not clip.
+        val bounds = Rect()
+        screenCoordinates.roundOut(bounds)
+        this.bounds = bounds
+    }
+
+    @UiThread
+    override fun setAlpha(alpha: Int) {
+        bluePaint.alpha = alpha
+        redPaint.alpha = alpha
+        invalidateSelf()
+    }
+
+    @UiThread
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        bluePaint.colorFilter = colorFilter
+        redPaint.colorFilter = colorFilter
+        invalidateSelf()
+    }
+
+    override fun getOpacity(): Int {
+        return PixelFormat.TRANSLUCENT
     }
 }
 

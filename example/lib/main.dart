@@ -156,7 +156,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -179,7 +179,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: SafeArea(
                   bottom: false,
                   child:
-                      PspdfkitWidget(documentPath: extractedDocument.path)))));
+                  PspdfkitWidget(documentPath: extractedDocument.path)))));
     } else {
       await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
           builder: (_) => Scaffold(
@@ -200,7 +200,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -210,7 +210,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         ? null
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child:
-                        PspdfkitWidget(documentPath: extractedImage.path))))));
+                    PspdfkitWidget(documentPath: extractedImage.path))))));
   }
 
   void applyDarkTheme() async {
@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -232,7 +232,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         configuration: const {
                           appearanceMode: appearanceModeNight,
                           androidDarkThemeResource:
-                              'PSPDFKit.Theme.Example.Dark'
+                          'PSPDFKit.Theme.Example.Dark'
                         }))))));
   }
 
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -252,6 +252,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         : const EdgeInsets.only(top: kToolbarHeight),
                     child: PspdfkitWidget(
                         documentPath: extractedDocument.path,
+                        onPspdfkitWidgetCreated: (view) {
+
+                          Future.delayed(Duration(milliseconds: 4000)).then((value) {
+                            view.applyWatermark("Mario Rossi", "#ff00ff", 50, 1);
+                          });
+
+                        },
                         configuration: const {
                           scrollDirection: 'vertical',
                           pageTransition: 'scrollContinuous',
@@ -300,7 +307,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           ],
                           showActionNavigationButtons: false,
                           pageMode: 'double',
-                          firstPageAlwaysSingle: true
+                          firstPageAlwaysSingle: true,
+
                         }))))));
   }
 
@@ -309,7 +317,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -568,9 +576,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() {
     currentTheme =
-        WidgetsBinding.instance?.window.platformBrightness == Brightness.light
-            ? lightTheme
-            : darkTheme;
+    WidgetsBinding.instance?.window.platformBrightness == Brightness.light
+        ? lightTheme
+        : darkTheme;
     setState(() {
       build(context);
     });
@@ -690,7 +698,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             subtitle: const Text(_annotationProcessingExampleSub),
             onTap: () => annotationProcessingExample()),
       // The import Instant JSON example is supported by iOS only for now.
-      if (PlatformUtils.isCupertino(context))
+      // if (PlatformUtils.isCupertino(context))
         ListTile(
             title: const Text(_importInstantJsonExample),
             subtitle: const Text(_importInstantJsonExampleSub),
