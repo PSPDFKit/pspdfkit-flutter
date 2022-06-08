@@ -193,18 +193,11 @@ class ConfigurationAdapter {
         if (configurationMap != null && !configurationMap.isEmpty()) {
             String key = null;
 
-
             key = getKeyOfType(configurationMap, FULL_NAME, String.class);
+
             if (key != null) {
-                // Check if the annotation creator has already been set.
-                if (PSPDFKitPreferences.get(context).isAnnotationCreatorSet()) {
-                    PSPDFKitPreferences.get(context).setAnnotationCreator((String) configurationMap.get(key));
-                }
+                PSPDFKitPreferences.get(context).setAnnotationCreator((String) configurationMap.get(key));
             }
-
-
-
-
 
             key = getKeyOfType(configurationMap, PAGE_MODE, String.class);
             if (key != null) {
