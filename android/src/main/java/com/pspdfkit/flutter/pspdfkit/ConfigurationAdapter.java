@@ -26,8 +26,11 @@ import com.pspdfkit.configuration.settings.SettingsMenuItemType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
 import com.pspdfkit.annotations.AnnotationType;
+import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.EnumSet;
 import java.util.HashMap;
 
@@ -366,26 +369,19 @@ class ConfigurationAdapter {
             }
         }
 
-        // Create a list with all annotation types.
-        ArrayList<AnnotationType> excludedAnnotationTypes = new ArrayList<>(EnumSet.allOf(AnnotationType.class));
-
-        excludedAnnotationTypes.remove(AnnotationType.CIRCLE);
-        excludedAnnotationTypes.remove(AnnotationType.FREETEXT);
-        excludedAnnotationTypes.remove(AnnotationType.HIGHLIGHT);
-        excludedAnnotationTypes.remove(AnnotationType.INK);
-        excludedAnnotationTypes.remove(AnnotationType.LINE);
-        excludedAnnotationTypes.remove(AnnotationType.NOTE);
-        excludedAnnotationTypes.remove(AnnotationType.POLYGON);
-        excludedAnnotationTypes.remove(AnnotationType.POLYLINE);
-        excludedAnnotationTypes.remove(AnnotationType.SQUARE);
-        excludedAnnotationTypes.remove(AnnotationType.SQUIGGLY);
-//        excludedAnnotationTypes.remove(AnnotationType.STAMP);
-        excludedAnnotationTypes.remove(AnnotationType.STRIKEOUT);
-        excludedAnnotationTypes.remove(AnnotationType.UNDERLINE);
-
-        configuration.excludedAnnotationTypes(excludedAnnotationTypes);
-
-        Log.e(LOG_TAG, String.format("excludedAnnotationTypes size %s", excludedAnnotationTypes.toString()));
+        List<AnnotationTool> enabledAnnotationTools = new ArrayList<>();
+        enabledAnnotationTools.addAll(Arrays.asList(AnnotationTool.values()));
+        enabledAnnotationTools.remove(AnnotationTool.IMAGE);
+        enabledAnnotationTools.remove(AnnotationTool.STAMP);
+        enabledAnnotationTools.remove(AnnotationTool.SIGNATURE);
+        enabledAnnotationTools.remove(AnnotationTool.MAGIC_INK);
+        enabledAnnotationTools.remove(AnnotationTool.FREETEXT_CALLOUT);
+        enabledAnnotationTools.remove(AnnotationTool.SOUND);
+        enabledAnnotationTools.remove(AnnotationTool.CAMERA);
+        enabledAnnotationTools.remove(AnnotationTool.INSTANT_COMMENT_MARKER);
+        enabledAnnotationTools.remove(AnnotationTool.INSTANT_HIGHLIGHT_COMMENT);
+        enabledAnnotationTools.remove(AnnotationTool.REDACTION);
+        configuration.enabledAnnotationTools(enabledAnnotationTools);
 
     }
 
