@@ -36,6 +36,10 @@ import com.pspdfkit.ui.drawable.PdfDrawableProvider
 import androidx.annotation.UiThread
 import androidx.core.graphics.toRectF
 import com.pspdfkit.document.PdfBox
+import com.pspdfkit.document.processor.PdfProcessor
+import com.pspdfkit.document.processor.PdfProcessorTask
+import java.io.File
+import java.io.IOException
 
 internal class PSPDFKitView(
     context: Context,
@@ -145,12 +149,9 @@ internal class PSPDFKitView(
 
                 pdfUiFragment.requirePdfFragment().addDrawableProvider(pdfDrawableProvider)
 
-                // Also register drawable provider on thumbnail bar, thumbnail grid.
                 pdfUiFragment.pspdfKitViews.thumbnailBarView?.addDrawableProvider(pdfDrawableProvider)
                 pdfUiFragment.pspdfKitViews.thumbnailGridView?.addDrawableProvider(pdfDrawableProvider)
 
-                // Outline displays page previews in bookmarks list. Bookmarks are enabled in this example
-                // so we need to register our drawable provider on the outline view too.
                 pdfUiFragment.pspdfKitViews.outlineView?.addDrawableProvider(pdfDrawableProvider)
             }
 
@@ -407,6 +408,40 @@ internal class PSPDFKitView(
                             throwable.message
                         )
                     })
+            }
+            "processAnnotations"->{
+
+                val type: String = requireNotNull(call.argument("type"))
+                val processingMode: String = requireNotNull(call.argument("processingMode"))
+                val destinationPath: String = requireNotNull(call.argument("destinationPath"))
+
+                val outputFile = try {
+                    File(destinationPath).canonicalFile
+                } catch (exception: IOException) {
+                    throw IllegalStateException("Couldn't create file.", exception)
+                }
+
+                val task = PdfProcessorTask.fromDocument(document).changeAllAnnotations(PdfProcessorTask.AnnotationProcessingMode.FLATTEN)
+
+               val result = PdfProcessor.processDocumentAsync(task, outputFile)
+                    // Ignore PdfProcessor progress.
+                    .ignoreElements()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        {
+                            result.success(true)
+                        },
+                        { throwable ->
+                            result.error(
+                                LOG_TAG,
+                                "Error while getting unsaved JSON annotations.",
+                                throwable.message
+                            )
+                        }
+                    )
+
+
             }
             "save" -> {
                 // noinspection checkResult
