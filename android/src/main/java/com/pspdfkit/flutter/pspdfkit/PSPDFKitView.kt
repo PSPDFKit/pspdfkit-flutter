@@ -117,12 +117,7 @@ internal class PSPDFKitView(
         if (!pdfUiFragment.isAdded) {
             return
         }
-
-        Log.i(LOG_TAG, "*********** isAdded")
         val document = pdfUiFragment.document ?: return
-
-        Log.i(LOG_TAG, "*********** lets go")
-
         when (call.method) {
             "applyWatermark" -> {
 
@@ -131,7 +126,6 @@ internal class PSPDFKitView(
                 val watermarkSize: String? = call.argument("size")
                 val watermarkOpacity: String? = call.argument("opacity")
 
-//                        Log.i(LOG_TAG, "*********** applyWatermark")
                 val pdfDrawableProvider: PdfDrawableProvider = object : PdfDrawableProvider() {
                     override fun getDrawablesForPage(
                         context: Context,
@@ -153,6 +147,14 @@ internal class PSPDFKitView(
                 pdfUiFragment.pspdfKitViews.thumbnailGridView?.addDrawableProvider(pdfDrawableProvider)
 
                 pdfUiFragment.pspdfKitViews.outlineView?.addDrawableProvider(pdfDrawableProvider)
+
+                // workaround to draw the watermark on the first page
+                pdfUiFragment.requirePdfFragment().apply {
+                    val  rect = RectF()
+                    val currentPage = pageIndex
+                    getVisiblePdfRect(rect, currentPage)
+                    zoomTo(rect, currentPage,0)
+                }
             }
 
             "applyInstantJson" -> {
@@ -456,83 +458,6 @@ internal class PSPDFKitView(
 
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
-    }
-}
-
-private class TwoSquaresDrawable(private val pageCoordinates: RectF) : PdfDrawable() {
-
-    private val redPaint = Paint().apply {
-        color = Color.RED
-        style = Paint.Style.FILL
-        alpha = 50
-    }
-
-    private val bluePaint = Paint().apply {
-        color = Color.BLUE
-        style = Paint.Style.FILL
-        alpha = 50
-    }
-
-    private val screenCoordinates = RectF()
-
-    /**
-     * This method performs all the drawing required by this drawable.
-     * Keep this method fast to maintain performant UI.
-     */
-    override fun draw(canvas: Canvas) {
-        val bounds = bounds.toRectF()
-        canvas.drawRect(
-            bounds.left,
-            bounds.top,
-            bounds.right - bounds.width() / 2f,
-            bounds.bottom - bounds.height() / 2f,
-            redPaint
-        )
-        canvas.drawRect(
-            bounds.left + bounds.width() / 2f,
-            bounds.top + bounds.height() / 2f,
-            bounds.right,
-            bounds.bottom,
-            bluePaint
-        )
-    }
-
-    /**
-     * PSPDFKit calls this method every time the page was moved or resized on screen.
-     * It will provide a fresh transformation for calculating screen coordinates from
-     * PDF coordinates.
-     */
-    override fun updatePdfToViewTransformation(matrix: Matrix) {
-        super.updatePdfToViewTransformation(matrix)
-        updateScreenCoordinates()
-    }
-
-    private fun updateScreenCoordinates() {
-        // Calculate the screen coordinates by applying the PDF-to-view transformation.
-        getPdfToPageTransformation().mapRect(screenCoordinates, pageCoordinates)
-
-        // Rounding out to ensure that content does not clip.
-        val bounds = Rect()
-        screenCoordinates.roundOut(bounds)
-        this.bounds = bounds
-    }
-
-    @UiThread
-    override fun setAlpha(alpha: Int) {
-        bluePaint.alpha = alpha
-        redPaint.alpha = alpha
-        invalidateSelf()
-    }
-
-    @UiThread
-    override fun setColorFilter(colorFilter: ColorFilter?) {
-        bluePaint.colorFilter = colorFilter
-        redPaint.colorFilter = colorFilter
-        invalidateSelf()
-    }
-
-    override fun getOpacity(): Int {
-        return PixelFormat.TRANSLUCENT
     }
 }
 

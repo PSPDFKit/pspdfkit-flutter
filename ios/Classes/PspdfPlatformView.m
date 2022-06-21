@@ -133,6 +133,7 @@
                                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
                                paragraphStyle.lineBreakMode = NSLineBreakByClipping;
                                cropBox.size.width = cropBox.size.width * 2;
+
                                [text drawWithRect:cropBox
                                           options:NSStringDrawingUsesLineFragmentOrigin
                                        attributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:[fontSize floatValue]],
@@ -168,7 +169,7 @@
 
         //configuration.drawOnAllCurrentPages(renderDrawBlock)
 
-        if ([configurationDictionary[@"watermarkEnabled"] boolValue]) [document updateRenderOptionsForType:PSPDFRenderTypeAll withBlock:^(PSPDFRenderOptions * options){
+        if ([configurationDictionary[@"watermarkEnabled"] boolValue]) [document updateRenderOptionsForType:PSPDFRenderTypePage withBlock:^(PSPDFRenderOptions * options){
                                options.drawBlock = renderBlock;
                            }];
 
