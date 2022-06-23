@@ -63,6 +63,44 @@
         _pdfViewController.delegate = self;
 
 
+        PSPDFAnnotationToolbarConfiguration *toolbarConfiguration = [[PSPDFAnnotationToolbarConfiguration alloc] initWithAnnotationGroups:@[
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringHighlight],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringUnderline],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringSquiggly],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringStrikeOut],
+                
+            ]],
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringNote],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringFreeText]
+            ]],
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringInk variant:PSPDFAnnotationVariantStringInkPen configurationBlock:[PSPDFAnnotationGroupItem inkConfigurationBlock]],
+            ]],
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringInk variant:PSPDFAnnotationVariantStringInkHighlighter ],
+            ]],
+                
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringLine],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringSquare],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringCircle],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringPolygon],
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringPolyLine],
+                /*[PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringLine variant:PSPDFAnnotationVariantStringLineArrow configurationBlock:[PSPDFAnnotationGroupItem inkConfigurationBlock]],*/
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringStamp]
+            ]],
+            /*[PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringStamp]
+            ]],*/
+            [PSPDFAnnotationGroup groupWithItems:@[
+                [PSPDFAnnotationGroupItem itemWithType:PSPDFAnnotationStringEraser]
+            ]],
+        ]];
+
+        _pdfViewController.annotationToolbarController.annotationToolbar.configurations = @[toolbarConfiguration];
+
 
         if ((id)configurationDictionary != NSNull.null) {
             NSString *key;
@@ -143,31 +181,8 @@
                                           context:stringDrawingContext];
                                CGContextRestoreGState(context);
                            }
-                           /*NSString *protocolNumberOptions = [weakSelf valueForKey:@"protocolNumber"];
-                           if ([protocolNumberOptions length] > 0) {
-                               //salvo il context
-                               CGContextSaveGState(context);
-                               NSString *protocolText = [NSString stringWithFormat:@"Protocollo n. %@", protocolNumberOptions];
-                               NSStringDrawingContext *stringDrawingContext = [NSStringDrawingContext new];
-                               stringDrawingContext.minimumScaleFactor = 0.1f;
-                               //sposto la label in alto
-                               CGContextTranslateCTM(context, -120, 10);
-                               NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-                               style.alignment = kCTRightTextAlignment;
-                               [protocolText drawWithRect:cropBox
-                                                  options:NSStringDrawingUsesLineFragmentOrigin
-                                               attributes:@{NSFontAttributeName: [UIFont boldSystemFontOfSize:14],
-                                                       NSForegroundColorAttributeName: [UIColor.blackColor colorWithAlphaComponent:1.0f],
-                                                       NSParagraphStyleAttributeName: style
-                                               }
-                                                  context:stringDrawingContext];
-                               CGContextRestoreGState(context);
-                           }*/
                        };
 
-
-
-        //configuration.drawOnAllCurrentPages(renderDrawBlock)
 
         if ([configurationDictionary[@"watermarkEnabled"] boolValue]) [document updateRenderOptionsForType:PSPDFRenderTypePage withBlock:^(PSPDFRenderOptions * options){
                                options.drawBlock = renderBlock;
