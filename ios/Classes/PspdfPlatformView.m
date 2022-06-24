@@ -14,6 +14,7 @@
 @import PSPDFKitUI;
 
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
+
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
 @property (nonatomic, weak) UIViewController *flutterViewController;
@@ -40,6 +41,8 @@
     if (_flutterViewController == nil) {
         NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
     }
+    
+    
     [_flutterViewController addChildViewController:_navigationController];
     [_navigationController didMoveToParentViewController:_flutterViewController];
 
@@ -60,8 +63,15 @@
 
         _pdfViewController.documentInfoCoordinator.availableControllerOptions = @[PSPDFDocumentInfoOptionOutline, PSPDFDocumentInfoOptionAnnotations];
 
+        
+       
+
+        
+    
+        
         _pdfViewController.delegate = self;
 
+            
 
         PSPDFAnnotationToolbarConfiguration *toolbarConfiguration = [[PSPDFAnnotationToolbarConfiguration alloc] initWithAnnotationGroups:@[
             [PSPDFAnnotationGroup groupWithItems:@[
@@ -126,6 +136,30 @@
                 document.defaultAnnotationUsername = [configurationDictionary objectForKey:@"fullname"];
             }
 
+            key = @"mainColor";
+            if ( [configurationDictionary objectForKey:key]!= [NSNull null]) {
+                
+                NSString* mainColor = [configurationDictionary objectForKey:key];
+                
+                
+                
+                unsigned int c;
+                if ([mainColor characterAtIndex:0] == '#') {
+                    [[NSScanner scannerWithString:[mainColor substringFromIndex:1]] scanHexInt:&c];
+                } else {
+                    [[NSScanner scannerWithString:mainColor] scanHexInt:&c];
+                }
+                UIColor *mainUIColor = [UIColor colorWithRed:((c & 0xff0000) >> 16) / 255.0
+                                                          green:((c & 0xff00) >> 8) / 255.0
+                                                           blue:(c & 0xff) / 255.0 alpha:1.0];
+                
+                UINavigationBar *navBarProxy = [UINavigationBar appearanceWhenContainedInInstancesOfClasses:@[PSPDFNavigationController.class]];
+                PSPDFAnnotationToolbar *annotationToolbarProxy = [PSPDFAnnotationToolbar appearance];
+                
+                navBarProxy.tintColor = mainUIColor;
+                
+                annotationToolbarProxy.tintColor = mainUIColor;
+            }
 
             PSPDFRenderDrawBlock renderBlock = ^(CGContextRef context, PSPDFPageIndex pageIndex, CGRect cropBox, PSPDFRenderOptions *options) {
                        bool watermarkEnabled = [[configurationDictionary valueForKey:@"watermarkEnabled"] boolValue];
@@ -146,7 +180,6 @@
                                }
 
                                // CGContextSaveGState(context);
-
 
                                unsigned int c;
                                if ([color characterAtIndex:0] == '#') {
@@ -210,6 +243,21 @@
     [self cleanup];
 }
 
+- (UIColor*)colorFromHexString:(NSString *)color {
+    unsigned int c;
+    if ([color characterAtIndex:0] == '#') {
+        [[NSScanner scannerWithString:[color substringFromIndex:1]] scanHexInt:&c];
+    } else {
+        [[NSScanner scannerWithString:color] scanHexInt:&c];
+    }
+    UIColor *uicolor = [UIColor colorWithRed:((c & 0xff0000) >> 16) / 255.0
+                                              green:((c & 0xff00) >> 8) / 255.0
+                                               blue:(c & 0xff) / 255.0 alpha:1.0];
+    
+    return uicolor;
+}
+
+ 
 - (void)cleanup {
     self.pdfViewController.document = nil;
     [self.pdfViewController.view removeFromSuperview];
@@ -223,11 +271,22 @@
     [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
 }
 
+/*- (void)viewWillLayoutSubviews {
+    [super viewWillLayoutSubviews];
+    
+    CGRect userInterfaceFrame = _pdfViewController.view.bounds;
+    userInterfaceFrame.size.height -= 300;
+    
+    _pdfViewController.userInterfaceView.frame =userInterfaceFrame;
+}*/
+
 # pragma mark - PSPDFViewControllerDelegate
 
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
     // Don't hold on to the view controller object after dismissal.
     [self cleanup];
 }
+
+// viewWillLayoutSubviews
 
 @end

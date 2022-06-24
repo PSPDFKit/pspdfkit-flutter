@@ -180,3 +180,5 @@ const String creatorName = 'creatorName';
 
 const String editableAnnotationTypes = 'editableAnnotationTypes';
 
+const String mainColor = 'mainColor';
+
