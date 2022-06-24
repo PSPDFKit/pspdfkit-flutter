@@ -79,6 +79,7 @@ internal class PSPDFKitView(
                 PdfUiFragmentBuilder.fromUri(context, uri)
                     .configuration(pdfConfiguration)
                     .passwords(password)
+                    .pdfFragmentTag(documentPath)
                     .build()
             }
         }
