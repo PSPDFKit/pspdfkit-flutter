@@ -89,6 +89,10 @@
         NSString *processingMode = call.arguments[@"processingMode"];
         NSString *destinationPath = call.arguments[@"destinationPath"];
         result([PspdfkitFlutterHelper processAnnotationsOfType:type withProcessingMode:processingMode andDestinationPath:destinationPath forViewController:pdfViewController]);
+    } else if ([@"search" isEqualToString:call.method]) {
+        NSString *searchString = call.arguments[@"term"];
+        [pdfViewController searchForString:searchString options:@{PSPDFPresentationOptionSearchHeadless: @NO} sender:nil animated:YES];
+        result(@(YES));
     } else {
         result(FlutterMethodNotImplemented);
     }

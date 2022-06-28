@@ -36,8 +36,6 @@ class PspdfkitWidgetController {
 
   /// Applies Instant document JSON to the presented document.
   Future<bool?> applyWatermark(String name, String color, int size, double opacity) async {
-
-    print("entro in controller");
     return _channel.invokeMethod('applyWatermark',
           <String, String>{'name': name, 'color':color, 'size':size.toString(), 'opacity':opacity.toString()});
   }
@@ -84,6 +82,10 @@ class PspdfkitWidgetController {
   /// Exports annotations to the XFDF file at the given path.
   Future<bool?> exportXfdf(String xfdfPath) async => _channel
       .invokeMethod('exportXfdf', <String, String>{'xfdfPath': xfdfPath});
+
+  /// Exports annotations to the XFDF file at the given path.
+  Future<bool?> search(String term) async => _channel
+      .invokeMethod('search', <String, String>{'term': term});
 
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.

@@ -40,6 +40,13 @@ import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessorTask
 import java.io.File
 import java.io.IOException
+import com.pspdfkit.document.search.TextSearch
+import com.pspdfkit.ui.search.PdfSearchViewInline
+import com.pspdfkit.ui.search.PdfSearchViewModular
+import com.pspdfkit.listeners.OnVisibilityChangedListener
+import com.pspdfkit.ui.PSPDFKitViews
+
+
 
 internal class PSPDFKitView(
     context: Context,
@@ -452,6 +459,46 @@ internal class PSPDFKitView(
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result::success)
+            }
+
+            "search" -> {
+
+                val term: String = call.argument("term") ?: ""
+
+               /* val textSearch = TextSearch(document, pdfUiFragment.getConfiguration().getConfiguration())
+               // val searchResults : List<SearchResult> = textSearch.performSearch(term)
+
+                val searchSubscription = textSearch.performSearchAsync(term)
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe { nextResult ->
+
+                       Log.i(LOG_TAG, "*********** nextResult "+nextResult.toString())
+                        // This will be called once for every `SearchResult` object.
+                        // Put your search result handling here.
+                    }*/
+
+                pdfUiFragment.pspdfKitViews.addOnVisibilityChangedListener(object : OnVisibilityChangedListener {
+                    override fun onShow(view: View) {
+                        if (view is PdfSearchViewInline) {
+                            view.setInputFieldText(term, true)
+                        } else if (view is PdfSearchViewModular) {
+                            view.setInputFieldText(term, true)
+                        }
+                        pdfUiFragment.pspdfKitViews.removeOnVisibilityChangedListener(this)
+                    }
+
+                    override fun onHide(view: View) {
+                    }
+                })
+
+
+                pdfUiFragment.pspdfKitViews.showView(PSPDFKitViews.Type.VIEW_SEARCH)
+
+
+
+
+
             }
             else -> result.notImplemented()
         }
