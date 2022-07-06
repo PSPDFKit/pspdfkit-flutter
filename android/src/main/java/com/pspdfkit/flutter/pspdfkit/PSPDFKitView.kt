@@ -45,7 +45,8 @@ import com.pspdfkit.ui.search.PdfSearchViewInline
 import com.pspdfkit.ui.search.PdfSearchViewModular
 import com.pspdfkit.listeners.OnVisibilityChangedListener
 import com.pspdfkit.ui.PSPDFKitViews
-
+import com.pspdfkit.document.formatters.XfdfFormatter
+import com.pspdfkit.document.providers.ContentResolverDataProvider
 
 
 internal class PSPDFKitView(
@@ -119,7 +120,7 @@ internal class PSPDFKitView(
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
-        Log.i(LOG_TAG, "*********** onMethodCall")
+        Log.i(LOG_TAG, "*********** onMethodCall "+call.method)
         // Return if the fragment or the document
         // are not ready.
         if (!pdfUiFragment.isAdded) {
@@ -163,6 +164,34 @@ internal class PSPDFKitView(
                     getVisiblePdfRect(rect, currentPage)
                     zoomTo(rect, currentPage,0)
                 }
+            }
+
+            "importXfdf" -> {
+                val xfdfPath: String? = call.argument("xfdfPath")
+                val xfdfUri: Uri = Uri.fromFile(File(xfdfPath))
+                XfdfFormatter.parseXfdfAsync(document, ContentResolverDataProvider(xfdfUri))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotations ->
+
+                            Log.i(LOG_TAG, "*********** annotations ")
+                            // Annotations parsed from XFDF are not added to document automatically.
+                            // We need to add them manually.
+                            for (annotation in annotations) {
+                                pdfUiFragment.requirePdfFragment().addAnnotationToPage(annotation, false)
+                            }
+
+                            result.success(true)
+                        }
+                    ) { throwable ->
+
+                        Log.i(LOG_TAG, "*********** ERROR ")
+                        result.error(
+                            LOG_TAG,
+                            "Error while importing document XFDF",
+                            throwable.message
+                        )
+                    }
             }
 
             "applyInstantJson" -> {
