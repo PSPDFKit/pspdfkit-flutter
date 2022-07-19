@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 import 'platform_utils.dart';
 
@@ -51,7 +51,7 @@ class _PspdfkitInstantJsonExampleWidgetState
 
     if (PlatformUtils.isIOS()) {
       return CupertinoPageScaffold(
-          navigationBar: CupertinoNavigationBar(),
+          navigationBar: const CupertinoNavigationBar(),
           child: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
@@ -72,34 +72,34 @@ class _PspdfkitInstantJsonExampleWidgetState
                                     .loadString(widget.instantJsonPath);
                             await view.applyInstantJson(annotationsJson);
                           },
-                          child: Text('Apply Instant JSON')),
+                          child: const Text('Apply Instant JSON')),
                       CupertinoButton(
                           onPressed: () async {
-                            final title = 'Exported Instant JSON';
+                            const title = 'Exported Instant JSON';
                             final exportedInstantJson =
                                 await view.exportInstantJson() ?? '';
                             await showCupertinoDialog<CupertinoAlertDialog>(
                                 context: context,
                                 builder: (BuildContext context) =>
                                     CupertinoAlertDialog(
-                                      title: Text(title),
+                                      title: const Text(title),
                                       content: Text(exportedInstantJson),
                                       actions: [
                                         TextButton(
                                             onPressed: () {
                                               Navigator.of(context).pop();
                                             },
-                                            child: Text('OK'))
+                                            child: const Text('OK'))
                                       ],
                                     ));
                           },
-                          child: Text('Export Instant JSON'))
+                          child: const Text('Export Instant JSON'))
                     ]))
               ])));
     } else if (PlatformUtils.isAndroid()) {
       // This example is only supported in iOS at the moment.
       // Support for Android is coming soon.
-      return Text('Unsupported Widget');
+      return const Text('Unsupported Widget');
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }

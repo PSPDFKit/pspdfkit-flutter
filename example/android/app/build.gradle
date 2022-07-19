@@ -18,7 +18,7 @@ android {
     }
 
     lintOptions {
-        disable 'InvalidPackage'
+        disable 'InvalidPackage', 'PSPDFKit-HandledConfigurationChanges-NoSupport'
     }
 
     defaultConfig {

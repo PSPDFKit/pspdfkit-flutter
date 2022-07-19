@@ -30,6 +30,8 @@ import androidx.fragment.app.FragmentActivity;
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
+import com.pspdfkit.exceptions.InvalidPSPDFKitLicenseException;
+import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
@@ -62,16 +64,23 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener,
         FlutterPlugin, ActivityAware {
-    @NonNull private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
+    @NonNull
+    private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
 
-    /** Hybrid technology where the application is supposed to be working on. */
+    /**
+     * Hybrid technology where the application is supposed to be working on.
+     */
     private static final String HYBRID_TECHNOLOGY = "Flutter";
 
-    /** Atomic reference that prevents sending twice the permission result and throwing exception. */
-    @NonNull private final AtomicReference<Result> permissionRequestResult;
+    /**
+     * Atomic reference that prevents sending twice the permission result and throwing exception.
+     */
+    @NonNull
+    private final AtomicReference<Result> permissionRequestResult;
 
-    @Nullable private ActivityPluginBinding activityPluginBinding;
+    @Nullable
+    private ActivityPluginBinding activityPluginBinding;
 
     public PspdfkitPlugin() {
         this.permissionRequestResult = new AtomicReference<>();
@@ -129,12 +138,20 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             case "setLicenseKey":
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
-                PSPDFKit.initialize(activity, licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                try {
+                    PSPDFKit.initialize(activity, licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                } catch (PSPDFKitException e) {
+                    result.error("PSPDFKitException", e.getMessage(), null);
+                }
                 break;
             case "setLicenseKeys":
                 String androidLicenseKey = call.argument("androidLicenseKey");
                 requireNotNullNotEmpty(androidLicenseKey, "Android License key");
-                PSPDFKit.initialize(activity, androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                try {
+                    PSPDFKit.initialize(activity, androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                } catch (PSPDFKitException e) {
+                    result.error("PSPDFKitException", e.getMessage(), null);
+                }
                 break;
             case "present":
                 String documentPath = call.argument("document");

@@ -13,11 +13,10 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:pspdfkit_example/platform_utils.dart';
 
-import 'package:pspdfkit_flutter/src/main.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String documentPath;
@@ -106,7 +105,7 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                             'all', 'embed', exportPath);
                         await Pspdfkit.present(exportPath);
                       },
-                      child: Text('Embed Annotations')),
+                      child: const Text('Embed Annotations')),
                   CupertinoButton(
                       onPressed: () async {
                         final exportPath =
@@ -115,13 +114,13 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
                             'all', 'print', exportPath);
                         await Pspdfkit.present(exportPath);
                       },
-                      child: Text('Print Annotations'))
+                      child: const Text('Print Annotations'))
                 ]))
               ])));
     } else if (PlatformUtils.isAndroid()) {
       // This example is only supported in iOS at the moment.
       // Support for Android is coming soon.
-      return Text('Unsupported Widget');
+      return const Text('Unsupported Widget');
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }

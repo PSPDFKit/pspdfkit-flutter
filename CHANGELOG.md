@@ -1,12 +1,23 @@
 ## Newest Release
 
+### 3.3.0 - 19 Jul 2022
+
+- Moved package files from `lib/src` to `lib` to remove import warnings and renamed `main.dart` to `pspdfkit.dart`. (#34058)
+- Updates the deployment target to iOS 14.0. (#33871)
+- PSPDFKit now requires Flutter 3.0.1 or later (#35028)
+- Updates for PSPDFKit 11.4.0 for iOS. (#35384)
+- Updates for PSPDFKit 8.2.1 for Android. (#35384)
+- Handles multiple initializations exception. (#35079)
+- Fixes an issue where tapping on form fields yields unexpected behavior in the Catalog basic example. (#33853)
+- Fixes the configuration option `userInterfaceViewMode: 'alwaysHidden'` not hiding the widget’s top bar on iOS. (#31095)
+
+## Previous Releases
+
 ### 3.2.2 - 16 Mar 2022
 
 - Improves the example project by using the `PlatformUtils` class to check for supported platforms (#33212)
 - Adds a new **Save As** example to the example project. (#33376)
 - Updates for PSPDFKit 11.3.0 for iOS. (#33514)
-
-## Previous Releases
 
 ### 3.2.1 - 04 Mar 2022
 

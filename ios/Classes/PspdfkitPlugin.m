@@ -54,6 +54,11 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:call.arguments[@"configuration"]];
 
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+        if (document == nil) {
+            FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document is missing or invalid." details:nil];
+            result(error);
+            return;
+        }
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];

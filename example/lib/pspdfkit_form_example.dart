@@ -13,11 +13,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_example/platform_utils.dart';
 
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitFormExampleWidgetCreatedCallback = void Function(
     PspdfkitWidgetController view);

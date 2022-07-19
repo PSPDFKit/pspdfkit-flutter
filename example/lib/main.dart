@@ -5,7 +5,7 @@
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
-///
+
 import 'dart:io';
 import 'dart:async';
 
@@ -14,9 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
 
-import 'package:pspdfkit_flutter/src/main.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
@@ -155,8 +155,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedDocument = await extractAsset(_documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
-            extendBodyBehindAppBar:
-                PlatformUtils.isCupertino(context) ? false : true,
+            extendBodyBehindAppBar: PlatformUtils.isAndroid(),
+            // Do not resize the the document view on Android or
+            // it won't be rendered correctly when filling forms.
+            resizeToAvoidBottomInset: PlatformUtils.isIOS(),
             appBar: AppBar(),
             body: SafeArea(
                 top: false,
@@ -230,7 +232,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     child: PspdfkitWidget(
                         documentPath: extractedDocument.path,
                         configuration: const {
-                          appearanceMode: appearanceModeNight,
+                          appearanceMode: 'night',
                           androidDarkThemeResource:
                               'PSPDFKit.Theme.Example.Dark'
                         }))))));
@@ -386,7 +388,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (PlatformUtils.isCupertino(context)) {
         await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
             builder: (_) => CupertinoPageScaffold(
-                navigationBar: CupertinoNavigationBar(),
+                navigationBar: const CupertinoNavigationBar(),
                 child: SafeArea(
                     bottom: false,
                     child: Column(children: <Widget>[
@@ -445,7 +447,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void applyDarkThemeGlobal() async {
     final extractedDocument = await extractAsset(_documentPath);
     await Pspdfkit.present(extractedDocument.path, {
-      appearanceMode: appearanceModeNight,
+      appearanceMode: 'night',
       androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
     });
   }
@@ -555,20 +557,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     initPlatformState();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangePlatformBrightness() {
     currentTheme =
-        WidgetsBinding.instance?.window.platformBrightness == Brightness.light
+        WidgetsBinding.instance.window.platformBrightness == Brightness.light
             ? lightTheme
             : darkTheme;
     setState(() {

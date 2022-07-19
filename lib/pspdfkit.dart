@@ -5,23 +5,20 @@
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
-
+///
 library pspdfkit;
 
 import 'dart:async';
-import 'dart:ui';
 
 import 'dart:io' show Directory;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 part 'android_permission_status.dart';
-
 part 'configuration_options.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
-@Deprecated(
-    'Import [Pspdfkit] from `package:pspdfkit_flutter/pspdfkit.dart` instead.')
 class Pspdfkit {
   static MethodChannel? _privateChannel;
 
@@ -204,10 +201,14 @@ class Pspdfkit {
           pdfViewControllerDidDismiss();
           break;
         default:
-          print('Unknown method ${call.method} ');
+          if (kDebugMode) {
+            print('Unknowm method ${call.method} ');
+          }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
     return Future.value();
   }

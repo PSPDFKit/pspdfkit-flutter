@@ -15,8 +15,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/main.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 import 'platform_utils.dart';
 
 class PspdfkitSaveAsExampleWidget extends StatefulWidget {
@@ -120,7 +120,9 @@ class _PspdfkitSaveAsExampleWidgetState
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
                                 title: const Text('Document Saved!'),
-                                content: Text('Document Saved Successfully at ' + newDocumentPath),
+                                content: Text(
+                                    'Document Saved Successfully at ' +
+                                        newDocumentPath),
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () =>

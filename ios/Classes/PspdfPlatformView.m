@@ -28,67 +28,72 @@
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
-    NSString *name = [NSString stringWithFormat:@"com.pspdfkit.widget.%lld",viewId];
-    _platformViewId = viewId;
-    _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
+    if ((self = [super init])) {
+        NSString *name = [NSString stringWithFormat:@"com.pspdfkit.widget.%lld", viewId];
+        _platformViewId = viewId;
+        _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
-    _navigationController = [PSPDFNavigationController new];
-    _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _navigationController = [PSPDFNavigationController new];
+        _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _navigationController.view.frame = frame;
 
-    // View controller containment
-    _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    if (_flutterViewController == nil) {
-        NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
-    }
-    [_flutterViewController addChildViewController:_navigationController];
-    [_navigationController didMoveToParentViewController:_flutterViewController];
-    
-    NSString *documentPath = args[@"document"];
-    if (documentPath != nil && [documentPath  isKindOfClass:[NSString class]] && [documentPath length] > 0) {
-        NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
+        // View controller containment
+        _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+        if (_flutterViewController == nil) {
+            NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
+        } else {
+            [_flutterViewController addChildViewController:_navigationController];
+            [_navigationController didMoveToParentViewController:_flutterViewController];
+        }
 
-        PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
-        [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
+        NSString *documentPath = args[@"document"];
+        if ([documentPath isKindOfClass:[NSString class]] == NO || [documentPath length] == 0) {
+            NSLog(@"Warning: 'document' argument is not a string. Showing an empty view in default configuration.");
+            _pdfViewController = [[PSPDFViewController alloc] init];
+        } else {
+            NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
 
-        BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
-        PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
-        
-        _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
-        _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
-        _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
-        _pdfViewController.delegate = self;
+            PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+            [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
-        if ((id)configurationDictionary != NSNull.null) {
-            NSString *key;
+            BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
+            PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
+            _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
+            _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
+            _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
+            _pdfViewController.delegate = self;
 
-            key = @"leftBarButtonItems";
-            if (configurationDictionary[key]) {
-                [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[key] forViewController:_pdfViewController];
-            }
-            key = @"rightBarButtonItems";
-            if (configurationDictionary[key]) {
-                [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[key] forViewController:_pdfViewController];
-            }
-            key = @"invertColors";
-            if (configurationDictionary[key]) {
-                _pdfViewController.appearanceModeManager.appearanceMode = [configurationDictionary[key] boolValue] ? PSPDFAppearanceModeNight : PSPDFAppearanceModeDefault;
-            }
-            key = @"toolbarTitle";
-            if (configurationDictionary[key]) {
-                [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[key] forViewController:_pdfViewController];
+            if ((id)configurationDictionary != NSNull.null) {
+                NSString *key = @"leftBarButtonItems";
+                if (configurationDictionary[key]) {
+                    [PspdfkitFlutterHelper setLeftBarButtonItems:configurationDictionary[key] forViewController:_pdfViewController];
+                }
+                key = @"rightBarButtonItems";
+                if (configurationDictionary[key]) {
+                    [PspdfkitFlutterHelper setRightBarButtonItems:configurationDictionary[key] forViewController:_pdfViewController];
+                }
+                key = @"invertColors";
+                if (configurationDictionary[key]) {
+                    _pdfViewController.appearanceModeManager.appearanceMode = [configurationDictionary[key] boolValue] ? PSPDFAppearanceModeNight : PSPDFAppearanceModeDefault;
+                }
+                key = @"toolbarTitle";
+                if (configurationDictionary[key]) {
+                    [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[key] forViewController:_pdfViewController];
+                }
             }
         }
-    } else {
-        _pdfViewController = [[PSPDFViewController alloc] init];
+
+        if (_pdfViewController.configuration.userInterfaceViewMode == PSPDFUserInterfaceViewModeNever) {
+            // In this mode PDFViewController doesn’t hide the navigation bar on its own to avoid getting stuck.
+            _navigationController.navigationBarHidden = YES;
+        }
+        [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
+
+        __weak id weakSelf = self;
+        [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
+            [weakSelf handleMethodCall:call result:result];
+        }];
     }
-    [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
-
-    self = [super init];
-
-    __weak id weakSelf = self;
-    [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
-        [weakSelf handleMethodCall:call result:result];
-    }];
 
     return self;
 }

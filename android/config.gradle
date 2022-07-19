@@ -26,7 +26,7 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-ext.flutterRoot = localProperties.getProperty('flutter.sdk')
+ext.flutterRoot = localProperties.getProperty('flutter.sdk') ?: "$System.env.FLUTTER_ROOT"
 if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
@@ -38,7 +38,7 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '8.1.2'
+    ext.pspdfkitVersion = '8.2.1'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'

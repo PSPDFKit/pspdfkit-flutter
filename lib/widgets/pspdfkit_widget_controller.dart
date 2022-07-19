@@ -10,8 +10,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-@Deprecated(
-    'Import the new PspdfkitWidgetController from `package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart` instead.')
 class PspdfkitWidgetController {
   final MethodChannel _channel;
 

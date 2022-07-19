@@ -50,7 +50,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```bash
     open android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt
     ```
-    
+
 4. Modify the base from `FlutterActivity` to `FlutterFragmentActivity`:
 
     ```diff
@@ -65,13 +65,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```
 
 5. Open the project’s Gradle build file, `android/build.gradle`:
-   
+
    ```bash
    open android/build.gradle
    ```
 
 6. Modify the Kotlin version inside the `buildscript` section:
-   
+
     ```diff
      buildscript {
     -    ext.kotlin_version = '1.3.50'
@@ -138,7 +138,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
         mkdir PDFs
         ```
 
-    - Move a [sample document](example/PDFs/PSPDFKit.pdf) into the newly created `PDFs` directory, and rename it as `Document.pdf`: 
+    - Move a [sample document](example/PDFs/PSPDFKit.pdf) into the newly created `PDFs` directory, and rename it as `Document.pdf`:
 
         ```bash
         cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
@@ -190,7 +190,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Runner.xcworkspace
     ```
 
-4. Make sure the `iOS Deployment Target` is set to 13.0 or higher.
+4. Make sure the `iOS Deployment Target` is set to 14.0 or higher.
 
     ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
@@ -225,16 +225,16 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Podfile
     ```
 
-10. Update the platform to iOS 13 and add the PSPDFKit Podspec:
+10. Update the platform to iOS 14 and add the PSPDFKit Podspec:
 
     ```diff
     -# platform :ios, '9.0'
-    + platform :ios, '13.0'
+    + platform :ios, '14.0'
      ...
      target 'Runner' do
        use_frameworks!
        use_modular_headers!`
-       
+
        flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
     +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
      end
@@ -285,8 +285,8 @@ Showing a PDF document inside your Flutter app is as simple as this:
 
 # Upgrading to a Full PSPDFKit License Key
 
-PSPDFKit is a commercial product and requires the purchase of a license key when used in production. By default, this library will 
-initialize in demo mode, placing a watermark on each PDF and limiting usage to 60 minutes. 
+PSPDFKit is a commercial product and requires the purchase of a license key when used in production. By default, this library will
+initialize in demo mode, placing a watermark on each PDF and limiting usage to 60 minutes.
 
 To purchase a license for production use, please reach out to us via https://pspdfkit.com/sales/form/.
 

@@ -8,10 +8,13 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+#  exclude:
+#    - ../../core/Vendor
   errors:
     invalid_assignment: error
     missing_return: error
     dead_code: warning
+#    avoid_print: false
 
   strong-mode:
     implicit-casts: false
@@ -25,5 +28,5 @@ linter:
     - unawaited_futures
     - unsafe_html
     - use_full_hex_values_for_flutter_colors
-    
+
 

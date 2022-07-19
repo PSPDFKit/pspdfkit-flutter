@@ -376,11 +376,11 @@ internal class PSPDFKitView(
 class PSPDFKitViewFactory(
     private val messenger: BinaryMessenger,
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
+    override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
 
         return PSPDFKitView(
-            context,
+            context!!,
             viewId,
             messenger,
             creationParams?.get("document") as String?,

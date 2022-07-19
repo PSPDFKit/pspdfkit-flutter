@@ -16,13 +16,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(
     PspdfkitWidgetController view);
 
-@Deprecated(
-    'Import [PspdfkitWidget] from `package:pspdfkit_flutter/widgets/pspdfkit_widget.dart` instead.')
 class PspdfkitWidget extends StatefulWidget {
   final String? documentPath;
   final dynamic configuration;
