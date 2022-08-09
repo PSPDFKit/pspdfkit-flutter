@@ -1,8 +1,11 @@
 package com.pspdfkit.flutter.pspdfkit
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.FragmentActivity
@@ -35,6 +38,7 @@ import com.pspdfkit.ui.drawable.PdfDrawable
 import com.pspdfkit.ui.drawable.PdfDrawableProvider
 import androidx.annotation.UiThread
 import androidx.core.graphics.toRectF
+import com.pspdfkit.annotations.AnnotationProvider
 import com.pspdfkit.document.PdfBox
 import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessorTask
@@ -47,7 +51,14 @@ import com.pspdfkit.listeners.OnVisibilityChangedListener
 import com.pspdfkit.ui.PSPDFKitViews
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.document.providers.ContentResolverDataProvider
-
+import com.pspdfkit.annotations.AnnotationProvider.OnAnnotationUpdatedListener
+import com.pspdfkit.annotations.Annotation
+import com.pspdfkit.annotations.AnnotationType
+import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.listeners.SimpleDocumentListener
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 internal class PSPDFKitView(
     context: Context,
@@ -92,8 +103,85 @@ internal class PSPDFKitView(
             }
         }
 
+        Handler().postDelayed({
+            pdfUiFragment.pdfFragment?.addDocumentListener(object : SimpleDocumentListener() {
+                @SuppressLint("CheckResult")
+                override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
+                    super.onPageChanged(document, pageIndex)
 
-        /*  */
+                    val annotationJsonList = ArrayList<String>()
+
+                    document.annotationProvider.getAllAnnotationsOfTypeAsync(
+                        EnumSet.allOf(AnnotationType::class.java),
+                        pageIndex, 1
+                    )
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            { annotation ->
+                                annotationJsonList.add(annotation.toInstantJson())
+                            },
+                            { throwable ->
+                                /*result.error(
+                                    LOG_TAG,
+                                    "Error while retrieving annotation of type ",
+                                    throwable.message
+                                )*/
+                            },
+                            {
+
+                                Log.i(LOG_TAG, "*********** annotations size "+annotationJsonList.size)
+//                            result.success(annotationJsonList)
+
+                            }
+                        )
+
+
+                }
+
+                override fun onDocumentLoaded(document: PdfDocument) {
+
+                   /* document.annotationProvider.addOnAnnotationUpdatedListener(object : OnAnnotationUpdatedListener {
+                        override fun onAnnotationCreated(annotation: Annotation) {
+
+                        }
+
+                        override fun onAnnotationUpdated(annotation: Annotation) {
+
+                        }
+
+                        override fun onAnnotationRemoved(annotation: Annotation) {
+
+                        }
+
+                        override fun onAnnotationZOrderChanged(pageIndex: Int, oldOrder: MutableList<Annotation>, newOrder: MutableList<Annotation>) {
+
+                        }
+                    })*/
+
+
+                }
+            })
+           /* pdfUiFragment.requirePdfFragment().addOnAnnotationUpdatedListener(object : AnnotationProvider.OnAnnotationUpdatedListener {
+                override fun onAnnotationCreated(annotation: Annotation) {
+                    Log.i(LOG_TAG, "The annotation was created.")
+                }
+
+                override fun onAnnotationUpdated(annotation: Annotation) {
+                    Log.i(LOG_TAG, "The annotation was updated.")
+                }
+
+                override fun onAnnotationRemoved(annotation: Annotation) {
+                    Log.i(LOG_TAG, "The annotation was removed.")
+                }
+                override fun onAnnotationZOrderChanged(pageIndex: Int, oldOrder: MutableList<Annotation>, newOrder: MutableList<Annotation>) {
+                    Log.i(LOG_TAG, "The annotation was onAnnotationZOrderChanged.")
+                }
+            })*/
+
+        }, 2000)
+
+
 
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
@@ -118,6 +206,7 @@ internal class PSPDFKitView(
         fragmentContainerView = null
     }
 
+    @SuppressLint("CheckResult")
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
         Log.i(LOG_TAG, "*********** onMethodCall "+call.method)
@@ -174,9 +263,6 @@ internal class PSPDFKitView(
                     .subscribe(
                         { annotations ->
 
-                            Log.i(LOG_TAG, "*********** annotations ")
-                            // Annotations parsed from XFDF are not added to document automatically.
-                            // We need to add them manually.
                             for (annotation in annotations) {
                                 pdfUiFragment.requirePdfFragment().addAnnotationToPage(annotation, false)
                             }
@@ -431,6 +517,29 @@ internal class PSPDFKitView(
                         { result.success(annotationJsonList) }
                     )
             }
+
+            "getAllAnnotations" -> {
+                val annotationJsonList = ArrayList<String>()
+                // noinspection checkResult
+                document.annotationProvider.getAllAnnotationsOfTypeAsync(
+                    EnumSet.allOf(AnnotationType::class.java)
+                )
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { annotation ->
+                            annotationJsonList.add(annotation.toInstantJson())
+                        },
+                        { throwable ->
+                            result.error(
+                                LOG_TAG,
+                                "Error while retrieving annotations",
+                                throwable.message
+                            )
+                        },
+                        { result.success(annotationJsonList) }
+                    )
+            }
             "getAllUnsavedAnnotations" -> {
                 val outputStream = ByteArrayOutputStream()
                 // noinspection checkResult
@@ -490,6 +599,25 @@ internal class PSPDFKitView(
                     .subscribe(result::success)
             }
 
+            "addPageChangeListener" -> {
+
+
+                Log.i(LOG_TAG, "*********** addPageChangeListener ")
+                pdfUiFragment.requirePdfFragment().addDocumentListener(object : SimpleDocumentListener() {
+
+                    override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
+                        super.onPageChanged(document, pageIndex)
+
+                        Log.i(LOG_TAG, "*********** onPageChanged ")
+
+                        Handler(Looper.getMainLooper()).post {
+                            result.success(pageIndex)
+                        }
+
+                    }
+                })
+            }
+
             "search" -> {
 
                 val term: String = call.argument("term") ?: ""
@@ -541,7 +669,7 @@ internal class PSPDFKitView(
 class PSPDFKitViewFactory(
     private val messenger: BinaryMessenger,
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
+    override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
 
         return PSPDFKitView(
