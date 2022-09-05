@@ -7,6 +7,8 @@
  *   This notice may not be removed from this file.
  */
 buildscript {
+    ext.kotlin_version = '1.6.21'
+
     apply from: 'config.gradle'
 
     repositories {
@@ -15,6 +17,7 @@ buildscript {
     }
 
     dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
     }
 }
