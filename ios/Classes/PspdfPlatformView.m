@@ -17,6 +17,7 @@
 
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic) FlutterEventChannel *eventchannel;
 @property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
@@ -33,6 +34,12 @@
     _platformViewId = viewId;
     _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
 
+   /* let eventChannel = FlutterEventChannel(name: "your.channel.id", binaryMessenger: messenger!)
+            eventChannel.setStreamHandler(SwiftStreamHandler())*/
+    
+    _eventchannel = [FlutterEventChannel eventChannelWithName:@"com.pspdfkit.widget/enter_annotation" binaryMessenger:messenger];
+    //[_eventchannel setStreamHandler:<#(NSObject<FlutterStreamHandler> * _Nullable)#>
+    
     _navigationController = [PSPDFNavigationController new];
     _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 

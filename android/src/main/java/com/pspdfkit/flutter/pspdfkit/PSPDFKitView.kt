@@ -259,13 +259,27 @@ internal class PSPDFKitView(
     @SuppressLint("CheckResult")
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
-        Log.i(LOG_TAG, "*********** onMethodCall " + call.method)
+//        Log.i(LOG_TAG, "*********** onMethodCall " + call.method)
         // Return if the fragment or the document
         // are not ready.
         if (!pdfUiFragment.isAdded) {
+            result.error(
+                LOG_TAG,
+                "-",
+                "pdf.error"
+            )
             return
         }
-        val document = pdfUiFragment.document ?: return
+        val document = pdfUiFragment.document
+        if (document == null) {
+            result.error(
+                LOG_TAG,
+                "-",
+                "pdf.error"
+            )
+            return
+        }
+
         when (call.method) {
             "applyWatermark" -> {
 
