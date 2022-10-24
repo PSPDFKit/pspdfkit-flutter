@@ -205,12 +205,6 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
 
             case "exportInstantJson":
                 document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.exportInstantJson()");
-
-                if (documentPath == nil || documentPath.length <= 0) {
-                    FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
-                    result(error);
-                    return;
-                }
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 //noinspection ResultOfMethodCallIgnored
                 DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
