@@ -37,7 +37,6 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion androidCompileSdkVersion
-    buildToolsVersion androidBuildToolsVersion
     
     compileOptions {
         sourceCompatibility 1.8

@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'platform_utils.dart';
+import 'utils/platform_utils.dart';
 
 class PspdfkitSaveAsExampleWidget extends StatefulWidget {
   final String documentPath;

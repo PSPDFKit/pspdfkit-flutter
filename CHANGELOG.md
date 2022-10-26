@@ -1,5 +1,14 @@
 ## Newest Release
 
+### 3.4.0 - 26 Oct 2022
+
+- Adds generating PDF from images, templates and HTML. (#36736)
+- Updates for PSPDFKit 8.4.1 Android. (#37192)
+- Updates for PSPDFKit  12.0 for iOS. (#37192)
+- Fixes keyboard cutting off search results when inline search is disabled. (#35418)
+- Fixes an issue where the `PspdfkitView` widget is not rendered in Flutter versions 3.3.0 and above on Android. (#37044)
+## Previous Releases
+
 ### 3.3.0 - 19 Jul 2022
 
 - Moved package files from `lib/src` to `lib` to remove import warnings and renamed `main.dart` to `pspdfkit.dart`. (#34058)
@@ -10,8 +19,6 @@
 - Handles multiple initializations exception. (#35079)
 - Fixes an issue where tapping on form fields yields unexpected behavior in the Catalog basic example. (#33853)
 - Fixes the configuration option `userInterfaceViewMode: 'alwaysHidden'` not hiding the widget’s top bar on iOS. (#31095)
-
-## Previous Releases
 
 ### 3.2.2 - 16 Mar 2022
 

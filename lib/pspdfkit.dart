@@ -10,13 +10,20 @@ library pspdfkit;
 
 import 'dart:async';
 
-import 'dart:io' show Directory;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
+import 'dart:io';
+import 'package:flutter/material.dart';
+part 'src/processor/pdf_image_page.dart';
 part 'android_permission_status.dart';
 part 'configuration_options.dart';
+part 'src/processor/new_page.dart';
+part 'src/processor/page_pattern.dart';
+part 'src/processor/page_position.dart';
+part 'src/processor/page_z_order.dart';
+part 'src/processor/pdf_page.dart';
+part 'src/processor/page_size.dart';
+part 'pspdfkit_processor.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {

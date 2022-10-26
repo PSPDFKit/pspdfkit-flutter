@@ -1,6 +1,7 @@
 package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
+import android.content.MutableContextWrapper
 import android.net.Uri
 import android.view.View
 import androidx.fragment.app.FragmentActivity
@@ -17,6 +18,10 @@ import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.ui.PdfUiFragment
+import com.pspdfkit.document.processor.PdfProcessor
+import com.pspdfkit.document.processor.PdfProcessorTask
+import com.pspdfkit.document.processor.NewPage
+import com.pspdfkit.document.processor.PagePattern
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -29,9 +34,20 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.File
+import android.app.Activity
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.graphics.RectF
+import android.os.Bundle
+import com.pspdfkit.configuration.activity.PdfActivityConfiguration
+import com.pspdfkit.document.processor.PageImage
+import com.pspdfkit.ui.PdfActivity
+import com.pspdfkit.utils.Size
+import java.io.FileInputStream
 
 internal class PSPDFKitView(
-    context: Context,
+    val context: Context,
     id: Int,
     messenger: BinaryMessenger,
     documentPath: String? = null,
@@ -69,14 +85,14 @@ internal class PSPDFKitView(
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View?) {
-                    (context as FragmentActivity).supportFragmentManager.commit {
+                  getFragmentActivity(context).supportFragmentManager.commit {
                         add(it.id, pdfUiFragment)
                         setReorderingAllowed(true)
                     }
                 }
 
                 override fun onViewDetachedFromWindow(view: View?) {
-                    (context as FragmentActivity).supportFragmentManager.commit {
+                    getFragmentActivity(context).supportFragmentManager.commit {
                         remove(pdfUiFragment)
                         setReorderingAllowed(true)
                     }
@@ -366,6 +382,21 @@ internal class PSPDFKitView(
             }
             else -> result.notImplemented()
         }
+    }
+
+    // Get Fragment Activity from context
+    private fun getFragmentActivity(context: Context): FragmentActivity {
+       return when (context) {
+           is FragmentActivity -> {
+               context
+           }
+           is MutableContextWrapper -> {
+               getFragmentActivity(context.baseContext)
+           }
+           else -> {
+               throw IllegalStateException("Context is not a FragmentActivity")
+           }
+       }
     }
 
     companion object {

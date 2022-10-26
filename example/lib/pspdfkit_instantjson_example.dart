@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
-import 'platform_utils.dart';
+import 'utils/platform_utils.dart';
 
 class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final String documentPath;

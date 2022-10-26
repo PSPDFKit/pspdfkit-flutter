@@ -5,14 +5,15 @@
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
-
-import 'dart:io';
-import 'dart:async';
+///
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pspdfkit_example/pspdfkit_pdf_generation_example.dart';
 import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
+import 'package:pspdfkit_example/utils/file_utils.dart';
+import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
@@ -22,9 +23,7 @@ import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_manual_save_example.dart';
-import 'pspdfkit_save_as_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
-import 'platform_utils.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -59,6 +58,9 @@ const String _formExampleSub =
     'Programmatically sets and gets the value of a form field using a custom Widget.';
 const String _annotationsExample =
     'Programmatically Adds and Removes Annotations';
+const String _pdfGenerationExample = 'PDF generation';
+const String _pdfGenerationExampleSub =
+    'Programmatically generate PDFs from images, templates, and HTML.';
 const String _annotationsExampleSub =
     'Programmatically adds and removes annotations using a custom Widget.';
 const String _manualSaveExample = 'Manual Save';
@@ -135,24 +137,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   String _frameworkVersion = '';
   ThemeData currentTheme = lightTheme;
 
-  Future<File> extractAsset(String assetPath,
-      {bool shouldOverwrite = true, String prefix = ''}) async {
-    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
-    final list = bytes.buffer.asUint8List();
-
-    final tempDir = await Pspdfkit.getTemporaryDirectory();
-    final tempDocumentPath = '${tempDir.path}/$prefix$assetPath';
-    final file = File(tempDocumentPath);
-
-    if (shouldOverwrite || !file.existsSync()) {
-      await file.create(recursive: true);
-      file.writeAsBytesSync(list);
-    }
-    return file;
-  }
-
   void showDocument() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar: PlatformUtils.isAndroid(),
@@ -172,7 +158,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void showDocumentPlatformStyle() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
 
     if (PlatformUtils.isCupertino(context)) {
       await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
@@ -198,7 +184,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void showImage() async {
-    final extractedImage = await extractAsset(_imagePath);
+    final extractedImage = await extractAsset(context, _imagePath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
@@ -216,7 +202,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void applyDarkTheme() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
@@ -239,9 +225,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void applyCustomConfiguration() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
+            resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar:
                 PlatformUtils.isCupertino(context) ? false : true,
             appBar: AppBar(),
@@ -307,7 +294,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void unlockPasswordProtectedDocument() async {
-    final extractedLockedDocument = await extractAsset(_lockedDocumentPath);
+    final extractedLockedDocument =
+        await extractAsset(context, _lockedDocumentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => Scaffold(
             extendBodyBehindAppBar:
@@ -326,7 +314,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void showFormDocumentExample() async {
-    final extractedFormDocument = await extractAsset(_formPath);
+    final extractedFormDocument = await extractAsset(context, _formPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitFormExampleWidget(
             documentPath: extractedFormDocument.path,
@@ -334,7 +322,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void importInstantJsonExample() async {
-    final extractedFormDocument = await extractAsset(_documentPath);
+    final extractedFormDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitInstantJsonExampleWidget(
             documentPath: extractedFormDocument.path,
@@ -342,14 +330,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void annotationsExample() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitAnnotationsExampleWidget(
             documentPath: extractedDocument.path)));
   }
 
+  void pdfGenerationExample() async {
+    final extractedDocument = await extractAsset(context, _documentPath);
+    await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
+        builder: (_) => PspdfkitPDFGenerationExampleWidget()));
+  }
+
   void manualSaveExample() async {
-    final extractedWritableDocument = await extractAsset(_documentPath,
+    final extractedWritableDocument = await extractAsset(context, _documentPath,
         shouldOverwrite: false, prefix: 'persist');
 
     // Automatic Saving of documents is enabled by default in certain scenarios [see for details: https://pspdfkit.com/guides/flutter/save-a-document/#auto-save]
@@ -361,7 +355,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void saveAsExample() async {
-    final extractedWritableDocument = await extractAsset(_documentPath,
+    final extractedWritableDocument = await extractAsset(context, _documentPath,
         shouldOverwrite: false, prefix: 'persist');
 
     // Automatic Saving of documents is enabled by default in certain scenarios [see for details: https://pspdfkit.com/guides/flutter/save-a-document/#auto-save]
@@ -373,7 +367,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void annotationProcessingExample() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitAnnotationProcessingExampleWidget(
             documentPath: extractedDocument.path,
@@ -382,8 +376,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void pushTwoPspdfWidgetsSimultaneously() async {
     try {
-      final extractedDocument = await extractAsset(_documentPath);
-      final extractedFormDocument = await extractAsset(_formPath);
+      final extractedDocument = await extractAsset(context, _documentPath);
+      final extractedFormDocument = await extractAsset(context, _formPath);
 
       if (PlatformUtils.isCupertino(context)) {
         await Navigator.of(context).push<dynamic>(CupertinoPageRoute<dynamic>(
@@ -435,17 +429,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void showDocumentGlobal() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Pspdfkit.present(extractedDocument.path);
   }
 
   void showImageGlobal() async {
-    final extractedImage = await extractAsset(_imagePath);
+    final extractedImage = await extractAsset(context, _imagePath);
     await Pspdfkit.present(extractedImage.path);
   }
 
   void applyDarkThemeGlobal() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Pspdfkit.present(extractedDocument.path, {
       appearanceMode: 'night',
       androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
@@ -453,7 +447,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void applyCustomConfigurationGlobal() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Pspdfkit.present(extractedDocument.path, {
       scrollDirection: 'vertical',
       pageTransition: 'scrollPerSpread',
@@ -507,12 +501,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void unlockPasswordProtectedDocumentGlobal() async {
-    final extractedLockedDocument = await extractAsset(_lockedDocumentPath);
+    final extractedLockedDocument =
+        await extractAsset(context, _lockedDocumentPath);
     await Pspdfkit.present(extractedLockedDocument.path, {password: 'test123'});
   }
 
   void showFormDocumentExampleGlobal() async {
-    final formDocument = await extractAsset(_formPath);
+    final formDocument = await extractAsset(context, _formPath);
     await Pspdfkit.present(formDocument.path);
 
     try {
@@ -540,7 +535,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void importInstantJsonExampleGlobal() async {
-    final extractedDocument = await extractAsset(_documentPath);
+    final extractedDocument = await extractAsset(context, _documentPath);
     await Pspdfkit.present(extractedDocument.path);
 
     // Extract a string from a file.
@@ -707,6 +702,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_basicPlatformStyleExample),
           subtitle: const Text(_basicPlatformStyleExampleSub),
           onTap: () => showDocumentPlatformStyle()),
+      ListTile(
+          title: const Text(_pdfGenerationExample),
+          subtitle: const Text(_pdfGenerationExampleSub),
+          onTap: () => pdfGenerationExample()),
       Container(
           color: Colors.grey[200],
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),

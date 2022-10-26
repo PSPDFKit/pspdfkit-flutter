@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_example/platform_utils.dart';
+import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 

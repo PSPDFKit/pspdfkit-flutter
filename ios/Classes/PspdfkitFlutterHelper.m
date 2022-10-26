@@ -8,6 +8,7 @@
 //
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
+#import "pspdfkit_flutter-Swift.h"
 
 @implementation PspdfkitFlutterHelper
 
@@ -89,6 +90,24 @@
         NSString *processingMode = call.arguments[@"processingMode"];
         NSString *destinationPath = call.arguments[@"destinationPath"];
         result([PspdfkitFlutterHelper processAnnotationsOfType:type withProcessingMode:processingMode andDestinationPath:destinationPath forViewController:pdfViewController]);
+    } else if ([@"generatePdfFromHtmlString" isEqualToString:call.method]) {
+        NSString *html = call.arguments[@"html"];
+        NSString *outputPath = call.arguments[@"outputPath"];
+        NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:outputPath override:YES copyIfNeeded:NO];
+        NSDictionary *options = call.arguments[@"options"];
+        [PspdfkitHtmlPdfConvertor generateFromHtmlStringWithHtml:html outputFileURL:processedDocumentURL convertionOptions:options results:result];
+    } else if ([@"generatePdfFromHtmlUri" isEqualToString:call.method]){
+        NSString *htmlURLString = call.arguments[@"htmlUri"];
+        NSString *outputPath = call.arguments[@"outputPath"];
+        NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:outputPath override:YES copyIfNeeded:NO];
+        NSURL *htmlURL = [[NSURL alloc] initWithString:htmlURLString];
+        NSDictionary *options = call.arguments[@"options"];
+        [PspdfkitHtmlPdfConvertor generateFromHtmlURLWithHtmlURL:htmlURL outputFileURL:processedDocumentURL convertionOptions:options results:result];
+    } else if ([@"generatePDF" isEqualToString:call.method]){
+        NSString *outputPath = call.arguments[@"outputFilePath"];
+        NSArray<NSDictionary<NSString *,NSObject *> *> *pages = call.arguments[@"pages"];
+        NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:outputPath override:YES copyIfNeeded:NO];
+        [PspdfkitPdfGenrator generatePdfWithPages:pages outputUrl:processedDocumentURL results:result];
     } else {
         result(FlutterMethodNotImplemented);
     }

@@ -170,3 +170,13 @@ const String showThumbnailBarScrollable = 'scrollable';
 
 @Deprecated('Directly use the String value instead.')
 const String showThumbnailBarNone = 'none';
+
+const String pdfGenerationConfigurationName = 'name';
+
+const String pdfGenerationConfigurationWidth = 'width';
+
+const String pdfGenerationConfigurationHeight = 'height';
+
+const String pdfGenerationConfigurationOverride = 'override';
+
+const String pdfGenerationConfigurationImagePath = 'imagePath';

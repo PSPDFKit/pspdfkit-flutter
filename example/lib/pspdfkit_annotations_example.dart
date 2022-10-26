@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
-import 'platform_utils.dart';
+import 'utils/platform_utils.dart';
 
 const annotationJsonHashMap = {
   'uuid': 'A92AA288-B11D-490C-847B-D1A0BC64D3E9',

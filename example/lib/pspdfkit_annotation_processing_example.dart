@@ -8,12 +8,11 @@
 ///
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:pspdfkit_example/platform_utils.dart';
+import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
@@ -38,15 +37,6 @@ class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
 class _PspdfkitAnnotationProcessingExampleWidgetState
     extends State<PspdfkitAnnotationProcessingExampleWidget> {
   late PspdfkitWidgetController view;
-
-  Future<File> extractAsset(String assetPath) async {
-    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
-    final list = bytes.buffer.asUint8List();
-    final tempDocumentPath = await getExportPath(assetPath);
-    final file = await File(tempDocumentPath).create(recursive: true);
-    file.writeAsBytesSync(list);
-    return file;
-  }
 
   Future<String> getExportPath(String assetPath) async {
     final tempDir = await Pspdfkit.getTemporaryDirectory();

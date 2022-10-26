@@ -30,22 +30,14 @@ import androidx.fragment.app.FragmentActivity;
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
-import com.pspdfkit.exceptions.InvalidPSPDFKitLicenseException;
 import com.pspdfkit.exceptions.PSPDFKitException;
+import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -59,13 +51,26 @@ import io.flutter.plugin.common.PluginRegistry;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * PSPDFKit plugin to load PDF and image documents.
  */
-public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.RequestPermissionsResultListener,
-        FlutterPlugin, ActivityAware {
+public class PspdfkitPlugin
+        implements
+        MethodCallHandler,
+        PluginRegistry.RequestPermissionsResultListener,
+        FlutterPlugin,
+        ActivityAware {
     @NonNull
     private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
+
     private static final String LOG_TAG = "PSPDFKitPlugin";
 
     /**
@@ -95,12 +100,20 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
      */
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        final MethodChannel channel = new MethodChannel(binding.getBinaryMessenger(), "com.pspdfkit.global");
+        final MethodChannel channel = new MethodChannel(
+                binding.getBinaryMessenger(),
+                "com.pspdfkit.global"
+        );
         channel.setMethodCallHandler(this);
         eventDispatcher.setChannel(channel);
 
         // Register the view factory for the PSPDFKit widget provided by `PSPDFKitViewFactory`.
-        binding.getPlatformViewRegistry().registerViewFactory("com.pspdfkit.widget", new PSPDFKitViewFactory(binding.getBinaryMessenger()));
+        binding
+                .getPlatformViewRegistry()
+                .registerViewFactory(
+                        "com.pspdfkit.widget",
+                        new PSPDFKitViewFactory(binding.getBinaryMessenger())
+                );
     }
 
     /**
@@ -124,9 +137,11 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         PdfDocument document;
 
         if (activityPluginBinding == null) {
-            throw new IllegalStateException("There is no activity attached. Make sure " +
-                    "`onAttachedToActivity` is called before handling any method calls received " +
-                    "from Flutter");
+            throw new IllegalStateException(
+                    "There is no activity attached. Make sure " +
+                            "`onAttachedToActivity` is called before handling any method calls received " +
+                            "from Flutter"
+            );
         }
 
         final FragmentActivity activity = (FragmentActivity) activityPluginBinding.getActivity();
@@ -139,7 +154,12 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String licenseKey = call.argument("licenseKey");
                 requireNotNullNotEmpty(licenseKey, "License key");
                 try {
-                    PSPDFKit.initialize(activity, licenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                    PSPDFKit.initialize(
+                            activity,
+                            licenseKey,
+                            new ArrayList<>(),
+                            HYBRID_TECHNOLOGY
+                    );
                 } catch (PSPDFKitException e) {
                     result.error("PSPDFKitException", e.getMessage(), null);
                 }
@@ -148,7 +168,12 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String androidLicenseKey = call.argument("androidLicenseKey");
                 requireNotNullNotEmpty(androidLicenseKey, "Android License key");
                 try {
-                    PSPDFKit.initialize(activity, androidLicenseKey, new ArrayList<>(), HYBRID_TECHNOLOGY);
+                    PSPDFKit.initialize(
+                            activity,
+                            androidLicenseKey,
+                            new ArrayList<>(),
+                            HYBRID_TECHNOLOGY
+                    );
                 } catch (PSPDFKitException e) {
                     result.error("PSPDFKitException", e.getMessage(), null);
                 }
@@ -157,8 +182,13 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
 
-                HashMap<String, Object> configurationMap = call.argument("configuration");
-                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(activity, configurationMap);
+                HashMap<String, Object> configurationMap = call.argument(
+                        "configuration"
+                );
+                ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(
+                        activity,
+                        configurationMap
+                );
 
                 documentPath = addFileSchemeIfMissing(documentPath);
 
@@ -166,16 +196,20 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 boolean imageDocument = isImageDocument(documentPath);
                 Intent intent;
                 if (imageDocument) {
-                    intent = PdfActivityIntentBuilder.fromImageUri(activity, Uri.parse(documentPath))
-                            .activityClass(FlutterPdfActivity.class)
-                            .configuration(configurationAdapter.build())
-                            .build();
+                    intent =
+                            PdfActivityIntentBuilder
+                                    .fromImageUri(activity, Uri.parse(documentPath))
+                                    .activityClass(FlutterPdfActivity.class)
+                                    .configuration(configurationAdapter.build())
+                                    .build();
                 } else {
-                    intent = PdfActivityIntentBuilder.fromUri(activity, Uri.parse(documentPath))
-                            .activityClass(FlutterPdfActivity.class)
-                            .configuration(configurationAdapter.build())
-                            .passwords(configurationAdapter.getPassword())
-                            .build();
+                    intent =
+                            PdfActivityIntentBuilder
+                                    .fromUri(activity, Uri.parse(documentPath))
+                                    .activityClass(FlutterPdfActivity.class)
+                                    .configuration(configurationAdapter.build())
+                                    .passwords(configurationAdapter.getPassword())
+                                    .build();
                 }
 
                 activity.startActivity(intent);
@@ -199,32 +233,55 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 String annotationsJson = call.argument("annotationsJson");
 
                 requireNotNullNotEmpty(annotationsJson, "annotationsJson");
-                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.applyInstantJson(String)");
+                document =
+                        requireDocumentNotNull(
+                                FlutterPdfActivity.getCurrentActivity(),
+                                "Pspdfkit.applyInstantJson(String)"
+                        );
 
-                DocumentJsonDataProvider documentJsonDataProvider = new DocumentJsonDataProvider(annotationsJson);
+                DocumentJsonDataProvider documentJsonDataProvider = new DocumentJsonDataProvider(
+                        annotationsJson
+                );
                 //noinspection ResultOfMethodCallIgnored
-                DocumentJsonFormatter.importDocumentJsonAsync(document, documentJsonDataProvider)
+                DocumentJsonFormatter
+                        .importDocumentJsonAsync(document, documentJsonDataProvider)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> result.success(true),
-                                throwable -> result.error(LOG_TAG,
-                                        "Error while importing document Instant JSON",
-                                        throwable.getMessage()));
+                                throwable ->
+                                        result.error(
+                                                LOG_TAG,
+                                                "Error while importing document Instant JSON",
+                                                throwable.getMessage()
+                                        )
+                        );
                 break;
             case "exportInstantJson":
-                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.exportInstantJson()");
+                document =
+                        requireDocumentNotNull(
+                                FlutterPdfActivity.getCurrentActivity(),
+                                "Pspdfkit.exportInstantJson()"
+                        );
 
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 //noinspection ResultOfMethodCallIgnored
-                DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
+                DocumentJsonFormatter
+                        .exportDocumentJsonAsync(document, outputStream)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> result.success(outputStream.toString(StandardCharsets.UTF_8.name())),
-                                throwable -> result.error(LOG_TAG,
-                                        "Error while exporting document Instant JSON",
-                                        throwable.getMessage()));
+                                () ->
+                                        result.success(
+                                                outputStream.toString(StandardCharsets.UTF_8.name())
+                                        ),
+                                throwable ->
+                                        result.error(
+                                                LOG_TAG,
+                                                "Error while exporting document Instant JSON",
+                                                throwable.getMessage()
+                                        )
+                        );
                 break;
             case "setFormFieldValue":
                 String value = call.argument("value");
@@ -232,10 +289,15 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
 
                 requireNotNullNotEmpty(value, "Value");
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
-                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.setFormFieldValue(String)");
+                document =
+                        requireDocumentNotNull(
+                                FlutterPdfActivity.getCurrentActivity(),
+                                "Pspdfkit.setFormFieldValue(String)"
+                        );
 
                 //noinspection ResultOfMethodCallIgnored
-                document.getFormProvider()
+                document
+                        .getFormProvider()
                         .getFormElementWithNameAsync(fullyQualifiedName)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -257,22 +319,38 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                                     } else if (formElement instanceof ChoiceFormElement) {
                                         List<Integer> selectedIndexes = new ArrayList<>();
                                         if (areValidIndexes(value, selectedIndexes)) {
-                                            ((ChoiceFormElement) formElement).setSelectedIndexes(selectedIndexes);
+                                            ((ChoiceFormElement) formElement).setSelectedIndexes(
+                                                    selectedIndexes
+                                            );
                                             result.success(true);
                                         } else {
-                                            result.error(LOG_TAG, "\"value\" argument needs a list of " +
-                                                    "integers to set selected indexes for a choice " +
-                                                    "form element (e.g.: \"1, 3, 5\").", null);
+                                            result.error(
+                                                    LOG_TAG,
+                                                    "\"value\" argument needs a list of " +
+                                                            "integers to set selected indexes for a choice " +
+                                                            "form element (e.g.: \"1, 3, 5\").",
+                                                    null
+                                            );
                                         }
                                     } else if (formElement instanceof SignatureFormElement) {
-                                        result.error("Signature form elements are not supported.", null, null);
+                                        result.error(
+                                                "Signature form elements are not supported.",
+                                                null,
+                                                null
+                                        );
                                     } else {
                                         result.success(false);
                                     }
                                 },
-                                throwable -> result.error(LOG_TAG,
-                                        String.format("Error while searching for a form element with name %s", fullyQualifiedName),
-                                        throwable.getMessage()),
+                                throwable ->
+                                        result.error(
+                                                LOG_TAG,
+                                                String.format(
+                                                        "Error while searching for a form element with name %s",
+                                                        fullyQualifiedName
+                                                ),
+                                                throwable.getMessage()
+                                        ),
                                 // Form element for the given name not found.
                                 () -> result.success(false)
                         );
@@ -281,10 +359,15 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                 fullyQualifiedName = call.argument("fullyQualifiedName");
 
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
-                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.getFormFieldValue()");
+                document =
+                        requireDocumentNotNull(
+                                FlutterPdfActivity.getCurrentActivity(),
+                                "Pspdfkit.getFormFieldValue()"
+                        );
 
                 //noinspection ResultOfMethodCallIgnored
-                document.getFormProvider()
+                document
+                        .getFormProvider()
                         .getFormElementWithNameAsync(fullyQualifiedName)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -294,10 +377,12 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                                         String text = ((TextFormElement) formElement).getText();
                                         result.success(text);
                                     } else if (formElement instanceof EditableButtonFormElement) {
-                                        boolean isSelected = ((EditableButtonFormElement) formElement).isSelected();
+                                        boolean isSelected =
+                                                ((EditableButtonFormElement) formElement).isSelected();
                                         result.success(isSelected ? "selected" : "deselected");
                                     } else if (formElement instanceof ChoiceFormElement) {
-                                        List<Integer> selectedIndexes = ((ChoiceFormElement) formElement).getSelectedIndexes();
+                                        List<Integer> selectedIndexes =
+                                                ((ChoiceFormElement) formElement).getSelectedIndexes();
                                         StringBuilder stringBuilder = new StringBuilder();
                                         Iterator<Integer> iterator = selectedIndexes.iterator();
                                         while (iterator.hasNext()) {
@@ -308,25 +393,46 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
                                         }
                                         result.success(stringBuilder.toString());
                                     } else if (formElement instanceof SignatureFormElement) {
-                                        result.error("Signature form elements are not supported.", null, null);
+                                        result.error(
+                                                "Signature form elements are not supported.",
+                                                null,
+                                                null
+                                        );
                                     } else {
                                         result.success(false);
                                     }
                                 },
-                                throwable -> result.error(LOG_TAG,
-                                        String.format("Error while searching for a form element with name %s", fullyQualifiedName),
-                                        throwable.getMessage()),
+                                throwable ->
+                                        result.error(
+                                                LOG_TAG,
+                                                String.format(
+                                                        "Error while searching for a form element with name %s",
+                                                        fullyQualifiedName
+                                                ),
+                                                throwable.getMessage()
+                                        ),
                                 // Form element for the given name not found.
-                                () -> result.error(LOG_TAG,
-                                        String.format("Form element not found with name %s", fullyQualifiedName),
-                                        null)
+                                () ->
+                                        result.error(
+                                                LOG_TAG,
+                                                String.format(
+                                                        "Form element not found with name %s",
+                                                        fullyQualifiedName
+                                                ),
+                                                null
+                                        )
                         );
                 break;
             case "save":
-                document = requireDocumentNotNull(FlutterPdfActivity.getCurrentActivity(), "Pspdfkit.save()");
+                document =
+                        requireDocumentNotNull(
+                                FlutterPdfActivity.getCurrentActivity(),
+                                "Pspdfkit.save()"
+                        );
 
                 //noinspection ResultOfMethodCallIgnored
-                document.saveIfModifiedAsync()
+                document
+                        .saveIfModifiedAsync()
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result::success);
@@ -335,6 +441,51 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
             case "getTemporaryDirectory":
                 result.success(getTemporaryDirectory(activity));
                 break;
+            case "generatePDF": {
+                final PdfPageAdaptor adaptor = new PdfPageAdaptor(activityPluginBinding.getActivity());
+                final PspdfkitPdfGenerator processor = new PspdfkitPdfGenerator(adaptor);
+                final List<HashMap<String, Object>> pages = call.argument("pages");
+                final String outputFilePath = call.argument("outputFilePath");
+                if (pages == null || pages.isEmpty()) {
+                    result.error("InvalidArgument", "Pages argument is null or empty", null);
+                    return;
+                }
+                requireNotNullNotEmpty(outputFilePath, "Output file path");
+                processor.generatePdf(pages, outputFilePath, result);
+                break;
+            }
+            case "generatePdfFromHtmlString": {
+                String html = call.argument("html");
+                String outputFilePath = call.argument("outputPath");
+                HashMap<String, Object> options = call.argument("options");
+                requireNotNullNotEmpty(html, "Html");
+                requireNotNullNotEmpty(outputFilePath, "Output path");
+
+                PspdfkitHTMLConverter.generateFromHtmlString(
+                        activity,
+                        html,
+                        outputFilePath,
+                        options,
+                        result
+                );
+                break;
+            }
+            case "generatePdfFromHtmlUri": {
+                String uriString = call.argument("htmlUri");
+                String outputFilePath = call.argument("outputPath");
+                HashMap<String, Object> options = call.argument("options");
+
+                requireNotNullNotEmpty(outputFilePath, "Output file path");
+                requireNotNullNotEmpty(uriString, "Uri");
+                PspdfkitHTMLConverter.generateFromHtmlUri(
+                        activity,
+                        uriString,
+                        outputFilePath,
+                        options,
+                        result
+                );
+                break;
+            }
             default:
                 result.notImplemented();
                 break;
@@ -342,11 +493,16 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     }
 
     @NonNull
-    private String getTemporaryDirectory(@NonNull final FragmentActivity activity) {
+    private String getTemporaryDirectory(
+            @NonNull final FragmentActivity activity
+    ) {
         return activity.getCacheDir().getPath();
     }
 
-    private void requestPermission(@NonNull final FragmentActivity activity, String permission) {
+    private void requestPermission(
+            @NonNull final FragmentActivity activity,
+            String permission
+    ) {
         permission = getManifestPermission(permission);
         if (permission == null) {
             return;
@@ -356,13 +512,19 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         ActivityCompat.requestPermissions(activity, perm, 0);
     }
 
-    private boolean checkPermission(@NonNull final FragmentActivity activity, String permission) {
+    private boolean checkPermission(
+            @NonNull final FragmentActivity activity,
+            String permission
+    ) {
         permission = getManifestPermission(permission);
         if (permission == null) {
             return false;
         }
         Log.i(LOG_TAG, "Checking permission " + permission);
-        return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(activity, permission);
+        return (
+                PackageManager.PERMISSION_GRANTED ==
+                        ContextCompat.checkSelfPermission(activity, permission)
+        );
     }
 
     private String getManifestPermission(String permission) {
@@ -377,19 +539,27 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     }
 
     private void openSettings(@NonNull final FragmentActivity activity) {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.parse("package:" + activity.getPackageName()));
+        Intent intent = new Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + activity.getPackageName())
+        );
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         activity.startActivity(intent);
     }
 
     @Override
-    public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public boolean onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults
+    ) {
         if (activityPluginBinding == null) {
-            throw new IllegalStateException("There is no activity attached. Make sure " +
-                    "`onAttachedToActivity` is called before handling any method calls received " +
-                    "from Flutter");
+            throw new IllegalStateException(
+                    "There is no activity attached. Make sure " +
+                            "`onAttachedToActivity` is called before handling any method calls received " +
+                            "from Flutter"
+            );
         }
 
         final FragmentActivity activity = (FragmentActivity) activityPluginBinding.getActivity();
@@ -399,11 +569,19 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
         int status = 0;
         String permission = permissions[0];
         if (requestCode == 0 && grantResults.length > 0) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+            if (
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                            activity,
+                            permission
+                    )
+            ) {
                 // Permission denied.
                 status = 1;
             } else {
-                if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
+                if (
+                        ActivityCompat.checkSelfPermission(activity, permission) ==
+                                PackageManager.PERMISSION_GRANTED
+                ) {
                     // Permission allowed.
                     status = 2;
                 } else {
@@ -434,7 +612,9 @@ public class PspdfkitPlugin implements MethodCallHandler, PluginRegistry.Request
     }
 
     @Override
-    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+    public void onReattachedToActivityForConfigChanges(
+            @NonNull ActivityPluginBinding binding
+    ) {
         activityPluginBinding = binding;
         binding.addRequestPermissionsResultListener(this);
     }
