@@ -64,9 +64,10 @@ import io.flutter.plugin.common.EventChannel.StreamHandler
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import android.content.MutableContextWrapper
 
 internal class PSPDFKitView(
-    context: Context,
+    val context: Context,
     id: Int,
     messenger: BinaryMessenger,
     documentPath: String? = null,
@@ -77,7 +78,7 @@ internal class PSPDFKitView(
     private val methodChannel: MethodChannel
     private val eventChannel: EventChannel
 
-    private val pdfUiFragment: PdfUiFragment
+    private val pdfUiFragment: PdfUiFragment?
 
     override fun getView(): View {
         return fragmentContainerView
@@ -127,37 +128,85 @@ internal class PSPDFKitView(
 
         Handler().postDelayed({
 
-            pdfUiFragment.pdfFragment?.addOnAnnotationCreationModeChangeListener(object : AnnotationManager.OnAnnotationCreationModeChangeListener {
-                override fun onEnterAnnotationCreationMode(p0: AnnotationCreationController) {
-                    currentEvents?.success(true)
+            /*if (pdfUiFragment != null) {
+                setEvents()
+            } else {
+                Handler().postDelayed({
+                    if (pdfUiFragment != null) {
+                        setEvents()
+                    }
+                }, 2000)
+            }*/
+        }, 2000)
+
+
+
+        fragmentContainerView?.let {
+            it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(view: View?) {
+                    getFragmentActivity(context).supportFragmentManager.commit {
+                        add(it.id, pdfUiFragment)
+                        setReorderingAllowed(true)
+                    }
                 }
 
-                override fun onChangeAnnotationCreationMode(p0: AnnotationCreationController) {
-
+                override fun onViewDetachedFromWindow(view: View?) {
+                    getFragmentActivity(context).supportFragmentManager.commit {
+                        remove(pdfUiFragment)
+                        setReorderingAllowed(true)
+                    }
                 }
+            })
+        }
+    }
 
-                override fun onExitAnnotationCreationMode(p0: AnnotationCreationController) {
-                    currentEvents?.success(false)
-                }
+    // Get Fragment Activity from context
+    private fun getFragmentActivity(context: Context): FragmentActivity {
+        return when (context) {
+            is FragmentActivity -> {
+                context
+            }
+            is MutableContextWrapper -> {
+                getFragmentActivity(context.baseContext)
+            }
+            else -> {
+                throw IllegalStateException("Context is not a FragmentActivity")
+            }
+        }
+    }
 
-            });
+    private fun setEvents() {
+        pdfUiFragment?.pdfFragment?.addOnAnnotationCreationModeChangeListener(object : AnnotationManager.OnAnnotationCreationModeChangeListener {
+            override fun onEnterAnnotationCreationMode(p0: AnnotationCreationController) {
+                currentEvents?.success(true)
+            }
 
-            pdfUiFragment.pdfFragment?.addOnAnnotationEditingModeChangeListener(object : AnnotationManager.OnAnnotationEditingModeChangeListener {
-                override fun onEnterAnnotationEditingMode(p0: AnnotationEditingController) {
-                    currentEvents?.success(true)
-                }
+            override fun onChangeAnnotationCreationMode(p0: AnnotationCreationController) {
 
-                override fun onChangeAnnotationEditingMode(p0: AnnotationEditingController) {
+            }
 
-                }
+            override fun onExitAnnotationCreationMode(p0: AnnotationCreationController) {
+                currentEvents?.success(false)
+            }
 
-                override fun onExitAnnotationEditingMode(p0: AnnotationEditingController) {
-                    currentEvents?.success(false)
-                }
-            });
+        });
+
+        pdfUiFragment?.pdfFragment?.addOnAnnotationEditingModeChangeListener(object : AnnotationManager.OnAnnotationEditingModeChangeListener {
+            override fun onEnterAnnotationEditingMode(p0: AnnotationEditingController) {
+                currentEvents?.success(true)
+            }
+
+            override fun onChangeAnnotationEditingMode(p0: AnnotationEditingController) {
+
+            }
+
+            override fun onExitAnnotationEditingMode(p0: AnnotationEditingController) {
+                currentEvents?.success(false)
+            }
+        });
 
 
-            /*  pdfUiFragment.pdfFragment?.addDocumentListener(object : SimpleDocumentListener() {
+        /*  pdfUiFragment.pdfFragment?.addDocumentListener(object : SimpleDocumentListener() {
                   @SuppressLint("CheckResult")
                   override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
                       super.onPageChanged(document, pageIndex)
@@ -212,7 +261,7 @@ internal class PSPDFKitView(
               })*/
 
 
-            /* pdfUiFragment.requirePdfFragment().addOnAnnotationUpdatedListener(object : AnnotationProvider.OnAnnotationUpdatedListener {
+        /* pdfUiFragment.requirePdfFragment().addOnAnnotationUpdatedListener(object : AnnotationProvider.OnAnnotationUpdatedListener {
                  override fun onAnnotationCreated(annotation: Annotation) {
                      Log.i(LOG_TAG, "The annotation was created.")
                  }
@@ -228,28 +277,6 @@ internal class PSPDFKitView(
                      Log.i(LOG_TAG, "The annotation was onAnnotationZOrderChanged.")
                  }
              })*/
-
-        }, 2000)
-
-
-
-        fragmentContainerView?.let {
-            it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(view: View?) {
-                    (context as FragmentActivity).supportFragmentManager.commit {
-                        add(it.id, pdfUiFragment)
-                        setReorderingAllowed(true)
-                    }
-                }
-
-                override fun onViewDetachedFromWindow(view: View?) {
-                    (context as FragmentActivity).supportFragmentManager.commit {
-                        remove(pdfUiFragment)
-                        setReorderingAllowed(true)
-                    }
-                }
-            })
-        }
     }
 
     override fun dispose() {
@@ -262,7 +289,7 @@ internal class PSPDFKitView(
 //        Log.i(LOG_TAG, "*********** onMethodCall " + call.method)
         // Return if the fragment or the document
         // are not ready.
-        if (!pdfUiFragment.isAdded) {
+        if (pdfUiFragment != null && !pdfUiFragment.isAdded) {
             result.error(
                 LOG_TAG,
                 "-",
@@ -270,7 +297,7 @@ internal class PSPDFKitView(
             )
             return
         }
-        val document = pdfUiFragment.document
+        val document = pdfUiFragment?.document
         if (document == null) {
             result.error(
                 LOG_TAG,
@@ -303,15 +330,15 @@ internal class PSPDFKitView(
                     }
                 }
 
-                pdfUiFragment.requirePdfFragment().addDrawableProvider(pdfDrawableProvider)
+                pdfUiFragment?.requirePdfFragment()?.addDrawableProvider(pdfDrawableProvider)
 
-                pdfUiFragment.pspdfKitViews.thumbnailBarView?.addDrawableProvider(pdfDrawableProvider)
-                pdfUiFragment.pspdfKitViews.thumbnailGridView?.addDrawableProvider(pdfDrawableProvider)
+                pdfUiFragment?.pspdfKitViews?.thumbnailBarView?.addDrawableProvider(pdfDrawableProvider)
+                pdfUiFragment?.pspdfKitViews?.thumbnailGridView?.addDrawableProvider(pdfDrawableProvider)
 
-                pdfUiFragment.pspdfKitViews.outlineView?.addDrawableProvider(pdfDrawableProvider)
+                pdfUiFragment?.pspdfKitViews?.outlineView?.addDrawableProvider(pdfDrawableProvider)
 
                 // workaround to draw the watermark on the first page
-                pdfUiFragment.requirePdfFragment().apply {
+                pdfUiFragment?.requirePdfFragment()?.apply {
                     val rect = RectF()
                     val currentPage = pageIndex
                     getVisiblePdfRect(rect, currentPage)
@@ -328,7 +355,7 @@ internal class PSPDFKitView(
                         { annotations ->
 
                             for (annotation in annotations) {
-                                pdfUiFragment.requirePdfFragment().addAnnotationToPage(annotation, false)
+                                pdfUiFragment?.requirePdfFragment()?.addAnnotationToPage(annotation, false)
                             }
 
                             result.success(true)
@@ -667,7 +694,8 @@ internal class PSPDFKitView(
 
 
                 Log.i(LOG_TAG, "*********** addPageChangeListener ")
-                pdfUiFragment.requirePdfFragment().addDocumentListener(object : SimpleDocumentListener() {
+
+                pdfUiFragment?.requirePdfFragment()?.addDocumentListener(object : SimpleDocumentListener() {
 
                     override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
                         super.onPageChanged(document, pageIndex)
@@ -699,14 +727,14 @@ internal class PSPDFKitView(
                          // Put your search result handling here.
                      }*/
 
-                pdfUiFragment.pspdfKitViews.addOnVisibilityChangedListener(object : OnVisibilityChangedListener {
+                pdfUiFragment?.pspdfKitViews?.addOnVisibilityChangedListener(object : OnVisibilityChangedListener {
                     override fun onShow(view: View) {
                         if (view is PdfSearchViewInline) {
                             view.setInputFieldText(term, true)
                         } else if (view is PdfSearchViewModular) {
                             view.setInputFieldText(term, true)
                         }
-                        pdfUiFragment.pspdfKitViews.removeOnVisibilityChangedListener(this)
+                        pdfUiFragment?.pspdfKitViews?.removeOnVisibilityChangedListener(this)
                     }
 
                     override fun onHide(view: View) {
@@ -714,7 +742,9 @@ internal class PSPDFKitView(
                 })
 
 
-                pdfUiFragment.pspdfKitViews.showView(PSPDFKitViews.Type.VIEW_SEARCH)
+
+
+                pdfUiFragment?.pspdfKitViews?.showView(PSPDFKitViews.Type.VIEW_SEARCH)
 
 
             }
