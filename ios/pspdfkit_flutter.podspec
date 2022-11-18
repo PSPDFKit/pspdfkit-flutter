@@ -21,5 +21,5 @@ Pod::Spec.new do |s|
   s.dependency("PSPDFKit")
   s.swift_version         = "5.0"
   s.platform              = :ios, "14.0"
-  s.ios.deployment_target = "14.0"
+  s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES", "GENERATE_INFOPLIST_FILE" => "YES", "SWIFT_INSTALL_OBJC_HEADER" => "NO" }
 end

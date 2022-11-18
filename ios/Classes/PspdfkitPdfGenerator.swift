@@ -10,7 +10,8 @@
 import Foundation
 import PSPDFKit.PSPDFProcessor
 
-public class PspdfkitPdfGenrator: NSObject {
+@objc(PspdfkitPdfGenerator)
+public class PspdfkitPdfGenerator: NSObject {
     
     static let pageAdaptor: PspdfkitPageConvertor = PspdfkitPageConvertor()
     

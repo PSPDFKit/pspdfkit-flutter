@@ -107,7 +107,7 @@
         NSString *outputPath = call.arguments[@"outputFilePath"];
         NSArray<NSDictionary<NSString *,NSObject *> *> *pages = call.arguments[@"pages"];
         NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:outputPath override:YES copyIfNeeded:NO];
-        [PspdfkitPdfGenrator generatePdfWithPages:pages outputUrl:processedDocumentURL results:result];
+        [PspdfkitPdfGenerator generatePdfWithPages:pages outputUrl:processedDocumentURL results:result];
     } else {
         result(FlutterMethodNotImplemented);
     }

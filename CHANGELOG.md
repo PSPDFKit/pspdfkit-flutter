@@ -1,5 +1,12 @@
 ## Newest Release
 
+### 3.4.1 - 18 Nov 2022
+
+- Updates for PSPDFKit 12.0 for iOS. (#37508)
+- Fixes missing header file issue. (#37283) 
+
+## Previous Releases
+
 ### 3.4.0 - 26 Oct 2022
 
 - Adds generating PDF from images, templates and HTML. (#36736)
@@ -7,7 +14,6 @@
 - Updates for PSPDFKit  12.0 for iOS. (#37192)
 - Fixes keyboard cutting off search results when inline search is disabled. (#35418)
 - Fixes an issue where the `PspdfkitView` widget is not rendered in Flutter versions 3.3.0 and above on Android. (#37044)
-## Previous Releases
 
 ### 3.3.0 - 19 Jul 2022
 

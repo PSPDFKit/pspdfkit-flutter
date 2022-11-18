@@ -10,9 +10,10 @@
 import Foundation
 import PSPDFKit.PSPDFProcessor
 
+@objc(PspdfkitHtmlPdfConvertor)
 public class PspdfkitHtmlPdfConvertor: NSObject {
-
-    @objc public  static func generateFromHtmlString(html: String, outputFileURL: URL, convertionOptions: Dictionary<String,Any>? , results:@escaping FlutterResult) {
+    
+    @objc public static func generateFromHtmlString(html: String, outputFileURL: URL, convertionOptions: Dictionary<String,Any>?, results:@escaping FlutterResult) {
         
         var options:[String: Any] = [:]
         
@@ -23,27 +24,27 @@ public class PspdfkitHtmlPdfConvertor: NSObject {
         if(convertionOptions?["numberOfPages"] != nil){
             options[PSPDFProcessorNumberOfPagesKey] = convertionOptions?["numberOfPages"]
         }
-
+        
         options  = options as [String: Any]
-
+        
         Processor.generatePDF(fromHTMLString: html,outputFileURL: outputFileURL, options: options) { outputURL, error in
-          if let outputURL = outputURL {
-              results(outputURL.relativePath);
-          } else if let error = error {
-              results(FlutterError(code: "PspdfkitError", message: error.localizedDescription,details: nil))
-          }
-      }
+            if let outputURL = outputURL {
+                results(outputURL.relativePath);
+            } else if let error = error {
+                results(FlutterError(code: "PspdfkitError", message: error.localizedDescription,details: nil))
+            }
+        }
     }
-
-  @objc  public static func generateFromHtmlURL(htmlURL: URL, outputFileURL: URL, convertionOptions: Dictionary<String,Any>? , results:@escaping FlutterResult) {
-
+    
+    @objc public static func generateFromHtmlURL(htmlURL: URL, outputFileURL: URL, convertionOptions: Dictionary<String,Any>?, results:@escaping FlutterResult) {
+        
         let options = [PSPDFProcessorNumberOfPagesKey: 1, PSPDFProcessorDocumentTitleKey: "Generated PDF"] as [String: Any]
         Processor.generatePDF(from:htmlURL,outputFileURL: outputFileURL, options: options) { outputURL, error in
-          if let outputURL = outputURL {
-              results(outputURL.relativePath);
-          } else if let error = error {
-              results(FlutterError(code: "PspdfkitError", message: error.localizedDescription,details: nil))
-          }
-      }
+            if let outputURL = outputURL {
+                results(outputURL.relativePath);
+            } else if let error = error {
+                results(FlutterError(code: "PspdfkitError", message: error.localizedDescription,details: nil))
+            }
+        }
     }
 }

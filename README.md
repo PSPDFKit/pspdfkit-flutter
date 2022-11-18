@@ -1,13 +1,13 @@
-# PSPDFKit Flutter
+# Flutter PDF Library by PSPDFKit
 
 ![Flutter Intro](screenshots/flutter-intro.png)
 
-PSPDFKit for Flutter is available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
+PSPDFKit for Flutter is an SDK for viewing, annotating, and editing PDFs. It offers developers the ability to quickly add PDF functionality to any Flutter application. It is available at [pub.dev](https://pub.dev/packages/pspdfkit_flutter) and [GitHub](https://github.com/PSPDFKit/pspdfkit-flutter).
 
 If you are new to Flutter, make sure to check our Flutter blog posts:
 
 - [How I Got Started With Flutter](https://pspdfkit.com/blog/2018/starting-with-flutter/).
-- [Getting Started with PSPDFKit Flutter](https://pspdfkit.com/blog/2019/getting-started-with-pspdfkit-flutter/).
+- [Getting Started with Flutter PDF Library by PSPDFKit](https://pspdfkit.com/blog/2019/getting-started-with-pspdfkit-flutter/).
 - [Opening a PDF in Flutter](https://pspdfkit.com/blog/2019/opening-a-pdf-in-flutter/).
 - [How to Bridge Native iOS Code to Flutter](https://pspdfkit.com/blog/2021/how-to-bridge-native-ios-code-to-flutter/).
 - [How to Customize Our Flutter PDF SDK for Android](https://pspdfkit.com/blog/2021/how-to-customize-our-flutter-pdf-sdk/).
@@ -275,7 +275,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
 
 # Example App
 
-To see PSPDFKit Flutter in action check out our [Flutter example app](example/).
+To see PSPDFKit for Flutter in action check out our [Flutter example app](example/).
 
 Showing a PDF document inside your Flutter app is as simple as this:
 
