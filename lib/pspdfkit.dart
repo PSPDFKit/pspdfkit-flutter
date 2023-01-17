@@ -9,20 +9,29 @@
 library pspdfkit;
 
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
+
 part 'src/processor/pdf_image_page.dart';
+
 part 'android_permission_status.dart';
+
 part 'configuration_options.dart';
+
 part 'src/processor/new_page.dart';
+
 part 'src/processor/page_pattern.dart';
+
 part 'src/processor/page_position.dart';
+
 part 'src/processor/page_z_order.dart';
+
 part 'src/processor/pdf_page.dart';
+
 part 'src/processor/page_size.dart';
+
 part 'pspdfkit_processor.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
@@ -59,6 +68,22 @@ class Pspdfkit {
           [dynamic configuration]) async =>
       await _channel.invokeMethod('present', <String, dynamic>{
         'document': document,
+        'configuration': configuration
+      });
+
+  /// Loads an Instant document from a server [serverUrl] with using a[jwt] in a native Instant PDFViewer.
+  ///
+  /// The [serverUrl] is the URL of the server that hosts the Instant document.
+  /// The [jwt] is the JSON Web Token used to authenticate the user. It also contains the document ID.
+  /// The [configuration] is a map of PDFViewer configurations.
+  /// Returns true if the document was successfully opened.
+  /// Returns false if the document could not be opened.
+  ///
+  static Future<bool?> presentInstant(String serverUrl, String jwt,
+          [dynamic configuration]) async =>
+      await _channel.invokeMethod('presentInstant', <String, dynamic>{
+        'serverUrl': serverUrl,
+        'jwt': jwt,
         'configuration': configuration
       });
 
@@ -127,6 +152,21 @@ class Pspdfkit {
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool?> save() async => _channel.invokeMethod('save');
 
+  /// Sets a delay for synchronising local changes to the Instant server.
+  /// [delay] is the delay in milliseconds.
+  static Future<bool?> setDelayForSyncingLocalChanges(double delay) async =>
+      _channel.invokeMethod(
+          'setDelayForSyncingLocalChanges', <String, dynamic>{'delay': delay});
+
+  /// Enable or disable listening to Instant server changes.
+  static Future<bool?> setListenToServerChanges(bool listen) async =>
+      _channel.invokeMethod(
+          'setListenToServerChanges', <String, dynamic>{'listen': listen});
+
+  /// Manually triggers synchronisation.
+  static Future<bool?> syncAnnotations() async =>
+      _channel.invokeMethod('syncAnnotations');
+
   /// Checks the external storage permission for writing on Android only.
   static Future<bool?> checkAndroidWriteExternalStoragePermission() async {
     return _channel.invokeMethod(
@@ -191,25 +231,97 @@ class Pspdfkit {
     return Directory(path);
   }
 
-  static late VoidCallback flutterPdfActivityOnPause;
-  static late VoidCallback pdfViewControllerWillDismiss;
-  static late VoidCallback pdfViewControllerDidDismiss;
+  /// onPAuse callback for FlutterPdfActivity
+  static void Function()? flutterPdfActivityOnPause;
+
+  /// ViewControllerWillDismiss callback for PDFViewController
+  static void Function()? pdfViewControllerWillDismiss;
+
+  /// ViewControllerDidDismiss callback for PDFViewController
+  static void Function()? pdfViewControllerDidDismiss;
+
+  /// Called when instant synchronization starts.
+  static void Function(String? documentId)? instantSyncStarted;
+
+  /// Called when instant synchronization ends.
+  static void Function(String? documentId)? instantSyncFinished;
+
+  /// Called when instant synchronization fails.
+  static void Function(String? documentId, String? error)? instantSyncFailed;
+
+  /// Called when instant authentication is done.
+  static void Function(String documentId, String? validJWT)?
+      instantAuthenticationFinished;
+
+  /// Called when instant authentication fails.
+  static void Function(String? documentId, String? error)?
+      instantAuthenticationFailed;
+
+  /// Only available on iOS.
+  /// Called when instant document download is done.
+  static void Function(String? documentId)? instantDownloadFinished;
+
+  /// Only available on iOS.
+  /// Called when instant document download fails.
+  static void Function(String? documentId, String? error)?
+      instantDownloadFailed;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
       switch (call.method) {
         case 'flutterPdfActivityOnPause':
-          flutterPdfActivityOnPause();
+          flutterPdfActivityOnPause?.call();
           break;
         case 'pdfViewControllerWillDismiss':
-          pdfViewControllerWillDismiss();
+          pdfViewControllerWillDismiss?.call();
           break;
         case 'pdfViewControllerDidDismiss':
-          pdfViewControllerDidDismiss();
+          pdfViewControllerDidDismiss?.call();
           break;
+        case 'pspdfkitInstantSyncStarted':
+          instantSyncStarted?.call(call.arguments as String);
+          break;
+        case 'pspdfkitInstantSyncFinished':
+          instantSyncFinished?.call(call.arguments as String);
+          break;
+        case 'pspdfkitInstantSyncFailed':
+          {
+            final Map<dynamic, dynamic> map =
+                call.arguments as Map<dynamic, dynamic>;
+            instantSyncFailed?.call(
+                map['documentId'] as String, map['error'] as String);
+            break;
+          }
+        case 'pspdfkitInstantAuthenticationFinished':
+          {
+            final Map<dynamic, dynamic> map =
+                call.arguments as Map<dynamic, dynamic>;
+            instantAuthenticationFinished?.call(
+                map['documentId'] as String, map['jwt'] as String);
+            break;
+          }
+        case 'pspdfkitInstantAuthenticationFailed':
+          {
+            final Map<dynamic, dynamic> arguments =
+                call.arguments as Map<dynamic, dynamic>;
+            instantAuthenticationFailed?.call(arguments['documentId'] as String,
+                arguments['error'] as String);
+            break;
+          }
+        case 'pspdfkitInstantDownloadFinished':
+          instantDownloadFinished?.call(call.arguments as String);
+          break;
+        case 'pspdfkitInstantDownloadFailed':
+          {
+            final Map<dynamic, dynamic> arguments =
+                call.arguments as Map<dynamic, dynamic>;
+            instantDownloadFailed?.call(arguments['documentId'] as String,
+                arguments['error'] as String);
+            break;
+          }
         default:
           if (kDebugMode) {
-            print('Unknowm method ${call.method} ');
+            print('Unknown method ${call.method} ');
           }
       }
     } catch (e) {

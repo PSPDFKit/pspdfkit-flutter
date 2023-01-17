@@ -32,7 +32,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
           ListTile(
               title: const Text('Generate PDF from Template'),
               subtitle: const Text(
-                  'Generate a PDF from aexisting PDF Document pages.'),
+                  'Generate a PDF from an existing PDF Document pages.'),
               onTap: () => _generateFromTemplate(context)
                   .then((value) => Pspdfkit.present(value))),
           const Divider(),

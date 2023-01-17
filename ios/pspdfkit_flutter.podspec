@@ -5,7 +5,7 @@
 #
 Pod::Spec.new do |s|
   s.name                  = "pspdfkit_flutter"
-  s.version               = "3.4.0"
+  s.version               = "3.5.0"
   s.homepage              = "https://PSPDFKit.com"
   s.documentation_url     = "https://pspdfkit.com/guides/flutter"
   s.license               = { type: "Commercial", file: "../LICENSE" }
@@ -19,7 +19,9 @@ Pod::Spec.new do |s|
   s.public_header_files   = "Classes/**/*.h"
   s.dependency("Flutter")
   s.dependency("PSPDFKit")
+  s.dependency("Instant")
   s.swift_version         = "5.0"
   s.platform              = :ios, "14.0"
+  s.version               = "3.5.0"
   s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES", "GENERATE_INFOPLIST_FILE" => "YES", "SWIFT_INSTALL_OBJC_HEADER" => "NO" }
 end

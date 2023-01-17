@@ -52,3 +52,5 @@ fun isImageDocument(documentPath: String): Boolean {
     extension == "tiff" || 
     extension == "tif"
 }
+
+

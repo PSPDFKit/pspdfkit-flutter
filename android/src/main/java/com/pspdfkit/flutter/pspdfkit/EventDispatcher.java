@@ -12,6 +12,8 @@ package com.pspdfkit.flutter.pspdfkit;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.HashMap;
+
 import io.flutter.plugin.common.MethodChannel;
 
 /**
@@ -46,9 +48,42 @@ public class EventDispatcher {
         sendEvent("flutterPdfActivityOnPause");
     }
 
-    private void sendEvent(@NonNull final String method) {
+    public void notifyInstantSyncStarted(String documentId) {
+        sendEvent("pspdfkitInstantSyncStarted", documentId);
+    }
+
+    public void notifyInstantSyncFinished(String documentId) {
+        sendEvent("pspdfkitInstantSyncFinished", documentId);
+    }
+
+    public void notifyInstantSyncFailed(String documentId, String error) {
+        sendEvent("pspdfkitInstantSyncFailed",new HashMap<String, String>() {{
+            put("documentId", documentId);
+            put("error", error);
+        }});
+    }
+
+    public void notifyInstantAuthenticationFinished(String documentId,String validJWT) {
+        sendEvent("pspdfkitInstantAuthenticationFinished", new HashMap<String, String>() {{
+            put("documentId", documentId);
+            put("jwt", validJWT);
+        }});
+    }
+
+    public void notifyInstantAuthenticationFailed(String documentId, String error) {
+        sendEvent("pspdfkitInstantAuthenticationFailed", new HashMap<String, String>() {{
+            put("documentId", documentId);
+            put("error", error);
+        }});
+    }
+
+    private void sendEvent(String eventName) {
+        sendEvent(eventName, null);
+    }
+
+    private void sendEvent(@NonNull final String method, @Nullable final Object arguments) {
         if (channel != null) {
-            channel.invokeMethod(method, null, null);
+            channel.invokeMethod(method, arguments, null);
         }
     }
 }

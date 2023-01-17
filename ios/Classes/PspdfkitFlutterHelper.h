@@ -10,6 +10,7 @@
 
 @import PSPDFKit;
 @import PSPDFKitUI;
+@import Instant;
 
 NS_ASSUME_NONNULL_BEGIN
 

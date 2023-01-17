@@ -9,8 +9,8 @@
   -->
 
 <resources>
-    <color name="color_primary">#3C97C9</color>
-    <color name="color_primary_dark">#306F8B</color>
+    <color name="color_primary">#4537DE</color>
+    <color name="color_primary_dark">#2B1CC1</color>
 
     <!-- Elementary. -->
     <color name="white">#FFFFFF</color>

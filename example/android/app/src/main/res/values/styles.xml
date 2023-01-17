@@ -19,7 +19,10 @@
          running.
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
-    <style name="NormalTheme" parent="@style/PSPDFKit.Theme">
+    <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Default">
         <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorAccent">@color/color_primary_dark</item>
     </style>
 </resources>

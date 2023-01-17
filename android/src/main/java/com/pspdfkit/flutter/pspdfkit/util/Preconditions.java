@@ -1,3 +1,5 @@
+package com.pspdfkit.flutter.pspdfkit.util;
+
 /*
  *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
  *
@@ -6,13 +8,11 @@
  *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
  *   This notice may not be removed from this file.
  */
-package com.pspdfkit.flutter.pspdfkit.util;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.pspdfkit.document.PdfDocument;
-import com.pspdfkit.flutter.pspdfkit.FlutterPdfActivity;
+import com.pspdfkit.ui.PdfActivity;
 
 public class Preconditions {
     /**
@@ -51,7 +51,7 @@ public class Preconditions {
      * @return Returns the loaded document.
      */
     @NonNull
-    public static PdfDocument requireDocumentNotNull(@Nullable FlutterPdfActivity flutterPdfActivity, @NonNull String invokedMethod) {
+    public static PdfDocument requireDocumentNotNull(@Nullable PdfActivity flutterPdfActivity, @NonNull String invokedMethod) {
         if (flutterPdfActivity == null) {
             throw new IllegalStateException(String.format("Before using \"%s\" " +
                     "the document needs to be presented by calling \"Pspdfkit.present()\".", invokedMethod));

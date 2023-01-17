@@ -17,11 +17,12 @@
     <application
         android:name="androidx.multidex.MultiDexApplication"
         android:label="pspdfkit_example"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name="io.flutter.embedding.android.FlutterAppCompatActivity"
             android:launchMode="singleTop"
-            android:theme="@style/LaunchTheme"
+            android:theme="@style/NormalTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
@@ -40,6 +41,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:theme="@style/NormalTheme"
+            android:name="com.pspdfkit.flutter.pspdfkit.FlutterInstantPdfActivity"
+            android:windowSoftInputMode="adjustNothing" />
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

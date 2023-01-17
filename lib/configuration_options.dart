@@ -62,6 +62,9 @@ const String enableAnnotationEditing = 'enableAnnotationEditing';
 const String androidShowAnnotationListAction =
     'androidShowAnnotationListAction';
 
+// Instant options
+const String enableInstantComments = 'enableInstantComments';
+
 /// Deprecated Options - These options will be removed in a future release.
 /// Please use the suggested alternatives instead.
 

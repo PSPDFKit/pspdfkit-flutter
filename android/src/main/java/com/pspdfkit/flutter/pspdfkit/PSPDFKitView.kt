@@ -18,10 +18,6 @@ import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.document.processor.PdfProcessor
-import com.pspdfkit.document.processor.PdfProcessorTask
-import com.pspdfkit.document.processor.NewPage
-import com.pspdfkit.document.processor.PagePattern
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -34,17 +30,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.File
-import android.app.Activity
-import android.content.Intent
-import android.graphics.BitmapFactory
-import android.graphics.RectF
-import android.os.Bundle
-import com.pspdfkit.configuration.activity.PdfActivityConfiguration
-import com.pspdfkit.document.processor.PageImage
-import com.pspdfkit.ui.PdfActivity
-import com.pspdfkit.utils.Size
-import java.io.FileInputStream
 
 internal class PSPDFKitView(
     val context: Context,
@@ -61,6 +46,7 @@ internal class PSPDFKitView(
         fragmentContainerView?.id = View.generateViewId()
         methodChannel = MethodChannel(messenger, "com.pspdfkit.widget.$id")
         methodChannel.setMethodCallHandler(this)
+
         val configurationAdapter = ConfigurationAdapter(context, configurationMap)
         val password = configurationAdapter.password
         val pdfConfiguration = configurationAdapter.build()
@@ -84,14 +70,14 @@ internal class PSPDFKitView(
 
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(view: View?) {
+                override fun onViewAttachedToWindow(view: View) {
                   getFragmentActivity(context).supportFragmentManager.commit {
                         add(it.id, pdfUiFragment)
                         setReorderingAllowed(true)
                     }
                 }
 
-                override fun onViewDetachedFromWindow(view: View?) {
+                override fun onViewDetachedFromWindow(view: View) {
                     getFragmentActivity(context).supportFragmentManager.commit {
                         remove(pdfUiFragment)
                         setReorderingAllowed(true)

@@ -10,6 +10,7 @@
 #import "PspdfkitFlutterConverter.h"
 #import "pspdfkit_flutter-Swift.h"
 
+
 @implementation PspdfkitFlutterHelper
 
 + (void)processMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result forViewController:(PSPDFViewController *)pdfViewController {
@@ -108,6 +109,53 @@
         NSArray<NSDictionary<NSString *,NSObject *> *> *pages = call.arguments[@"pages"];
         NSURL *processedDocumentURL = [PspdfkitFlutterHelper writableFileURLWithPath:outputPath override:YES copyIfNeeded:NO];
         [PspdfkitPdfGenerator generatePdfWithPages:pages outputUrl:processedDocumentURL results:result];
+        
+    } else if ([@"setDelayForSyncingLocalChanges" isEqualToString:call.method]){
+          
+        NSNumber *delay = call.arguments[@"delay"];
+        
+          if (delay == nil || [delay doubleValue] < 0) {
+            result([FlutterError errorWithCode:@"InvalidArgument"
+            message:@"Delay must be a positive number"
+            details:nil]);
+            return;
+          }
+
+        // if pdfViewController is an instance of InstantDocumentViewController, then we can set the delay
+        if ([pdfViewController isKindOfClass:[InstantDocumentViewController class]]) {
+            InstantDocumentViewController *instantDocumentViewController = (InstantDocumentViewController *)pdfViewController;
+            instantDocumentViewController.documentDescriptor.delayForSyncingLocalChanges = [delay doubleValue];
+            result(@(YES));
+        } else {
+            result([FlutterError errorWithCode:@"InvalidArgument"
+            message:@"Delay can only be set for Instant documents"
+            details:nil]);
+        }
+        
+     } else if ([@"setListenToServerChanges" isEqualToString:call.method]){
+         BOOL listenToServerChanges = [call.arguments[@"listen"] boolValue];
+        
+        if ([pdfViewController isKindOfClass:[InstantDocumentViewController class]]) {
+            InstantDocumentViewController *instantDocumentViewController = (InstantDocumentViewController *)pdfViewController;
+            instantDocumentViewController.shouldListenForServerChangesWhenVisible = listenToServerChanges;
+            result(@(YES));
+        } else {
+            result([FlutterError errorWithCode:@"InvalidArgument"
+            message:@"listenToServerChanges can only be set for Instant documents"
+            details:nil]);
+        }
+
+    } else if ([@"syncAnnotations" isEqualToString:call.method]){
+        // if pdfViewController is an instance of InstantDocumentViewController, then we can set the delay
+        if ([pdfViewController isKindOfClass:[InstantDocumentViewController class]]) {
+            InstantDocumentViewController *instantDocumentViewController = (InstantDocumentViewController *)pdfViewController;
+            [instantDocumentViewController.documentDescriptor sync];
+            result(@(YES));
+        } else {
+            result([FlutterError errorWithCode:@"InvalidArgument"
+            message:@"syncAnnotations can only be called on Instant document"
+            details:nil]);
+        }
     } else {
         result(FlutterMethodNotImplemented);
     }

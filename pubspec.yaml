@@ -1,6 +1,6 @@
 name: pspdfkit_flutter
 description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful PSPDFKit PDF SDK.
-version: 3.4.1
+version: 3.5.0
 homepage: https://pspdfkit.com/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
 issue_tracker: https://support.pspdfkit.com/hc/en-us/requests/new
@@ -9,7 +9,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
   # Flutter versions prior to 1.12 did not support the
   # flutter.plugin.platforms map.
-  flutter: '>=3.3.5'
+  flutter: '>=3.3.9'
 
 dependencies:
   build_runner: ^2.2.1

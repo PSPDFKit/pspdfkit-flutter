@@ -1,11 +1,12 @@
 /*
- *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
- *
- *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
- *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
- *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
- *   This notice may not be removed from this file.
+ * Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+ * <p>
+ * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ * UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ * This notice may not be removed from this file.
  */
+
 package com.pspdfkit.flutter.pspdfkit;
 
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireDocumentNotNull;
@@ -28,6 +29,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.PSPDFKit;
+import com.pspdfkit.configuration.PdfConfiguration;
+import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
 import com.pspdfkit.exceptions.PSPDFKitException;
@@ -37,7 +40,19 @@ import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
+import com.pspdfkit.instant.document.InstantPdfDocument;
+import com.pspdfkit.instant.ui.InstantPdfActivityIntentBuilder;
+import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
+import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -49,15 +64,8 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * PSPDFKit plugin to load PDF and image documents.
@@ -70,7 +78,6 @@ public class PspdfkitPlugin
         ActivityAware {
     @NonNull
     private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
-
     private static final String LOG_TAG = "PSPDFKitPlugin";
 
     /**
@@ -90,6 +97,11 @@ public class PspdfkitPlugin
     public PspdfkitPlugin() {
         this.permissionRequestResult = new AtomicReference<>();
     }
+
+    /**
+     * Holds the disposables.
+     */
+    private Disposable disposable;
 
     /**
      * This {@code FlutterPlugin} has been associated with a {@link FlutterEngine} instance.
@@ -129,6 +141,9 @@ public class PspdfkitPlugin
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         eventDispatcher.setChannel(null);
+        if (disposable != null) {
+            disposable.dispose();
+        }
     }
 
     @Override
@@ -214,6 +229,37 @@ public class PspdfkitPlugin
 
                 activity.startActivity(intent);
                 break;
+            case "presentInstant":
+                String documentUrl = call.argument("serverUrl");
+                String jwt = call.argument("jwt");
+
+                requireNotNullNotEmpty(documentUrl, "Document path");
+                requireNotNullNotEmpty(jwt, "JWT");
+
+                HashMap<String, Object> configurationMapInstant = call.argument(
+                        "configuration"
+                );
+
+                ConfigurationAdapter configurationAdapterInstant = new ConfigurationAdapter(
+                        activity,
+                        configurationMapInstant
+                );
+
+                FlutterInstantPdfActivity.setLoadedDocumentResult(result);
+                final List<AnnotationTool> annotationTools = configurationAdapterInstant.build().getConfiguration().getEnabledAnnotationTools();
+
+                annotationTools.add(AnnotationTool.INSTANT_COMMENT_MARKER);
+
+                Intent intentInstant =
+                        InstantPdfActivityIntentBuilder
+                                .fromInstantDocument(activity, documentUrl, jwt)
+                                .activityClass(FlutterInstantPdfActivity.class)
+                                .configuration(configurationAdapterInstant.build())
+                                .build();
+
+                activity.startActivity(intentInstant);
+
+                break;
             case "checkPermission":
                 final String permissionToCheck;
                 permissionToCheck = call.argument("permission");
@@ -235,7 +281,7 @@ public class PspdfkitPlugin
                 requireNotNullNotEmpty(annotationsJson, "annotationsJson");
                 document =
                         requireDocumentNotNull(
-                                FlutterPdfActivity.getCurrentActivity(),
+                                getCurrentActivity(),
                                 "Pspdfkit.applyInstantJson(String)"
                         );
 
@@ -260,7 +306,7 @@ public class PspdfkitPlugin
             case "exportInstantJson":
                 document =
                         requireDocumentNotNull(
-                                FlutterPdfActivity.getCurrentActivity(),
+                                getCurrentActivity(),
                                 "Pspdfkit.exportInstantJson()"
                         );
 
@@ -291,7 +337,7 @@ public class PspdfkitPlugin
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
                 document =
                         requireDocumentNotNull(
-                                FlutterPdfActivity.getCurrentActivity(),
+                                getCurrentActivity(),
                                 "Pspdfkit.setFormFieldValue(String)"
                         );
 
@@ -361,7 +407,7 @@ public class PspdfkitPlugin
                 requireNotNullNotEmpty(fullyQualifiedName, "Fully qualified name");
                 document =
                         requireDocumentNotNull(
-                                FlutterPdfActivity.getCurrentActivity(),
+                                getCurrentActivity(),
                                 "Pspdfkit.getFormFieldValue()"
                         );
 
@@ -426,7 +472,7 @@ public class PspdfkitPlugin
             case "save":
                 document =
                         requireDocumentNotNull(
-                                FlutterPdfActivity.getCurrentActivity(),
+                                getCurrentActivity(),
                                 "Pspdfkit.save()"
                         );
 
@@ -486,6 +532,46 @@ public class PspdfkitPlugin
                 );
                 break;
             }
+            case "setDelayForSyncingLocalChanges": {
+                Double delay = call.argument("delay");
+                if (delay == null || delay < 0) {
+                    result.error("InvalidArgument", "Delay must be a positive number", null);
+                    return;
+                }
+                
+                try {
+                    document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.setDelayForSyncingLocalChanges()");
+                    ((InstantPdfDocument) document).setDelayForSyncingLocalChanges(delay.longValue());
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error("InstantException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "setListenToServerChanges": {
+                try {
+                    boolean listen = call.argument("listen");
+                    document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.setListenToServerChanges()");
+                    ((InstantPdfDocument) document).setListenToServerChanges(listen);
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error("InstantException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "syncAnnotations": {
+                try {
+                    document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.syncAnnotations()");
+                    disposable = ((InstantPdfDocument) document).syncAnnotationsAsync()
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(result::success,
+                                    throwable -> result.error("InstantException", throwable.getMessage(), null));
+                } catch (Exception e) {
+                    result.error("InstantException", e.getMessage(), null);
+                }
+                break;
+            }
             default:
                 result.notImplemented();
                 break;
@@ -497,6 +583,23 @@ public class PspdfkitPlugin
             @NonNull final FragmentActivity activity
     ) {
         return activity.getCacheDir().getPath();
+    }
+
+    // Try tp get Current PdfActivity, this can be either [FlutterPdfActivity] or [FlutterInstantPdfActivity]
+    private PdfActivity getCurrentActivity() {
+        PdfActivity pdfActivity = FlutterPdfActivity.getCurrentActivity();
+        if (pdfActivity == null) {
+            pdfActivity = FlutterInstantPdfActivity.getCurrentActivity();
+        }
+        return pdfActivity;
+    }
+
+    private FlutterInstantPdfActivity getInstantActivity() {
+        FlutterInstantPdfActivity instantPdfActivity = FlutterInstantPdfActivity.getCurrentActivity();
+        if (instantPdfActivity == null) {
+            throw new IllegalStateException("No instant activity found");
+        }
+        return instantPdfActivity;
     }
 
     private void requestPermission(

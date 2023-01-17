@@ -10,6 +10,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pspdfkit_example/pspdfkit_instant_collaboration_example.dart';
 import 'package:pspdfkit_example/pspdfkit_pdf_generation_example.dart';
 import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
 import 'package:pspdfkit_example/utils/file_utils.dart';
@@ -102,6 +103,10 @@ const String _importInstantJsonExampleGlobalSub =
     'Shows how to programmatically import Instant Document JSON.';
 const String _pspdfkitWidgetExamples = 'PSPDFKit Widget Examples';
 const String _pspdfkitGlobalPluginExamples = 'PSPDFKit Modal View Examples';
+
+const String _pspdfkitInstantExamples = 'PSPDFKit Instant';
+const String _pspdfkitInstantExampleSub =
+    'PSPDFKit Instant Synchronisation Example';
 
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 18.0;
@@ -245,8 +250,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           scrollDirection: 'vertical',
                           pageTransition: 'scrollContinuous',
                           spreadFitting: 'fit',
-                          immersiveMode: false,
-                          userInterfaceViewMode: 'automaticBorderPages',
+                          userInterfaceViewMode: 'alwaysVisible',
                           androidShowSearchAction: true,
                           inlineSearch: false,
                           showThumbnailBar: 'floating',
@@ -337,7 +341,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void pdfGenerationExample() async {
-    final extractedDocument = await extractAsset(context, _documentPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitPDFGenerationExampleWidget()));
   }
@@ -452,8 +455,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       scrollDirection: 'vertical',
       pageTransition: 'scrollPerSpread',
       spreadFitting: 'fit',
-      immersiveMode: false,
-      userInterfaceViewMode: 'automaticBorderPages',
+      userInterfaceViewMode: 'alwaysVisible',
       androidShowSearchAction: true,
       inlineSearch: false,
       showThumbnailBar: 'floating',
@@ -547,6 +549,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     } on PlatformException catch (e) {
       print("Failed to import Instant Document JSON '${e.message}'.");
     }
+  }
+
+  void presentInstant(BuildContext context) async {
+    await Navigator.push<dynamic>(
+        context,
+        MaterialPageRoute<dynamic>(
+            builder: (context) => const PspdfkitInstantCollaborationExample()));
   }
 
   @override
@@ -740,6 +749,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_importInstantJsonExampleGlobal),
           subtitle: const Text(_importInstantJsonExampleGlobalSub),
           onTap: () => importInstantJsonExampleGlobal()),
+      ListTile(
+          title: const Text(_pspdfkitInstantExamples),
+          subtitle: const Text(_pspdfkitInstantExampleSub),
+          onTap: () => presentInstant(context)),
     ];
     return Scaffold(
         appBar: AppBar(title: const Text(_pspdfkitFlutterPluginTitle)),
