@@ -9,10 +9,10 @@
 library pspdfkit;
 
 import 'dart:async';
-import 'dart:ui';
 
 import 'dart:io' show Directory;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 part 'android_permission_status.dart';
@@ -204,10 +204,14 @@ class Pspdfkit {
           pdfViewControllerDidDismiss();
           break;
         default:
-          print('Unknown method ${call.method} ');
+          if (kDebugMode) {
+            print('Unknown method ${call.method} ');
+          }
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
     return Future.value();
   }

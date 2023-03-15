@@ -31,8 +31,8 @@ flutter_ios_podfile_setup
 
 target "Runner" do
   flutter_install_all_ios_pods __dir__
-  pod "PSPDFKit", "~> 12.0.2"
-  pod "Instant", "~> 12.0.2"
+  pod "PSPDFKit", "~> 12.1.2"
+  pod "Instant", "~> 12.1.2"
   use_modular_headers!
 end
 

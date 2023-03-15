@@ -15,7 +15,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(
@@ -34,7 +33,9 @@ class PspdfkitWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  _PspdfkitWidgetState createState() => _PspdfkitWidgetState();
+  State<PspdfkitWidget> createState() {
+    return _PspdfkitWidgetState();
+  }
 }
 
 class _PspdfkitWidgetState extends State<PspdfkitWidget> {

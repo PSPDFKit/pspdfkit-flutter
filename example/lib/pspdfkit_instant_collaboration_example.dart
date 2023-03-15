@@ -37,63 +37,71 @@ class _PspdfkitInstantCollaborationExampleState
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  if (Platform.isAndroid)
-                    RichText(
-                        text: TextSpan(
-                            text: 'Scan the QR code from  ',
-                            style: const TextStyle(color: Colors.black),
-                            children: [
-                          TextSpan(
-                            text: 'pspdfkit.com/instant/try',
-                            style: const TextStyle(color: Colors.blue),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                // Open the URL in the browser.
-                                launchUrl(Uri.parse(
-                                    'https://pspdfkit.com/instant/try'));
-                              },
-                          ),
-                          const TextSpan(
-                            text:
-                                ' to connect to the document shown in your browser.',
-                            style: TextStyle(color: Colors.black),
-                          )
-                        ])),
-                  if (Platform.isAndroid)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push<String>(context,
-                              MaterialPageRoute<String>(builder: (context) {
-                            return const InstantBarcodeScanner();
-                          })).then(
-                              (value) => _loadDocument(scaffoldContext, value));
-                        },
-                        child: const Text('Scan QR code'),
-                      ),
-                    ),
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                  ),
                   RichText(
                       text: TextSpan(
-                          text: 'Copy the collaboration URL from  ',
+                          text: 'Scan the QR code from  ',
                           style: const TextStyle(color: Colors.black),
                           children: [
                         TextSpan(
-                          text: 'pspdfkit.com/instant/try',
+                          text: 'https://web-examples.pspdfkit.com',
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               // Open the URL in the browser.
                               launchUrl(Uri.parse(
-                                  'https://pspdfkit.com/instant/try'));
+                                  'https://web-examples.pspdfkit.com'));
                             },
                         ),
                         const TextSpan(
+                          text: ' > Collaborate in Real-time - ',
+                          style: TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                        const TextSpan(
                           text:
-                              ' to connect to the document shown in your browser.',
+                              'to connect to the document shown in your browser.',
+                          style: TextStyle(color: Colors.black),
+                        )
+                      ])),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push<String>(context,
+                            MaterialPageRoute<String>(builder: (context) {
+                          return const InstantBarcodeScanner();
+                        })).then(
+                            (value) => _loadDocument(scaffoldContext, value));
+                      },
+                      child: const Text('Scan QR code'),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                  ),
+                  RichText(
+                      text: TextSpan(
+                          text: 'Copy the collaboration URL from ',
+                          style: const TextStyle(color: Colors.black),
+                          children: [
+                        TextSpan(
+                          text: 'https://web-examples.pspdfkit.com',
+                          style: const TextStyle(color: Colors.blue),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              // Open the URL in the browser.
+                              launchUrl(Uri.parse(
+                                  'https://web-examples.pspdfkit.com'));
+                            },
+                        ),
+                        const TextSpan(
+                          text: ' > Collaborate in Real-time - ',
+                          style: TextStyle(
+                              color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                        const TextSpan(
+                          text:
+                              'to connect to the document shown in your browser.',
                           style: TextStyle(color: Colors.black),
                         )
                       ])),

@@ -1,11 +1,17 @@
 ## Newest Release
 
+### 3.5.1 - 15 Mar 2023
+- Updates iOS license initialization in the example catalog. (#38999)
+- Updates Instant web demo links. (#39018)
+- Updates for PSPDFKit 8.5.1 for Android. (#39090)
+- Updates for PSPDFKit 12.1.2 for iOS. (#39090)
+
+## Previous Releases
+
 ### 3.5.0 - 17 Jan 2023
 - Adds Instant Synchronization support. (#37675) 
 - Updates for PSPDFKit 8.5 for Android. (#38136)
 - Updates for PSPDFKit 12.0.2 for iOS. (#38136)
-
-## Previous Releases
 
 ### 3.4.1 - 18 Nov 2022
 

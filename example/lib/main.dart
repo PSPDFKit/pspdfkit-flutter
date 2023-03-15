@@ -126,19 +126,15 @@ class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
-  static final ThemeData lightTheme = ThemeData(
-      backgroundColor: Colors.transparent,
-      primaryColor: Colors.black,
-      dividerColor: Colors.grey[400]);
+  static final ThemeData lightTheme =
+      ThemeData(primaryColor: Colors.black, dividerColor: Colors.grey[400]);
 
-  static final ThemeData darkTheme = ThemeData(
-      backgroundColor: Colors.transparent,
-      primaryColor: Colors.white,
-      dividerColor: Colors.grey[800]);
+  static final ThemeData darkTheme =
+      ThemeData(primaryColor: Colors.white, dividerColor: Colors.grey[800]);
   String _frameworkVersion = '';
   ThemeData currentTheme = lightTheme;
 

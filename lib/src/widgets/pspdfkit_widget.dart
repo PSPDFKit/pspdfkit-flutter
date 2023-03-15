@@ -16,7 +16,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_widget_controller.dart';
+import '../../widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(
     PspdfkitWidgetController view);
@@ -36,9 +36,11 @@ class PspdfkitWidget extends StatefulWidget {
       : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _PspdfkitWidgetState createState() => _PspdfkitWidgetState();
 }
 
+// ignore: deprecated_member_use_from_same_package
 class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   late PspdfkitWidgetController controller;
 
