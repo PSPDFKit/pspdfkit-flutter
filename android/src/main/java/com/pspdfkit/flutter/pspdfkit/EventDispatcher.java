@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2021-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2021-2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,6 +11,10 @@ package com.pspdfkit.flutter.pspdfkit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.pspdfkit.document.PdfDocument;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 
@@ -47,6 +51,8 @@ public class EventDispatcher {
     public void notifyActivityOnPause() {
         sendEvent("flutterPdfActivityOnPause");
     }
+
+
 
     public void notifyInstantSyncStarted(String documentId) {
         sendEvent("pspdfkitInstantSyncStarted", documentId);
@@ -85,5 +91,9 @@ public class EventDispatcher {
         if (channel != null) {
             channel.invokeMethod(method, arguments, null);
         }
+    }
+
+    public void notifyDocumentLoaded(@NotNull PdfDocument document) {
+        sendEvent("pspdfkitDocumentLoaded", document.getUid());
     }
 }

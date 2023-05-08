@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -7,10 +7,13 @@
 ///  This notice may not be removed from this file.
 ///
 
+// ignore_for_file: use_build_context_synchronously, avoid_print
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/pspdfkit_instant_collaboration_example.dart';
+import 'package:pspdfkit_example/pspdfkit_measurement_tools.dart';
 import 'package:pspdfkit_example/pspdfkit_pdf_generation_example.dart';
 import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
 import 'package:pspdfkit_example/utils/file_utils.dart';
@@ -27,6 +30,7 @@ import 'pspdfkit_manual_save_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
+const String _measurementsDocs = 'PDFs/Measurements.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
 const String _imagePath = 'PDFs/PSPDFKit_Image_Example.jpg';
 const String _formPath = 'PDFs/Form_example.pdf';
@@ -107,6 +111,8 @@ const String _pspdfkitGlobalPluginExamples = 'PSPDFKit Modal View Examples';
 const String _pspdfkitInstantExamples = 'PSPDFKit Instant';
 const String _pspdfkitInstantExampleSub =
     'PSPDFKit Instant Synchronisation Example';
+const String _measurementTools = 'Measurement tools';
+const String _measurementToolsSub = 'PSPDFKit Measurements tools Example';
 
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 18.0;
@@ -439,7 +445,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyDarkThemeGlobal() async {
     final extractedDocument = await extractAsset(context, _documentPath);
-    await Pspdfkit.present(extractedDocument.path, {
+    await Pspdfkit.present(extractedDocument.path, configuration: {
       appearanceMode: 'night',
       androidDarkThemeResource: 'PSPDFKit.Theme.Example.Dark'
     });
@@ -447,7 +453,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void applyCustomConfigurationGlobal() async {
     final extractedDocument = await extractAsset(context, _documentPath);
-    await Pspdfkit.present(extractedDocument.path, {
+    await Pspdfkit.present(extractedDocument.path, configuration: {
       scrollDirection: 'vertical',
       pageTransition: 'scrollPerSpread',
       spreadFitting: 'fit',
@@ -501,7 +507,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void unlockPasswordProtectedDocumentGlobal() async {
     final extractedLockedDocument =
         await extractAsset(context, _lockedDocumentPath);
-    await Pspdfkit.present(extractedLockedDocument.path, {password: 'test123'});
+    await Pspdfkit.present(extractedLockedDocument.path,
+        configuration: {password: 'test123'});
   }
 
   void showFormDocumentExampleGlobal() async {
@@ -552,6 +559,29 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         context,
         MaterialPageRoute<dynamic>(
             builder: (context) => const PspdfkitInstantCollaborationExample()));
+  }
+
+  void measurementExample(BuildContext context) async {
+    await extractAsset(context, _measurementsDocs).then((value) {
+      Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute<dynamic>(
+              builder: (context) => PspdfkitMeasurementsExample(
+                    documentPath: value.path,
+                  )));
+    });
+  }
+
+  void showMeasurementExampleGlobal(BuildContext context) {
+    extractAsset(context, _measurementsDocs).then((value) {
+      Pspdfkit.present(value.path,
+          measurementScale: MeasurementScale(
+              unitFrom: UnitFrom.cm,
+              valueFrom: 1,
+              unitTo: UnitTo.km,
+              valueTo: 10),
+          measurementPrecision: MeasurementPrecision.threeDP);
+    });
   }
 
   @override
@@ -711,6 +741,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_pdfGenerationExample),
           subtitle: const Text(_pdfGenerationExampleSub),
           onTap: () => pdfGenerationExample()),
+      ListTile(
+          title: const Text(_measurementTools),
+          subtitle: const Text(_measurementToolsSub),
+          onTap: () => measurementExample(context)),
       Container(
           color: Colors.grey[200],
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -749,6 +783,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_pspdfkitInstantExamples),
           subtitle: const Text(_pspdfkitInstantExampleSub),
           onTap: () => presentInstant(context)),
+      ListTile(
+          title: const Text(_measurementTools),
+          subtitle: const Text(_measurementToolsSub),
+          onTap: () => showMeasurementExampleGlobal(context)),
     ];
     return Scaffold(
         appBar: AppBar(title: const Text(_pspdfkitFlutterPluginTitle)),

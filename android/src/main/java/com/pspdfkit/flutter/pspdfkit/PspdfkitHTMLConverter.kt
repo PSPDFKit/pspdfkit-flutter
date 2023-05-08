@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -14,8 +14,8 @@ import android.content.Context
 import android.net.Uri
 import com.pspdfkit.document.html.HtmlToPdfConverter
 import io.flutter.plugin.common.MethodChannel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
 object PspdfkitHTMLConverter {

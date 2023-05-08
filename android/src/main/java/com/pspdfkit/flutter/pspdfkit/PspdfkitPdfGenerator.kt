@@ -5,14 +5,14 @@ import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor
 import io.flutter.plugin.common.MethodChannel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
 class PspdfkitPdfGenerator(private val pageAdaptor: PdfPageAdaptor) {
 
-    var disposable: Disposable? = null
+    private var disposable: Disposable? = null
 
     /**
      * Creates a new [PdfProcessorTask] that can be used to process a PDF document.

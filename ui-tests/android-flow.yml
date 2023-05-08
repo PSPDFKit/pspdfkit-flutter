@@ -1,0 +1,10 @@
+# flow.yaml
+appId: com.pspdfkit.flutter.example
+---
+- launchApp
+- tapOn: "Basic Example\nOpens a PDF Document."
+- tapOn:
+    id: "com.pspdfkit.flutter.example:id/pspdf__menu_option_edit_annotations"
+- tapOn:
+    id: "com.pspdfkit.flutter.example:id/pspdf__annotation_creation_toolbar_group_m\
+      easurement"

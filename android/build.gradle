@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -37,10 +37,10 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion androidCompileSdkVersion
-    
+
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
@@ -57,5 +57,4 @@ dependencies {
     implementation "com.pspdfkit:$pspdfkitMavenModuleName:$pspdfkitVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }

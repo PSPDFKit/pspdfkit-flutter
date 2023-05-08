@@ -1,32 +1,36 @@
 <!--
-  ~   Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+  ~   Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
   ~
   ~   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
   ~   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
   ~   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
   ~   This notice may not be removed from this file.
   -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.pspdfkit.flutter.example">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.pspdfkit.flutter.example">
 
     <!-- The INTERNET permission is required for development. Specifically,
          flutter needs it to communicate with the running application
          to allow setting breakpoints, to provide hot reload, etc.
     -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
+        android:icon="@mipmap/ic_launcher"
         android:label="pspdfkit_example"
         android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher">
+        tools:targetApi="m">
+
         <activity
             android:name="io.flutter.embedding.android.FlutterAppCompatActivity"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale"
+            android:exported="true"
+            android:hardwareAccelerated="true"
             android:launchMode="singleTop"
             android:theme="@style/NormalTheme"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale"
-            android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true">
+            android:windowSoftInputMode="adjustResize">
             <!-- Specify that the launch screen should continue being displayed -->
             <!-- until Flutter renders its first frame. -->
             <meta-data
@@ -37,14 +41,14 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-            android:theme="@style/NormalTheme"
             android:name="com.pspdfkit.flutter.pspdfkit.FlutterInstantPdfActivity"
+            android:theme="@style/NormalTheme"
             android:windowSoftInputMode="adjustNothing" />
 
         <meta-data

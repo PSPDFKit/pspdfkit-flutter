@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -15,6 +15,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(
@@ -25,12 +26,12 @@ class PspdfkitWidget extends StatefulWidget {
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
 
-  const PspdfkitWidget(
-      {Key? key,
-      this.documentPath,
-      this.configuration,
-      this.onPspdfkitWidgetCreated})
-      : super(key: key);
+  const PspdfkitWidget({
+    Key? key,
+    this.documentPath,
+    this.configuration,
+    this.onPspdfkitWidgetCreated,
+  }) : super(key: key);
 
   @override
   State<PspdfkitWidget> createState() {
@@ -48,7 +49,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'document': widget.documentPath,
-      'configuration': widget.configuration
+      'configuration': widget.configuration,
     };
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {

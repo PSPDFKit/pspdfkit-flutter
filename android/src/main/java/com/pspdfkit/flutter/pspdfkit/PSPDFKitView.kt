@@ -7,12 +7,10 @@ import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commit
+import androidx.fragment.app.commitNow
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
-import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
+import com.pspdfkit.flutter.pspdfkit.util.*
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
-import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
-import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
-import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
@@ -26,8 +24,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
+
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 
@@ -36,8 +35,9 @@ internal class PSPDFKitView(
     id: Int,
     messenger: BinaryMessenger,
     documentPath: String? = null,
-    configurationMap: HashMap<String, Any>? = null
-) : PlatformView, MethodCallHandler {
+    configurationMap: HashMap<String, Any>? = null,
+
+    ) : PlatformView, MethodCallHandler {
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
     private val methodChannel: MethodChannel
     private val pdfUiFragment: PdfUiFragment
@@ -53,16 +53,20 @@ internal class PSPDFKitView(
 
         //noinspection pspdfkit-experimental
         pdfUiFragment = if (documentPath == null) {
-            PdfUiFragmentBuilder.emptyFragment(context).configuration(pdfConfiguration).build()
+            PdfUiFragmentBuilder.emptyFragment(context).fragmentClass(
+                FlutterPdfUiFragment::class.java
+            ).configuration(pdfConfiguration).build()
         } else {
             val uri = Uri.parse(addFileSchemeIfMissing(documentPath))
             val isImageDocument = isImageDocument(documentPath)
             if (isImageDocument) {
                 PdfUiFragmentBuilder.fromImageUri(context, uri).configuration(pdfConfiguration)
+                    .fragmentClass(FlutterPdfUiFragment::class.java)
                     .build()
             } else {
                 PdfUiFragmentBuilder.fromUri(context, uri)
                     .configuration(pdfConfiguration)
+                    .fragmentClass(FlutterPdfUiFragment::class.java)
                     .passwords(password)
                     .build()
             }
@@ -71,7 +75,7 @@ internal class PSPDFKitView(
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View) {
-                  getFragmentActivity(context).supportFragmentManager.commit {
+                    getFragmentActivity(context).supportFragmentManager.commitNow {
                         add(it.id, pdfUiFragment)
                         setReorderingAllowed(true)
                     }
@@ -127,6 +131,7 @@ internal class PSPDFKitView(
                         )
                     }
             }
+
             "exportInstantJson" -> {
                 val outputStream = ByteArrayOutputStream()
                 // noinspection checkResult
@@ -143,6 +148,7 @@ internal class PSPDFKitView(
                         )
                     }
             }
+
             "setFormFieldValue" -> {
                 val value: String = requireNotNullNotEmpty(
                     call.argument("value"),
@@ -168,10 +174,12 @@ internal class PSPDFKitView(
                                         formElement.select()
                                         result.success(true)
                                     }
+
                                     "deselected" -> {
                                         formElement.deselect()
                                         result.success(true)
                                     }
+
                                     else -> {
                                         result.success(false)
                                     }
@@ -185,8 +193,8 @@ internal class PSPDFKitView(
                                     result.error(
                                         LOG_TAG,
                                         "\"value\" argument needs a list of " +
-                                            "integers to set selected indexes for a choice " +
-                                            "form element (e.g.: \"1, 3, 5\").",
+                                                "integers to set selected indexes for a choice " +
+                                                "form element (e.g.: \"1, 3, 5\").",
                                         null
                                     )
                                 }
@@ -213,6 +221,7 @@ internal class PSPDFKitView(
                     ) // Form element for the given name not found.
                     { result.success(false) }
             }
+
             "getFormFieldValue" -> {
                 val fullyQualifiedName = requireNotNullNotEmpty(
                     call.argument("fullyQualifiedName"),
@@ -230,11 +239,13 @@ internal class PSPDFKitView(
                                     val text: String = formElement.text ?: ""
                                     result.success(text)
                                 }
+
                                 is EditableButtonFormElement -> {
                                     val isSelected: Boolean =
                                         formElement.isSelected
                                     result.success(if (isSelected) "selected" else "deselected")
                                 }
+
                                 is ChoiceFormElement -> {
                                     val selectedIndexes: List<Int> =
                                         formElement.selectedIndexes
@@ -248,6 +259,7 @@ internal class PSPDFKitView(
                                     }
                                     result.success(stringBuilder.toString())
                                 }
+
                                 is SignatureFormElement -> {
                                     result.error(
                                         "Signature form elements are not supported.",
@@ -255,6 +267,7 @@ internal class PSPDFKitView(
                                         null
                                     )
                                 }
+
                                 else -> {
                                     result.success(false)
                                 }
@@ -282,6 +295,7 @@ internal class PSPDFKitView(
                         )
                     }
             }
+
             "addAnnotation" -> {
                 val jsonAnnotation = requireNotNull(call.argument("jsonAnnotation"))
 
@@ -289,9 +303,11 @@ internal class PSPDFKitView(
                     is HashMap<*, *> -> {
                         JSONObject(jsonAnnotation).toString()
                     }
+
                     is String -> {
                         jsonAnnotation
                     }
+
                     else -> {
                         result.error(
                             LOG_TAG,
@@ -314,6 +330,7 @@ internal class PSPDFKitView(
                         )
                     }
             }
+
             "getAnnotations" -> {
                 val pageIndex: Int = requireNotNull(call.argument("pageIndex"))
                 val type: String = requireNotNull(call.argument("type"))
@@ -342,6 +359,7 @@ internal class PSPDFKitView(
                         { result.success(annotationJsonList) }
                     )
             }
+
             "getAllUnsavedAnnotations" -> {
                 val outputStream = ByteArrayOutputStream()
                 // noinspection checkResult
@@ -359,6 +377,7 @@ internal class PSPDFKitView(
                         )
                     })
             }
+
             "save" -> {
                 // noinspection checkResult
                 document.saveIfModifiedAsync()
@@ -366,23 +385,60 @@ internal class PSPDFKitView(
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result::success)
             }
+
+            "setMeasurementScale" -> {
+                try {
+                    val scale = call.argument<Map<String, Any>>("measurementScale")
+                    val measurementScale = MeasurementHelper.convertScale(scale)
+                    if (measurementScale == null) {
+                        result.error("Error while setting measurement scale", "Invalid scale", null)
+                        return
+                    }
+                    document.measurementScale = measurementScale
+                    result.success(true)
+                } catch (e: Exception) {
+                    result.error("Error while setting measurement scale", e.message, null)
+                }
+            }
+
+            "setMeasurementPrecision" -> {
+                try {
+                    val precision = call.argument<String>("measurementPrecision")
+                    val measurementPrecision = MeasurementHelper.convertPrecision(precision)
+                    if (measurementPrecision == null) {
+                        result.error(
+                            "Error while setting measurement precision",
+                            "Invalid precision",
+                            null
+                        )
+                        return
+                    }
+                    document.measurementPrecision = measurementPrecision
+                    result.success(true)
+                } catch (e: Exception) {
+                    result.error("Error while setting measurement precision", e.message, null)
+                }
+            }
+
             else -> result.notImplemented()
         }
     }
 
     // Get Fragment Activity from context
     private fun getFragmentActivity(context: Context): FragmentActivity {
-       return when (context) {
-           is FragmentActivity -> {
-               context
-           }
-           is MutableContextWrapper -> {
-               getFragmentActivity(context.baseContext)
-           }
-           else -> {
-               throw IllegalStateException("Context is not a FragmentActivity")
-           }
-       }
+        return when (context) {
+            is FragmentActivity -> {
+                context
+            }
+
+            is MutableContextWrapper -> {
+                getFragmentActivity(context.baseContext)
+            }
+
+            else -> {
+                throw IllegalStateException("Context is not a FragmentActivity")
+            }
+        }
     }
 
     companion object {
@@ -401,7 +457,7 @@ class PSPDFKitViewFactory(
             viewId,
             messenger,
             creationParams?.get("document") as String?,
-            creationParams?.get("configuration") as HashMap<String, Any>?
+            creationParams?.get("configuration") as HashMap<String, Any>?,
         )
     }
 }

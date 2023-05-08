@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.pspdfkit.annotations.measurements.FloatPrecision;
+import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivity;
 
@@ -21,8 +23,19 @@ public class FlutterPdfActivity extends PdfActivity {
     @Nullable private static FlutterPdfActivity currentActivity;
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
+    @Nullable private static Scale scale;
+    @Nullable private static FloatPrecision floatPrecision;
+
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
+    }
+
+    public static void setMeasurementScale(@Nullable  final Scale scale) {
+        FlutterPdfActivity.scale = scale;
+    }
+
+    public static void setFloatPrecision(@Nullable final FloatPrecision floatPrecision) {
+        FlutterPdfActivity.floatPrecision = floatPrecision;
     }
 
     @Override
@@ -50,6 +63,14 @@ public class FlutterPdfActivity extends PdfActivity {
         Result result = loadedDocumentResult.getAndSet(null);
         if (result != null) {
             result.success(true);
+        }
+
+        if (scale != null) {
+            pdfDocument.setMeasurementScale(scale);
+        }
+
+        if (floatPrecision != null) {
+            pdfDocument.setMeasurementPrecision(floatPrecision);
         }
     }
 

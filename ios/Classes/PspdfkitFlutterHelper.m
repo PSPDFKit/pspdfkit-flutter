@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -156,6 +156,46 @@
             message:@"syncAnnotations can only be called on Instant document"
             details:nil]);
         }
+    } else if ([@"setMeasurementScale" isEqualToString:call.method]){
+       
+        PSPDFDocument *document = pdfViewController.document;
+        
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        
+        NSDictionary *scale  = call.arguments[@"measurementScale"];
+        PSPDFMeasurementScale *measurementScale = [PspdfkitMeasurementConvertor convertScaleWithMeasurement:scale];
+     
+        if(!measurementScale){
+            result([FlutterError errorWithCode:@"" message:@"Measurement scale is invalid." details:nil]);
+            return;
+        }
+        
+        document.measurementScale = measurementScale;
+        
+    } else if ([@"setMeasurementPrecision" isEqualToString:call.method]){
+        
+        PSPDFDocument *document = pdfViewController.document;
+        
+        if (!document || !document.isValid) {
+            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+            return;
+        }
+        
+        NSString *precision  = call.arguments[@"measurementPrecision"];
+        
+        PSPDFMeasurementPrecision measurementPrecision = [PspdfkitMeasurementConvertor convertPrecisionWithPrecision:precision];
+        
+        if(!measurementPrecision){
+            result([FlutterError errorWithCode:@"" message:@"Measurement precision is invalid." details:nil]);
+            return;
+        }
+        
+        document.measurementPrecision = measurementPrecision;
+
+        
     } else {
         result(FlutterMethodNotImplemented);
     }

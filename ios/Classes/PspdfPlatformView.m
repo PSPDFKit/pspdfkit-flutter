@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,6 +9,7 @@
 #import "PspdfPlatformView.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
+#import "pspdfkit_flutter-Swift.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -51,9 +52,10 @@
             NSLog(@"Warning: 'document' argument is not a string. Showing an empty view in default configuration.");
             _pdfViewController = [[PSPDFViewController alloc] init];
         } else {
+           
             NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
-
             PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+          
             [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
             BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];

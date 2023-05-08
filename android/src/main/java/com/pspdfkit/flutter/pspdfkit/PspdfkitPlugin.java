@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2022 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -29,13 +29,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.configuration.PdfConfiguration;
-import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
+import com.pspdfkit.annotations.measurements.FloatPrecision;
+import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
 import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
+import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.embedding.engine.FlutterEngine;
@@ -63,9 +65,10 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 
 /**
  * PSPDFKit plugin to load PDF and image documents.
@@ -200,6 +203,11 @@ public class PspdfkitPlugin
                 HashMap<String, Object> configurationMap = call.argument(
                         "configuration"
                 );
+
+                Map<String, Object> measurementScale = call.argument("measurementScale");
+                String measurementPrecision = call.argument("measurementPrecision");
+
+
                 ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(
                         activity,
                         configurationMap
@@ -208,6 +216,9 @@ public class PspdfkitPlugin
                 documentPath = addFileSchemeIfMissing(documentPath);
 
                 FlutterPdfActivity.setLoadedDocumentResult(result);
+                FlutterPdfActivity.setFloatPrecision(MeasurementHelper.convertPrecision(measurementPrecision));
+                FlutterPdfActivity.setMeasurementScale(MeasurementHelper.convertScale(measurementScale));
+
                 boolean imageDocument = isImageDocument(documentPath);
                 Intent intent;
                 if (imageDocument) {
@@ -538,7 +549,7 @@ public class PspdfkitPlugin
                     result.error("InvalidArgument", "Delay must be a positive number", null);
                     return;
                 }
-                
+
                 try {
                     document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.setDelayForSyncingLocalChanges()");
                     ((InstantPdfDocument) document).setDelayForSyncingLocalChanges(delay.longValue());
@@ -550,7 +561,7 @@ public class PspdfkitPlugin
             }
             case "setListenToServerChanges": {
                 try {
-                    boolean listen = call.argument("listen");
+                    boolean listen = Boolean.TRUE.equals(call.argument("listen"));
                     document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.setListenToServerChanges()");
                     ((InstantPdfDocument) document).setListenToServerChanges(listen);
                     result.success(true);
@@ -569,6 +580,39 @@ public class PspdfkitPlugin
                                     throwable -> result.error("InstantException", throwable.getMessage(), null));
                 } catch (Exception e) {
                     result.error("InstantException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "setMeasurementScale": {
+                try {
+                    Map<String, Object> scale = call.argument("measurementScale");
+                    document = requireDocumentNotNull(getCurrentActivity(), "Pspdfkit.setMeasurementScale()");
+                    Scale mScale = MeasurementHelper.convertScale(scale);
+                    if (mScale == null) {
+                        result.error("InvalidArgument", "Scale must be a valid scale", null);
+                        return;
+                    }
+                    document.setMeasurementScale(mScale);
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error("MeasurementException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "setMeasurementPrecision": {
+                try {
+                    String precision = call.argument("measurementPrecision");
+                    document = requireDocumentNotNull(getCurrentActivity(), "Pspdfkit.setMeasurementPrecision()");
+                    FloatPrecision mPrecision = MeasurementHelper.convertPrecision(precision);
+
+                    if (mPrecision == null) {
+                        result.error("InvalidArgument", "Precision must be a valid precision", null);
+                        return;
+                    }
+                    document.setMeasurementPrecision(mPrecision);
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error("MeasurementException", e.getMessage(), null);
                 }
                 break;
             }
@@ -654,8 +698,8 @@ public class PspdfkitPlugin
     @Override
     public boolean onRequestPermissionsResult(
             int requestCode,
-            String[] permissions,
-            int[] grantResults
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
     ) {
         if (activityPluginBinding == null) {
             throw new IllegalStateException(
