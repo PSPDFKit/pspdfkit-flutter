@@ -101,4 +101,21 @@ class PspdfkitWidgetController {
       _channel.invokeMethod('setMeasurementPrecision', <String, dynamic>{
         'measurementPrecision': precision.name,
       });
+
+  /// Sets the annotation preset configurations for the given annotation tools.
+  /// @param configurations A map of annotation tools and their corresponding configurations.
+  /// @return True if the configurations were set successfully, false otherwise.
+  Future<bool?> setAnnotationConfigurations(
+      Map<AnnotationTool, AnnotationConfiguration> configurations) async {
+    var configMap = <String, dynamic>{};
+
+    configurations.forEach((key, value) {
+      configMap[key.name] = value.toMap();
+    });
+
+    return await _channel
+        .invokeMethod('setAnnotationPresetConfigurations', <String, dynamic>{
+      'annotationConfigurations': configMap,
+    });
+  }
 }

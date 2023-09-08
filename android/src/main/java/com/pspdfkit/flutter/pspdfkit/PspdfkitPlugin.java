@@ -29,7 +29,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.annotations.measurements.FloatPrecision;
+import com.pspdfkit.annotations.AnnotationType;
+import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
+import com.pspdfkit.annotations.measurements.MeasurementPrecision;
 import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
@@ -45,6 +47,7 @@ import com.pspdfkit.instant.document.InstantPdfDocument;
 import com.pspdfkit.instant.ui.InstantPdfActivityIntentBuilder;
 import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
+import com.pspdfkit.ui.PdfFragment;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
 
 import java.io.ByteArrayOutputStream;
@@ -199,22 +202,16 @@ public class PspdfkitPlugin
             case "present":
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
-
                 HashMap<String, Object> configurationMap = call.argument(
                         "configuration"
                 );
-
                 Map<String, Object> measurementScale = call.argument("measurementScale");
                 String measurementPrecision = call.argument("measurementPrecision");
-
-
                 ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(
                         activity,
                         configurationMap
                 );
-
                 documentPath = addFileSchemeIfMissing(documentPath);
-
                 FlutterPdfActivity.setLoadedDocumentResult(result);
                 FlutterPdfActivity.setFloatPrecision(MeasurementHelper.convertPrecision(measurementPrecision));
                 FlutterPdfActivity.setMeasurementScale(MeasurementHelper.convertScale(measurementScale));
@@ -486,14 +483,12 @@ public class PspdfkitPlugin
                                 getCurrentActivity(),
                                 "Pspdfkit.save()"
                         );
-
                 //noinspection ResultOfMethodCallIgnored
                 document
                         .saveIfModifiedAsync()
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(result::success);
-
                 break;
             case "getTemporaryDirectory":
                 result.success(getTemporaryDirectory(activity));
@@ -603,7 +598,7 @@ public class PspdfkitPlugin
                 try {
                     String precision = call.argument("measurementPrecision");
                     document = requireDocumentNotNull(getCurrentActivity(), "Pspdfkit.setMeasurementPrecision()");
-                    FloatPrecision mPrecision = MeasurementHelper.convertPrecision(precision);
+                    MeasurementPrecision mPrecision = MeasurementHelper.convertPrecision(precision);
 
                     if (mPrecision == null) {
                         result.error("InvalidArgument", "Precision must be a valid precision", null);
@@ -613,6 +608,31 @@ public class PspdfkitPlugin
                     result.success(true);
                 } catch (Exception e) {
                     result.error("MeasurementException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "setAnnotationPresetConfigurations": {
+                try {
+                    Map<String, Object> annotationConfigurations = call.argument("annotationConfigurations");
+                    if (annotationConfigurations == null) {
+                        result.error("InvalidArgument", "Annotation configurations must be a valid map", null);
+                        return;
+                    }
+                    Map<AnnotationType, AnnotationConfiguration> configurations =
+                            AnnotationConfigurationAdaptor
+                                    .convertAnnotationConfigurations(getInstantActivity(), annotationConfigurations);
+
+                    PdfFragment pdfFragment = getCurrentActivity().getPdfFragment();
+                    if (pdfFragment == null) {
+                        result.error("InvalidState", "PdfFragment is null", null);
+                        return;
+                    }
+                    for (Map.Entry<AnnotationType, AnnotationConfiguration> entry : configurations.entrySet()) {
+                        pdfFragment.getAnnotationConfiguration().put(entry.getKey(), entry.getValue());
+                    }
+                    result.success(true);
+                } catch (Exception e) {
+                    result.error("AnnotationException", e.getMessage(), null);
                 }
                 break;
             }

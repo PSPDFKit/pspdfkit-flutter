@@ -38,6 +38,10 @@ part 'src/measurements/measurement_precision.dart';
 
 part 'src/measurements/measurement_scale.dart';
 
+part 'src/annotation_preset_configurations.dart';
+
+part 'src/annotations/annotation_tools.dart';
+
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
   static MethodChannel? _privateChannel;
@@ -233,6 +237,13 @@ class Pspdfkit {
       default:
         return AndroidPermissionStatus.notDetermined;
     }
+  }
+
+  static Future<bool?> setAnnotationPresetConfigurations(
+      Map<String, dynamic> configurations) async {
+    return _channel.invokeMethod('setAnnotationPresetConfigurations', {
+      'annotationConfigurations': configurations,
+    });
   }
 
   /// Path to the temporary directory on the device that is not backed up and is

@@ -20,9 +20,9 @@ import 'package:pspdfkit_example/utils/file_utils.dart';
 import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
+import 'pspdfkit_annotation_preset_customisation.dart';
 import 'pspdfkit_form_example.dart';
 import 'pspdfkit_instantjson_example.dart';
 import 'pspdfkit_annotations_example.dart';
@@ -113,6 +113,12 @@ const String _pspdfkitInstantExampleSub =
     'PSPDFKit Instant Synchronisation Example';
 const String _measurementTools = 'Measurement tools';
 const String _measurementToolsSub = 'PSPDFKit Measurements tools Example';
+
+const String _annotationsPresetCustomization =
+    'Annotations Preset Customization';
+
+const String _annotationsPresetCustomizationSub =
+    'PSPDFKit Annotations Preset Customization Example';
 
 const String _pspdfkitFor = 'PSPDFKit for';
 const double _fontSize = 18.0;
@@ -323,8 +329,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final extractedFormDocument = await extractAsset(context, _formPath);
     await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
         builder: (_) => PspdfkitFormExampleWidget(
-            documentPath: extractedFormDocument.path,
-            onPspdfkitFormExampleWidgetCreated: onWidgetCreated)));
+            documentPath: extractedFormDocument.path)));
   }
 
   void importInstantJsonExample() async {
@@ -396,8 +401,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               documentPath: extractedDocument.path)),
                       Expanded(
                           child: PspdfkitWidget(
-                              documentPath: extractedFormDocument.path,
-                              onPspdfkitWidgetCreated: onWidgetCreated))
+                              documentPath: extractedFormDocument.path))
                     ])))));
       } else {
         // This example is only supported in iOS at the moment.
@@ -405,31 +409,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       }
     } on PlatformException catch (e) {
       print("Failed to present document: '${e.message}'.");
-    }
-  }
-
-  void onWidgetCreated(PspdfkitWidgetController view) async {
-    try {
-      await view.setFormFieldValue('Lastname', 'Name_Last');
-      await view.setFormFieldValue('0123456789', 'Telephone_Home');
-      await view.setFormFieldValue('City', 'City');
-      await view.setFormFieldValue('selected', 'Sex.0');
-      await view.setFormFieldValue('deselected', 'Sex.1');
-      await view.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
-    } on PlatformException catch (e) {
-      print("Failed to set form field values '${e.message}'.");
-    }
-
-    String? lastName;
-    try {
-      lastName = await view.getFormFieldValue('Name_Last');
-    } on PlatformException catch (e) {
-      print("Failed to get form field value '${e.message}'.");
-    }
-
-    if (lastName != null) {
-      print(
-          "Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
     }
   }
 
@@ -721,12 +700,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             title: const Text(_annotationProcessingExample),
             subtitle: const Text(_annotationProcessingExampleSub),
             onTap: () => annotationProcessingExample()),
-      // The import Instant JSON example is supported by iOS only for now.
-      if (PlatformUtils.isCupertino(context))
-        ListTile(
-            title: const Text(_importInstantJsonExample),
-            subtitle: const Text(_importInstantJsonExampleSub),
-            onTap: () => importInstantJsonExample()),
+      ListTile(
+          title: const Text(_importInstantJsonExample),
+          subtitle: const Text(_importInstantJsonExampleSub),
+          onTap: () => importInstantJsonExample()),
       // The push two PspdfWidgets simultaneously example is supported by iOS only for now.
       if (PlatformUtils.isCupertino(context))
         ListTile(
@@ -745,6 +722,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           title: const Text(_measurementTools),
           subtitle: const Text(_measurementToolsSub),
           onTap: () => measurementExample(context)),
+      ListTile(
+          title: const Text(_annotationsPresetCustomization),
+          subtitle: const Text(_annotationsPresetCustomizationSub),
+          onTap: () async {
+            var extractedDocument = await extractAsset(context, _documentPath);
+            await Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute<dynamic>(
+                    builder: (context) => PspdfkitAnnotationPresetCustomization(
+                        documentPath: extractedDocument.path)));
+          }),
+
       Container(
           color: Colors.grey[200],
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),

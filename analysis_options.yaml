@@ -16,10 +16,6 @@ analyzer:
     dead_code: warning
 #    avoid_print: false
 
-  strong-mode:
-    implicit-casts: false
-    implicit-dynamic: false
-
 linter:
   rules:
     - always_declare_return_types

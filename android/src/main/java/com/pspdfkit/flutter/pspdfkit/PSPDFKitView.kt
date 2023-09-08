@@ -9,8 +9,13 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
-import com.pspdfkit.flutter.pspdfkit.util.*
+import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
+import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
+import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
+import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
+import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
+import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
@@ -26,7 +31,6 @@ import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
-
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 
@@ -418,6 +422,37 @@ internal class PSPDFKitView(
                 } catch (e: Exception) {
                     result.error("Error while setting measurement precision", e.message, null)
                 }
+            }
+
+            "setAnnotationPresetConfigurations" -> {
+                try {
+                    val annotationConfigurations =
+                        call.argument<Map<String?, Any?>>("annotationConfigurations")
+                    if (annotationConfigurations == null) {
+                        result.error(
+                            "InvalidArgument",
+                            "Annotation configurations must be a valid map",
+                            null
+                        )
+                        return
+                    }
+                    
+                    val configurations =
+                        convertAnnotationConfigurations(context, annotationConfigurations)
+
+                    val pdfFragment = pdfUiFragment.pdfFragment;
+                    if (pdfFragment == null) {
+                        result.error("InvalidState", "PdfFragment is null", null)
+                        return
+                    }
+                    for ((key, value) in configurations) {
+                        pdfFragment.annotationConfiguration.put(key, value)
+                    }
+                    result.success(true)
+                } catch (e: java.lang.Exception) {
+                    result.error("AnnotationException", e.message, null)
+                }
+
             }
 
             else -> result.notImplemented()

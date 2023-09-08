@@ -1,7 +1,6 @@
 package com.pspdfkit.flutter.pspdfkit.util
 
-import android.util.Log
-import com.pspdfkit.annotations.measurements.FloatPrecision
+import com.pspdfkit.annotations.measurements.MeasurementPrecision
 import com.pspdfkit.annotations.measurements.Scale
 
 class MeasurementHelper {
@@ -49,23 +48,23 @@ class MeasurementHelper {
             return Scale(fromValue.toFloat(), unitFrom, toValue.toFloat(), unitTo)
         }
         /**
-         * Converts the precision string to a [FloatPrecision] object.
+         * Converts the precision string to a [MeasurementPrecision] object.
          *
          * @param precision The precision string.
-         * @return The [FloatPrecision] object.
+         * @return The [MeasurementPrecision] object.
          */
         @JvmStatic
-        fun convertPrecision(precision: String?): FloatPrecision? {
+        fun convertPrecision(precision: String?): MeasurementPrecision? {
             if (precision == null) {
                 return null
             }
             val measurementPrecision = when (precision) {
-                "oneDP" -> FloatPrecision.ONE_DP
-                "twoDP" -> FloatPrecision.TWO_DP
-                "threeDP" -> FloatPrecision.THREE_DP
-                "fourDP" -> FloatPrecision.FOUR_DP
-                "whole" -> FloatPrecision.WHOLE
-                else -> FloatPrecision.TWO_DP
+                "oneDP" -> MeasurementPrecision.ONE_DP
+                "twoDP" -> MeasurementPrecision.TWO_DP
+                "threeDP" -> MeasurementPrecision.THREE_DP
+                "fourDP" -> MeasurementPrecision.FOUR_DP
+                "whole" -> MeasurementPrecision.WHOLE
+                else -> MeasurementPrecision.TWO_DP
             }
             return measurementPrecision
         }

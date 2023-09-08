@@ -9,13 +9,13 @@
 
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String documentPath;
@@ -46,14 +46,6 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
-    const String viewType = 'com.pspdfkit.widget';
-    // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{
-      'document': widget.documentPath,
-      'configuration': widget.configuration
-    };
-
     if (PlatformUtils.isIOS()) {
       return CupertinoPageScaffold(
           navigationBar: const CupertinoNavigationBar(),
@@ -61,12 +53,16 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
               bottom: false,
               child: Column(children: <Widget>[
                 Expanded(
-                    child: UiKitView(
-                        viewType: viewType,
-                        layoutDirection: TextDirection.ltr,
-                        creationParams: creationParams,
-                        onPlatformViewCreated: onPlatformViewCreated,
-                        creationParamsCodec: const StandardMessageCodec())),
+                    child: PspdfkitWidget(
+                  documentPath: widget.documentPath,
+                  configuration: widget.configuration,
+                  onPspdfkitWidgetCreated:
+                      (PspdfkitWidgetController controller) {
+                    setState(() {
+                      view = controller;
+                    });
+                  },
+                )),
                 SizedBox(
                     child: Column(children: <Widget>[
                   CupertinoButton(
@@ -114,9 +110,5 @@ class _PspdfkitAnnotationProcessingExampleWidgetState
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
-  }
-
-  Future<void> onPlatformViewCreated(int id) async {
-    view = PspdfkitWidgetController(id);
   }
 }

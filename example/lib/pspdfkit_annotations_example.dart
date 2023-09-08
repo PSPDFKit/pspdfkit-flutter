@@ -6,16 +6,10 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 import 'utils/platform_utils.dart';
 
@@ -124,13 +118,6 @@ class _PspdfkitAnnotationsExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
-    const String viewType = 'com.pspdfkit.widget';
-    // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{
-      'document': widget.documentPath,
-      'configuration': widget.configuration
-    };
     if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
           extendBodyBehindAppBar: PlatformUtils.isAndroid(),
@@ -144,48 +131,14 @@ class _PspdfkitAnnotationsExampleWidgetState
                       : const EdgeInsets.only(top: kToolbarHeight),
                   child: Column(children: <Widget>[
                     Expanded(
-                        child: PlatformUtils.isAndroid()
-                            ? PlatformViewLink(
-                                viewType: viewType,
-                                surfaceFactory: (BuildContext context,
-                                    PlatformViewController controller) {
-                                  return AndroidViewSurface(
-                                    controller:
-                                        controller as AndroidViewController,
-                                    gestureRecognizers: const <
-                                        Factory<
-                                            OneSequenceGestureRecognizer>>{},
-                                    hitTestBehavior:
-                                        PlatformViewHitTestBehavior.opaque,
-                                  );
-                                },
-                                onCreatePlatformView:
-                                    (PlatformViewCreationParams params) {
-                                  return PlatformViewsService
-                                      .initSurfaceAndroidView(
-                                    id: params.id,
-                                    viewType: viewType,
-                                    layoutDirection: TextDirection.ltr,
-                                    creationParams: creationParams,
-                                    creationParamsCodec:
-                                        const StandardMessageCodec(),
-                                    onFocus: () {
-                                      params.onFocusChanged(true);
-                                    },
-                                  )
-                                    ..addOnPlatformViewCreatedListener(
-                                        params.onPlatformViewCreated)
-                                    ..addOnPlatformViewCreatedListener(
-                                        onPlatformViewCreated)
-                                    ..create();
-                                })
-                            : UiKitView(
-                                viewType: viewType,
-                                layoutDirection: TextDirection.ltr,
-                                creationParams: creationParams,
-                                onPlatformViewCreated: onPlatformViewCreated,
-                                creationParamsCodec:
-                                    const StandardMessageCodec())),
+                      child: PspdfkitWidget(
+                        onPspdfkitWidgetCreated: (controller) {
+                          view = controller;
+                        },
+                        configuration: widget.configuration,
+                        documentPath: widget.documentPath,
+                      ),
+                    ),
                     SizedBox(
                         child: Column(children: <Widget>[
                       ElevatedButton(
@@ -209,11 +162,35 @@ class _PspdfkitAnnotationsExampleWidgetState
                       ElevatedButton(
                           onPressed: () async {
                             const title = 'Annotation JSON';
-                            dynamic annotationsJson =
-                                await view.getAnnotations(0, 'all');
-                            await showDialog<AlertDialog>(
-                                context: context,
-                                builder: (BuildContext context) => AlertDialog(
+                            await view
+                                .getAnnotations(0, 'all')
+                                .then((dynamic annotationsJson) {
+                              showDialog<AlertDialog>(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      AlertDialog(
+                                          title: const Text(title),
+                                          content: Text('$annotationsJson'),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('OK'))
+                                          ]));
+                            });
+                          },
+                          child: const Text('Get Annotations')),
+                      ElevatedButton(
+                          onPressed: () async {
+                            const title = 'Unsaved Annotations';
+                            await view
+                                .getAllUnsavedAnnotations()
+                                .then((dynamic annotationsJson) {
+                              showDialog<AlertDialog>(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      AlertDialog(
                                         title: const Text(title),
                                         content: Text('$annotationsJson'),
                                         actions: [
@@ -222,28 +199,9 @@ class _PspdfkitAnnotationsExampleWidgetState
                                                 Navigator.of(context).pop();
                                               },
                                               child: const Text('OK'))
-                                        ]));
-                          },
-                          child: const Text('Get Annotations')),
-                      ElevatedButton(
-                          onPressed: () async {
-                            const title = 'Unsaved Annotations';
-                            dynamic annotationsJson =
-                                await view.getAllUnsavedAnnotations();
-                            print(annotationsJson);
-                            await showDialog<AlertDialog>(
-                                context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                      title: const Text(title),
-                                      content: Text('$annotationsJson'),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: const Text('OK'))
-                                      ],
-                                    ));
+                                        ],
+                                      ));
+                            });
                           },
                           child: const Text('Get All Unsaved Annotations'))
                     ]))
@@ -252,9 +210,5 @@ class _PspdfkitAnnotationsExampleWidgetState
       return Text(
           '$defaultTargetPlatform is not yet supported by PSPDFKit for Flutter.');
     }
-  }
-
-  Future<void> onPlatformViewCreated(int id) async {
-    view = PspdfkitWidgetController(id);
   }
 }

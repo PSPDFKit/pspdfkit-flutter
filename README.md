@@ -190,7 +190,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Runner.xcworkspace
     ```
 
-4. Make sure the `iOS Deployment Target` is set to 14.0 or higher.
+4. Make sure the `iOS Deployment Target` is set to 15.0 or higher.
 
     ![iOS Deployment Target](screenshots/ios-deployment-target.png)
 
@@ -225,11 +225,11 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     open ios/Podfile
     ```
 
-10. Update the platform to iOS 14 and add the PSPDFKit Podspec:
+10. Update the platform to iOS 15 and add the PSPDFKit Podspec:
 
     ```diff
     -# platform :ios, '9.0'
-    + platform :ios, '14.0'
+    + platform :ios, '15.0'
      ...
      target 'Runner' do
        use_frameworks!

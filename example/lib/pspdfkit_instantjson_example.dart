@@ -7,14 +7,11 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 import 'utils/platform_utils.dart';
 
@@ -41,31 +38,25 @@ class _PspdfkitInstantJsonExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
-    const String viewType = 'com.pspdfkit.widget';
-    // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{
-      'document': widget.documentPath,
-      'configuration': widget.configuration,
-    };
-
-    if (PlatformUtils.isIOS()) {
-      return CupertinoPageScaffold(
-          navigationBar: const CupertinoNavigationBar(),
-          child: SafeArea(
+    if (PlatformUtils.isIOS() || PlatformUtils.isAndroid()) {
+      return Scaffold(
+          body: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
                 Expanded(
-                    child: UiKitView(
-                        viewType: viewType,
-                        layoutDirection: TextDirection.ltr,
-                        creationParams: creationParams,
-                        onPlatformViewCreated: onPlatformViewCreated,
-                        creationParamsCodec: const StandardMessageCodec())),
+                    child: PspdfkitWidget(
+                        documentPath: widget.documentPath,
+                        configuration: widget.configuration,
+                        onPspdfkitWidgetCreated:
+                            (PspdfkitWidgetController controller) {
+                          setState(() {
+                            view = controller;
+                          });
+                        })),
                 SizedBox(
                     height: 80,
                     child: Row(children: <Widget>[
-                      CupertinoButton(
+                      MaterialButton(
                           onPressed: () async {
                             final annotationsJson =
                                 await DefaultAssetBundle.of(context)
@@ -73,39 +64,34 @@ class _PspdfkitInstantJsonExampleWidgetState
                             await view.applyInstantJson(annotationsJson);
                           },
                           child: const Text('Apply Instant JSON')),
-                      CupertinoButton(
+                      MaterialButton(
                           onPressed: () async {
                             const title = 'Exported Instant JSON';
-                            final exportedInstantJson =
-                                await view.exportInstantJson() ?? '';
-                            await showCupertinoDialog<CupertinoAlertDialog>(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    CupertinoAlertDialog(
-                                      title: const Text(title),
-                                      content: Text(exportedInstantJson),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: const Text('OK'))
-                                      ],
-                                    ));
+                            await view
+                                .exportInstantJson()
+                                .then((exportedInstantJson) async {
+                              await showDialog<AlertDialog>(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      AlertDialog(
+                                        title: const Text(title),
+                                        content: Text(exportedInstantJson ??
+                                            'No Instant JSON found.'),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('OK'))
+                                        ],
+                                      ));
+                            });
                           },
                           child: const Text('Export Instant JSON'))
                     ]))
               ])));
-    } else if (PlatformUtils.isAndroid()) {
-      // This example is only supported in iOS at the moment.
-      // Support for Android is coming soon.
-      return const Text('Unsupported Widget');
     } else {
       return Text('$defaultTargetPlatform is not yet supported by pspdfkit.');
     }
-  }
-
-  Future<void> onPlatformViewCreated(int id) async {
-    view = PspdfkitWidgetController(id);
   }
 }

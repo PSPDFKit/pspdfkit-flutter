@@ -1,6 +1,6 @@
 package com.pspdfkit.flutter.pspdfkit
 
-import com.pspdfkit.annotations.measurements.FloatPrecision
+import com.pspdfkit.annotations.measurements.MeasurementPrecision
 import com.pspdfkit.annotations.measurements.Scale
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.ui.PdfUiFragment
@@ -8,7 +8,7 @@ import com.pspdfkit.ui.PdfUiFragment
 class FlutterPdfUiFragment : PdfUiFragment() {
 
     private var scale: Scale? = null
-    private var precision: FloatPrecision? = null
+    private var precision: MeasurementPrecision? = null
 
     override fun onDocumentLoaded(document: PdfDocument) {
         super.onDocumentLoaded(document)
@@ -27,7 +27,7 @@ class FlutterPdfUiFragment : PdfUiFragment() {
         this.scale = scale
     }
 
-    fun setMeasurementPrecision(precision: FloatPrecision?) {
+    fun setMeasurementPrecision(precision: MeasurementPrecision?) {
         this.precision = precision
     }
 

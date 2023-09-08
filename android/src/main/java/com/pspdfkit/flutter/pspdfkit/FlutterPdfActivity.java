@@ -5,7 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.pspdfkit.annotations.measurements.FloatPrecision;
+import com.pspdfkit.annotations.measurements.MeasurementPrecision;
 import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.ui.PdfActivity;
@@ -24,7 +24,7 @@ public class FlutterPdfActivity extends PdfActivity {
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
     @Nullable private static Scale scale;
-    @Nullable private static FloatPrecision floatPrecision;
+    @Nullable private static MeasurementPrecision floatPrecision;
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
@@ -34,7 +34,7 @@ public class FlutterPdfActivity extends PdfActivity {
         FlutterPdfActivity.scale = scale;
     }
 
-    public static void setFloatPrecision(@Nullable final FloatPrecision floatPrecision) {
+    public static void setFloatPrecision(@Nullable final MeasurementPrecision floatPrecision) {
         FlutterPdfActivity.floatPrecision = floatPrecision;
     }
 

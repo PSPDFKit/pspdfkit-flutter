@@ -194,8 +194,10 @@
         }
         
         document.measurementPrecision = measurementPrecision;
-
         
+    }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
+        [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
+        result(nil);
     } else {
         result(FlutterMethodNotImplemented);
     }

@@ -9,13 +9,10 @@
 
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
-
 import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
+import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 import 'utils/platform_utils.dart';
 
@@ -38,13 +35,6 @@ class _PspdfkitManualSaveExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
-    const String viewType = 'com.pspdfkit.widget';
-    // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{
-      'document': widget.documentPath,
-      'configuration': widget.configuration
-    };
     if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
           extendBodyBehindAppBar: PlatformUtils.isAndroid(),
@@ -58,48 +48,14 @@ class _PspdfkitManualSaveExampleWidgetState
                       : const EdgeInsets.only(top: kToolbarHeight),
                   child: Column(children: <Widget>[
                     Expanded(
-                        child: PlatformUtils.isAndroid()
-                            ? PlatformViewLink(
-                                viewType: viewType,
-                                surfaceFactory: (BuildContext context,
-                                    PlatformViewController controller) {
-                                  return AndroidViewSurface(
-                                    controller:
-                                        controller as AndroidViewController,
-                                    gestureRecognizers: const <
-                                        Factory<
-                                            OneSequenceGestureRecognizer>>{},
-                                    hitTestBehavior:
-                                        PlatformViewHitTestBehavior.opaque,
-                                  );
-                                },
-                                onCreatePlatformView:
-                                    (PlatformViewCreationParams params) {
-                                  return PlatformViewsService
-                                      .initSurfaceAndroidView(
-                                    id: params.id,
-                                    viewType: viewType,
-                                    layoutDirection: TextDirection.ltr,
-                                    creationParams: creationParams,
-                                    creationParamsCodec:
-                                        const StandardMessageCodec(),
-                                    onFocus: () {
-                                      params.onFocusChanged(true);
-                                    },
-                                  )
-                                    ..addOnPlatformViewCreatedListener(
-                                        params.onPlatformViewCreated)
-                                    ..addOnPlatformViewCreatedListener(
-                                        onPlatformViewCreated)
-                                    ..create();
-                                })
-                            : UiKitView(
-                                viewType: viewType,
-                                layoutDirection: TextDirection.ltr,
-                                creationParams: creationParams,
-                                onPlatformViewCreated: onPlatformViewCreated,
-                                creationParamsCodec:
-                                    const StandardMessageCodec())),
+                      child: PspdfkitWidget(
+                        documentPath: widget.documentPath,
+                        configuration: widget.configuration,
+                        onPspdfkitWidgetCreated: (controller) {
+                          pspdfkitWidgetController = controller;
+                        },
+                      ),
+                    ),
                     SizedBox(
                         child: Column(children: <Widget>[
                       ElevatedButton(
