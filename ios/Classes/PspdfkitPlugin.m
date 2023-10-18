@@ -180,8 +180,6 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 }
 
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
-    // Don't hold on to the view controller object after dismissal.
-    self.pdfViewController = nil;
     [channel invokeMethod:@"pdfViewControllerDidDismiss" arguments:nil];
 }
 
@@ -235,6 +233,10 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         @"error": error.localizedDescription
     };
     [channel invokeMethod:@"pspdfkitInstantDownloadFailed" arguments:arguments];
+}
+
+- (void)dealloc {
+    self.pdfViewController = nil;
 }
 
 @end

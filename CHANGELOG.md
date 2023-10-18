@@ -1,5 +1,12 @@
 ## Newest Release
 
+### 3.7.1 - 18 Oct 2023
+
+- Fixed issue where iOS Appstore upload fails due to PSPDFKit Flutter missing "CFBundleShortVersionString" key. (#42166)
+- Fixed issue where Plugin returned "Document is missing or invalid" during pdfViewControllerWillDismiss events. (#42255)
+
+## Previous Releases
+
 ### 3.7.0 - 07 Sep 2023
 
 - Adds annotation preset customization. (#41669)
@@ -7,8 +14,6 @@
 - Updates for PSPDFKit 12.3.1 for iOS. (#41910)
 - Updates the deployment target to iOS 15. (#39956)
 - Updates example catalog with PspdfkitWidget usage. (#40861)
-
-## Previous Releases
 
 ### 3.6.0 - 08 May 2023
 - Adds measurement tools. (#39806)
