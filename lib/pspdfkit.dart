@@ -270,8 +270,11 @@ class Pspdfkit {
     return Directory(path);
   }
 
-  /// onPAuse callback for FlutterPdfActivity
+  /// onPause callback for FlutterPdfActivity
   static void Function()? flutterPdfActivityOnPause;
+
+  /// Added callback for FlutterPdfFragment
+  static void Function()? flutterPdfFragmentAdded;
 
   /// ViewControllerWillDismiss callback for PDFViewController
   static void Function()? pdfViewControllerWillDismiss;
@@ -305,11 +308,17 @@ class Pspdfkit {
   static void Function(String? documentId, String? error)?
       instantDownloadFailed;
 
+  /// Called with the document has been loaded
+  static void Function(String? documentId)? pspdfkitDocumentLoaded;
+
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
       switch (call.method) {
         case 'flutterPdfActivityOnPause':
           flutterPdfActivityOnPause?.call();
+          break;
+        case 'flutterPdfFragmentAdded':
+          flutterPdfFragmentAdded?.call();
           break;
         case 'pdfViewControllerWillDismiss':
           pdfViewControllerWillDismiss?.call();
@@ -358,6 +367,9 @@ class Pspdfkit {
                 arguments['error'] as String);
             break;
           }
+        case 'pspdfkitDocumentLoaded':
+          pspdfkitDocumentLoaded?.call(call.arguments as String);
+          break;
         default:
           if (kDebugMode) {
             print('Unknown method ${call.method} ');

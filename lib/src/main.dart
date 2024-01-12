@@ -190,6 +190,8 @@ class Pspdfkit {
   static late VoidCallback flutterPdfActivityOnPause;
   static late VoidCallback pdfViewControllerWillDismiss;
   static late VoidCallback pdfViewControllerDidDismiss;
+  static late VoidCallback flutterPdfFragmentAdded;
+  static late Function(String) pspdfkitDocumentLoaded;
 
   static Future<void> _platformCallHandler(MethodCall call) {
     try {
@@ -202,6 +204,12 @@ class Pspdfkit {
           break;
         case 'pdfViewControllerDidDismiss':
           pdfViewControllerDidDismiss();
+          break;
+        case 'flutterPdfFragmentAdded':
+          flutterPdfFragmentAdded();
+          break;
+        case 'pspdfkitDocumentLoaded':
+          pspdfkitDocumentLoaded(call.arguments as String);
           break;
         default:
           if (kDebugMode) {

@@ -28,6 +28,7 @@ end
 require File.expand_path(File.join("packages", "flutter_tools", "bin", "podhelper"), flutter_root)
 
 flutter_ios_podfile_setup
+host_cpu = RbConfig::CONFIG["host_cpu"]
 
 target "Runner" do
   flutter_install_all_ios_pods __dir__
@@ -39,5 +40,10 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |target_config|
+      if host_cpu.eql?("x86_64")
+        target_config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+      end
+    end
   end
 end

@@ -52,7 +52,9 @@ public class EventDispatcher {
         sendEvent("flutterPdfActivityOnPause");
     }
 
-
+    public void notifyPdfFragmentAdded() {
+        sendEvent("flutterPdfFragmentAdded");
+    }
 
     public void notifyInstantSyncStarted(String documentId) {
         sendEvent("pspdfkitInstantSyncStarted", documentId);

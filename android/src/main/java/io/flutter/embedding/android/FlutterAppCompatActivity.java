@@ -5,27 +5,28 @@
 package io.flutter.embedding.android;
 
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.DART_ENTRYPOINT_META_DATA_KEY;
+import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.DART_ENTRYPOINT_URI_META_DATA_KEY;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.DEFAULT_BACKGROUND_MODE;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.DEFAULT_DART_ENTRYPOINT;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.DEFAULT_INITIAL_ROUTE;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_BACKGROUND_MODE;
+import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_CACHED_ENGINE_GROUP_ID;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_CACHED_ENGINE_ID;
+import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_DART_ENTRYPOINT;
+import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_DART_ENTRYPOINT_ARGS;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_DESTROY_ENGINE_WITH_ACTIVITY;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.EXTRA_INITIAL_ROUTE;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.HANDLE_DEEPLINKING_META_DATA_KEY;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.INITIAL_ROUTE_META_DATA_KEY;
 import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.NORMAL_THEME_META_DATA_KEY;
-import static io.flutter.embedding.android.FlutterActivityLaunchConfigs.SPLASH_SCREEN_META_DATA_KEY;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -33,40 +34,41 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
-
 import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.embedding.engine.plugins.util.GeneratedPluginRegister;
 import io.flutter.plugin.platform.PlatformPlugin;
+import io.flutter.util.ViewUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Flutter {@code Activity} that is based upon {@link AppCompatActivity}.
  *
- * <p>{@code FlutterAppCompatActivity} exists because there are some Android APIs in the ecosystem
+ * <p>{@code FlutterFragmentActivity} exists because there are some Android APIs in the ecosystem
  * that only accept a {@link AppCompatActivity}. If a {@link AppCompatActivity} is not required, you
- * should consider using a regular {@link FlutterFragmentActivity} instead, because {@link FlutterFragmentActivity}
- * is considered to be the standard, canonical implementation of a Flutter {@code FragmentActivity}.
+ * should consider using a regular {@link FlutterActivity} instead, because {@link FlutterActivity}
+ * is considered to be the standard, canonical implementation of a Flutter {@code Activity}.
  */
 // A number of methods in this class have the same implementation as FlutterActivity. These methods
 // are duplicated for readability purposes. Be sure to replicate any change in this class in
 // FlutterActivity, too.
 public class FlutterAppCompatActivity extends AppCompatActivity
-        implements SplashScreenProvider, FlutterEngineProvider, FlutterEngineConfigurator {
-    private static final String TAG = "FlutterAppCompat";
+        implements FlutterEngineProvider, FlutterEngineConfigurator {
+    private static final String TAG = "FlutterAppCompatActivity";
 
     // FlutterFragment management.
     private static final String TAG_FLUTTER_FRAGMENT = "flutter_fragment";
     // TODO(mattcarroll): replace ID with R.id when build system supports R.java
-    private static final int FRAGMENT_CONTAINER_ID = 609893468; // random number
+    public static final int FRAGMENT_CONTAINER_ID =
+            ViewUtils.generateViewId(609893468); // random number
 
     /**
      * Creates an {@link Intent} that launches a {@code FlutterFragmentActivity}, which executes a
@@ -96,6 +98,7 @@ public class FlutterAppCompatActivity extends AppCompatActivity
         private final Class<? extends FlutterFragmentActivity> activityClass;
         private String initialRoute = DEFAULT_INITIAL_ROUTE;
         private String backgroundMode = DEFAULT_BACKGROUND_MODE;
+        @Nullable private List<String> dartEntrypointArgs;
 
         /**
          * Constructor that allows this {@code NewEngineIntentBuilder} to be used by subclasses of
@@ -145,15 +148,35 @@ public class FlutterAppCompatActivity extends AppCompatActivity
         }
 
         /**
+         * The Dart entrypoint arguments will be passed as a list of string to Dart's entrypoint
+         * function.
+         *
+         * <p>A value of null means do not pass any arguments to Dart's entrypoint function.
+         *
+         * @param dartEntrypointArgs The Dart entrypoint arguments.
+         * @return The engine intent builder.
+         */
+        @NonNull
+        public NewEngineIntentBuilder dartEntrypointArgs(@Nullable List<String> dartEntrypointArgs) {
+            this.dartEntrypointArgs = dartEntrypointArgs;
+            return this;
+        }
+
+        /**
          * Creates and returns an {@link Intent} that will launch a {@code FlutterFragmentActivity} with
          * the desired configuration.
          */
         @NonNull
         public Intent build(@NonNull Context context) {
-            return new Intent(context, activityClass)
-                    .putExtra(EXTRA_INITIAL_ROUTE, initialRoute)
-                    .putExtra(EXTRA_BACKGROUND_MODE, backgroundMode)
-                    .putExtra(EXTRA_DESTROY_ENGINE_WITH_ACTIVITY, true);
+            Intent intent =
+                    new Intent(context, activityClass)
+                            .putExtra(EXTRA_INITIAL_ROUTE, initialRoute)
+                            .putExtra(EXTRA_BACKGROUND_MODE, backgroundMode)
+                            .putExtra(EXTRA_DESTROY_ENGINE_WITH_ACTIVITY, true);
+            if (dartEntrypointArgs != null) {
+                intent.putExtra(EXTRA_DART_ENTRYPOINT_ARGS, new ArrayList(dartEntrypointArgs));
+            }
+            return intent;
         }
     }
 
@@ -241,6 +264,112 @@ public class FlutterAppCompatActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Creates a {@link NewEngineInGroupIntentBuilder}, which can be used to configure an {@link
+     * Intent} to launch a {@code FlutterFragmentActivity} that internally uses an existing {@link
+     * io.flutter.embedding.engine.FlutterEngineGroup} that is cached in {@link
+     * io.flutter.embedding.engine.FlutterEngineGroupCache}.
+     *
+     * @param engineGroupId A cached engine group ID.
+     * @return The builder.
+     */
+    public static NewEngineInGroupIntentBuilder withNewEngineInGroup(@NonNull String engineGroupId) {
+        return new NewEngineInGroupIntentBuilder(FlutterFragmentActivity.class, engineGroupId);
+    }
+
+    /**
+     * Builder to create an {@code Intent} that launches a {@code FlutterFragmentActivity} with a new
+     * {@link FlutterEngine} by FlutterEngineGroup#createAndRunEngine.
+     */
+    public static class NewEngineInGroupIntentBuilder {
+        private final Class<? extends FlutterFragmentActivity> activityClass;
+        private final String cachedEngineGroupId;
+        private String dartEntrypoint = DEFAULT_DART_ENTRYPOINT;
+        private String initialRoute = DEFAULT_INITIAL_ROUTE;
+        private String backgroundMode = DEFAULT_BACKGROUND_MODE;
+
+        /**
+         * Constructor that allows this {@code NewEngineInGroupIntentBuilder} to be used by subclasses
+         * of {@code FlutterActivity}.
+         *
+         * <p>Subclasses of {@code FlutterFragmentActivity} should provide their own static version of
+         * {@link #withNewEngineInGroup}, which returns an instance of {@code
+         * NewEngineInGroupIntentBuilder} constructed with a {@code Class} reference to the {@code
+         * FlutterFragmentActivity} subclass, e.g.:
+         *
+         * <p>{@code return new NewEngineInGroupIntentBuilder(FlutterFragmentActivity.class,
+         * cacheedEngineGroupId); }
+         *
+         * @param activityClass A subclass of {@code FlutterFragmentActivity}.
+         * @param engineGroupId The engine group id.
+         */
+        public NewEngineInGroupIntentBuilder(
+                @NonNull Class<? extends FlutterFragmentActivity> activityClass,
+                @NonNull String engineGroupId) {
+            this.activityClass = activityClass;
+            this.cachedEngineGroupId = engineGroupId;
+        }
+
+        /**
+         * The Dart entrypoint that will be executed as soon as the Dart snapshot is loaded, default to
+         * "main".
+         *
+         * @param dartEntrypoint The dart entrypoint's name
+         * @return The engine group intent builder
+         */
+        @NonNull
+        public NewEngineInGroupIntentBuilder dartEntrypoint(@NonNull String dartEntrypoint) {
+            this.dartEntrypoint = dartEntrypoint;
+            return this;
+        }
+
+        /**
+         * The initial route that a Flutter app will render in this {@code FlutterFragmentActivity},
+         * defaults to "/".
+         */
+        @NonNull
+        public NewEngineInGroupIntentBuilder initialRoute(@NonNull String initialRoute) {
+            this.initialRoute = initialRoute;
+            return this;
+        }
+
+        /**
+         * The mode of {@code FlutterFragmentActivity}'s background, either {@link
+         * BackgroundMode#opaque} or {@link BackgroundMode#transparent}.
+         *
+         * <p>The default background mode is {@link BackgroundMode#opaque}.
+         *
+         * <p>Choosing a background mode of {@link BackgroundMode#transparent} will configure the inner
+         * {@link FlutterView} of this {@code FlutterFragmentActivity} to be configured with a {@link
+         * FlutterTextureView} to support transparency. This choice has a non-trivial performance
+         * impact. A transparent background should only be used if it is necessary for the app design
+         * being implemented.
+         *
+         * <p>A {@code FlutterFragmentActivity} that is configured with a background mode of {@link
+         * BackgroundMode#transparent} must have a theme applied to it that includes the following
+         * property: {@code <item name="android:windowIsTranslucent">true</item>}.
+         */
+        @NonNull
+        public NewEngineInGroupIntentBuilder backgroundMode(@NonNull BackgroundMode backgroundMode) {
+            this.backgroundMode = backgroundMode.name();
+            return this;
+        }
+
+        /**
+         * Creates and returns an {@link Intent} that will launch a {@code FlutterFragmentActivity} with
+         * the desired configuration.
+         */
+        @NonNull
+        public Intent build(@NonNull Context context) {
+            return new Intent(context, activityClass)
+                    .putExtra(EXTRA_DART_ENTRYPOINT, dartEntrypoint)
+                    .putExtra(EXTRA_INITIAL_ROUTE, initialRoute)
+                    .putExtra(EXTRA_CACHED_ENGINE_GROUP_ID, cachedEngineGroupId)
+                    .putExtra(EXTRA_BACKGROUND_MODE, backgroundMode)
+                    .putExtra(EXTRA_DESTROY_ENGINE_WITH_ACTIVITY, true);
+        }
+    }
+
     @Nullable private FlutterFragment flutterFragment;
 
     @Override
@@ -303,41 +432,6 @@ public class FlutterAppCompatActivity extends AppCompatActivity
             Log.e(
                     TAG,
                     "Could not read meta-data for FlutterFragmentActivity. Using the launch theme as normal theme.");
-        }
-    }
-
-    @Nullable
-    @Override
-    public SplashScreen provideSplashScreen() {
-        Drawable manifestSplashDrawable = getSplashScreenFromManifest();
-        if (manifestSplashDrawable != null) {
-            return new DrawableSplashScreen(manifestSplashDrawable);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a {@link Drawable} to be used as a splash screen as requested by meta-data in the
-     * {@code AndroidManifest.xml} file, or null if no such splash screen is requested.
-     *
-     * <p>See {@link FlutterActivityLaunchConfigs#SPLASH_SCREEN_META_DATA_KEY} for the meta-data key
-     * to be used in a manifest file.
-     */
-    @Nullable
-    private Drawable getSplashScreenFromManifest() {
-        try {
-            Bundle metaData = getMetaData();
-            int splashScreenId = metaData != null ? metaData.getInt(SPLASH_SCREEN_META_DATA_KEY) : 0;
-            return splashScreenId != 0
-                    ? ResourcesCompat.getDrawable(getResources(), splashScreenId, getTheme())
-                    : null;
-        } catch (Resources.NotFoundException e) {
-            Log.e(TAG, "Splash screen not found. Ensure the drawable exists and that it's valid.");
-            throw e;
-        } catch (PackageManager.NameNotFoundException e) {
-            // This is never expected to happen.
-            return null;
         }
     }
 
@@ -456,11 +550,17 @@ public class FlutterAppCompatActivity extends AppCompatActivity
             Log.v(
                     TAG,
                     "Creating FlutterFragment with new engine:\n"
+                            + "Cached engine group ID: "
+                            + getCachedEngineGroupId()
+                            + "\n"
                             + "Background transparency mode: "
                             + backgroundMode
                             + "\n"
                             + "Dart entrypoint: "
                             + getDartEntrypointFunctionName()
+                            + "\n"
+                            + "Dart entrypoint library uri: "
+                            + (getDartEntrypointLibraryUri() != null ? getDartEntrypointLibraryUri() : "\"\"")
                             + "\n"
                             + "Initial route: "
                             + getInitialRoute()
@@ -471,8 +571,23 @@ public class FlutterAppCompatActivity extends AppCompatActivity
                             + "Will attach FlutterEngine to Activity: "
                             + shouldAttachEngineToActivity());
 
+            if (getCachedEngineGroupId() != null) {
+                return flutterFragment
+                        .withNewEngineInGroup(getCachedEngineGroupId())
+                        .dartEntrypoint(getDartEntrypointFunctionName())
+                        .initialRoute(getInitialRoute())
+                        .handleDeeplinking(shouldHandleDeeplinking())
+                        .renderMode(renderMode)
+                        .transparencyMode(transparencyMode)
+                        .shouldAttachEngineToActivity(shouldAttachEngineToActivity())
+                        .shouldDelayFirstAndroidViewDraw(shouldDelayFirstAndroidViewDraw)
+                        .build();
+            }
+
             return FlutterFragment.withNewEngine()
                     .dartEntrypoint(getDartEntrypointFunctionName())
+                    .dartLibraryUri(getDartEntrypointLibraryUri())
+                    .dartEntrypointArgs(getDartEntrypointArgs())
                     .initialRoute(getInitialRoute())
                     .appBundlePath(getAppBundlePath())
                     .flutterShellArgs(FlutterShellArgs.fromIntent(getIntent()))
@@ -508,6 +623,7 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     }
 
     @Override
+    @SuppressWarnings("MissingSuperCall")
     public void onBackPressed() {
         flutterFragment.onBackPressed();
     }
@@ -696,6 +812,44 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     }
 
     /**
+     * The Dart entrypoint arguments will be passed as a list of string to Dart's entrypoint function.
+     *
+     * <p>A value of null means do not pass any arguments to Dart's entrypoint function.
+     *
+     * <p>Subclasses may override this method to directly control the Dart entrypoint arguments.
+     */
+    @Nullable
+    public List<String> getDartEntrypointArgs() {
+        return (List<String>) getIntent().getSerializableExtra(EXTRA_DART_ENTRYPOINT_ARGS);
+    }
+
+    /**
+     * The Dart library URI for the entrypoint that will be executed as soon as the Dart snapshot is
+     * loaded.
+     *
+     * <p>Example value: "package:foo/bar.dart"
+     *
+     * <p>This preference can be controlled by setting a {@code <meta-data>} called {@link
+     * FlutterActivityLaunchConfigs#DART_ENTRYPOINT_URI_META_DATA_KEY} within the Android manifest
+     * definition for this {@code FlutterFragmentActivity}.
+     *
+     * <p>A value of null means use the default root library.
+     *
+     * <p>Subclasses may override this method to directly control the Dart entrypoint uri.
+     */
+    @Nullable
+    public String getDartEntrypointLibraryUri() {
+        try {
+            Bundle metaData = getMetaData();
+            String desiredDartLibraryUri =
+                    metaData != null ? metaData.getString(DART_ENTRYPOINT_URI_META_DATA_KEY) : null;
+            return desiredDartLibraryUri;
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+    }
+
+    /**
      * The initial route that a Flutter app will render upon loading and executing its Dart code.
      *
      * <p>This preference can be controlled with 2 methods:
@@ -743,6 +897,11 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     @Nullable
     protected String getCachedEngineId() {
         return getIntent().getStringExtra(EXTRA_CACHED_ENGINE_ID);
+    }
+
+    @Nullable
+    protected String getCachedEngineGroupId() {
+        return getIntent().getStringExtra(EXTRA_CACHED_ENGINE_GROUP_ID);
     }
 
     /**

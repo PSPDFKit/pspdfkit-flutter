@@ -1,11 +1,16 @@
 ## Newest Release
 
-### 3.7.1 - 18 Oct 2023
+### 3.7.2 - 12 Jan 2024
 
-- Fixed issue where iOS Appstore upload fails due to PSPDFKit Flutter missing "CFBundleShortVersionString" key. (#42166)
-- Fixed issue where Plugin returned "Document is missing or invalid" during pdfViewControllerWillDismiss events. (#42255)
+- Adds `flutterPdfFragmentAdded` callback for Android. (#42631)
+- Updates FlutterAppCompatActivity to Support Flutter 3.16.0. (#42767)
 
 ## Previous Releases
+
+### 3.7.1 - 18 Oct 2023
+
+- Fixes issue where iOS Appstore upload fails due to PSPDFKit Flutter missing "CFBundleShortVersionString" key. (#42166)
+- Fixes issue where Plugin returned "Document is missing or invalid" during pdfViewControllerWillDismiss events. (#42255)
 
 ### 3.7.0 - 07 Sep 2023
 

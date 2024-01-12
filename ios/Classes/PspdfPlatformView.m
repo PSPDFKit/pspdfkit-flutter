@@ -17,6 +17,7 @@
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
+@property (nonatomic) FlutterMethodChannel *broadcastChannel;
 @property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
@@ -29,10 +30,10 @@
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
+    
     if ((self = [super init])) {
-        NSString *name = [NSString stringWithFormat:@"com.pspdfkit.widget.%lld", viewId];
-        _platformViewId = viewId;
-        _channel = [FlutterMethodChannel methodChannelWithName:name binaryMessenger:messenger];
+        _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.pspdfkit.widget.%lld", viewId] binaryMessenger:messenger];
+        _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:messenger];
 
         _navigationController = [PSPDFNavigationController new];
         _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -64,6 +65,7 @@
             _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
             _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
             _pdfViewController.delegate = self;
+            [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
 
             if ((id)configurationDictionary != NSNull.null) {
                 NSString *key = @"leftBarButtonItems";
@@ -98,6 +100,17 @@
     }
 
     return self;
+}
+
+- (void)documentDidFinishRendering {
+    // Remove observer after the initial notification
+    [NSNotificationCenter.defaultCenter removeObserver:self 
+                                                  name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification
+                                                object:nil];
+    NSString *documentId = self.pdfViewController.document.UID;
+    if (documentId != nil) {
+        [_broadcastChannel invokeMethod:@"pspdfkitDocumentLoaded" arguments:documentId];
+    }
 }
 
 - (void)dealloc {
