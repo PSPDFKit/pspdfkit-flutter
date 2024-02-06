@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 class PlatformUtils {
   static bool isCurrentPlatformSupported() {
-    return defaultTargetPlatform == TargetPlatform.android ||
+    return kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS;
   }
 
@@ -17,6 +18,7 @@ class PlatformUtils {
 
   static bool isCupertino(BuildContext context) {
     final defaultTargetPlatform = Theme.of(context).platform;
+    if (kIsWeb) return false;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:

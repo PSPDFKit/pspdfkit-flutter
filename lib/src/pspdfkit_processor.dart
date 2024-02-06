@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -27,7 +27,7 @@ class PspdfkitProcessor {
     return _instance!;
   }
 
-  /// Generate PDF from Images, Templater, and Patterns.
+  /// Generate PDF from Images, Template, and Patterns.
   ///[pages]: [NewPage]s to be added to the PDF.
   ///[outputPath]: The path to the output file.
   /// Returns the path to the generated PDF path or null if the input is invalid or if the PDF generation fails.

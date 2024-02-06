@@ -1,10 +1,17 @@
+///
+///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///
+///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+///  This notice may not be removed from this file.
+///
+
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
@@ -37,48 +44,6 @@ class _PspdfkitInstantCollaborationExampleState
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  RichText(
-                      text: TextSpan(
-                          text: 'Scan the QR code from  ',
-                          style: const TextStyle(color: Colors.black),
-                          children: [
-                        TextSpan(
-                          text: 'https://web-examples.pspdfkit.com',
-                          style: const TextStyle(color: Colors.blue),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              // Open the URL in the browser.
-                              launchUrl(Uri.parse(
-                                  'https://web-examples.pspdfkit.com'));
-                            },
-                        ),
-                        const TextSpan(
-                          text: ' > Collaborate in Real-time - ',
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
-                        const TextSpan(
-                          text:
-                              'to connect to the document shown in your browser.',
-                          style: TextStyle(color: Colors.black),
-                        )
-                      ])),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push<String>(context,
-                            MaterialPageRoute<String>(builder: (context) {
-                          return const InstantBarcodeScanner();
-                        })).then(
-                            (value) => _loadDocument(scaffoldContext, value));
-                      },
-                      child: const Text('Scan QR code'),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                  ),
                   RichText(
                       text: TextSpan(
                           text: 'Copy the collaboration URL from ',
@@ -231,9 +196,8 @@ class _PspdfkitInstantCollaborationExampleState
 
       _getDocument(url).then((doc) async {
         Navigator.of(context).pop();
-        await Pspdfkit.presentInstant(doc.serverUrl, doc.jwt, {
-          enableInstantComments: enableComments,
-        });
+        await Pspdfkit.presentInstant(doc.serverUrl, doc.jwt,
+            PdfConfiguration(enableInstantComments: enableComments));
 
         await Pspdfkit.setDelayForSyncingLocalChanges(delayTime);
         await Pspdfkit.setListenToServerChanges(enableListenToServerChanges);
@@ -259,102 +223,6 @@ class _PspdfkitInstantCollaborationExampleState
     final data = json.decode(response.body) as Map<String, dynamic>;
     final document = InstantDocumentDescriptor.fromJson(data);
     return document;
-  }
-}
-
-class InstantBarcodeScanner extends StatefulWidget {
-  const InstantBarcodeScanner({Key? key}) : super(key: key);
-
-  @override
-  State<InstantBarcodeScanner> createState() => _InstantBarcodeScannerState();
-}
-
-class _InstantBarcodeScannerState extends State<InstantBarcodeScanner> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
-
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
-  @override
-  void reassemble() {
-    super.reassemble();
-    try {
-      if (Platform.isAndroid) {
-        controller?.resumeCamera();
-      } else if (Platform.isIOS) {
-        controller?.resumeCamera();
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            flex: 5,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Center(
-                child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: RichText(
-                  text: TextSpan(
-                      text: 'Scan the QR code from ',
-                      style: const TextStyle(color: Colors.black),
-                      children: [
-                    TextSpan(
-                      text: 'pspdfkit.com/instant/try',
-                      style: const TextStyle(color: Colors.blue),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          // Open the URL in the browser.
-                          launchUrl(
-                              Uri.parse('https://pspdfkit.com/instant/try'));
-                        },
-                    ),
-                    const TextSpan(
-                      text:
-                          ' to connect to the document shown in your browser.',
-                      style: TextStyle(color: Colors.black),
-                    )
-                  ])),
-            )),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    var counter = 0;
-    controller.scannedDataStream.listen((scanData) {
-      // Show the document in PSPDFKit.
-      if (counter == 0) {
-        counter++;
-        Navigator.pop(context, scanData.code);
-      }
-    });
-    try {
-      controller.resumeCamera();
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
   }
 }
 

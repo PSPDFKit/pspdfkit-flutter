@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,16 +11,16 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace 'com.pspdfkit.flutter.example'
-
+    
     compileSdkVersion androidCompileSdkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     defaultConfig {
-        multiDexEnabled true
+        compileSdk androidCompileSdkVersion
         applicationId "com.pspdfkit.flutter.example"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
@@ -35,7 +35,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.pspdfkit.flutter.example'
+
     lint {
         disable 'InvalidPackage', 'PSPDFKit-HandledConfigurationChanges-NoSupport'
     }

@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,21 +9,21 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 import 'utils/platform_utils.dart';
 
 class PspdfkitInstantJsonExampleWidget extends StatefulWidget {
   final String documentPath;
   final String instantJsonPath;
-  final dynamic configuration;
+  final String? xfaPath;
+  final PdfConfiguration? configuration;
 
   const PspdfkitInstantJsonExampleWidget({
     Key? key,
     required this.documentPath,
     required this.instantJsonPath,
+    required this.xfaPath,
     this.configuration,
   }) : super(key: key);
 
@@ -38,8 +38,11 @@ class _PspdfkitInstantJsonExampleWidgetState
 
   @override
   Widget build(BuildContext context) {
-    if (PlatformUtils.isIOS() || PlatformUtils.isAndroid()) {
+    if (PlatformUtils.isCurrentPlatformSupported()) {
       return Scaffold(
+          appBar: AppBar(
+            title: const Text('PSPDFKit Instant JSON Example'),
+          ),
           body: SafeArea(
               bottom: false,
               child: Column(children: <Widget>[
@@ -80,14 +83,34 @@ class _PspdfkitInstantJsonExampleWidgetState
                                         actions: [
                                           TextButton(
                                               onPressed: () {
-                                                Navigator.of(context).pop();
+                                                Navigator.of(context,
+                                                        rootNavigator: false)
+                                                    .pop();
                                               },
                                               child: const Text('OK'))
                                         ],
                                       ));
                             });
                           },
-                          child: const Text('Export Instant JSON'))
+                          child: const Text('Export Instant JSON')),
+
+                      // xfdf example:
+                      MaterialButton(
+                          onPressed: () async {
+                            if (widget.xfaPath == null) {
+                              return;
+                            }
+                            final xfdfString =
+                                await DefaultAssetBundle.of(context)
+                                    .loadString(widget.xfaPath!);
+                            await view.importXfdf(xfdfString);
+                          },
+                          child: const Text('Apply XFDF')),
+                      MaterialButton(
+                          onPressed: () async {
+                            await view.exportXfdf('xfdf_export.xfdf');
+                          },
+                          child: const Text('Export XFDF')),
                     ]))
               ])));
     } else {

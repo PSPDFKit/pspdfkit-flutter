@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -14,13 +14,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:pspdfkit_example/utils/platform_utils.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 
 class PspdfkitAnnotationProcessingExampleWidget extends StatefulWidget {
   final String documentPath;
   final String exportPath;
-  final dynamic configuration;
+  final PdfConfiguration? configuration;
 
   const PspdfkitAnnotationProcessingExampleWidget(
       {Key? key,

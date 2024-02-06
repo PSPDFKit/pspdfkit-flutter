@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2022-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2022-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -7,21 +7,18 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 import 'utils/platform_utils.dart';
 
 class PspdfkitManualSaveExampleWidget extends StatefulWidget {
   final String documentPath;
-  final dynamic configuration;
+  final PdfConfiguration configuration;
 
   const PspdfkitManualSaveExampleWidget(
-      {Key? key, required this.documentPath, this.configuration})
+      {Key? key, required this.documentPath, required this.configuration})
       : super(key: key);
 
   @override
@@ -43,9 +40,9 @@ class _PspdfkitManualSaveExampleWidgetState
               top: false,
               bottom: false,
               child: Container(
-                  padding: PlatformUtils.isIOS()
-                      ? null
-                      : const EdgeInsets.only(top: kToolbarHeight),
+                  padding: PlatformUtils.isAndroid()
+                      ? const EdgeInsets.only(top: kToolbarHeight)
+                      : null,
                   child: Column(children: <Widget>[
                     Expanded(
                       child: PspdfkitWidget(
@@ -69,9 +66,5 @@ class _PspdfkitManualSaveExampleWidgetState
       return Text(
           '$defaultTargetPlatform is not yet supported by PSPDFKit for Flutter.');
     }
-  }
-
-  Future<void> onPlatformViewCreated(int id) async {
-    pspdfkitWidgetController = PspdfkitWidgetController(id);
   }
 }

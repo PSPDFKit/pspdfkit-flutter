@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
@@ -11,6 +12,9 @@ Future<String> getOutputPath(String filename) async {
 
 Future<File> extractAsset(BuildContext context, String assetPath,
     {bool shouldOverwrite = true, String prefix = ''}) async {
+  if (kIsWeb) {
+    return File(assetPath);
+  }
   final bytes = await DefaultAssetBundle.of(context).load(assetPath);
   final list = bytes.buffer.asUint8List();
 

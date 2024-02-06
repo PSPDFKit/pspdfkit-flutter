@@ -90,3 +90,4 @@ unlinked_spec.ds
 /example/ios/Flutter/flutter_export_environment.sh
 /example/ios/Flutter/Flutter.podspec
 /example/.flutter-plugins-dependencies
+/example/web/assets/

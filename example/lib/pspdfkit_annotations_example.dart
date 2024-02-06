@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -8,8 +8,7 @@
 ///
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 import 'utils/platform_utils.dart';
 
@@ -101,7 +100,7 @@ const annotationJsonString = '''
 
 class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
   final String documentPath;
-  final dynamic configuration;
+  final PdfConfiguration? configuration;
 
   const PspdfkitAnnotationsExampleWidget(
       {Key? key, required this.documentPath, this.configuration})
@@ -126,9 +125,9 @@ class _PspdfkitAnnotationsExampleWidgetState
               top: false,
               bottom: false,
               child: Container(
-                  padding: PlatformUtils.isIOS()
-                      ? null
-                      : const EdgeInsets.only(top: kToolbarHeight),
+                  padding: PlatformUtils.isAndroid()
+                      ? const EdgeInsets.only(top: kToolbarHeight)
+                      : null,
                   child: Column(children: <Widget>[
                     Expanded(
                       child: PspdfkitWidget(
@@ -149,16 +148,6 @@ class _PspdfkitAnnotationsExampleWidgetState
                             // E.g: `await view.addAnnotation(annotationJsonString);`
                           },
                           child: const Text('Add Annotation')),
-                      if (PlatformUtils.isIOS())
-                        ElevatedButton(
-                            onPressed: () async {
-                              dynamic annotationsJson =
-                                  await view.getAnnotations(0, 'all');
-                              await view.removeAnnotation({
-                                'uuid': annotationsJson[0]['uuid'] as String
-                              });
-                            },
-                            child: const Text('Remove Annotation')),
                       ElevatedButton(
                           onPressed: () async {
                             const title = 'Annotation JSON';
@@ -203,7 +192,17 @@ class _PspdfkitAnnotationsExampleWidgetState
                                       ));
                             });
                           },
-                          child: const Text('Get All Unsaved Annotations'))
+                          child: const Text('Get All Unsaved Annotations')),
+                      if (PlatformUtils.isIOS() || kIsWeb)
+                        ElevatedButton(
+                            onPressed: () async {
+                              dynamic annotationsJson =
+                                  await view.getAnnotations(0, 'all');
+                              for (var annotation in annotationsJson) {
+                                await view.removeAnnotation(annotation);
+                              }
+                            },
+                            child: const Text('Remove Annotation')),
                     ]))
                   ]))));
     } else {

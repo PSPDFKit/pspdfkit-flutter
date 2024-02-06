@@ -453,9 +453,7 @@ internal class PSPDFKitView(
                 } catch (e: java.lang.Exception) {
                     result.error("AnnotationException", e.message, null)
                 }
-
             }
-
             else -> result.notImplemented()
         }
     }

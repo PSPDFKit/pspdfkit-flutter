@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2022-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2022-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -13,13 +13,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
+
 import 'utils/platform_utils.dart';
 
 class PspdfkitSaveAsExampleWidget extends StatefulWidget {
   final String documentPath;
-  final dynamic configuration;
+  final PdfConfiguration? configuration;
 
   const PspdfkitSaveAsExampleWidget(
       {Key? key, required this.documentPath, this.configuration})
@@ -50,9 +49,9 @@ class _PspdfkitSaveAsExampleWidgetState
               top: false,
               bottom: false,
               child: Container(
-                  padding: PlatformUtils.isIOS()
-                      ? null
-                      : const EdgeInsets.only(top: kToolbarHeight),
+                  padding: PlatformUtils.isAndroid()
+                      ? const EdgeInsets.only(top: kToolbarHeight)
+                      : null,
                   child: Column(children: <Widget>[
                     Expanded(
                         child: PspdfkitWidget(

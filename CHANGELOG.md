@@ -1,16 +1,28 @@
 ## Newest Release
 
+### 3.8.0 - 06 Feb 2024
+- Adds Flutter for Web support. (#42151)
+- Replaces configuration `Map` with a dedicated `PdfConfiguration` class. (#42191)
+- Deprecates imports for `package:pspdfkit_flutter/widgets/pspdfkit_widget.dart` and `package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart`.
+    Use `package:pspdfkit_flutter/pspdfkit.dart` instead. (#43254)
+- Updates for PSPDFKit 2024.1.0 for Android. (#43305)
+- Updates for PSPDFKit 13.3.0 for iOS. (#43305)
+- Compile SDK version 34 is now required on Android. (#43305) 
+
+## Previous Releases
+
 ### 3.7.2 - 12 Jan 2024
 
 - Adds `flutterPdfFragmentAdded` callback for Android. (#42631)
 - Updates FlutterAppCompatActivity to Support Flutter 3.16.0. (#42767)
 
-## Previous Releases
-
 ### 3.7.1 - 18 Oct 2023
 
 - Fixes issue where iOS Appstore upload fails due to PSPDFKit Flutter missing "CFBundleShortVersionString" key. (#42166)
 - Fixes issue where Plugin returned "Document is missing or invalid" during pdfViewControllerWillDismiss events. (#42255)
+- Upgrades compileSDKVersion to 34. (#42293)
+- Upgrades Android Gradle Plugin to 8.1.2. (#42293)
+- Upgrades to Java 17 for Android. (#42293)
 
 ### 3.7.0 - 07 Sep 2023
 

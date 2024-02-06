@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/widgets/pspdfkit_widget.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 class PspdfkitAnnotationPresetCustomization extends StatelessWidget {

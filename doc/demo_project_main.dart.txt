@@ -1,4 +1,4 @@
-///  Copyright © 2021-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2021-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -6,11 +6,10 @@
 ///  This notice may not be removed from this file.
 
 /// This is the main.dart code that should be copied into the demo project explained in `../README.md`.
-
 import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/src/main.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 const String DOCUMENT_PATH = 'PDFs/Document.pdf';
 
@@ -40,37 +39,36 @@ class _MyAppState extends State<MyApp> {
     // await Pspdfkit.setLicenseKey("YOUR_FLUTTER_LICENSE_KEY_GOES_HERE");
   }
 
-  void showDocument(BuildContext context) async {
-    final bytes = await DefaultAssetBundle.of(context).load(DOCUMENT_PATH);
+  Future<String> extractAsset(BuildContext context, String assetPath) async {
+    if (kIsWeb) {
+      return assetPath;
+    }
+    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
     final list = bytes.buffer.asUint8List();
-
     final tempDir = await Pspdfkit.getTemporaryDirectory();
-    final tempDocumentPath = '${tempDir.path}/$DOCUMENT_PATH';
-
-    final file = await File(tempDocumentPath).create(recursive: true);
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
+    final file = File(tempDocumentPath);
+    await file.create(recursive: true);
     file.writeAsBytesSync(list);
-
-    await Pspdfkit.present(tempDocumentPath);
+    return file.path;
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
     return MaterialApp(
       home: Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    child: Text('Tap to Open Document',
-                      style: themeData.textTheme.headline4?.copyWith(fontSize: 21.0)),
-                      onPressed: () => showDocument(context))
-                ]));
-          },
-        )),
+          body: FutureBuilder<String>(
+              future: extractAsset(context, DOCUMENT_PATH),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  /// PspdfkitWidget is a widget that displays a PDF document.
+                  return PspdfkitWidget(
+                    documentPath: snapshot.data!,
+                  );
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              })),
     );
   }
 }
