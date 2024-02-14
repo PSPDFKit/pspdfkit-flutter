@@ -222,117 +222,74 @@ class Pspdfkit {
   static Future<Directory> getTemporaryDirectory() =>
       PspdfkitFlutterPlatform.instance.getTemporaryDirectory();
 
-  /// onPause callback for FlutterPdfActivity
-  static void Function()? flutterPdfActivityOnPause;
+  /// onPause callback for FlutterPdfActivity. Only available on Android.
+  static set flutterPdfActivityOnPause(
+      VoidCallback? flutterPdfActivityOnPause) {
+    PspdfkitFlutterPlatform.instance.flutterPdfActivityOnPause =
+        flutterPdfActivityOnPause;
+  }
 
-  /// Added callback for FlutterPdfFragment
-  static void Function()? flutterPdfFragmentAdded;
+  /// called when a PdfFragment is added. Only available on Android.
+  static set flutterPdfFragmentAdded(VoidCallback? flutterPdfFragmentAdded) {
+    PspdfkitFlutterPlatform.instance.flutterPdfFragmentAdded =
+        flutterPdfFragmentAdded;
+  }
 
-  /// ViewControllerWillDismiss callback for PDFViewController
-  static void Function()? pdfViewControllerWillDismiss;
+  /// Called when a document is loaded.
+  static set pspdfkitDocumentLoaded(
+      PspdfkitDocumentLoadedCallback? pspdfkitDocumentLoaded) {
+    PspdfkitFlutterPlatform.instance.flutterPdfDocumentLoaded =
+        pspdfkitDocumentLoaded;
+  }
 
-  /// ViewControllerDidDismiss callback for PDFViewController
-  static void Function()? pdfViewControllerDidDismiss;
+  /// ViewControllerWillDismiss callback for PDFViewController. Only available on iOS.
+  static set pdfViewControllerWillDismiss(
+      VoidCallback? pdfViewControllerWillDismiss) {
+    PspdfkitFlutterPlatform.instance.pdfViewControllerWillDismiss =
+        pdfViewControllerWillDismiss;
+  }
+
+  /// ViewControllerDidDismiss callback for PDFViewController. Only available on iOS.
+  static set pdfViewControllerDidDismiss(VoidCallback? callback) {
+    PspdfkitFlutterPlatform.instance.pdfViewControllerDidDismiss = callback;
+  }
 
   /// Called when instant synchronization starts.
-  static void Function(String? documentId)? instantSyncStarted;
+  static set instantSyncStarted(InstantSyncStartedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantSyncStarted = callback;
+  }
 
   /// Called when instant synchronization ends.
-  static void Function(String? documentId)? instantSyncFinished;
+  static set instantSyncFinished(InstantSyncFinishedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantSyncFinished = callback;
+  }
 
   /// Called when instant synchronization fails.
-  static void Function(String? documentId, String? error)? instantSyncFailed;
+  static set instantSyncFailed(InstantSyncFailedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantSyncFailed = callback;
+  }
 
   /// Called when instant authentication is done.
-  static void Function(String documentId, String? validJWT)?
-      instantAuthenticationFinished;
+  static set instantAuthenticationFinished(
+      InstantAuthenticationFinishedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantAuthenticationFinished = callback;
+  }
 
   /// Called when instant authentication fails.
-  static void Function(String? documentId, String? error)?
-      instantAuthenticationFailed;
+  static set instantAuthenticationFailed(
+      InstantAuthenticationFailedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantAuthenticationFailed = callback;
+  }
 
-  /// Only available on iOS.
-  /// Called when instant document download is done.
-  static void Function(String? documentId)? instantDownloadFinished;
+  /// Called when instant document download is done.Only available on iOS.
+  static set instantDownloadFinished(
+      InstantDownloadFinishedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantDownloadFinished = callback;
+  }
 
-  /// Only available on iOS.
-  /// Called when instant document download fails.
-  static void Function(String? documentId, String? error)?
-      instantDownloadFailed;
-
-  /// Called with the document has been loaded
-  static void Function(String? documentId)? pspdfkitDocumentLoaded;
-
-  static Future<void> _platformCallHandler(MethodCall call) {
-    try {
-      switch (call.method) {
-        case 'flutterPdfActivityOnPause':
-          flutterPdfActivityOnPause?.call();
-          break;
-        case 'flutterPdfFragmentAdded':
-          flutterPdfFragmentAdded?.call();
-          break;
-        case 'pdfViewControllerWillDismiss':
-          pdfViewControllerWillDismiss?.call();
-          break;
-        case 'pdfViewControllerDidDismiss':
-          pdfViewControllerDidDismiss?.call();
-          break;
-        case 'pspdfkitInstantSyncStarted':
-          instantSyncStarted?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantSyncFinished':
-          instantSyncFinished?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantSyncFailed':
-          {
-            final Map<dynamic, dynamic> map =
-                call.arguments as Map<dynamic, dynamic>;
-            instantSyncFailed?.call(
-                map['documentId'] as String, map['error'] as String);
-            break;
-          }
-        case 'pspdfkitInstantAuthenticationFinished':
-          {
-            final Map<dynamic, dynamic> map =
-                call.arguments as Map<dynamic, dynamic>;
-            instantAuthenticationFinished?.call(
-                map['documentId'] as String, map['jwt'] as String);
-            break;
-          }
-        case 'pspdfkitInstantAuthenticationFailed':
-          {
-            final Map<dynamic, dynamic> arguments =
-                call.arguments as Map<dynamic, dynamic>;
-            instantAuthenticationFailed?.call(arguments['documentId'] as String,
-                arguments['error'] as String);
-            break;
-          }
-        case 'pspdfkitInstantDownloadFinished':
-          instantDownloadFinished?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantDownloadFailed':
-          {
-            final Map<dynamic, dynamic> arguments =
-                call.arguments as Map<dynamic, dynamic>;
-            instantDownloadFailed?.call(arguments['documentId'] as String,
-                arguments['error'] as String);
-            break;
-          }
-        case 'pspdfkitDocumentLoaded':
-          pspdfkitDocumentLoaded?.call(call.arguments as String);
-          break;
-        default:
-          if (kDebugMode) {
-            print('Unknown method ${call.method} ');
-          }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-    return Future.value();
+  /// Called when instant document download fails. Only available on iOS.
+  static set instantDownloadFailed(InstantDownloadFailedCallback? callback) {
+    PspdfkitFlutterPlatform.instance.instantDownloadFailed = callback;
   }
 }
 

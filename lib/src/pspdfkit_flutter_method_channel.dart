@@ -8,7 +8,6 @@
 ///
 ///
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
@@ -293,47 +292,58 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   }
 
   /// onPause callback for FlutterPdfActivity
+
   @override
-  void Function()? flutterPdfActivityOnPause;
+  set flutterPdfActivityOnPause(VoidCallback? flutterPdfActivityOnPause);
+
+  @override
+  set flutterPdfFragmentAdded(VoidCallback? flutterPdfFragmentAdded);
+
+  @override
+  set flutterPdfDocumentLoaded(
+      PspdfkitDocumentLoadedCallback? flutterPdfDocumentLoaded);
 
   /// ViewControllerWillDismiss callback for PDFViewController
   @override
-  void Function()? pdfViewControllerWillDismiss;
+  set pdfViewControllerWillDismiss(VoidCallback? pdfViewControllerWillDismiss);
 
   /// ViewControllerDidDismiss callback for PDFViewController
   @override
-  void Function()? pdfViewControllerDidDismiss;
+  set pdfViewControllerDidDismiss(VoidCallback? pdfViewControllerDidDismiss);
 
   /// Called when instant synchronization starts.
   @override
-  void Function(String? documentId)? instantSyncStarted;
+  set instantSyncStarted(InstantSyncStartedCallback? instantSyncStarted);
 
   /// Called when instant synchronization ends.
   @override
-  void Function(String? documentId)? instantSyncFinished;
+  set instantSyncFinished(InstantSyncFinishedCallback? instantSyncFinished);
 
   /// Called when instant synchronization fails.
   @override
-  void Function(String? documentId, String? error)? instantSyncFailed;
+  set instantSyncFailed(InstantSyncFailedCallback? instantSyncFailed);
 
   /// Called when instant authentication is done.
   @override
-  void Function(String documentId, String? validJWT)?
-      instantAuthenticationFinished;
+  set instantAuthenticationFinished(
+      InstantAuthenticationFinishedCallback? instantAuthenticationFinished);
 
   /// Called when instant authentication fails.
   @override
-  void Function(String? documentId, String? error)? instantAuthenticationFailed;
+  set instantAuthenticationFailed(
+      InstantAuthenticationFailedCallback? instantAuthenticationFailed);
 
   /// Only available on iOS.
   /// Called when instant document download is done.
   @override
-  void Function(String? documentId)? instantDownloadFinished;
+  set instantDownloadFinished(
+      InstantDownloadFinishedCallback? instantDownloadFinished);
 
   /// Only available on iOS.
   /// Called when instant document download fails.
   @override
-  void Function(String? documentId, String? error)? instantDownloadFailed;
+  set instantDownloadFailed(
+      InstantDownloadFailedCallback? instantDownloadFailed);
 
   Future<void> _platformCallHandler(MethodCall call) {
     try {

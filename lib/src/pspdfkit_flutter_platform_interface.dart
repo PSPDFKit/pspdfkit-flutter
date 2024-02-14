@@ -9,11 +9,23 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-
 import 'pspdfkit_flutter_method_channel.dart';
+
+typedef InstantSyncStartedCallback = void Function(String? documentId);
+typedef InstantSyncFinishedCallback = void Function(String? documentId);
+typedef InstantSyncFailedCallback = void Function(
+    String? documentId, String? error);
+typedef InstantAuthenticationFinishedCallback = void Function(
+    String documentId, String? validJWT);
+typedef InstantAuthenticationFailedCallback = void Function(
+    String? documentId, String? error);
+typedef InstantDownloadFinishedCallback = void Function(String? documentId);
+typedef InstantDownloadFailedCallback = void Function(
+    String? documentId, String? error);
+
+typedef PspdfkitDocumentLoadedCallback = void Function(String documentId);
 
 abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Constructs a PspdfkitFlutterPlatform.
@@ -161,37 +173,40 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   Future<Directory> getTemporaryDirectory();
 
   /// onPAuse callback for FlutterPdfActivity
-  void Function()? flutterPdfActivityOnPause;
+  VoidCallback? flutterPdfActivityOnPause;
+
+  VoidCallback? flutterPdfFragmentAdded;
+
+  PspdfkitDocumentLoadedCallback? flutterPdfDocumentLoaded;
 
   /// ViewControllerWillDismiss callback for PDFViewController
-  void Function()? pdfViewControllerWillDismiss;
+  VoidCallback? pdfViewControllerWillDismiss;
 
   /// ViewControllerDidDismiss callback for PDFViewController
-  void Function()? pdfViewControllerDidDismiss;
+  VoidCallback? pdfViewControllerDidDismiss;
 
   /// Called when instant synchronization starts.
-  void Function(String? documentId)? instantSyncStarted;
+  InstantSyncStartedCallback? instantSyncStarted;
 
   /// Called when instant synchronization ends.
-  void Function(String? documentId)? instantSyncFinished;
+  InstantSyncFinishedCallback? instantSyncFinished;
 
   /// Called when instant synchronization fails.
-  void Function(String? documentId, String? error)? instantSyncFailed;
+  InstantSyncFailedCallback? instantSyncFailed;
 
   /// Called when instant authentication is done.
-  void Function(String documentId, String? validJWT)?
-      instantAuthenticationFinished;
+  InstantAuthenticationFinishedCallback? instantAuthenticationFinished;
 
   /// Called when instant authentication fails.
-  void Function(String? documentId, String? error)? instantAuthenticationFailed;
+  InstantAuthenticationFailedCallback? instantAuthenticationFailed;
 
   /// Only available on iOS.
   /// Called when instant document download is done.
-  void Function(String? documentId)? instantDownloadFinished;
+  InstantDownloadFinishedCallback? instantDownloadFinished;
 
   /// Only available on iOS.
   /// Called when instant document download fails.
-  void Function(String? documentId, String? error)? instantDownloadFailed;
+  InstantDownloadFailedCallback? instantDownloadFailed;
 
   /// Gets the annotation author name.
   String get authorName;
@@ -199,85 +214,4 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Gets the default main toolbar [PspdfkitWebToolbarItem]s on Web.
   /// Returns an empty list when called on other platforms.
   List<PspdfkitWebToolbarItem> get defaultWebToolbarItems;
-
-  static AndroidPermissionStatus _intToAndroidPermissionStatus(int status) {
-    switch (status) {
-      case 0:
-        return AndroidPermissionStatus.notDetermined;
-      case 1:
-        return AndroidPermissionStatus.denied;
-      case 2:
-        return AndroidPermissionStatus.authorized;
-      case 3:
-        return AndroidPermissionStatus.deniedNeverAsk;
-      default:
-        return AndroidPermissionStatus.notDetermined;
-    }
-  }
-
-  Future<void> _platformCallHandler(MethodCall call) {
-    try {
-      switch (call.method) {
-        case 'flutterPdfActivityOnPause':
-          flutterPdfActivityOnPause?.call();
-          break;
-        case 'pdfViewControllerWillDismiss':
-          pdfViewControllerWillDismiss?.call();
-          break;
-        case 'pdfViewControllerDidDismiss':
-          pdfViewControllerDidDismiss?.call();
-          break;
-        case 'pspdfkitInstantSyncStarted':
-          instantSyncStarted?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantSyncFinished':
-          instantSyncFinished?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantSyncFailed':
-          {
-            final Map<dynamic, dynamic> map =
-                call.arguments as Map<dynamic, dynamic>;
-            instantSyncFailed?.call(
-                map['documentId'] as String, map['error'] as String);
-            break;
-          }
-        case 'pspdfkitInstantAuthenticationFinished':
-          {
-            final Map<dynamic, dynamic> map =
-                call.arguments as Map<dynamic, dynamic>;
-            instantAuthenticationFinished?.call(
-                map['documentId'] as String, map['jwt'] as String);
-            break;
-          }
-        case 'pspdfkitInstantAuthenticationFailed':
-          {
-            final Map<dynamic, dynamic> arguments =
-                call.arguments as Map<dynamic, dynamic>;
-            instantAuthenticationFailed?.call(arguments['documentId'] as String,
-                arguments['error'] as String);
-            break;
-          }
-        case 'pspdfkitInstantDownloadFinished':
-          instantDownloadFinished?.call(call.arguments as String);
-          break;
-        case 'pspdfkitInstantDownloadFailed':
-          {
-            final Map<dynamic, dynamic> arguments =
-                call.arguments as Map<dynamic, dynamic>;
-            instantDownloadFailed?.call(arguments['documentId'] as String,
-                arguments['error'] as String);
-            break;
-          }
-        default:
-          if (kDebugMode) {
-            print('Unknown method ${call.method} ');
-          }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-    return Future.value();
-  }
 }

@@ -39,6 +39,7 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
     
     override fun onDocumentLoaded(pdfDocument: PdfDocument) {
         super.onDocumentLoaded(pdfDocument)
+        EventDispatcher.getInstance().notifyDocumentLoaded(pdfDocument)
         val result = loadedDocumentResult.getAndSet(null)
         result?.success(true)
     }
