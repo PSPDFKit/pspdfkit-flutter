@@ -1,9 +1,15 @@
 ## Newest Release
 
-### 3.8.1 - 14 Feb 2024
-- Fixes callbacks when Pspdfkit.present() is used. (J#HYB-204)
+### 3.8.2 - 27 Feb 2024
+
+- Updates for PSPDFKit 13.3.1 for iOS. (#43550)
+- Fixes issue where PSPDFKit for Flutter does not work on web with Flutter SDK version 13.19.0 (J#HYB-216)
+- Fixes issue where annotation toolbar items are not being displayed on Web. (J#HYB-217)
 
 ## Previous Releases
+
+### 3.8.1 - 14 Feb 2024
+- Fixes callbacks when Pspdfkit.present() is used. (J#HYB-204)
 
 ### 3.8.0 - 06 Feb 2024
 - Adds Flutter for Web support. (#42151)

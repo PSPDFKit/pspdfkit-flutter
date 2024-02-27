@@ -9,7 +9,6 @@
 
 import 'package:flutter/services.dart';
 import '../../pspdfkit.dart';
-import 'pspdfkit_widget_controller.dart';
 
 /// A controller for a PSPDFKit widget for native platforms that use the [MethodChannel].
 class PspdfkitWidgetControllerNative implements PspdfkitWidgetController {

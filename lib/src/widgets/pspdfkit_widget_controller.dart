@@ -10,8 +10,6 @@ import '../../pspdfkit.dart';
 
 /// A controller for a PSPDFKit widget.
 abstract class PspdfkitWidgetController {
-  PspdfkitWidgetController(int id);
-
   /// Sets the value of a form field by specifying its fully qualified field name.
   Future<bool?> setFormFieldValue(String value, String fullyQualifiedName);
 

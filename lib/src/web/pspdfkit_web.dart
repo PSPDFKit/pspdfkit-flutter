@@ -7,13 +7,15 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'dart:html';
 import 'dart:js';
 import 'package:pspdfkit_flutter/src/web/models/pspdfkit_web_toolbar_item.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_configuration_helper.dart';
-
 import '../pdf_configuration.dart';
 import 'pspdfkit_web_utils.dart';
+
+const flutterWebProductId = 'FlutterForWeb';
 
 /// Provides access to PSPDFKit for web.
 ///
@@ -33,6 +35,7 @@ class PSPDFKitWeb {
       // Try to set the license key to confirm it is valid, then store it in local storage.
       var config = JsObject.jsify({
         'licenseKey': licenseKey,
+        'productId': flutterWebProductId,
       });
 
       await promiseToFuture(_pspdfkit.callMethod('preloadWorker', [config]))
@@ -48,7 +51,7 @@ class PSPDFKitWeb {
   ///
   /// The [documentPath] parameter specifies the path to the document that will be loaded.
   ///
-  /// The [id] parameter is used to identify the container element in which the PSPDFKit instance will be rendered.
+  /// The [element] parameter is used to identify the container element in which the PSPDFKit instance will be rendered.
   ///
   /// The [configuration] parameter is an optional configuration object that can be used to customize the behavior of PSPDFKit.
   ///
@@ -68,10 +71,10 @@ class PSPDFKitWeb {
   ///
   /// // Use the instance to interact with the document.
   /// ```
-  static Future<PspdfkitWebInstance> load(
-      String documentPath, int id, PdfConfiguration? configuration) async {
+  static Future<PspdfkitWebInstance> load(String documentPath, Element element,
+      PdfConfiguration? configuration) async {
     var webConfiguration = WebConfigurationHelper.populateWebConfiguration(
-      id,
+      element,
       documentPath,
       _pspdfkitLicenseKey,
       configuration,

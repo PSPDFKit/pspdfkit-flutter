@@ -9,15 +9,13 @@
 library pspdfkit_widget_web;
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:html' as html;
 import 'dart:ui_web' as ui;
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 import '../web/pspdfkit_web.dart';
-import 'pspdfkit_widget_controller.dart';
 import 'pspdfkit_widget_controller_web.dart';
 
 typedef PspdfkitWidgetCreatedCallback = void Function(
@@ -48,17 +46,23 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   Widget build(BuildContext context) {
     ui.platformViewRegistry.registerViewFactory('pspdfkit-widget',
         (int viewId) {
-      return DivElement()..id = 'pspdfkit-$viewId';
+      return html.DivElement()..id = 'pspdfkit-$viewId';
     });
     return HtmlElementView(
         viewType: 'pspdfkit-widget',
         onPlatformViewCreated: (int id) {
-          _onPlatformViewCreated(id);
+          // Elements are no longer available when onPlatformViewCreated is called.
+          // Therefore we need to pass the element to the PSPDFKit.load method instead of the id.
+          // See this GH issue for more details: https://github.com/flutter/flutter/issues/143922#issuecomment-1960133128
+          var div = (ui.platformViewRegistry.getViewById(id) as html.Element)
+            ..style.width = '100%'
+            ..style.height = '100%';
+          _onPlatformViewCreated(div);
         });
   }
 
   /// Load the document and create the PSPDFKit instance.
-  Future<void> _onPlatformViewCreated(int id) async {
+  Future<void> _onPlatformViewCreated(html.Element id) async {
     // Prepare the configuration object.
     // Only pass the configuration if it is a PdfConfiguration.
     PdfConfiguration? configuration;
@@ -73,13 +77,15 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     } else {
       configuration = null;
     }
-
-    await PSPDFKitWeb.load(widget.documentPath, id, configuration)
-        .then((value) {
-      var controller = PspdfkitWidgetControllerWeb(id, value);
-      widget.onPspdfkitWidgetCreated?.call(controller);
-    }).catchError((error) {
-      throw Exception('Failed to load: $error');
+    // Adding a delay to ensure that the view is properly registered before we try to create the PSPDFKit instance.
+    Future.delayed(const Duration(milliseconds: 10), () async {
+      await PSPDFKitWeb.load(widget.documentPath, id, configuration)
+          .then((value) {
+        var controller = PspdfkitWidgetControllerWeb(value);
+        widget.onPspdfkitWidgetCreated?.call(controller);
+      }).catchError((error) {
+        throw Exception('Failed to load: $error');
+      });
     });
   }
 }

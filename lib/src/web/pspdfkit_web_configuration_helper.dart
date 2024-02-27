@@ -7,10 +7,11 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'dart:html';
 import 'dart:js';
-import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
-
 import '../../pspdfkit.dart';
+import 'pspdfkit_web.dart';
+import 'pspdfkit_web_utils.dart';
 
 /// This is a utility class used to convert a [PdfConfiguration] to a [PSPDFKit.Configuration](https://pspdfkit.com/api/web/PSPDFKit.Configuration.html) JsObject for Web.
 /// It is used in [PSPDFKitWeb.load]. This class isolates the js interop code from the rest of the plugin.
@@ -28,7 +29,7 @@ class WebConfigurationHelper {
   ///
   /// Returns a [PSPDFKit.Configuration](https://pspdfkit.com/api/web/PSPDFKit.Configuration.html) JsObject.
   static JsObject populateWebConfiguration(
-    int id,
+    Element element,
     String documentPath,
     String? licenseKey,
     PdfConfiguration? configuration,
@@ -94,7 +95,11 @@ class WebConfigurationHelper {
 
       // Return a list of new annotation toolbar items.
       return JsObject.jsify(
-          newAnnotationToolbarItems?.map((e) => e.toJsObject()).toList() ?? []);
+          newAnnotationToolbarItems?.map((e) => e.toJsObject()).toList() ??
+              [
+                ...callbackOptions.defaultAnnotationToolbarItems
+                    .map((e) => e.toJsObject())
+              ]);
     }
 
     // Remove the annotation toolbar items from the configuration.
@@ -104,7 +109,8 @@ class WebConfigurationHelper {
     var map = <String, dynamic>{
       'document': documentPath,
       'licenseKey': licenseKey,
-      'container': '#pspdfkit-$id',
+      'productId': flutterWebProductId,
+      'container': element,
       'initialViewState': initialViewState,
       'password': configuration?.password,
       'editableAnnotationTypes': configuration?.editableAnnotationTypes,

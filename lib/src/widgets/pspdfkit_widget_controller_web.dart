@@ -16,7 +16,7 @@ import 'pspdfkit_widget_controller.dart';
 class PspdfkitWidgetControllerWeb implements PspdfkitWidgetController {
   final PspdfkitWebInstance pspdfkitInstance;
 
-  PspdfkitWidgetControllerWeb(int id, this.pspdfkitInstance);
+  PspdfkitWidgetControllerWeb(this.pspdfkitInstance);
 
   @override
   Future<dynamic> getAnnotations(int pageIndex, String type) async {
