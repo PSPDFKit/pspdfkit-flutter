@@ -1,3 +1,7 @@
+import 'package:flutter/rendering.dart';
+
+import 'processor.dart';
+
 ///
 ///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
@@ -7,7 +11,6 @@
 ///  This notice may not be removed from this file.
 ///
 ///
-part of pspdfkit;
 
 /// Represents a new PDF page of any type.
 class NewPage {

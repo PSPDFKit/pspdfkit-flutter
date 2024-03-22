@@ -7,6 +7,7 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitPlugin.h"
+#include <Foundation/Foundation.h>
 #import "PspdfPlatformViewFactory.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
@@ -47,7 +48,6 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
     }else if ([@"present" isEqualToString:call.method]) {
         
         NSString *documentPath = call.arguments[@"document"];
-
         if (documentPath == nil || documentPath.length <= 0) {
             FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document path may not be nil or empty." details:nil];
             result(error);
@@ -55,35 +55,27 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         }
         
         NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:call.arguments[@"configuration"]];
-        
         PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
         if (document == nil) {
             FlutterError *error = [FlutterError errorWithCode:@"" message:@"Document is missing or invalid." details:nil];
             result(error);
             return;
         }
-        NSDictionary *measurementScale = call.arguments[@"measurementScale"];
-        if (measurementScale){
-            PSPDFMeasurementScale *scale = [PspdfkitMeasurementConvertor convertScaleWithMeasurement:measurementScale];
-            if (scale != nil) {
-                document.measurementScale = scale;
-            }
-        }
-        
-        NSString *measurementPrecision = call.arguments[@"measurementPrecision"];
-        
-        if (measurementPrecision){
-            PSPDFMeasurementPrecision precision = [PspdfkitMeasurementConvertor convertPrecisionWithPrecision:measurementPrecision];
-            document.measurementPrecision = precision;
-        }
-       
+
         [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
-        
         BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
         PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
         
         self.pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
         [self setupViewController:configurationDictionary result:result];
+        
+        // Set measurementsvalue configuration
+        NSArray *measurementsValue = configurationDictionary[@"measurementValueConfigurations"];
+        if (measurementsValue != nil) {
+           for (NSDictionary *measurementValue in measurementsValue) {
+             [ PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
+           }
+        }
 
     }else if([@"presentInstant" isEqualToString:call.method]){
         NSString *jwt = call.arguments[@"jwt"];
@@ -123,6 +115,14 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 
         self.pdfViewController = instantViewController;
         [self setupViewController:configurationDictionary result:result];
+
+        // Set measurementsvalue configuration
+        NSArray *measurementsValue = configurationDictionary[@"measurementValueConfigurations"];
+        if (measurementsValue != nil) {
+           for (NSDictionary *measurementValue in measurementsValue) {
+             [ PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
+           }
+        }
         
     } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
         result([self getTemporaryDirectory]);

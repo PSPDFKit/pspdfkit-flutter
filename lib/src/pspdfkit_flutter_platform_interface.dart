@@ -64,7 +64,9 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Loads a [document] with a supported format using a given [configuration].
   Future<bool?> present(String document,
       {dynamic configuration,
+      @Deprecated('Use setMeasurementConfiguration instead.')
       MeasurementScale? measurementScale,
+      @Deprecated('Use setMeasurementConfiguration instead.')
       MeasurementPrecision? measurementPrecision});
 
   /// Loads an Instant document from a server [serverUrl] with using a[jwt] in a native Instant PDFViewer.
@@ -128,20 +130,6 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
 
   /// Manually triggers synchronisation.
   Future<bool?> syncAnnotations();
-
-  /// Sets the measurement scale of the document.
-  /// The scale is used to convert between real world measurements and points.
-  /// The default scale is 1 inch = 1 inch.
-  /// @param scale The scale to be used for the document.
-  /// @return True if the scale was set successfully, false otherwise.
-  Future<bool?> setMeasurementScale(MeasurementScale scale);
-
-  /// Sets the measurement precision of the document.
-  /// The precision is used to round the measurement values.
-  /// The default precision is 2 decimal places.
-  /// @param precision The precision to be used for the document.
-  /// @return True if the precision was set successfully, false otherwise.
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision);
 
   /// Checks the external storage permission for writing on Android only.
   Future<bool?> checkAndroidWriteExternalStoragePermission();

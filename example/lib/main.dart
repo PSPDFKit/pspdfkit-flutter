@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/examples.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-
 import 'example_list_view.dart';
 
 const String _pspdfkitFlutterPluginTitle =
@@ -85,9 +84,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     // "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE");
     //
     // To set the license key for the currently running platform, use:
-    // await Pspdfkit.setLicenseKey("YOUR_FLUTTER_LICENSE_KEY_GOES_HERE");
-
-    // Pspdfkit.setLicenseKeys(null, null, webLicense);
+    await Pspdfkit.setLicenseKey('');
 
     String? frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.

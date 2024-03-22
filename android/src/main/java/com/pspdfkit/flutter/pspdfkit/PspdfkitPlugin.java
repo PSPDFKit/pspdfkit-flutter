@@ -16,9 +16,12 @@ import static com.pspdfkit.flutter.pspdfkit.util.Utilities.areValidIndexes;
 import static com.pspdfkit.flutter.pspdfkit.util.Utilities.isImageDocument;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -31,8 +34,6 @@ import androidx.fragment.app.FragmentActivity;
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
-import com.pspdfkit.annotations.measurements.MeasurementPrecision;
-import com.pspdfkit.annotations.measurements.Scale;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
 import com.pspdfkit.exceptions.PSPDFKitException;
@@ -45,6 +46,7 @@ import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.instant.document.InstantPdfDocument;
 import com.pspdfkit.instant.ui.InstantPdfActivityIntentBuilder;
+import com.pspdfkit.listeners.SimpleDocumentListener;
 import com.pspdfkit.ui.PdfActivity;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
 import com.pspdfkit.ui.PdfFragment;
@@ -81,7 +83,7 @@ public class PspdfkitPlugin
         MethodCallHandler,
         PluginRegistry.RequestPermissionsResultListener,
         FlutterPlugin,
-        ActivityAware {
+        ActivityAware, Application.ActivityLifecycleCallbacks {
     @NonNull
     private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
@@ -108,6 +110,9 @@ public class PspdfkitPlugin
      * Holds the disposables.
      */
     private Disposable disposable;
+
+    @Nullable
+    private List<Map<String,Object>> measurementValueConfigurations;
 
     /**
      * This {@code FlutterPlugin} has been associated with a {@link FlutterEngine} instance.
@@ -173,49 +178,32 @@ public class PspdfkitPlugin
                 break;
             case "setLicenseKey":
                 String licenseKey = call.argument("licenseKey");
-                requireNotNullNotEmpty(licenseKey, "License key");
-                try {
-                    PSPDFKit.initialize(
-                            activity,
-                            licenseKey,
-                            new ArrayList<>(),
-                            HYBRID_TECHNOLOGY
-                    );
-                } catch (PSPDFKitException e) {
-                    result.error("PSPDFKitException", e.getMessage(), null);
-                }
+                setLicenseKey(activity, licenseKey);
                 break;
             case "setLicenseKeys":
-                String androidLicenseKey = call.argument("androidLicenseKey");
-                requireNotNullNotEmpty(androidLicenseKey, "Android License key");
-                try {
-                    PSPDFKit.initialize(
-                            activity,
-                            androidLicenseKey,
-                            new ArrayList<>(),
-                            HYBRID_TECHNOLOGY
-                    );
-                } catch (PSPDFKitException e) {
-                    result.error("PSPDFKitException", e.getMessage(), null);
-                }
+                 String androidLicenseKey = call.argument("androidLicenseKey");
+                setLicenseKey(activity, androidLicenseKey);
                 break;
             case "present":
                 String documentPath = call.argument("document");
                 requireNotNullNotEmpty(documentPath, "Document path");
+                documentPath = addFileSchemeIfMissing(documentPath);
+
                 HashMap<String, Object> configurationMap = call.argument(
                         "configuration"
                 );
-                Map<String, Object> measurementScale = call.argument("measurementScale");
-                String measurementPrecision = call.argument("measurementPrecision");
                 ConfigurationAdapter configurationAdapter = new ConfigurationAdapter(
                         activity,
                         configurationMap
                 );
+
+                measurementValueConfigurations = (List<Map<String, Object>>)
+                        (configurationMap != null ? configurationMap.get("measurementValueConfigurations") : null);
+
+                activity.getApplication().registerActivityLifecycleCallbacks(this);
+
                 documentPath = addFileSchemeIfMissing(documentPath);
                 FlutterPdfActivity.setLoadedDocumentResult(result);
-                FlutterPdfActivity.setFloatPrecision(MeasurementHelper.convertPrecision(measurementPrecision));
-                FlutterPdfActivity.setMeasurementScale(MeasurementHelper.convertScale(measurementScale));
-
                 boolean imageDocument = isImageDocument(documentPath);
                 Intent intent;
                 if (imageDocument) {
@@ -234,7 +222,6 @@ public class PspdfkitPlugin
                                     .passwords(configurationAdapter.getPassword())
                                     .build();
                 }
-
                 activity.startActivity(intent);
                 break;
             case "presentInstant":
@@ -252,8 +239,11 @@ public class PspdfkitPlugin
                         activity,
                         configurationMapInstant
                 );
+                final  List<Map<String,Object>> measurementValueConfigurationsInstant = call.argument("measurementValueConfigurations");
 
                 FlutterInstantPdfActivity.setLoadedDocumentResult(result);
+                FlutterInstantPdfActivity.setMeasurementValueConfigurations(measurementValueConfigurationsInstant);
+
                 final List<AnnotationTool> annotationTools = configurationAdapterInstant.build().getConfiguration().getEnabledAnnotationTools();
 
                 annotationTools.add(AnnotationTool.INSTANT_COMMENT_MARKER);
@@ -578,36 +568,67 @@ public class PspdfkitPlugin
                 }
                 break;
             }
-            case "setMeasurementScale": {
+            case "addMeasurementValueConfiguration" : {
                 try {
-                    Map<String, Object> scale = call.argument("measurementScale");
-                    document = requireDocumentNotNull(getCurrentActivity(), "Pspdfkit.setMeasurementScale()");
-                    Scale mScale = MeasurementHelper.convertScale(scale);
-                    if (mScale == null) {
-                        result.error("InvalidArgument", "Scale must be a valid scale", null);
+                    Map<String, Object> configuration = call.argument("measurementValueConfiguration");
+                    if (configuration == null) {
+                        result.error("PSPDFKitMeasurementException", "Invalid measurement configuration", null);
                         return;
                     }
-                    document.setMeasurementScale(mScale);
-                    result.success(true);
+                    if (getCurrentActivity().getPdfFragment() == null) {
+                        result.error("PSPDFKitMeasurementException", "PdfFragment is null", null);
+                        return;
+                    }
+                    MeasurementHelper.addMeasurementConfiguration(getCurrentActivity().getPdfFragment(), configuration);
                 } catch (Exception e) {
-                    result.error("MeasurementException", e.getMessage(), null);
+                    result.error("PSPDFKitMeasurementException", e.getMessage(), null);
                 }
                 break;
             }
-            case "setMeasurementPrecision": {
+            case "getMeasurementValueConfiguration" :{
                 try {
-                    String precision = call.argument("measurementPrecision");
-                    document = requireDocumentNotNull(getCurrentActivity(), "Pspdfkit.setMeasurementPrecision()");
-                    MeasurementPrecision mPrecision = MeasurementHelper.convertPrecision(precision);
-
-                    if (mPrecision == null) {
-                        result.error("InvalidArgument", "Precision must be a valid precision", null);
+                    if (getCurrentActivity().getPdfFragment() == null) {
+                        result.error("PSPDFKitMeasurementException", "PdfFragment is null", null);
                         return;
                     }
-                    document.setMeasurementPrecision(mPrecision);
-                    result.success(true);
+                    List<Map<String, Object>> measurementConfigurations = MeasurementHelper.getMeasurementConfigurations(getCurrentActivity().getPdfFragment());
+                    result.success(measurementConfigurations);
                 } catch (Exception e) {
-                    result.error("MeasurementException", e.getMessage(), null);
+                    result.error("PSPDFKitMeasurementException", e.getMessage(), null);
+                }
+                break;
+            }
+             case  "modifyMeasurementValueConfiguration" : {
+                try {
+                    Map<String, Object> args = call.argument("payload");
+                    if (args == null) {
+                        result.error("PSPDFKitMeasurementException", "Invalid measurement configuration", null);
+                        return;
+                    }
+                    if (getCurrentActivity().getPdfFragment() == null) {
+                        result.error("PSPDFKitMeasurementException", "PdfFragment is null", null);
+                        return;
+                    }
+                    MeasurementHelper.modifyMeasurementConfiguration(getCurrentActivity().getPdfFragment(), args);
+                } catch (Exception e) {
+                    result.error("PSPDFKitMeasurementException", e.getMessage(), null);
+                }
+                break;
+            }
+            case "removeMeasurementValueConfiguration" : {
+                try {
+                    Map<String, Object> configuration = call.argument("payload");
+                    if (configuration == null) {
+                        result.error("PSPDFKitMeasurementException", "Invalid measurement configuration", null);
+                        return;
+                    }
+                    if (getCurrentActivity().getPdfFragment() == null) {
+                        result.error("PSPDFKitMeasurementException", "PdfFragment is null", null);
+                        return;
+                    }
+                    MeasurementHelper.removeMeasurementConfiguration(getCurrentActivity().getPdfFragment(), configuration);
+                } catch (Exception e) {
+                    result.error("PSPDFKitMeasurementException", e.getMessage(), null);
                 }
                 break;
             }
@@ -639,6 +660,19 @@ public class PspdfkitPlugin
             default:
                 result.notImplemented();
                 break;
+        }
+    }
+
+    private void setLicenseKey(@NonNull final FragmentActivity activity, @Nullable final String licenseKey) {
+        try {
+            PSPDFKit.initialize(
+                    activity,
+                    licenseKey,
+                    new ArrayList<>(),
+                    HYBRID_TECHNOLOGY
+            );
+        } catch (PSPDFKitException e) {
+            throw new IllegalStateException("Error while setting license key", e);
         }
     }
 
@@ -796,5 +830,56 @@ public class PspdfkitPlugin
             activityPluginBinding.removeRequestPermissionsResultListener(this);
             activityPluginBinding = null;
         }
+    }
+
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+        if (activity instanceof FlutterPdfActivity) {
+            PdfFragment pdfFragment = ((FlutterPdfActivity) activity).getPdfFragment();
+            if (pdfFragment == null) {
+                return;
+            }
+            pdfFragment.addDocumentListener(new SimpleDocumentListener(){
+                @Override
+                public void onDocumentLoaded(@NonNull PdfDocument document) {
+                    super.onDocumentLoaded(document);
+                    if (measurementValueConfigurations != null) {
+                        for (Map<String, Object> configuration : measurementValueConfigurations) {
+                            MeasurementHelper.addMeasurementConfiguration(pdfFragment, configuration);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+
     }
 }

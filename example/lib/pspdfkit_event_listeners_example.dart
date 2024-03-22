@@ -32,6 +32,12 @@ class PspdfkitEventListenerExample extends StatelessWidget {
                 content: Text('Annotation focused: $event'),
               ));
             });
+            controller.addEventListener('viewState.currentPageIndex.change',
+                (pageIndex) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('View state changed: $pageIndex'),
+              ));
+            });
           }),
     );
   }

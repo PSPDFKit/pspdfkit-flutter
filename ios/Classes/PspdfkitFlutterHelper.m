@@ -156,45 +156,6 @@
             message:@"syncAnnotations can only be called on Instant document"
             details:nil]);
         }
-    } else if ([@"setMeasurementScale" isEqualToString:call.method]){
-       
-        PSPDFDocument *document = pdfViewController.document;
-        
-        if (!document || !document.isValid) {
-            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
-            return;
-        }
-        
-        NSDictionary *scale  = call.arguments[@"measurementScale"];
-        PSPDFMeasurementScale *measurementScale = [PspdfkitMeasurementConvertor convertScaleWithMeasurement:scale];
-     
-        if(!measurementScale){
-            result([FlutterError errorWithCode:@"" message:@"Measurement scale is invalid." details:nil]);
-            return;
-        }
-        
-        document.measurementScale = measurementScale;
-        
-    } else if ([@"setMeasurementPrecision" isEqualToString:call.method]){
-        
-        PSPDFDocument *document = pdfViewController.document;
-        
-        if (!document || !document.isValid) {
-            result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
-            return;
-        }
-        
-        NSString *precision  = call.arguments[@"measurementPrecision"];
-        
-        PSPDFMeasurementPrecision measurementPrecision = [PspdfkitMeasurementConvertor convertPrecisionWithPrecision:precision];
-        
-        if(!measurementPrecision){
-            result([FlutterError errorWithCode:@"" message:@"Measurement precision is invalid." details:nil]);
-            return;
-        }
-        
-        document.measurementPrecision = measurementPrecision;
-        
     }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
         [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
         result(nil);

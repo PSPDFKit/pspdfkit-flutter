@@ -10,6 +10,7 @@ package com.pspdfkit.flutter.pspdfkit
 
 import android.os.Bundle
 import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.instant.document.InstantPdfDocument
 import com.pspdfkit.instant.exceptions.InstantException
 import com.pspdfkit.instant.ui.InstantPdfActivity
@@ -21,6 +22,8 @@ import java.util.concurrent.atomic.AtomicReference
  * activity.
  */
 class FlutterInstantPdfActivity : InstantPdfActivity() {
+
+
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
         bindActivity()
@@ -41,6 +44,11 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
         super.onDocumentLoaded(pdfDocument)
         val result = loadedDocumentResult.getAndSet(null)
         result?.success(true)
+        measurementValueConfigurations?.forEach {
+            pdfFragment.let { fragment ->
+                MeasurementHelper.addMeasurementConfiguration(fragment, it)
+            }
+        }
     }
 
     override fun onDocumentLoadFailed(throwable: Throwable) {
@@ -99,6 +107,7 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
     }
 
     companion object {
+        private  var measurementValueConfigurations:List<Map<String,Any>>? = null
 
         @JvmStatic
         var currentActivity: FlutterInstantPdfActivity? = null
@@ -110,5 +119,12 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
         fun setLoadedDocumentResult(result: MethodChannel.Result?) {
             loadedDocumentResult.set(result)
         }
+
+        @JvmStatic
+        fun setMeasurementValueConfigurations(configurations: List<Map<String, Any>>?) {
+            measurementValueConfigurations = configurations
+        }
     }
+
+
 }

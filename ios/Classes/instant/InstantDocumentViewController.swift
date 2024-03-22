@@ -34,7 +34,7 @@ public class InstantDocumentViewController: InstantViewController {
         // Store document info for sharing later.
         self.documentInfo = documentInfo
 
-        // Tell Instant to download the document from Web examples server’s PSPDFKit Server instance.
+        // Tell Instant to download the document from Web examples server’s PSPDFKit Document Engine instance.
         do {
             try documentDescriptor.download(usingJWT: documentInfo.jwt)
         } catch InstantError.alreadyDownloaded {

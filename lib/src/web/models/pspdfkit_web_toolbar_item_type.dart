@@ -53,7 +53,8 @@ enum PspdfkitWebToolbarItemType {
   multiAnnotationsSelection,
   callout,
   responsiveGroup,
-  custom
+  custom,
+  measurements
 }
 
 extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
@@ -151,6 +152,8 @@ extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
         return 'responsive-group';
       case PspdfkitWebToolbarItemType.custom:
         return 'custom';
+      case PspdfkitWebToolbarItemType.measurements:
+        return 'measure';
     }
   }
 }

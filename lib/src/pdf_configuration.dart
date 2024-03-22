@@ -5,6 +5,7 @@
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
+///
 
 import '../pspdfkit.dart';
 
@@ -47,7 +48,7 @@ class PdfConfiguration {
   /// Sets the password to unlock the document.
   final String? password;
 
-  /// Sets whether to show the document in grayscale. Defaults to false.
+  /// Sets whether to show the document in gray scale. Defaults to false.
   final bool? androidGrayScale;
 
   /// User Interface Options
@@ -146,17 +147,23 @@ class PdfConfiguration {
   /// Sets the toolbar menu items. Defaults to null.
   final List<PspdfkitToolbarMenuItems>? toolbarMenuItems;
 
-  /// Sets the measurement precision. Defaults to null.
+  /// Sets the measurement configuration. Defaults to null.
   /// This feature requires a Measurement license.
-  final MeasurementPrecision? measurementPrecision;
-
-  /// Sets the measurement scale. Defaults to null.
-  /// This feature requires a Measurement license.
-  final MeasurementScale? measurementScale;
+  /// See [MeasurementConfiguration] for more information.
+  final List<MeasurementValueConfiguration>? measurementValueConfigurations;
 
   /// Sets whether to enable measurement snapping. Defaults to true.
   /// This feature requires a Measurement license.
   final bool? measurementSnappingEnabled;
+
+  /// Sets whether to enable the measurement magnifier. Defaults to true.
+  /// This feature requires a Measurement license.
+  final bool? enableMagnifier;
+
+  final bool? enableMeasurementTools;
+  // Set grouping for annotation toolbar items.
+  // The list must contain only AnnotationToolsGroup and AnnotationTool.
+  final List<dynamic>? annotationToolsGrouping;
 
   PdfConfiguration(
       {this.scrollDirection,
@@ -199,9 +206,11 @@ class PdfConfiguration {
       this.webConfiguration,
       this.editableAnnotationTypes,
       this.toolbarMenuItems,
-      this.measurementPrecision,
-      this.measurementScale,
-      this.measurementSnappingEnabled});
+      this.enableMeasurementTools,
+      this.measurementSnappingEnabled,
+      this.enableMagnifier,
+      this.measurementValueConfigurations,
+      this.annotationToolsGrouping});
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
   /// This is used to pass the configuration to the platform side.
@@ -244,6 +253,25 @@ class PdfConfiguration {
       'enableAnnotationEditing': enableAnnotationEditing,
       'androidShowAnnotationListAction': androidShowAnnotationListAction,
       'enableInstantComments': enableInstantComments,
+      'enableMeasurementTools': enableMeasurementTools,
+      'enableMeasurementToolSnapping': measurementSnappingEnabled,
+      'enableMagnifier': enableMagnifier,
+      'measurementValueConfigurations':
+          measurementValueConfigurations?.map((e) => e.toMap()).toList(),
+      'toolbarItemGrouping': convertAnnotationToolsGrouping()
     }..removeWhere((key, value) => value == null);
+  }
+
+  dynamic convertAnnotationToolsGrouping() {
+    if (annotationToolsGrouping == null) {
+      return null;
+    }
+    return annotationToolsGrouping!
+        .map((e) => e is AnnotationToolsGroup
+            ? e.toMap()
+            : e is AnnotationToolbarItem
+                ? e.name
+                : null)
+        .toList();
   }
 }

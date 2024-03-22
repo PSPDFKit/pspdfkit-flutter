@@ -7,8 +7,6 @@
 ///  This notice may not be removed from this file.
 ///
 
-part of pspdfkit;
-
 /// PDF page from page pattern or a pattern tiled document page.
 class PagePattern {
   final String? pattern;

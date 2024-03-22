@@ -1,5 +1,3 @@
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-
 ///  Copyright © 2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
@@ -470,23 +468,6 @@ extension WebToolbarPlacement on PspdfKitToolbarPlacement {
         return 'TOP';
       case PspdfKitToolbarPlacement.bottom:
         return 'BOTTOM';
-      default:
-        return null;
-    }
-  }
-}
-
-extension WebPrecision on MeasurementPrecision {
-  String? get webName {
-    switch (this) {
-      case MeasurementPrecision.threeDP:
-        return 'THREE';
-      case MeasurementPrecision.oneDP:
-        return 'ONE';
-      case MeasurementPrecision.fourDP:
-        return 'FOUR';
-      case MeasurementPrecision.twoDP:
-        return 'TWO';
       default:
         return null;
     }

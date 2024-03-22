@@ -13,7 +13,22 @@ import android.content.Context
 import android.graphics.Color
 import androidx.core.util.Pair
 import com.pspdfkit.annotations.AnnotationType
-import com.pspdfkit.annotations.AnnotationType.*
+import com.pspdfkit.annotations.AnnotationType.CIRCLE
+import com.pspdfkit.annotations.AnnotationType.FILE
+import com.pspdfkit.annotations.AnnotationType.FREETEXT
+import com.pspdfkit.annotations.AnnotationType.HIGHLIGHT
+import com.pspdfkit.annotations.AnnotationType.INK
+import com.pspdfkit.annotations.AnnotationType.LINE
+import com.pspdfkit.annotations.AnnotationType.NOTE
+import com.pspdfkit.annotations.AnnotationType.POLYGON
+import com.pspdfkit.annotations.AnnotationType.POLYLINE
+import com.pspdfkit.annotations.AnnotationType.REDACT
+import com.pspdfkit.annotations.AnnotationType.SOUND
+import com.pspdfkit.annotations.AnnotationType.SQUARE
+import com.pspdfkit.annotations.AnnotationType.SQUIGGLY
+import com.pspdfkit.annotations.AnnotationType.STAMP
+import com.pspdfkit.annotations.AnnotationType.STRIKEOUT
+import com.pspdfkit.annotations.AnnotationType.UNDERLINE
 import com.pspdfkit.annotations.LineEndType
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration
 import com.pspdfkit.annotations.configuration.AnnotationProperty
@@ -33,7 +48,6 @@ import com.pspdfkit.annotations.configuration.SoundAnnotationConfiguration
 import com.pspdfkit.annotations.configuration.StampAnnotationConfiguration
 import com.pspdfkit.annotations.stamps.StampPickerItem
 import com.pspdfkit.configuration.annotations.AnnotationAggregationStrategy
-import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.ui.fonts.Font
 import com.pspdfkit.ui.inspector.views.BorderStylePreset
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
@@ -69,8 +83,6 @@ const val MIN_TEXT_SIZE = "minimumFontSize"
 const val MAX_TEXT_SIZE = "maximumFontSize"
 const val DEFAULT_FONT = "fontName"
 const val AVAILABLE_FONTS = "availableFonts"
-const val DEFAULT_SCALE = "defaultScale"
-const val DEFAULT_PRECISION = "defaultPrecision"
 const val OVERLAY_TEXT = "overlayText"
 const val REPEAT_OVERLAY_TEXT = "repeatOverlayText"
 
@@ -307,21 +319,6 @@ class AnnotationConfigurationAdaptor {
                         )
                     }
 
-                    DEFAULT_SCALE -> (configuration[key] as Map<String, Any>?)?.let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject)
-                        if (scale != null) {
-                            builder.setDefaultScale(scale)
-                        }
-                    }
-
-                    DEFAULT_PRECISION -> configuration[key].let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null) {
-                            builder.setDefaultPrecision(precision)
-                        }
-                    }
-
                     MAX_ALPHA -> builder.setMaxAlpha((configuration[key] as Double).toFloat())
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
@@ -375,19 +372,6 @@ class AnnotationConfigurationAdaptor {
                         )
                     }
 
-                    DEFAULT_SCALE -> configuration[key].let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject as Map<String, Any>)
-                        if (scale != null)
-                            builder.setDefaultScale(scale)
-                    }
-
-                    DEFAULT_PRECISION -> (configuration[key])?.let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null)
-                            builder.setDefaultPrecision(precision)
-                    }
-
                     MAX_ALPHA -> builder.setMaxAlpha((configuration[key] as Double).toFloat())
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
@@ -439,19 +423,6 @@ class AnnotationConfigurationAdaptor {
                         builder.setAvailableColors(
                             extractColors(colors.map { it as String })
                         )
-                    }
-
-                    DEFAULT_SCALE -> (configuration[key] as Map<String, Any>?)?.let { scaleObject ->
-                        val scale = MeasurementHelper.convertScale(scaleObject)
-                        if (scale != null)
-                            builder.setDefaultScale(scale)
-                    }
-
-                    DEFAULT_PRECISION -> configuration[key].let { precisionString ->
-                        val precision =
-                            MeasurementHelper.convertPrecision(precisionString as String)
-                        if (precision != null)
-                            builder.setDefaultPrecision(precision)
                     }
 
                     DEFAULT_LINE_END -> configuration[key].let { lineEndPair ->

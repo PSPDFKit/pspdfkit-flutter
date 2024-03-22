@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+enum MethodChannels {
+    document   = 0;
+    setMeasurementConfiguration = 1;
+}
+
+message MeasurementConfigurationRequest {
+  string name = 1;
+}
+

@@ -6,8 +6,6 @@
 ///  This notice may not be removed from this file.
 ///
 
-part of pspdfkit;
-
 /// This class represents a page position gravity.
 class PagePosition {
   final String position;

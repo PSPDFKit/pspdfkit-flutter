@@ -12,41 +12,28 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/src/pspdfkit_flutter_platform_interface.dart';
 import 'package:pspdfkit_flutter/src/web/models/pspdfkit_web_toolbar_item.dart';
+
+import 'src/measurements/measurements.dart';
+import 'src/processor/processor.dart';
 
 export 'src/pdf_configuration.dart';
 export 'src/web/pspdfkit_web_configuration.dart';
 export 'src/types.dart';
 export 'src/web/models/models.dart';
 export 'src/configuration_options.dart';
+export 'src/toolbar/toolbar.dart';
 export 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.io) 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.html) 'src/widgets/pspdfkit_widget_web.dart';
 export 'src/widgets/pspdfkit_widget_controller.dart';
-
-part 'src/processor/pdf_image_page.dart';
+export 'src/measurements/measurements.dart';
+export 'src/processor/processor.dart';
 
 part 'src/android_permission_status.dart';
 
-part 'src/processor/new_page.dart';
-
-part 'src/processor/page_pattern.dart';
-
-part 'src/processor/page_position.dart';
-
-part 'src/processor/page_z_order.dart';
-
-part 'src/processor/pdf_page.dart';
-
-part 'src/processor/page_size.dart';
-
 part 'src/pspdfkit_processor.dart';
-
-part 'src/measurements/measurement_precision.dart';
-
-part 'src/measurements/measurement_scale.dart';
 
 part 'src/annotation_preset_configurations.dart';
 
@@ -74,10 +61,8 @@ class Pspdfkit {
           {dynamic configuration,
           MeasurementScale? measurementScale,
           MeasurementPrecision? measurementPrecision}) async =>
-      PspdfkitFlutterPlatform.instance.present(document,
-          configuration: configuration,
-          measurementScale: measurementScale,
-          measurementPrecision: measurementPrecision);
+      PspdfkitFlutterPlatform.instance
+          .present(document, configuration: configuration);
 
   /// Loads an Instant document from a server [serverUrl] with using a [jwt] in a native Instant PDFViewer.
   ///
@@ -146,35 +131,18 @@ class Pspdfkit {
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool?> save() async => PspdfkitFlutterPlatform.instance.save();
 
-  /// Sets a delay for synchronizing local changes to the Instant server.
+  /// Sets a delay for synchronizing local changes to the Instant Server (PSPDFKit Document Engine).
   /// [delay] is the delay in milliseconds.
   static Future<bool?> setDelayForSyncingLocalChanges(double delay) async =>
       PspdfkitFlutterPlatform.instance.setDelayForSyncingLocalChanges(delay);
 
-  /// Enable or disable listening to Instant server changes.
+  /// Enable or disable listening to Instant Server (PSPDFKit Document Engine) changes.
   static Future<bool?> setListenToServerChanges(bool listen) async =>
       PspdfkitFlutterPlatform.instance.setListenToServerChanges(listen);
 
   /// Manually triggers synchronization.
   static Future<bool?> syncAnnotations() async =>
       PspdfkitFlutterPlatform.instance.syncAnnotations();
-
-  /// Sets the measurement scale of the document.
-  /// The scale is used to convert between real world measurements and points.
-  /// The default scale is 1 inch = 1 inch.
-  /// @param scale The scale to be used for the document.
-  /// @return True if the scale was set successfully, false otherwise.
-  static Future<bool?> setMeasurementScale(MeasurementScale scale) async =>
-      PspdfkitFlutterPlatform.instance.setMeasurementScale(scale);
-
-  /// Sets the measurement precision of the document.
-  /// The precision is used to round the measurement values.
-  /// The default precision is 2 decimal places.
-  /// @param precision The precision to be used for the document.
-  /// @return True if the precision was set successfully, false otherwise.
-  static Future<bool?> setMeasurementPrecision(
-          MeasurementPrecision precision) async =>
-      PspdfkitFlutterPlatform.instance.setMeasurementPrecision(precision);
 
   /// Checks the external storage permission for writing on Android only.
   static Future<bool?> checkAndroidWriteExternalStoragePermission() =>

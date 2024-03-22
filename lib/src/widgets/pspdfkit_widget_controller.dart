@@ -6,6 +6,7 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+
 import '../../pspdfkit.dart';
 
 /// A controller for a PSPDFKit widget.
@@ -51,25 +52,15 @@ abstract class PspdfkitWidgetController {
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool?> save();
 
-  /// Sets the measurement scale of the document.
-  /// The scale is used to convert between real world measurements and points.
-  /// The default scale is 1 inch = 1 inch.
-  /// @param scale The scale to be used for the document.
-  /// @return True if the scale was set successfully, false otherwise.
-  Future<bool?> setMeasurementScale(MeasurementScale scale);
-
-  /// Sets the measurement precision of the document.
-  /// The precision is used to round the measurement values.
-  /// The default precision is 2 decimal places.
-  /// @param precision The precision to be used for the document.
-  /// @return True if the precision was set successfully, false otherwise.
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision);
-
   /// Sets the annotation preset configurations for the given annotation tools.
   /// @param configurations A map of annotation tools and their corresponding configurations.
+  /// @param modifyAssociatedAnnotations Whether to modify the annotations associated with the old configuration. Only used for Android.
   /// @return True if the configurations were set successfully, false otherwise.
   Future<bool?> setAnnotationConfigurations(
-      Map<AnnotationTool, AnnotationConfiguration> configurations);
+    Map<AnnotationTool, AnnotationConfiguration> configurations,
+  );
 
+  /// Sets the annotation preset configurations for the given annotation tools.
+  /// @param eventName The name of the event to listen to.
   void addEventListener(String eventName, Function(dynamic) callback);
 }

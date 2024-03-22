@@ -79,34 +79,40 @@ class PspdfkitWidgetControllerNative implements PspdfkitWidgetController {
   Future<bool?> save() async => _channel.invokeMethod('save');
 
   @override
-  Future<bool?> setMeasurementScale(MeasurementScale scale) async =>
-      _channel.invokeMethod('setMeasurementScale', <String, dynamic>{
-        'measurementScale': scale.toMap(),
-      });
-  @override
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) async =>
-      _channel.invokeMethod('setMeasurementPrecision', <String, dynamic>{
-        'measurementPrecision': precision.name,
-      });
-
-  @override
   Future<bool?> setAnnotationConfigurations(
-      Map<AnnotationTool, AnnotationConfiguration> configurations) async {
-    var configMap = <String, dynamic>{};
-
-    configurations.forEach((key, value) {
-      configMap[key.name] = value.toMap();
+    Map<AnnotationTool, AnnotationConfiguration> configurations,
+  ) async {
+    await _channel
+        .invokeMethod('setAnnotationConfigurations', <String, dynamic>{
+      'annotationConfigurations': configurations.map((key, value) {
+        return MapEntry(key.name, value.toMap());
+      }),
     });
-
-    return await _channel
-        .invokeMethod('setAnnotationPresetConfigurations', <String, dynamic>{
-      'annotationConfigurations': configMap,
-    });
+    return true;
   }
 
   @override
   void addEventListener(String eventName, Function(dynamic) callback) {
-    // TODO: implement addEventListener
-    throw UnimplementedError();
+    throw UnimplementedError(
+        'addEventListener is not yet implemented on this platform');
+  }
+
+  List<MeasurementValueConfiguration> _parseMeasurementValueConfigurations(
+      List<dynamic> configurations) {
+    return configurations.map((e) {
+      var map = <String, dynamic>{};
+      e.forEach((key, value) {
+        if (key as String == 'scale') {
+          var scaleMap = <String, dynamic>{};
+          value.forEach((key, value) {
+            scaleMap[key as String] = value as dynamic;
+          });
+          map[key] = scaleMap;
+        } else {
+          map[key] = value as dynamic;
+        }
+      });
+      return MeasurementValueConfiguration.fromMap(map);
+    }).toList();
   }
 }

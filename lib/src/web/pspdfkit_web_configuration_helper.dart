@@ -102,10 +102,33 @@ class WebConfigurationHelper {
               ]);
     }
 
+    dynamic measurementValueConfigurationCallback(
+        dynamic defaultConfigurations) {
+      var measurementValueConfigurations =
+          configuration?.measurementValueConfigurations ?? [];
+      var configs = defaultConfigurations
+          .map((e) => (e as JsObject).toJson())
+          .toList(growable: false);
+      try {
+        for (var config in configs) {
+          var value = MeasurementValueConfiguration.fromWebMap(config);
+          measurementValueConfigurations.add(value);
+        }
+      } catch (e) {
+        throw Exception(
+            'Failed to convert measurement value configurations: $e');
+      }
+      var convertedConfigurations = measurementValueConfigurations
+          .map((e) => e.toWebMap())
+          .toList(growable: false);
+      return JsObject.jsify([...convertedConfigurations]);
+    }
+
     // Remove the annotation toolbar items from the configuration.
     finalWebConfigurations
         ?.removeWhere((key, value) => key == 'annotationToolbarItems');
 
+    // Convert measurement configuration from here to avoid html imports in the main plugin.
     var map = <String, dynamic>{
       'document': documentPath,
       'licenseKey': licenseKey,
@@ -122,6 +145,7 @@ class WebConfigurationHelper {
       // Add the converted toolbar items.
       'toolbarItems': toolbarItems,
       'annotationToolbarItems': annotationToolbarItemsCallback,
+      'measurementValueConfiguration': measurementValueConfigurationCallback,
       ...?finalWebConfigurations
     };
 

@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -175,7 +175,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   @override
   Future<bool?> save() async => methodChannel.invokeMethod('save');
 
-  /// Sets a delay for synchronising local changes to the Instant server.
+  /// Sets a delay for synchronizing local changes to the Instant server.
   /// [delay] is the delay in milliseconds.
   @override
   Future<bool?> setDelayForSyncingLocalChanges(double delay) async =>
@@ -188,32 +188,10 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
       methodChannel.invokeMethod(
           'setListenToServerChanges', <String, dynamic>{'listen': listen});
 
-  /// Manually triggers synchronisation.
+  /// Manually triggers synchronization.
   @override
   Future<bool?> syncAnnotations() async =>
       methodChannel.invokeMethod('syncAnnotations');
-
-  /// Sets the measurement scale of the document.
-  /// The scale is used to convert between real world measurements and points.
-  /// The default scale is 1 inch = 1 inch.
-  /// @param scale The scale to be used for the document.
-  /// @return True if the scale was set successfully, false otherwise.
-  @override
-  Future<bool?> setMeasurementScale(MeasurementScale scale) async =>
-      methodChannel.invokeMethod('setMeasurementScale', <String, dynamic>{
-        'measurementScale': scale.toMap(),
-      });
-
-  /// Sets the measurement precision of the document.
-  /// The precision is used to round the measurement values.
-  /// The default precision is 2 decimal places.
-  /// @param precision The precision to be used for the document.
-  /// @return True if the precision was set successfully, false otherwise.
-  @override
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) async =>
-      methodChannel.invokeMethod('setMeasurementPrecision', <String, dynamic>{
-        'measurementPrecision': precision.name,
-      });
 
   /// Checks the external storage permission for writing on Android only.
   @override

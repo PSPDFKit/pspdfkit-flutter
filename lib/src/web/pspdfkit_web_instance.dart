@@ -19,7 +19,6 @@ import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
 /// It is returned by [PSPDFKit.load].
 class PspdfkitWebInstance {
   final JsObject _pspdfkitInstance;
-
   PspdfkitWebInstance(this._pspdfkitInstance);
 
   List<String> get availableDocumentInfoKeys {
@@ -306,12 +305,33 @@ class PspdfkitWebInstance {
   /// Adds event listener to the PSPDFKit instance.
   /// The [eventName] parameter specifies the name of the event to listen to.
   /// The [callback] parameter specifies the callback function to be called when the event is triggered.
-  /// Throws an error if the operation fails.
+  /// The callback parameter function accepts varying number of arguments depending on the event.
+  /// See the [PSPDFKit.Instance.addEventListener](https://pspdfkit.com/api/web/PSPDFKit.Instance.html#addEventListener) API reference for more information about the events and their arguments.
   void addEventListener(String eventName, Function(dynamic) callback) {
     try {
       _pspdfkitInstance.callMethod('addEventListener', [
         eventName,
-        allowInterop((dynamic event) {
+        allowInterop(([dynamic event, dynamic event2]) {
+          // If the event is a primitive type, pass it directly to the callback function.
+          if (event is int ||
+              event is String ||
+              event is bool ||
+              event == null) {
+            callback(event);
+            return;
+          }
+          // If the event is a JsObject and the second event is null, pass it to the callback function.
+          if (event is JsObject && event2 == null) {
+            callback(event.toJson());
+            return;
+          }
+
+          /// If the event and the second event are JsObjects, pass them to the callback function.
+          /// This is used for events that return multiple value for example `viewState.change` event.
+          if (event is JsObject && event2 is JsObject) {
+            callback([event, event2]);
+            return;
+          }
           // Convert the event to JSON and pass it to the callback function.
           callback((event as JsObject).toJson());
         })

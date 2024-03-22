@@ -33,7 +33,8 @@ enum PspdfkitWebAnnotationToolbarItemType {
   measurementType,
   measurementScale,
   back,
-  custom
+  snapping,
+  custom,
 }
 
 extension WebAnnotationToolbarTypeX on PspdfkitWebAnnotationToolbarItemType {
@@ -66,7 +67,7 @@ extension WebAnnotationToolbarTypeX on PspdfkitWebAnnotationToolbarItemType {
       case PspdfkitWebAnnotationToolbarItemType.borderWidth:
         return 'border-width';
       case PspdfkitWebAnnotationToolbarItemType.borderColor:
-        return 'borderColor';
+        return 'border-color';
       case PspdfkitWebAnnotationToolbarItemType.applyRedactions:
         return 'apply-redactions';
       case PspdfkitWebAnnotationToolbarItemType.color:
@@ -86,11 +87,13 @@ extension WebAnnotationToolbarTypeX on PspdfkitWebAnnotationToolbarItemType {
       case PspdfkitWebAnnotationToolbarItemType.clockwiseRotation:
         return 'clockwise-rotation';
       case PspdfkitWebAnnotationToolbarItemType.measurementType:
-        return 'measurement-type';
+        return 'measurementType';
       case PspdfkitWebAnnotationToolbarItemType.measurementScale:
-        return 'measurement-scale';
+        return 'measurementScale';
       case PspdfkitWebAnnotationToolbarItemType.back:
         return 'back';
+      case PspdfkitWebAnnotationToolbarItemType.snapping:
+        return 'snapping';
       default:
         throw Exception('Unknown annotation toolbar type: $this');
     }

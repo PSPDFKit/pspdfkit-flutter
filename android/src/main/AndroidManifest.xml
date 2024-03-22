@@ -15,5 +15,9 @@
         <activity
             android:name="com.pspdfkit.flutter.pspdfkit.FlutterPdfActivity"
             android:windowSoftInputMode="adjustNothing" />
+
+        <meta-data
+            android:name="pspdfkit_automatic_initialize"
+            android:value="false" />
     </application>
 </manifest>

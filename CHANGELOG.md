@@ -1,12 +1,21 @@
 ## Newest Release
 
+### 3.9.0 - 22 Mar 2024
+
+- Adds annotation toolbar customization for iOS and Android. (J#HYB-209)
+- Adds support for `MeasurementValueConfiguration` to replace `setMeasurementScale` and `setMeasurementPrecision`. (J#HYB-206)
+- Updates for PSPDFKit 13.3.3 for iOS. (#43792)
+- Updates for PSPDFKit 2024.1.2 for Android. (#43792)
+- Fixes events callback functions not being triggered on Web. (J#HYB-221)
+- Fixes blank page when an annotation toolbar item is selected on Web. (#43792)
+
+## Previous Releases
+
 ### 3.8.2 - 27 Feb 2024
 
 - Updates for PSPDFKit 13.3.1 for iOS. (#43550)
 - Fixes issue where PSPDFKit for Flutter does not work on web with Flutter SDK version 13.19.0 (J#HYB-216)
 - Fixes issue where annotation toolbar items are not being displayed on Web. (J#HYB-217)
-
-## Previous Releases
 
 ### 3.8.1 - 14 Feb 2024
 - Fixes callbacks when Pspdfkit.present() is used. (J#HYB-204)

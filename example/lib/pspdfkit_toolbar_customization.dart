@@ -45,8 +45,18 @@ class PspdfkitToolbarCustomization extends StatelessWidget {
                         androidShowShareAction: false,
                         androidShowDocumentInfoView: false,
                         androidShowThumbnailGridAction: false,
-                        iOSLeftBarButtonItems: [],
-                        iOSRightBarButtonItems: [],
+                        annotationToolsGrouping: [
+                          AnnotationToolbarItem.square,
+                          AnnotationToolbarItem.line,
+                          AnnotationToolbarItem.eraser,
+                          AnnotationToolsGroup(
+                              type: AnnotationToolbarItem.markup,
+                              items: [
+                                AnnotationToolbarItem.strikeout,
+                                AnnotationToolbarItem.highlight,
+                                AnnotationToolbarItem.underline
+                              ]),
+                        ],
                         webConfiguration: PdfWebConfiguration(
                             toolbarItems: [
                               ...defaultWebToolbarItems.reversed,

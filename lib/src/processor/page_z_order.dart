@@ -5,7 +5,6 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-part of pspdfkit;
 
 /// This class represents Z axis order of a page.
 class PageZOrder {

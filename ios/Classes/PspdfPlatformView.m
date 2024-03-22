@@ -7,6 +7,7 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfPlatformView.h"
+#include <Foundation/Foundation.h>
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
 #import "pspdfkit_flutter-Swift.h"
@@ -56,6 +57,8 @@
            
             NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
             PSPDFDocument *document = [PspdfkitFlutterHelper documentFromPath:documentPath];
+            
+            NSArray *measurementValueConfigurations = configurationDictionary[@"measurementValueConfigurations"];
           
             [PspdfkitFlutterHelper unlockWithPasswordIfNeeded:document dictionary:configurationDictionary];
 
@@ -83,6 +86,19 @@
                 key = @"toolbarTitle";
                 if (configurationDictionary[key]) {
                     [PspdfkitFlutterHelper setToolbarTitle:configurationDictionary[key] forViewController:_pdfViewController];
+                }
+                
+                NSArray *annotationToolbarGroupingitems = configurationDictionary[@"toolbarItemGrouping"];
+                
+                if (annotationToolbarGroupingitems){
+                    PSPDFAnnotationToolbarConfiguration *configuration = [AnnotationToolbarItemsGrouping convertAnnotationToolbarConfigurationWithToolbarItems:annotationToolbarGroupingitems];
+                    _pdfViewController.annotationToolbarController.annotationToolbar.configurations = @[configuration];
+                }
+            }
+            // Set Measurement value configurations
+            if (measurementValueConfigurations != nil) {
+                for (NSDictionary *measurementValueConfigurationDictionary in measurementValueConfigurations) {
+                    [PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:_pdfViewController.document configuration: measurementValueConfigurationDictionary];
                 }
             }
         }

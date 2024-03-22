@@ -11,10 +11,9 @@ library pspdfkit_widget_web;
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui;
-
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-
 import '../web/pspdfkit_web.dart';
 import 'pspdfkit_widget_controller_web.dart';
 

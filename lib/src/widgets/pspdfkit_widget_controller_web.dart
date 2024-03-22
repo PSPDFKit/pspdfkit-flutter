@@ -1,4 +1,4 @@
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -7,10 +7,8 @@
 ///
 
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
-
 import '../../pspdfkit.dart';
 import '../web/pspdfkit_web.dart';
-import 'pspdfkit_widget_controller.dart';
 
 /// A controller for a PSPDFKit widget for Web.
 class PspdfkitWidgetControllerWeb implements PspdfkitWidgetController {
@@ -90,18 +88,6 @@ class PspdfkitWidgetControllerWeb implements PspdfkitWidgetController {
   Future<bool?> setFormFieldValue(
       String value, String fullyQualifiedName) async {
     await pspdfkitInstance.setFormFieldValue(value, fullyQualifiedName);
-    return Future.value(true);
-  }
-
-  @override
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) async {
-    await pspdfkitInstance.setMeasurementPrecision(precision);
-    return Future.value(true);
-  }
-
-  @override
-  Future<bool?> setMeasurementScale(MeasurementScale scale) async {
-    await pspdfkitInstance.setMeasurementScale(scale);
     return Future.value(true);
   }
 

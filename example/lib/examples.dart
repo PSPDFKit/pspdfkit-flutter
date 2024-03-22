@@ -142,15 +142,14 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
                 PspdfkitEventListenerExample(documentPath: value.path),
                 context));
           }),
-      if (!kIsWeb)
-        PspdfkitExampleItem(
-            title: 'Measurement tools',
-            description: 'Shows how to use PSPDFKit Measurement tools.',
-            onTap: () async {
-              await extractAsset(context, _measurementsDocs).then((value) =>
-                  goTo(PspdfkitMeasurementsExample(documentPath: value.path),
-                      context));
-            }),
+      PspdfkitExampleItem(
+          title: 'Measurement tools',
+          description: 'Shows how to use PSPDFKit Measurement tools.',
+          onTap: () async {
+            await extractAsset(context, _measurementsDocs).then((value) => goTo(
+                PspdfkitMeasurementsExample(documentPath: value.path),
+                context));
+          }),
       if (!kIsWeb)
         PspdfkitExampleItem(
             title: 'Annotations Preset Customization',
@@ -513,14 +512,23 @@ void measurementExample(BuildContext context) async {
 }
 
 void showMeasurementExampleGlobal(BuildContext context) {
+  var scale = MeasurementScale(
+      unitFrom: UnitFrom.inch,
+      valueFrom: 1.0,
+      unitTo: UnitTo.cm,
+      valueTo: 2.54);
+  var precision = MeasurementPrecision.fourDP;
+  var measurementValueConfigurations = [
+    MeasurementValueConfiguration(
+        name: 'Custom Scale', scale: scale, precision: precision)
+  ];
   extractAsset(context, _measurementsDocs).then((value) {
-    Pspdfkit.present(value.path,
-        measurementScale: MeasurementScale(
-            unitFrom: UnitFrom.cm,
-            valueFrom: 1,
-            unitTo: UnitTo.km,
-            valueTo: 10),
-        measurementPrecision: MeasurementPrecision.threeDP);
+    Pspdfkit.present(
+      value.path,
+      configuration: PdfConfiguration(
+        measurementValueConfigurations: measurementValueConfigurations,
+      ),
+    );
   });
 }
 

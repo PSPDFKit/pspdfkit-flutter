@@ -12,7 +12,6 @@
 // package as the core of your plugin.
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:io';
-
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web.dart';
@@ -138,16 +137,6 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
 
   @override
   Future<bool?> setListenToServerChanges(bool listen) {
-    throw UnimplementedError(_notSupportedOnWebMessage);
-  }
-
-  @override
-  Future<bool?> setMeasurementPrecision(MeasurementPrecision precision) {
-    throw UnimplementedError(_notSupportedOnWebMessage);
-  }
-
-  @override
-  Future<bool?> setMeasurementScale(MeasurementScale scale) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 
