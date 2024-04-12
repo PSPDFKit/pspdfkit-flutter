@@ -22,6 +22,18 @@ const String _pspdfkitFor = 'PSPDFKit for';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  // Since PSPDFKit for Flutter 3.9.0, you are now required to initialize PSPDFKit with a license key.
+  // If you don't have one, you can set it to null. This will show a watermark on the document.
+  // To get a trial license key, please visit https://my.pspdfkit.com/trial/new
+  //
+  // To set the license key for both platforms, use:
+  // Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
+  // "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE", "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
+  //
+  // To set the license key for the currently running platform, use:
+  // Pspdfkit.setLicenseKey(null);
+
+  Pspdfkit.setLicenseKey(null);
   runApp(const MyApp());
 }
 
@@ -73,19 +85,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   void initPlatformState() async {
-    // By default, this example doesn't set a license key, but instead runs in
-    // trial mode (which is the default, and which requires no specific
-    // initialization). If you want to use a different license key for
-    // evaluation (e.g. a production license), you can uncomment the next line
-    // and set the license key.
-    //
-    // To set the license key for both platforms, use:
-    // await Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
-    // "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE");
-    //
-    // To set the license key for the currently running platform, use:
-    await Pspdfkit.setLicenseKey('');
-
     String? frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {

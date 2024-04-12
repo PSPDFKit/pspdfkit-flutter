@@ -27,9 +27,9 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
 
   /// Sets the license key.
   @override
-  Future<void> setLicenseKey(String licenseKey) async =>
+  Future<void> setLicenseKey(String? licenseKey) async =>
       await methodChannel.invokeMethod(
-          'setLicenseKey', <String, String>{'licenseKey': licenseKey});
+          'setLicenseKey', <String, String?>{'licenseKey': licenseKey});
 
   /// Sets the license keys for both platforms.
   @override

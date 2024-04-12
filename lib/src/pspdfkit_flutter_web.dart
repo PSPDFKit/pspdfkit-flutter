@@ -124,7 +124,7 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future<void> setLicenseKey(String licenseKey) =>
+  Future<void> setLicenseKey(String? licenseKey) =>
       PSPDFKitWeb.setLicenseKey(licenseKey);
 
   @override

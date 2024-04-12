@@ -1,5 +1,12 @@
 ## Newest Release
 
+### 3.9.1 - 12 Apr 2024
+- Downgrades to AGP 7.* for backward compatibility (J#HYB-290)
+- Allow null value for `Pspdfkit.setLicenseKey` (J#HYB-294)
+- Updates for PSPDFKit 2024.2.1 for Android (J#HYB-303)
+
+## Previous Releases
+
 ### 3.9.0 - 22 Mar 2024
 
 - Adds annotation toolbar customization for iOS and Android. (J#HYB-209)
@@ -8,8 +15,6 @@
 - Updates for PSPDFKit 2024.1.2 for Android. (#43792)
 - Fixes events callback functions not being triggered on Web. (J#HYB-221)
 - Fixes blank page when an annotation toolbar item is selected on Web. (#43792)
-
-## Previous Releases
 
 ### 3.8.2 - 27 Feb 2024
 

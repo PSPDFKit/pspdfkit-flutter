@@ -30,18 +30,18 @@ class PSPDFKitWeb {
   /// This method tries to set the license key to confirm it is valid, then store it in a static variable to be used later in [PSPDFKit.load].
   /// Throws an exception if it fails to set the license key.
   ///
-  static Future<void> setLicenseKey(String licenseKey) async {
+  static Future<void> setLicenseKey(String? licenseKey) async {
     try {
+      if (licenseKey == null) {
+        return;
+      }
       // Try to set the license key to confirm it is valid, then store it in local storage.
       var config = JsObject.jsify({
         'licenseKey': licenseKey,
         'productId': flutterWebProductId,
       });
-
-      await promiseToFuture(_pspdfkit.callMethod('preloadWorker', [config]))
-          .then((value) {
-        _pspdfkitLicenseKey = licenseKey;
-      });
+      _pspdfkitLicenseKey = licenseKey;
+      await promiseToFuture(_pspdfkit.callMethod('preloadWorker', [config]));
     } catch (e) {
       throw Exception('Failed to set license key: $e');
     }

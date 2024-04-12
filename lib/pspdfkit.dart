@@ -47,7 +47,7 @@ class Pspdfkit {
 
   /// Sets the license key.
   /// @param licenseKey The license key to be used.
-  static Future<void> setLicenseKey(String licenseKey) =>
+  static Future<void> setLicenseKey(String? licenseKey) =>
       PspdfkitFlutterPlatform.instance.setLicenseKey(licenseKey);
 
   /// Sets the license keys for both platforms.

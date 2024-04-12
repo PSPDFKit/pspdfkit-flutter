@@ -52,7 +52,7 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   Future<String?> getFrameworkVersion();
 
   /// Sets the license key.
-  Future<void> setLicenseKey(String licenseKey);
+  Future<void> setLicenseKey(String? licenseKey);
 
   /// Sets the license keys for both platforms.
   /// The [androidLicenseKey] is the license key for Android.
