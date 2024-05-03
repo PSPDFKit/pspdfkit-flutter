@@ -30,6 +30,10 @@ export 'src/widgets/pspdfkit_widget.dart'
 export 'src/widgets/pspdfkit_widget_controller.dart';
 export 'src/measurements/measurements.dart';
 export 'src/processor/processor.dart';
+export 'src/document/pdf_document.dart';
+export 'src/document/document_save_options.dart';
+export 'src/document/document_permissions.dart';
+export 'src/document/pdf_version.dart';
 
 part 'src/android_permission_status.dart';
 

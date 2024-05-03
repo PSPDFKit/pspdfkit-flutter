@@ -129,7 +129,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
              [ PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
            }
         }
-        
+
     } else if ([@"getTemporaryDirectory" isEqualToString:call.method]) {
         result([self getTemporaryDirectory]);
     }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {

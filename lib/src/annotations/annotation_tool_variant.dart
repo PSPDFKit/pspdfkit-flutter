@@ -8,5 +8,4 @@ enum AnnotationToolVariant {
   image,
   highlight,
   underline,
-  
 }

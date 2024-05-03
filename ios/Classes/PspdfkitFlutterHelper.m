@@ -7,6 +7,8 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitFlutterHelper.h"
+#include <objc/NSObjCRuntime.h>
+#include <Foundation/Foundation.h>
 #import "PspdfkitFlutterConverter.h"
 #import "pspdfkit_flutter-Swift.h"
 
@@ -159,6 +161,31 @@
     }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
         [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
         result(nil);
+    } else if ([@"getPageInfo" isEqualToString:call.method]) {
+        NSInteger pageIndex = [call.arguments[@"pageIndex"] integerValue];
+        PSPDFPageInfo *pageInfo = [pdfViewController.document pageInfoForPageAtIndex:pageIndex];
+        NSDictionary *pageInfoDictionary = @{
+            @"width": @(pageInfo.size.width),
+            @"height": @(pageInfo.size.height),
+            @"rotation": @(pageInfo.savedRotation),
+            @"index": @(pageIndex),
+            @"label": @""
+        };
+        result(pageInfoDictionary);
+    } else if ([@"exportPdf" isEqualToString:call.method]) {
+        @try {
+            NSString *filePath = pdfViewController.document.fileURL.path;
+            NSData *data = [NSData dataWithContentsOfFile:filePath];
+            const uint8_t *bytes = (const uint8_t *)[data bytes];
+            NSUInteger length = [data length];
+            NSMutableArray *byteArray = [NSMutableArray arrayWithCapacity:length];
+            for (NSUInteger i = 0; i < length; i++) {
+                [byteArray addObject:@(bytes[i])];
+            }
+            result(byteArray);
+        } @catch (NSException *exception) {
+            result([FlutterError errorWithCode:@"" message:exception.reason details:nil]);
+        }
     } else {
         result(FlutterMethodNotImplemented);
     }

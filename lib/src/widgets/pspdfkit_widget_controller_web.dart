@@ -5,13 +5,14 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+///
 
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
 import '../../pspdfkit.dart';
 import '../web/pspdfkit_web.dart';
 
 /// A controller for a PSPDFKit widget for Web.
-class PspdfkitWidgetControllerWeb implements PspdfkitWidgetController {
+class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
   final PspdfkitWebInstance pspdfkitInstance;
 
   PspdfkitWidgetControllerWeb(this.pspdfkitInstance);

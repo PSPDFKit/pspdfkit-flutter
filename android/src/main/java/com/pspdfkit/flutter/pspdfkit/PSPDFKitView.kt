@@ -1,8 +1,10 @@
 package com.pspdfkit.flutter.pspdfkit
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.MutableContextWrapper
 import android.net.Uri
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -11,11 +13,14 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
+import com.pspdfkit.document.processor.PdfProcessor
+import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
+import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper
 import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
 import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
@@ -23,7 +28,6 @@ import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
-import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
@@ -34,9 +38,13 @@ import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+
 
 internal class PSPDFKitView(
     val context: Context,
@@ -44,7 +52,6 @@ internal class PSPDFKitView(
     messenger: BinaryMessenger,
     documentPath: String? = null,
     configurationMap: HashMap<String, Any>? = null,
-
     ) : PlatformView, MethodCallHandler {
 
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
@@ -84,9 +91,7 @@ internal class PSPDFKitView(
                     .build()
             }
         }
-
-        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(FlutterPdfUiFragmentCallbacks(measurementValueConfigurations), true)
-
+        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(FlutterPdfUiFragmentCallbacks(methodChannel,measurementValueConfigurations), true)
         getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks( object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentAttached(
                 fm: FragmentManager,
@@ -131,6 +136,7 @@ internal class PSPDFKitView(
         fragmentContainerView = null
     }
 
+    @SuppressLint("CheckResult")
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         // Return if the fragment or the document
         // are not ready.
@@ -443,6 +449,35 @@ internal class PSPDFKitView(
                     result.success(true)
                 } catch (e: java.lang.Exception) {
                     result.error("AnnotationException", e.message, null)
+                }
+            }
+            "getPageInfo" -> {
+                try {
+                    val pageIndex:Int = requireNotNull(call.argument("pageIndex"))
+                    val pageInfo = mapOf(
+                            "width" to document.getPageSize(pageIndex).width,
+                            "height" to document.getPageSize(pageIndex).height,
+                            "label" to document.getPageLabel(pageIndex,false),
+                            "index" to pageIndex,
+                            "rotation" to document.getPageRotation(pageIndex)
+                    )
+                    result.success(pageInfo)
+                }catch (e:Exception){
+                    result.error("DocumentException",e.message,null)
+                }
+            }
+            "exportPdf" -> {
+                try {
+                    val fileUrl = document.documentSource.fileUri?.path
+                    if (fileUrl == null) {
+                        result.error("DocumentException", "Document source is not a file", null)
+                        return
+                    }
+                    val data:ByteArray = fileUrl.let { File(it).readBytes() }
+                    result.success(data)
+                } catch (e: Exception) {
+                    Log.e(LOG_TAG, "Error while exporting PDF", e)
+                    result.error("DocumentException", e.message, null)
                 }
             }
             else -> result.notImplemented()

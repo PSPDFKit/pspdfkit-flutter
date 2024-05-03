@@ -30,6 +30,8 @@ class PspdfkitBasicExample extends StatelessWidget {
                 padding: PlatformUtils.isAndroid()
                     ? const EdgeInsets.only(top: kToolbarHeight)
                     : null,
-                child: PspdfkitWidget(documentPath: documentPath))));
+                child: PspdfkitWidget(
+                  documentPath: documentPath,
+                ))));
   }
 }

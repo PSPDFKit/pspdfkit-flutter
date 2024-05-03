@@ -14,22 +14,27 @@ import 'dart:ui_web' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
+import '../document/pdf_document_web.dart';
 import '../web/pspdfkit_web.dart';
 import 'pspdfkit_widget_controller_web.dart';
-
-typedef PspdfkitWidgetCreatedCallback = void Function(
-    PspdfkitWidgetController view);
 
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
+  final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
+  final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailure;
+  final PageChangedCallback? onPageChanged;
 
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
     this.configuration,
     this.onPspdfkitWidgetCreated,
+    this.onPdfDocumentLoaded,
+    this.onPdfDocumentLoadFailure,
+    this.onPageChanged,
   }) : super(key: key);
 
   @override
@@ -80,11 +85,24 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     Future.delayed(const Duration(milliseconds: 10), () async {
       await PSPDFKitWeb.load(widget.documentPath, id, configuration)
           .then((value) {
-        var controller = PspdfkitWidgetControllerWeb(value);
+        _addDefaultEventListeners(value);
+        var controller = PspdfkitWidgetControllerWeb(
+          value,
+        );
         widget.onPspdfkitWidgetCreated?.call(controller);
+        widget.onPdfDocumentLoaded
+            ?.call(PdfDocumentWeb(documentId: '', instance: value));
       }).catchError((error) {
+        widget.onPdfDocumentLoadFailure?.call(error.toString());
         throw Exception('Failed to load: $error');
       });
+    });
+  }
+
+  void _addDefaultEventListeners(PspdfkitWebInstance webInstance) {
+    webInstance.addEventListener('viewState.currentPageIndex.change',
+        (pageIndex) {
+      widget.onPageChanged?.call(pageIndex);
     });
   }
 }

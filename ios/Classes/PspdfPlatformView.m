@@ -68,6 +68,7 @@
             _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
             _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
             _pdfViewController.delegate = self;
+            
             [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
 
             if ((id)configurationDictionary != NSNull.null) {
@@ -125,8 +126,19 @@
                                                 object:nil];
     NSString *documentId = self.pdfViewController.document.UID;
     if (documentId != nil) {
-        [_broadcastChannel invokeMethod:@"pspdfkitDocumentLoaded" arguments:documentId];
+        NSDictionary *arguments = @{
+            @"documentId": documentId,
+        };
+        [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
     }
+}
+
+- (void) pdfViewController:(PSPDFViewController *)pdfController willBeginDisplayingPageView:(PSPDFPageView *)pageView forPageAtIndex:(NSInteger)pageIndex {
+    NSDictionary *arguments = @{
+        @"pageIndex": @(pageIndex),
+        @"documentId": pdfController.document.UID,
+    };
+    [_channel invokeMethod:@"onPageChanged" arguments: arguments];
 }
 
 - (void)dealloc {

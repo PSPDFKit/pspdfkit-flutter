@@ -15,6 +15,7 @@ import 'package:pspdfkit_example/models/papsdkit_example_item.dart';
 import 'package:pspdfkit_example/pspdfkit_toolbar_customization.dart';
 
 import 'pspdfkit_annotation_preset_customisation.dart';
+import 'pspdfkit_document_example.dart';
 import 'pspdfkit_event_listeners_example.dart';
 import 'utils/file_utils.dart';
 import 'utils/platform_utils.dart';
@@ -67,6 +68,13 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
         description: 'Opens an image document.',
         onTap: () => showImage(context),
       ),
+      PspdfkitExampleItem(
+          title: 'Document Example',
+          description: 'Shows how to get document properties after loading.',
+          onTap: () async {
+            await extractAsset(context, _documentPath).then((value) => goTo(
+                PspdfkitDocumentExample(documentPath: value.path), context));
+          }),
       PspdfkitExampleItem(
         title: 'Dark Theme',
         description: 'Opens a document in night mode with a custom dark theme.',

@@ -18,19 +18,22 @@ import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'pspdfkit_widget_controller_native.dart';
 
-typedef PspdfkitWidgetCreatedCallback = void Function(
-    PspdfkitWidgetController view);
-
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
+  final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
+  final PdfDocumentLoadFailedCallback? onPdfDocumentError;
+  final PageChangedCallback? onPageChanged;
 
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
     this.configuration,
     this.onPspdfkitWidgetCreated,
+    this.onPdfDocumentLoaded,
+    this.onPdfDocumentError,
+    this.onPageChanged,
   }) : super(key: key);
 
   @override
@@ -110,7 +113,12 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> _onPlatformViewCreated(int id) async {
-    controller = PspdfkitWidgetControllerNative(id);
+    controller = PspdfkitWidgetControllerNative(
+      id,
+      onPageChanged: widget.onPageChanged,
+      onPdfDocumentLoadFailed: widget.onPdfDocumentError,
+      onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+    );
     widget.onPspdfkitWidgetCreated?.call(controller);
   }
 }

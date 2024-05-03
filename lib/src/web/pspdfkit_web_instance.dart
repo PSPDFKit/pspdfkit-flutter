@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2024 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -7,11 +7,16 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 import 'dart:js';
+import 'dart:typed_data';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/document/page_info.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
+
+import '../document/document_save_options.dart';
 
 /// This class is used to interact with a
 /// [PSPDFKit.Instance](https://pspdfkit.com/api/web/PSPDFKit.Instance.html) in
@@ -346,5 +351,22 @@ class PspdfkitWebInstance {
   void setToolbarItems(List<PspdfkitWebToolbarItem> items) {
     var jsItems = items.map((e) => e.toJsObject()).toList();
     _pspdfkitInstance.callMethod('setToolbarItems', [JsObject.jsify(jsItems)]);
+  }
+
+  Future<PageInfo> getPageInfo(int pageIndex) async {
+    var pageInfo =
+        _pspdfkitInstance.callMethod('pageInfoForIndex', [pageIndex]);
+    return PageInfo.fromJson(pageInfo);
+  }
+
+  Future<Uint8List> exportPdf({DocumentSaveOptions? options}) async {
+    var webOptions = options?.toWebOptions();
+    var arrayBuffer = await promiseToFuture(_pspdfkitInstance.callMethod(
+        'exportPDF', [JsObject.jsify(webOptions ?? <String, dynamic>{})]));
+
+    var uintList = JsObject(context['Uint8Array'], [arrayBuffer]);
+    JsArray jsArray = context['Array'].callMethod('from', [uintList]);
+    Uint8List bytes = Uint8List.fromList(List<int>.from(jsArray));
+    return bytes;
   }
 }

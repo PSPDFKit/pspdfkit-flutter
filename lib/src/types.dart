@@ -1,3 +1,5 @@
+import '../pspdfkit.dart';
+
 ///  Copyright © 2023 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
@@ -242,6 +244,15 @@ enum ShowSignatureValidationStatusMode {
   hasErrors,
   never
 }
+
+typedef PspdfkitWidgetCreatedCallback = void Function(
+    PspdfkitWidgetController view);
+
+typedef PdfDocumentLoadedCallback = void Function(PdfDocument document);
+
+typedef PdfDocumentLoadFailedCallback = void Function(String error);
+
+typedef PageChangedCallback = void Function(int pageIndex);
 
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {

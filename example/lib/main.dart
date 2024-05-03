@@ -32,7 +32,6 @@ void main() {
   //
   // To set the license key for the currently running platform, use:
   // Pspdfkit.setLicenseKey(null);
-
   Pspdfkit.setLicenseKey(null);
   runApp(const MyApp());
 }

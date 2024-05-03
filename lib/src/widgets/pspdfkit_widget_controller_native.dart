@@ -9,13 +9,37 @@
 
 import 'package:flutter/services.dart';
 import '../../pspdfkit.dart';
+import '../document/pdf_document_native.dart';
 
 /// A controller for a PSPDFKit widget for native platforms that use the [MethodChannel].
-class PspdfkitWidgetControllerNative implements PspdfkitWidgetController {
+class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   final MethodChannel _channel;
 
-  PspdfkitWidgetControllerNative(int id)
-      : _channel = MethodChannel('com.pspdfkit.widget.$id');
+  PspdfkitWidgetControllerNative(
+    int id, {
+    PdfDocumentLoadedCallback? onPdfDocumentLoaded,
+    PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed,
+    PageChangedCallback? onPageChanged,
+  }) : _channel = MethodChannel('com.pspdfkit.widget.$id') {
+    _channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'onDocumentLoaded':
+          var documentId = call.arguments['documentId'] as String;
+          onPdfDocumentLoaded?.call(PdfDocumentNative(
+            documentId: documentId,
+            channel: _channel,
+          ));
+          break;
+        case 'onDocumentLoadFailed':
+          onPdfDocumentLoadFailed?.call(call.arguments['error'] as String);
+          break;
+        case 'onPageChanged':
+          var pageIndex = call.arguments['pageIndex'];
+          onPageChanged?.call(pageIndex);
+          break;
+      }
+    });
+  }
 
   @override
   Future<bool?> setFormFieldValue(
@@ -95,24 +119,5 @@ class PspdfkitWidgetControllerNative implements PspdfkitWidgetController {
   void addEventListener(String eventName, Function(dynamic) callback) {
     throw UnimplementedError(
         'addEventListener is not yet implemented on this platform');
-  }
-
-  List<MeasurementValueConfiguration> _parseMeasurementValueConfigurations(
-      List<dynamic> configurations) {
-    return configurations.map((e) {
-      var map = <String, dynamic>{};
-      e.forEach((key, value) {
-        if (key as String == 'scale') {
-          var scaleMap = <String, dynamic>{};
-          value.forEach((key, value) {
-            scaleMap[key as String] = value as dynamic;
-          });
-          map[key] = scaleMap;
-        } else {
-          map[key] = value as dynamic;
-        }
-      });
-      return MeasurementValueConfiguration.fromMap(map);
-    }).toList();
   }
 }

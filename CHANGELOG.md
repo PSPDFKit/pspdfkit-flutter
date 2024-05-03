@@ -1,11 +1,19 @@
 ## Newest Release
 
+### 3.10.0 - 03 May 2024
+- Adds APIs to get page information such as size, rotation and label. (J#HYB-195)
+- Adds document load callbacks to `PspdfkitWidget`. (J#HYB-195)
+- Adds page change callback to `PspdfkitWidget`. (J#HYB-195)
+- Adds support for exporting document as binary data. (J#HYB-337)
+- Updates for PSPDFKit 2024.2.1 for Android.
+- Updates for PSPDFKit 13.4.1 for iOS.
+
+## Previous Releases
+
 ### 3.9.1 - 12 Apr 2024
 - Downgrades to AGP 7.* for backward compatibility (J#HYB-290)
 - Allow null value for `Pspdfkit.setLicenseKey` (J#HYB-294)
 - Updates for PSPDFKit 2024.2.1 for Android (J#HYB-303)
-
-## Previous Releases
 
 ### 3.9.0 - 22 Mar 2024
 
