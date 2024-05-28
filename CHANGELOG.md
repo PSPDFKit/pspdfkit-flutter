@@ -1,5 +1,10 @@
 ## Newest Release
 
+### 3.10.1 - 28 May 2024
+- Fixes issue where ViewUtils.generateViewId() cannot be resolved. (J#HYB-379)
+
+## Previous Releases
+
 ### 3.10.0 - 03 May 2024
 - Adds APIs to get page information such as size, rotation and label. (J#HYB-195)
 - Adds document load callbacks to `PspdfkitWidget`. (J#HYB-195)
@@ -7,8 +12,6 @@
 - Adds support for exporting document as binary data. (J#HYB-337)
 - Updates for PSPDFKit 2024.2.1 for Android.
 - Updates for PSPDFKit 13.4.1 for iOS.
-
-## Previous Releases
 
 ### 3.9.1 - 12 Apr 2024
 - Downgrades to AGP 7.* for backward compatibility (J#HYB-290)

@@ -68,7 +68,7 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     private static final String TAG_FLUTTER_FRAGMENT = "flutter_fragment";
     // TODO(mattcarroll): replace ID with R.id when build system supports R.java
     public static final int FRAGMENT_CONTAINER_ID =
-            ViewUtils.generateViewId(609893468); // random number
+            View.generateViewId(); // random number
 
     /**
      * Creates an {@link Intent} that launches a {@code FlutterFragmentActivity}, which executes a
