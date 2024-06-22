@@ -7,8 +7,6 @@
 //  This notice may not be removed from this file.
 //
 
-
-
 @objc(AnnotationToolbarItemsGrouping)
 public class AnnotationToolbarItemsGrouping: NSObject  {
      

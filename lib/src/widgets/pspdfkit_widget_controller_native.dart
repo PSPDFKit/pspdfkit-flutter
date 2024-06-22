@@ -26,9 +26,7 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
         case 'onDocumentLoaded':
           var documentId = call.arguments['documentId'] as String;
           onPdfDocumentLoaded?.call(PdfDocumentNative(
-            documentId: documentId,
-            channel: _channel,
-          ));
+              documentId: documentId, iosMethodChannel: _channel));
           break;
         case 'onDocumentLoadFailed':
           onPdfDocumentLoadFailed?.call(call.arguments['error'] as String);

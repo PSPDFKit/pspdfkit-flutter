@@ -22,6 +22,8 @@
 @property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
+@property (nonatomic) FlutterPdfDocument *flutterPdfDocument;
+@property (nonatomic) NSObject<FlutterBinaryMessenger> *binaryMessenger;
 @end
 
 @implementation PspdfPlatformView
@@ -129,6 +131,7 @@
         NSDictionary *arguments = @{
             @"documentId": documentId,
         };
+        _flutterPdfDocument = [[FlutterPdfDocument alloc] initWithDocument:self.pdfViewController.document messenger: _binaryMessenger];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
     }
 }

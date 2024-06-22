@@ -1,12 +1,16 @@
 ## Newest Release
 
-### 3.10.1 - 28 May 2024
-- Fixes issue where ViewUtils.generateViewId() cannot be resolved. (J#HYB-379)
+### 3.11.0 - 21 Jun 2024
+- Adds API to get form filed properties to PdfDocument. (J#HYB-169)
+- Adds instant synchronization support on Web. (J#HYB-377)
 
 ## Previous Releases
 
+### 3.10.1 - 28 May 2024
+- Fixes issue where ViewUtils.generateViewId() cannot be resolved. (J#HYB-379)
+
 ### 3.10.0 - 03 May 2024
-- Adds APIs to get page information such as size, rotation and label. (J#HYB-195)
+- Adds APIs to get page information such as size, rotation, and label. (J#HYB-195)
 - Adds document load callbacks to `PspdfkitWidget`. (J#HYB-195)
 - Adds page change callback to `PspdfkitWidget`. (J#HYB-195)
 - Adds support for exporting document as binary data. (J#HYB-337)
@@ -116,7 +120,7 @@
 
 ### 3.2.0 - 14 Feb 2022
 
-- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/flutter/migration-guides/flutter-3-2-0-migration-guide) for this release.
+- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/flutter/migration-guides/flutter-3-2-migration-guide/) for this release.
 - PSPDFKit now requires Flutter 2.10.1 or later. (#33016)
 - Adds a new configuration option to disable autosave. (#32857)
 - Adds a new example illustrating manual saving of documents with autosave disabled. (#32857)

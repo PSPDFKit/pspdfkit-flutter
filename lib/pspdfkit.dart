@@ -34,6 +34,7 @@ export 'src/document/pdf_document.dart';
 export 'src/document/document_save_options.dart';
 export 'src/document/document_permissions.dart';
 export 'src/document/pdf_version.dart';
+export 'src/forms/forms.dart';
 
 part 'src/android_permission_status.dart';
 

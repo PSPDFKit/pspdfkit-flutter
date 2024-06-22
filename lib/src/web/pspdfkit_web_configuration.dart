@@ -122,6 +122,8 @@ class PdfWebConfiguration {
   /// The URL of the PSPDFKit server (server only).
   final String? serverUrl;
 
+  final Map<String, dynamic>? authPayload;
+
   /// An array of stamp annotation templates.
   final List<dynamic>? stampAnnotationTemplates;
 
@@ -239,6 +241,7 @@ class PdfWebConfiguration {
       this.printOptions,
       this.restrictAnnotationToPageBounds,
       this.serverUrl,
+      this.authPayload,
       this.stampAnnotationTemplates,
       this.standaloneInstancesPoolSize,
       this.styleSheets,
@@ -333,6 +336,7 @@ class PdfWebConfiguration {
       'disableTextSelection': disableTextSelection,
       'toolbarItems': toolbarItems,
       'annotationToolbarItems': annotationToolbarItems,
+      'authPayload': authPayload
     }..removeWhere((key, value) => value == null);
   }
 }

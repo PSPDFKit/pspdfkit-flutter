@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/models/papsdkit_example_item.dart';
 import 'package:pspdfkit_example/pspdfkit_toolbar_customization.dart';
 
+import 'instant_collaboration_web.dart';
 import 'pspdfkit_annotation_preset_customisation.dart';
 import 'pspdfkit_document_example.dart';
 import 'pspdfkit_event_listeners_example.dart';
@@ -177,7 +178,13 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
                   documentPath: value.path,
                 ),
                 context));
-          })
+          }),
+      if (kIsWeb)
+        PspdfkitExampleItem(
+          title: 'Instant collaboration Web',
+          description: 'Instant Synchronization Web Example',
+          onTap: () => goTo(const InstantCollaborationWeb(), context),
+        ),
     ];
 
 List<PspdfkitExampleItem> globalExamples(BuildContext context) => [

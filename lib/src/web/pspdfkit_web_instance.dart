@@ -13,10 +13,9 @@ import 'dart:html';
 import 'dart:js';
 import 'dart:typed_data';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/document/page_info.dart';
+import 'package:pspdfkit_flutter/src/forms/form_field.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
-
-import '../document/document_save_options.dart';
+import '../document/page_info.dart';
 
 /// This class is used to interact with a
 /// [PSPDFKit.Instance](https://pspdfkit.com/api/web/PSPDFKit.Instance.html) in
@@ -353,12 +352,18 @@ class PspdfkitWebInstance {
     _pspdfkitInstance.callMethod('setToolbarItems', [JsObject.jsify(jsItems)]);
   }
 
+  /// Get the page info for the given page index.
+  /// The [pageIndex] parameter is the index of the page to get the info for.
+  /// Returns a [Future] that completes with the [PageInfo] object for the given page index.
   Future<PageInfo> getPageInfo(int pageIndex) async {
     var pageInfo =
         _pspdfkitInstance.callMethod('pageInfoForIndex', [pageIndex]);
     return PageInfo.fromJson(pageInfo);
   }
 
+  /// Exports the current document as a raw PDF file.
+  /// The [options] parameter is an optional [DocumentSaveOptions] object that specifies the export options.
+  /// Returns a [Future] that completes with a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) async {
     var webOptions = options?.toWebOptions();
     var arrayBuffer = await promiseToFuture(_pspdfkitInstance.callMethod(
@@ -368,5 +373,73 @@ class PspdfkitWebInstance {
     JsArray jsArray = context['Array'].callMethod('from', [uintList]);
     Uint8List bytes = Uint8List.fromList(List<int>.from(jsArray));
     return bytes;
+  }
+
+  /// Get all form fields in the document.
+  Future<List<PdfFormField>> getFormFields() async {
+    JsObject formFields =
+        await promiseToFuture(_pspdfkitInstance.callMethod('getFormFields'));
+
+    // `getFormFields` returns a custom  (PSPDFKit.Immutable.List)[https://pspdfkit.com/api/web/PSPDFKit.Immutable.List.html]
+    // whose value in an iterator. We need to convert this to a Dart list.
+    var values = formFields.callMethod('values');
+
+    List<dynamic> resultList = [];
+
+    while (true) {
+      JsObject nextItem = values.callMethod('next');
+      // Check if the iterator is done.
+      if (nextItem['done']) {
+        break;
+      }
+      JsObject field = nextItem['value'];
+
+      Map<String, dynamic> fieldMap = field.toJson();
+      fieldMap['type'] = _getFormFieldType(field);
+      resultList.add(fieldMap);
+    }
+    return resultList.map((field) => PdfFormField.fromMap(field)).toList();
+  }
+
+  String _getFormFieldType(JsObject field) {
+    JsObject textClass = context['PSPDFKit']['FormFields']['TextFormField'];
+    JsObject signatureClass =
+        context['PSPDFKit']['FormFields']['SignatureFormField'];
+    JsObject checkBoxClass =
+        context['PSPDFKit']['FormFields']['CheckBoxFormField'];
+    JsObject radioButtonClass =
+        context['PSPDFKit']['FormFields']['RadioButtonFormField'];
+    JsObject comboBoxClass =
+        context['PSPDFKit']['FormFields']['ComboBoxFormField'];
+    JsObject listBoxClass =
+        context['PSPDFKit']['FormFields']['ListBoxFormField'];
+    JsObject buttonClass = context['PSPDFKit']['FormFields']['ButtonFormField'];
+
+    if (_instanceOf(field, textClass)) {
+      return 'text';
+    } else if (_instanceOf(field, signatureClass)) {
+      return 'signature';
+    } else if (_instanceOf(field, checkBoxClass)) {
+      return 'checkbox';
+    } else if (_instanceOf(field, radioButtonClass)) {
+      return 'radioButton';
+    } else if (_instanceOf(field, comboBoxClass)) {
+      return 'comboBox';
+    } else if (_instanceOf(field, listBoxClass)) {
+      return 'listBox';
+    } else if (_instanceOf(field, buttonClass)) {
+      return 'button';
+    } else {
+      return 'unknown';
+    }
+  }
+
+  bool _instanceOf(JsObject formField, JsObject formFieldClass) {
+    String script = '''function instanceOf(formField, formFieldClass) {
+      return formField instanceof formFieldClass;
+    }''';
+    context.callMethod('eval', [script]);
+    var result = context.callMethod('instanceOf', [formField, formFieldClass]);
+    return result;
   }
 }

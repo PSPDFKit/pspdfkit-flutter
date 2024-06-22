@@ -95,13 +95,41 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     cd pspdfkit_demo
     ```
 
-3. Open the app’s Gradle build file, `android/app/build.gradle`:
+3. Update the `pluginManagement` block in the `android/settings.gradle` file as follows:
+
+    ```diff
+    pluginManagement {
+        ...
+    +    buildscript {
+    +        repositories {
+    +            mavenCentral()
+    +            maven {
+    +                url = uri("https://storage.googleapis.com/r8-releases/raw")
+    +            }
+    +        }
+    +        dependencies {
+    +            classpath("com.android.tools:r8:8.3.37")
+    +       }
+    +    }
+    }
+
+    // Upgrade Kotlin version.
+    plugins {
+        id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+        id "com.android.application" version "7.3.0" apply false
+    -   id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+    +   id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+    }
+    ```
+    This step involves enabling R8 for code shrinking (not required for AGP 8.* and above) and upgrading the Kotlin version.
+
+4. Open the app’s Gradle build file, `android/app/build.gradle`:
 
     ```bash
     open android/app/build.gradle
     ```
 
-4. Modify the compile SDK version and the minimum SDK version:
+5. Modify the compile SDK version and the minimum SDK version:
 
     ```diff
     android {
@@ -113,10 +141,22 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     +        minSdkVersion 21
     ...
         }
+        compileOptions {
+    -       sourceCompatibility JavaVersion.VERSION_1_8
+    -       targetCompatibility JavaVersion.VERSION_1_8
+    +       sourceCompatibility JavaVersion.VERSION_17
+    +       targetCompatibility JavaVersion.VERSION_17
+        }
+
+    // If you have this block, update the `jvmTarget` to 17.
+        kotlinOptions {
+    -        jvmTarget = '1.8'
+    +        jvmTarget = '17'
+        }
+    ...    
     }
     ```
-
-5. Add the AppCompat AndroidX library to your `android/app/build.gradle` file:
+6. Add the AppCompat AndroidX library to your `android/app/build.gradle` file:
 
     ```diff
     dependencies {
@@ -124,13 +164,13 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     +   implementation 'androidx.appcompat:appcompat:1.4.0'
     }
     ```
-6. Open the project’s main activity class, `android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt`:
+7. Open the project’s main activity class, `android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt`:
 
     ```bash
         open android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt
     ```
 
-7. Change the base `Activity` to extend `FlutterAppCompatActivity`:
+8. Change the base `Activity` to extend `FlutterAppCompatActivity`:
 
     ```diff
     - import io.flutter.embedding.android.FlutterActivity;
@@ -156,7 +196,7 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```
     **NOTE:** <code>FlutterAppCompatActivity</code> isn’t an official part of the Flutter SDK. It’s a custom <code>Activity</code> that extends <code>AppCompatActivity</code> from the AndroidX AppCompat library, and it’s necessary to use PSPDFKit for Android with Flutter. You can read more about this in the [AppCompatActivity Migration][] guide.
 
-8. Update the theme in `android/app/src/main/res/values/styles.xml` to use `PSPDFKit.Theme.default` as the parent:
+9. Update the theme in `android/app/src/main/res/values/styles.xml` to use `PSPDFKit.Theme.default` as the parent:
 
     ```diff
     - <style name="NormalTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -164,9 +204,9 @@ Platform specific README exists for [Android](android/) and [iOS](ios/).
     ```
     This is to customize the theme of the PSPDFKit UI. You can read more about this in the [appearance styling][] guide.
 
-9. [Start your Android emulator][start-the-emulator], or connect a device.
+10. [Start your Android emulator][start-the-emulator], or connect a device.
 
-10. Run the app with:
+11. Run the app with:
 
     ```bash
     flutter run

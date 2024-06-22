@@ -91,7 +91,8 @@ internal class PSPDFKitView(
                     .build()
             }
         }
-        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(FlutterPdfUiFragmentCallbacks(methodChannel,measurementValueConfigurations), true)
+        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(FlutterPdfUiFragmentCallbacks(methodChannel,
+            measurementValueConfigurations, messenger), true)
         getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks( object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentAttached(
                 fm: FragmentManager,

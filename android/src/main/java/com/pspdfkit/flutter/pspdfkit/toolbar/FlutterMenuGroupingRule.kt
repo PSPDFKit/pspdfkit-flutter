@@ -13,7 +13,7 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
 import androidx.annotation.IntRange
-import com.pspdfkit.R
+import com.pspdfkit.flutter.pspdfkit.R
 import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.grouping.presets.MenuItem
 import com.pspdfkit.ui.toolbar.grouping.presets.PresetMenuItemGroupingRule
@@ -72,7 +72,7 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
     private fun getIdFromName(name: String): Int {
         when (name) {
             "markup" -> return R.id.pspdf__annotation_creation_toolbar_group_markup
-            "writing" -> return R.id.pspdf__annotation_creation_toolbar_item_writing
+            "writing" -> return R.id.pspdf__annotation_creation_toolbar_group_writing
             "highlight" -> return R.id.pspdf__annotation_creation_toolbar_item_highlight
             "squiggly" -> return R.id.pspdf__annotation_creation_toolbar_item_squiggly
             "strikeout" -> return R.id.pspdf__annotation_creation_toolbar_item_strikeout
@@ -118,7 +118,7 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
             "sound" -> return R.id.pspdf__annotation_creation_toolbar_item_sound
             "instantCommentMarker" -> return R.id.pspdf__annotation_creation_toolbar_item_instant_comment_marker
             "instantHighlightComment" -> return R.id.pspdf__annotation_creation_toolbar_item_instant_highlight_comment
-            "markupTool" -> return R.id.pspdf__annotation_creation_toolbar_item_markup
+            "markupTool" -> return R.id.pspdf__annotation_creation_toolbar_group_markup
             "multimediaTool" -> return R.id.pspdf__annotation_creation_toolbar_group_multimedia
             "undoRedoTool" -> return R.id.pspdf__annotation_creation_toolbar_group_undo_redo
             "writingTool" -> return R.id.pspdf__annotation_creation_toolbar_group_writing

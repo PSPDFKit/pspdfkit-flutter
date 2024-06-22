@@ -49,7 +49,6 @@ class ConfigurationAdapter {
     private static final String ENABLE_TEXT_SELECTION = "enableTextSelection";
     private static final String DISABLE_AUTOSAVE = "disableAutosave";
 
-
     // Document Presentation Options
     private static final String PAGE_MODE = "pageMode";
     private static final String SPREAD_FITTING = "spreadFitting";

@@ -39,7 +39,6 @@ List<JsObject> jsObjectListToDartList(JsObject jsObjectList) {
   for (var i = 0; i < jsObjectList['length']; i++) {
     dartList.add(jsObjectList[i]);
   }
-
   return dartList;
 }
 

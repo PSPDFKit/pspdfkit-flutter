@@ -186,6 +186,11 @@
         } @catch (NSException *exception) {
             result([FlutterError errorWithCode:@"" message:exception.reason details:nil]);
         }
+        
+    } else if ([@"getFormFields" isEqualToString:call.method]) {
+        NSArray<PSPDFFormElement *> *formFields = pdfViewController.document.formParser.forms;
+        NSArray<NSDictionary *>  *formFieldsJson = [FormHelper convertFormFieldsWithFormFields:formFields];
+        result(formFieldsJson);
     } else {
         result(FlutterMethodNotImplemented);
     }

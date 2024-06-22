@@ -9,6 +9,7 @@ import 'dart:typed_data';
 
 import 'package:pspdfkit_flutter/src/document/document_save_options.dart';
 import 'package:pspdfkit_flutter/src/document/page_info.dart';
+import 'package:pspdfkit_flutter/src/forms/form_field.dart';
 
 abstract class PdfDocument {
   final String documentId;
@@ -23,4 +24,10 @@ abstract class PdfDocument {
   /// options:[DocumentSaveOptions] The options to use when exporting the document.
   /// Returns a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf({DocumentSaveOptions? options});
+
+  /// Returns the form field with the given name.
+  Future<PdfFormField> getFormField(String fieldName);
+
+  /// Returns a list of all form fields in the document.
+  Future<List<PdfFormField>> getFormFields();
 }

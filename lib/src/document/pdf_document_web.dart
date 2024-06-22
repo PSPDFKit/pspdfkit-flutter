@@ -10,6 +10,7 @@ import 'dart:typed_data';
 import 'package:pspdfkit_flutter/src/document/page_info.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
 
+import '../forms/form_field.dart';
 import 'document_save_options.dart';
 import 'pdf_document.dart';
 
@@ -28,5 +29,15 @@ class PdfDocumentWeb extends PdfDocument {
   @override
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) {
     return _instance.exportPdf(options: options);
+  }
+
+  @override
+  Future<PdfFormField> getFormField(String fieldName) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<PdfFormField>> getFormFields() {
+    return _instance.getFormFields();
   }
 }

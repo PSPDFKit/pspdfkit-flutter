@@ -5,17 +5,24 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/src/document/page_info.dart';
 
+import '../forms/form_field.dart';
 import 'document_save_options.dart';
 import 'pdf_document.dart';
 
 class PdfDocumentNative extends PdfDocument {
-  final MethodChannel _channel;
+  late final MethodChannel _channel;
 
-  PdfDocumentNative({required MethodChannel channel, required super.documentId})
-      : _channel = channel;
+  PdfDocumentNative(
+      {required super.documentId, required MethodChannel iosMethodChannel}) {
+    _channel = Platform.isIOS
+        ? iosMethodChannel
+        : MethodChannel('com.pspdfkit.document.$documentId');
+  }
 
   @override
   Future<PageInfo> getPageInfo(int pageIndex) =>
@@ -41,6 +48,33 @@ class PdfDocumentNative extends PdfDocument {
       return Uint8List.fromList(results.cast<int>());
     }).catchError((error) {
       throw Exception('Error exporting PDF: $error');
+    });
+  }
+
+  @override
+  Future<PdfFormField> getFormField(String fieldName) {
+    return _channel.invokeMethod('getFormField', <String, dynamic>{
+      'fieldName': fieldName,
+    }).then((results) {
+      if (results == null) {
+        throw Exception('Form field is null');
+      }
+      return PdfFormField.fromMap(results);
+    }).catchError((error) {
+      throw Exception('Error getting form field: $error');
+    });
+  }
+
+  @override
+  Future<List<PdfFormField>> getFormFields() {
+    return _channel.invokeMethod('getFormFields').then((results) {
+      if (results == null) {
+        throw Exception('Form fields are null');
+      }
+      return List<PdfFormField>.from(
+          results.map((result) => PdfFormField.fromMap(result)));
+    }).catchError((error) {
+      throw Exception('Error getting form fields: $error');
     });
   }
 }
