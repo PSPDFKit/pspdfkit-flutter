@@ -153,10 +153,13 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   /// mode and stores the PDF at the given destination path.
   @override
   Future<bool?> processAnnotations(
-          String type, String processingMode, String destinationPath) async =>
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) async =>
       methodChannel.invokeMethod('processAnnotations', <String, String>{
-        'type': type,
-        'processingMode': processingMode,
+        'type': type.name,
+        'processingMode': processingMode.name,
         'destinationPath': destinationPath
       });
 

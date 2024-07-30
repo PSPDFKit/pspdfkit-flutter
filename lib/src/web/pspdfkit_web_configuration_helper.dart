@@ -65,7 +65,8 @@ class WebConfigurationHelper {
       'sidebarMode': configuration?.webConfiguration?.sideBarMode?.webName,
       'spreadSpacing': configuration?.webConfiguration?.spreadSpacing,
       'viewportPadding': configuration?.webConfiguration?.viewportPadding,
-      'zoom': _getZoomValue(configuration?.webConfiguration?.zoom),
+      'zoom': _getZoomValue(configuration?.defaultZoomScale ??
+          configuration?.webConfiguration?.zoom),
       'zoomStep': configuration?.webConfiguration?.zoomStep,
     }..removeWhere((key, value) => value == null);
 
@@ -81,6 +82,17 @@ class WebConfigurationHelper {
     // Remove the toolbar items from the configuration.
     var finalWebConfigurations = configuration?.webConfiguration?.toMap()
       ?..removeWhere((key, value) => key == 'toolbarItems');
+
+    // Override the default zoom levels if they are set.
+    if (configuration?.maximumZoomScale != null) {
+      finalWebConfigurations
+          ?.addAll({'maxDefaultZoomLevel': configuration?.maximumZoomScale});
+    }
+
+    if (configuration?.minimumZoomScale != null) {
+      finalWebConfigurations
+          ?.addAll({'minDefaultZoomLevel': configuration?.minimumZoomScale});
+    }
 
     // Convert annotation toolbar items from here to avoid html imports in the main plugin.
     dynamic annotationToolbarItemsCallback(

@@ -22,10 +22,11 @@ public class FlutterPdfDocument: NSObject {
         self.document = document
         self.messenger = messenger
         self.chanel = FlutterMethodChannel(name: "com.pspdfkit.document."+document.uid, binaryMessenger: messenger)
-        self.chanel?.setMethodCallHandler {
-            (call: FlutterMethodCall, result: @escaping FlutterResult) in
+        self.chanel?.setMethodCallHandler({
+            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
             self.handleMethodCall(call: call, result: result)
-          }
+          })
+
     }
 
     private func handleMethodCall(call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -46,9 +47,9 @@ public class FlutterPdfDocument: NSObject {
                     let pageInfoDictionary: [String: Any?] = [
                         "width": pageInfo?.size.width,
                         "height": pageInfo?.size.height,
-                        "rotation": pageInfo?.savedRotation,
+                        "rotation": pageInfo?.savedRotation.rawValue,
                         "index": pageIndex,
-                        "label": ""
+                        "label": document?.pageLabelForPage(at: PageIndex(pageIndex), substituteWithPlainLabel: false)
                     ]
                     result(pageInfoDictionary)
                 } else {

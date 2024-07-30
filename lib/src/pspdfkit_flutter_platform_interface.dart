@@ -109,7 +109,10 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
   Future<bool?> processAnnotations(
-      String type, String processingMode, String destinationPath);
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  );
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool?> importXfdf(String xfdfPath);

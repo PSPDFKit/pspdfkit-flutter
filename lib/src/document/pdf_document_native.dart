@@ -5,8 +5,6 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 
-import 'dart:io';
-
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/src/document/page_info.dart';
 
@@ -19,9 +17,7 @@ class PdfDocumentNative extends PdfDocument {
 
   PdfDocumentNative(
       {required super.documentId, required MethodChannel iosMethodChannel}) {
-    _channel = Platform.isIOS
-        ? iosMethodChannel
-        : MethodChannel('com.pspdfkit.document.$documentId');
+    _channel = MethodChannel('com.pspdfkit.document.$documentId');
   }
 
   @override
@@ -77,4 +73,5 @@ class PdfDocumentNative extends PdfDocument {
       throw Exception('Error getting form fields: $error');
     });
   }
+
 }

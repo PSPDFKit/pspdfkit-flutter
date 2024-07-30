@@ -16,6 +16,7 @@ import static com.pspdfkit.flutter.pspdfkit.util.Utilities.areValidIndexes;
 import static com.pspdfkit.flutter.pspdfkit.util.Utilities.isImageDocument;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
@@ -34,12 +35,17 @@ import androidx.fragment.app.FragmentActivity;
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.annotations.AnnotationType;
 import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
+import com.pspdfkit.document.DocumentSaveOptions;
 import com.pspdfkit.document.PdfDocument;
+import com.pspdfkit.document.PdfVersion;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
+import com.pspdfkit.document.processor.PdfProcessor;
+import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
+import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
@@ -53,12 +59,14 @@ import com.pspdfkit.ui.PdfFragment;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.embedding.engine.FlutterEngine;
@@ -73,6 +81,7 @@ import io.flutter.plugin.common.PluginRegistry;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
 
 
 /**
@@ -157,6 +166,7 @@ public class PspdfkitPlugin
         }
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         String fullyQualifiedName;
@@ -656,6 +666,68 @@ public class PspdfkitPlugin
                     result.error("AnnotationException", e.getMessage(), null);
                 }
                 break;
+            }
+            case "processAnnotations": {
+                String outputFilePath = call.argument("destinationPath");
+                String annotationTypeString = call.argument("type");
+                String processingModeString = call.argument("processingMode");
+
+                // Check if the output path is valid.
+                if (outputFilePath == null || outputFilePath.isEmpty()) {
+                    result.error("InvalidArgument", "Output path must be a valid string", null);
+                    return;
+                }
+
+                // Check if the annotation type is valid.
+                if (annotationTypeString == null || annotationTypeString.isEmpty()) {
+                    result.error("InvalidArgument", "Annotation type must be a valid string", null);
+                    return;
+                }
+
+                // Check if the processing mode is valid.
+                if (processingModeString == null || processingModeString.isEmpty()) {
+                    result.error("InvalidArgument", "Processing mode must be a valid string", null);
+                    return;
+                }
+
+                // Get the annotation type and processing mode.
+                AnnotationType annotationType = ProcessorHelper.annotationTypeFromString(annotationTypeString);
+                PdfProcessorTask.AnnotationProcessingMode processingMode = ProcessorHelper.processModeFromString(processingModeString);
+                File outputPath = new File(outputFilePath);
+
+                if (Objects.requireNonNull(outputPath.getParentFile()).exists() || outputPath.getParentFile().mkdirs()) {
+                    Log.d(LOG_TAG, "Output path is valid");
+                } else {
+                    result.error("InvalidArgument", "Output path "+ outputPath.getAbsolutePath()+" is invalid", null);
+                    return;
+                }
+
+                document = requireDocumentNotNull(getInstantActivity(), "Pspdfkit.processAnnotations()");
+                PdfProcessorTask task;
+
+                // Check if we need to process all annotations or only annotations of a specific type.
+                if (annotationType == AnnotationType.NONE){
+                  task  = PdfProcessorTask.fromDocument(document).changeAllAnnotations(processingMode);
+                }else{
+                    task = PdfProcessorTask.fromDocument(document).changeAnnotationsOfType(annotationType, processingMode);
+                }
+                PdfProcessor.processDocumentAsync(task,outputPath)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(new DisposableSubscriber<PdfProcessor.ProcessorProgress>() {
+                            @Override
+                            public void onComplete() {
+                                result.success(true);
+                            }
+                            @Override
+                            public void onError(Throwable t) {
+                                result.error("AnnotationException", t.getMessage(), null);
+                            }
+                            @Override
+                            public void onNext(PdfProcessor.ProcessorProgress processorProgress) {
+                                // Notify the progress.
+                            }
+                        });
             }
             default:
                 result.notImplemented();

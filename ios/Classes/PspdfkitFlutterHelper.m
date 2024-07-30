@@ -191,7 +191,24 @@
         NSArray<PSPDFFormElement *> *formFields = pdfViewController.document.formParser.forms;
         NSArray<NSDictionary *>  *formFieldsJson = [FormHelper convertFormFieldsWithFormFields:formFields];
         result(formFieldsJson);
-    } else {
+    } else if ([@"getVisibleRect" isEqualToString:call.method]) {
+        CGRect visibleRect = [pdfViewController.viewState viewPort];
+        NSDictionary *visibleRectDictionary = @{
+            @"left": @(visibleRect.origin.x),
+            @"top": @(visibleRect.origin.y),
+            @"width": @(visibleRect.size.width),
+            @"height": @(visibleRect.size.height)
+        };
+        result(visibleRectDictionary);        
+    } else if ([@"zoomToRect" isEqualToString:call.method]) {
+        NSInteger pageIndex = [call.arguments[@"pageIndex"] integerValue];
+        NSDictionary *rect = call.arguments[@"rect"];
+        CGRect rectToZoom = CGRectMake([rect[@"left"] doubleValue], [rect[@"top"] doubleValue], [rect[@"width"] doubleValue], [rect[@"height"] doubleValue]);
+        [pdfViewController.documentViewController zoomToPDFRect:rectToZoom forPageAtIndex:pageIndex animated:YES];
+        result(nil);
+    } else if ([@"getZoomScale" isEqualToString:call.method]) {
+        result(FlutterMethodNotImplemented);
+    }else {
         result(FlutterMethodNotImplemented);
     }
 }

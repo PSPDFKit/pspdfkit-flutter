@@ -50,13 +50,13 @@ class _PspdfkitInstantCollaborationExampleState
                           style: const TextStyle(color: Colors.black),
                           children: [
                         TextSpan(
-                          text: 'https://web-examples.pspdfkit.com',
+                          text: 'https://web-examples.services.demo.pspdfkit.com',
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               // Open the URL in the browser.
                               launchUrl(Uri.parse(
-                                  'https://web-examples.pspdfkit.com'));
+                                  'https://web-examples.services.demo.pspdfkit.com'));
                             },
                         ),
                         const TextSpan(

@@ -82,10 +82,13 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
 
   @override
   Future<bool?> processAnnotations(
-          String type, String processingMode, String destinationPath) async =>
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) async =>
       _channel.invokeMethod('processAnnotations', <String, String>{
-        'type': type,
-        'processingMode': processingMode,
+        'type': type.name,
+        'processingMode': processingMode.name,
         'destinationPath': destinationPath
       });
 
@@ -117,5 +120,53 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   void addEventListener(String eventName, Function(dynamic) callback) {
     throw UnimplementedError(
         'addEventListener is not yet implemented on this platform');
+  }
+
+  @override
+  Future<Rect> getVisibleRect(int pageIndex) {
+    return _channel.invokeMethod('getVisibleRect', {
+      'pageIndex': pageIndex,
+    }).then((results) {
+      if (results == null) {
+        throw Exception('Visible rect is null');
+      }
+      return Rect.fromLTWH(
+        results['left'],
+        results['top'],
+        results['width'],
+        results['height'],
+      );
+    }).catchError((error) {
+      throw Exception('Error getting visible rect: $error');
+    });
+  }
+
+  @override
+  Future<void> zoomToRect(int pageIndex, Rect rect) {
+    return _channel.invokeMethod('zoomToRect', <String, dynamic>{
+      'pageIndex': pageIndex,
+      'rect': <String, dynamic>{
+        'left': rect.left,
+        'top': rect.top,
+        'width': rect.width,
+        'height': rect.height,
+      },
+    }).catchError((error) {
+      throw Exception('Error zooming to rect: $error');
+    });
+  }
+
+  @override
+  Future<double> getZoomScale(int pageIndex) {
+    return _channel.invokeMethod('getZoomScale', {
+      'pageIndex': pageIndex,
+    }).then((results) {
+      if (results == null) {
+        throw Exception('Zoom scale is null');
+      }
+      return results as double;
+    }).catchError((error) {
+      throw Exception('Error getting zoom scale: $error');
+    });
   }
 }

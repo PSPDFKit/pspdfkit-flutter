@@ -165,6 +165,15 @@ class PdfConfiguration {
   // The list must contain only AnnotationToolsGroup and AnnotationTool.
   final List<dynamic>? annotationToolsGrouping;
 
+  /// Sets the default zoom scale. Defaults to null. On Web, this is the zoom has priority over PdfConfiguration.zoom.
+  final double? defaultZoomScale;
+
+  /// Sets the maximum zoom scale. Defaults to null.
+  final double? maximumZoomScale;
+
+  /// Sets the minimum zoom scale. Defaults to null.
+  final double? minimumZoomScale;
+
   PdfConfiguration(
       {this.scrollDirection,
       this.pageTransition,
@@ -210,7 +219,10 @@ class PdfConfiguration {
       this.measurementSnappingEnabled,
       this.enableMagnifier,
       this.measurementValueConfigurations,
-      this.annotationToolsGrouping});
+      this.annotationToolsGrouping,
+      this.defaultZoomScale,
+      this.maximumZoomScale,
+      this.minimumZoomScale});
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
   /// This is used to pass the configuration to the platform side.
@@ -258,7 +270,10 @@ class PdfConfiguration {
       'enableMagnifier': enableMagnifier,
       'measurementValueConfigurations':
           measurementValueConfigurations?.map((e) => e.toMap()).toList(),
-      'toolbarItemGrouping': convertAnnotationToolsGrouping()
+      'toolbarItemGrouping': convertAnnotationToolsGrouping(),
+      'defaultZoomScale': defaultZoomScale,
+      'maximumZoomScale': maximumZoomScale,
+      'minimumZoomScale': minimumZoomScale
     }..removeWhere((key, value) => value == null);
   }
 

@@ -37,7 +37,7 @@
     if ((self = [super init])) {
         _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.pspdfkit.widget.%lld", viewId] binaryMessenger:messenger];
         _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:messenger];
-
+        _binaryMessenger = messenger;
         _navigationController = [PSPDFNavigationController new];
         _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _navigationController.view.frame = frame;
@@ -113,6 +113,7 @@
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
 
         __weak id weakSelf = self;
+        
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
         }];

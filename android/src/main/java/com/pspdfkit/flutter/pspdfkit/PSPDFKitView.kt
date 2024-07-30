@@ -3,6 +3,7 @@ package com.pspdfkit.flutter.pspdfkit
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.graphics.RectF
 import android.net.Uri
 import android.util.Log
 import android.view.View
@@ -12,15 +13,18 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import com.pspdfkit.annotations.AnnotationType
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.processor.PdfProcessor
+import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
-import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper
+import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper.annotationTypeFromString
+import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper.processModeFromString
 import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
 import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
@@ -38,13 +42,11 @@ import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subscribers.DisposableSubscriber
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
-
 
 internal class PSPDFKitView(
     val context: Context,
@@ -67,7 +69,6 @@ internal class PSPDFKitView(
         val password = configurationAdapter.password
         val pdfConfiguration = configurationAdapter.build()
         val toolbarGroupingItems: List<Any>? = configurationMap?.get("toolbarItemGrouping") as List<Any>?
-
         val measurementValueConfigurations =
             configurationMap?.get("measurementValueConfigurations") as List<Map<String, Any>>?
 
@@ -144,7 +145,7 @@ internal class PSPDFKitView(
         if (!pdfUiFragment.isAdded) {
             return
         }
-        val document = pdfUiFragment.document ?: return
+        var document = pdfUiFragment.document ?: return
 
         when (call.method) {
             "applyInstantJson" -> {
@@ -481,6 +482,113 @@ internal class PSPDFKitView(
                     result.error("DocumentException", e.message, null)
                 }
             }
+            "zoomToRect" -> {
+                try {
+                    val pageIndex:Int = requireNotNull(call.argument("pageIndex"))
+                    val rect: Map<String,Double> = requireNotNull(call.argument("rect"))
+                    var duration:Long = 0
+                    if(call.hasArgument("duration")){
+                        duration = requireNotNull(call.argument("duration"))
+                    }
+                    val x = requireNotNull(rect["left"])
+                    val y = requireNotNull(rect["top"])
+                    val width = requireNotNull(rect["width"])
+                    val height = requireNotNull(rect["height"])
+                    val zooRect = RectF(x.toFloat(),y.toFloat(),(x+width).toFloat(),(y+height).toFloat())
+                    pdfUiFragment.pdfFragment?.zoomTo(zooRect,pageIndex, duration)
+                    result.success(true)
+                } catch (e: Exception) {
+                    result.error("DocumentException", e.message, null)
+                }
+            }
+            "getVisibleRect" -> {
+                val pageIndex = requireNotNull(call.argument("pageIndex")) as Int
+                if (pageIndex < 0 || pageIndex >= document.pageCount) {
+                    result.error("InvalidArgument", "pageIndex is required", null)
+                } else {
+                    val visiblePdfRect = RectF()
+                    pdfUiFragment.pdfFragment?.getVisiblePdfRect(visiblePdfRect, pageIndex)
+                    result.success(
+                        mapOf(
+                            "left" to visiblePdfRect.left,
+                            "top" to visiblePdfRect.top,
+                            "height" to visiblePdfRect.height(),
+                            "width" to visiblePdfRect.width()
+                        )
+                    )
+                }
+            }
+            "getZoomScale" -> {
+                val pageIndex = requireNotNull(call.argument("pageIndex")) as Int
+                if (pageIndex < 0 || pageIndex >= document.pageCount) {
+                    result.error("InvalidArgument", "pageIndex is out of bounds", null)
+                } else {
+                    val zoomScale = pdfUiFragment.pdfFragment?.getZoomScale(pageIndex)
+                    result.success(zoomScale)
+                }
+            }
+            "processAnnotations" -> {
+                val outputFilePath:String? = call.argument<String>("destinationPath")
+                val annotationTypeString:String? = call.argument<String>("type")
+                val processingModeString:String? = call.argument<String>("processingMode")
+
+                // Check if the output path is valid.
+                if (outputFilePath.isNullOrEmpty()) {
+                    result.error("InvalidArgument", "Output path must be a valid string", null)
+                    return
+                }
+
+                // Check if the annotation type is valid.
+                if (annotationTypeString.isNullOrEmpty()) {
+                    result.error("InvalidArgument", "Annotation type must be a valid string", null)
+                    return
+                }
+
+                // Check if the processing mode is valid.
+                if (processingModeString.isNullOrEmpty()) {
+                    result.error("InvalidArgument", "Processing mode must be a valid string", null)
+                    return
+                }
+
+                // Get the annotation type and processing mode.
+                val annotationType = annotationTypeFromString(
+                    annotationTypeString
+                )
+                val processingMode = processModeFromString(processingModeString)
+                val outputPath = File(outputFilePath)
+
+                if (outputPath.parentFile?.exists() == true || outputPath.parentFile?.mkdirs() == true) {
+                    Log.d(LOG_TAG, "Output path is valid: $outputPath")
+                } else {
+                    result.error("InvalidArgument", "Output path ${outputPath.absolutePath} is invalid", null)
+                    return
+                }
+
+                // Check if we need to process all annotations or only annotations of a specific type.
+                val task = if (annotationType == AnnotationType.NONE) {
+                    PdfProcessorTask.fromDocument(document).changeAllAnnotations(processingMode)
+                } else {
+                    PdfProcessorTask.fromDocument(document)
+                        .changeAnnotationsOfType(annotationType, processingMode)
+                }
+
+                PdfProcessor.processDocumentAsync(task, outputPath)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableSubscriber<ProcessorProgress?>() {
+                        override fun onComplete() {
+                            result.success(true)
+                        }
+
+                        override fun onNext(t: ProcessorProgress?) {
+                            // No-op
+                        }
+
+                        override fun onError(t: Throwable) {
+                            result.error("AnnotationException", t.message, null)
+                        }
+                    })
+            }
             else -> result.notImplemented()
         }
     }
@@ -512,7 +620,6 @@ class PSPDFKitViewFactory(
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
     override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
         val creationParams = args as Map<String?, Any?>?
-
         return PSPDFKitView(
             context!!,
             viewId,

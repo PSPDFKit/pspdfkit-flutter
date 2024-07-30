@@ -192,6 +192,15 @@
             builder.autosaveEnabled = ![dictionary[key] boolValue];
         }
         
+        key = @"maximumZoomScale";
+        if (dictionary[key]){
+            builder.maximumZoomScale = [dictionary[key] doubleValue];
+        }
+        
+        key = @"minimumZoomScale";
+        if (dictionary[key]){
+            builder.minimumZoomScale = [dictionary[key] doubleValue];
+        }
     }];
 }
 
@@ -342,32 +351,54 @@
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString {
     if (!typeString) {
         return PSPDFAnnotationTypeNone;
-    } else if ([typeString isEqualToString:@"pspdfkit/ink"]) {
+    } else if ([typeString isEqualToString:@"ink"]) {
         return PSPDFAnnotationTypeInk;
-    } else if ([typeString isEqualToString:@"pspdfkit/link"]) {
+    } else if ([typeString isEqualToString:@"link"]) {
         return PSPDFAnnotationTypeLink;
-    } else if ([typeString isEqualToString:@"pspdfkit/markup/highlight"]) {
+    } else if ([typeString isEqualToString:@"highlight"]) {
         return PSPDFAnnotationTypeHighlight;
-    } else if ([typeString isEqualToString:@"pspdfkit/markup/squiggly"]) {
+    } else if ([typeString isEqualToString:@"squiggly"]) {
         return PSPDFAnnotationTypeSquiggly;
-    } else if ([typeString isEqualToString:@"pspdfkit/markup/strikeout"]) {
+    } else if ([typeString isEqualToString:@"strikeout"]) {
         return PSPDFAnnotationTypeStrikeOut;
-    } else if ([typeString isEqualToString:@"pspdfkit/markup/underline"]) {
+    } else if ([typeString isEqualToString:@"underline"]) {
         return PSPDFAnnotationTypeUnderline;
-    } else if ([typeString isEqualToString:@"pspdfkit/note"]) {
+    } else if ([typeString isEqualToString:@"note"]) {
         return PSPDFAnnotationTypeNote;
-    } else if ([typeString isEqualToString:@"pspdfkit/shape/ellipse"]) {
+    } else if ([typeString isEqualToString:@"ellipse"]) {
         return PSPDFAnnotationTypeCircle;
-    } else if ([typeString isEqualToString:@"pspdfkit/shape/line"]) {
+    } else if ([typeString isEqualToString:@"line"]) {
         return PSPDFAnnotationTypeLine;
-    } else if ([typeString isEqualToString:@"pspdfkit/shape/polygon"]) {
+    } else if ([typeString isEqualToString:@"polygon"]) {
         return PSPDFAnnotationTypePolygon;
-    } else if ([typeString isEqualToString:@"pspdfkit/shape/rectangle"]) {
+    } else if ([typeString isEqualToString:@"square"]) {
         return PSPDFAnnotationTypeSquare;
-    } else if ([typeString isEqualToString:@"pspdfkit/text"]) {
+    } else if ([typeString isEqualToString:@"text"]) {
         return PSPDFAnnotationTypeFreeText;
-    } else if ([typeString isEqualToString:@"pspdfkit/all"]) {
-        return PSPDFAnnotationTypeAll;
+    } else if ([typeString isEqualToString:@"circle"]){
+        return PSPDFAnnotationTypeCircle;
+    }else if ([typeString isEqualToString:@"redact"]){
+        return PSPDFAnnotationTypeRedaction;
+    } else if ([typeString isEqualToString:@"stamp"]){
+        return PSPDFAnnotationTypeStamp;
+    } else if ([typeString isEqualToString:@"caret"]){
+        return PSPDFAnnotationTypeCaret;
+    } else if ([typeString isEqualToString:@"popup"]){
+        return PSPDFAnnotationTypePopup;
+    } else if ([typeString isEqualToString:@"file"]){
+        return PSPDFAnnotationTypeFile;
+    } else if ([typeString isEqualToString:@"sound"]){
+        return PSPDFAnnotationTypeSound;
+    } else if ([typeString isEqualToString:@"widget"]){
+        return PSPDFAnnotationTypeWidget;
+    } else if ([typeString isEqualToString:@"screen"]){
+        return PSPDFAnnotationTypeScreen;
+    } else if ([typeString isEqualToString:@"watermark"]){
+        return PSPDFAnnotationTypeWatermark;
+    } else if ([typeString isEqualToString:@"trapNet"]){
+        return PSPDFAnnotationTypeTrapNet;
+    } else if ([typeString isEqualToString:@"richMedia"]){
+        return PSPDFAnnotationTypeRichMedia;
     } else if ([typeString isEqualToString:@"all"]) {
         return PSPDFAnnotationTypeAll;
     } else {

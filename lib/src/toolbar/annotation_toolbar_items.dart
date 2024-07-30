@@ -53,15 +53,4 @@ enum AnnotationToolbarItem {
   file,
 }
 
-enum AnnotationType {
-  markup,
-  writing,
-  drawing,
-  text,
-  signature,
-  shape,
-  eraser,
-  redaction,
-  magicInk,
-  measurement,
-}
+

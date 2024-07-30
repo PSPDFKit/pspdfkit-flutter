@@ -1,8 +1,10 @@
 package com.pspdfkit.flutter.pspdfkit.util
 
+import com.pspdfkit.annotations.AnnotationType
 import com.pspdfkit.document.DocumentPermissions
 import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfVersion
+import com.pspdfkit.document.processor.PdfProcessorTask
 import java.util.EnumSet
 
 object ProcessorHelper {
@@ -64,6 +66,8 @@ object ProcessorHelper {
         }
     }
 
+
+
     fun reversePermissions(permissions: EnumSet<DocumentPermissions>): List<String> {
         val permissionsList = mutableListOf<String>()
         for (permission in permissions) {
@@ -80,6 +84,43 @@ object ProcessorHelper {
             }
         }
         return permissionsList
+    }
+
+    @JvmStatic
+    fun annotationTypeFromString(annotationType: String): AnnotationType {
+        return when (annotationType) {
+            "freetext" -> AnnotationType.FREETEXT
+            "note" -> AnnotationType.NOTE
+            "highlight" -> AnnotationType.HIGHLIGHT
+            "underline" -> AnnotationType.UNDERLINE
+            "strikeout" -> AnnotationType.STRIKEOUT
+            "ink" -> AnnotationType.INK
+            "square" -> AnnotationType.SQUARE
+            "circle" -> AnnotationType.CIRCLE
+            "line" -> AnnotationType.LINE
+            "polygon" -> AnnotationType.POLYGON
+            "polyline" -> AnnotationType.POLYLINE
+            "caret" -> AnnotationType.CARET
+            "stamp" -> AnnotationType.STAMP
+            "sound" -> AnnotationType.SOUND
+            "file" -> AnnotationType.FILE
+            "widget" -> AnnotationType.WIDGET
+            "screen" -> AnnotationType.SCREEN
+            "popup" -> AnnotationType.POPUP
+            "watermark" -> AnnotationType.WATERMARK
+            "redact" -> AnnotationType.REDACT
+            else -> AnnotationType.NONE
+        }
+    }
+    @JvmStatic
+    fun processModeFromString(processMode: String): PdfProcessorTask.AnnotationProcessingMode {
+        return when (processMode) {
+            "flatten" -> PdfProcessorTask.AnnotationProcessingMode.FLATTEN
+            "remove" -> PdfProcessorTask.AnnotationProcessingMode.DELETE
+            "print" -> PdfProcessorTask.AnnotationProcessingMode.PRINT
+            "embed" -> PdfProcessorTask.AnnotationProcessingMode.KEEP
+            else -> throw IllegalArgumentException("Unknown process mode: $processMode")
+        }
     }
 
 }

@@ -71,7 +71,10 @@ class _PspdfkitSaveAsExampleWidgetState
                                 'PDFs/Embedded/new_pdf_document.pdf');
                             await pspdfkitWidgetController
                                 .processAnnotations(
-                                    'all', 'embed', newDocumentPath)
+                              AnnotationType.all,
+                              AnnotationProcessingMode.embed,
+                              newDocumentPath,
+                            )
                                 .then((value) async {
                               await showDialog<String>(
                                 context: context,

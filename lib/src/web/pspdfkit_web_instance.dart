@@ -12,8 +12,8 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:js';
 import 'dart:typed_data';
+import 'package:flutter/painting.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/forms/form_field.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
 import '../document/page_info.dart';
 
@@ -399,6 +399,39 @@ class PspdfkitWebInstance {
       resultList.add(fieldMap);
     }
     return resultList.map((field) => PdfFormField.fromMap(field)).toList();
+  }
+
+  /// Zooms to the specified rectangle on the given page.
+  /// The [pageIndex] parameter is the index of the page to zoom to.
+  /// The [rect] parameter is the rectangle to zoom to.
+  /// Returns a [Future] that completes when the operation is complete.
+  /// Throws an error if the operation fails.
+  Future<void> zoomToRect(int pageIndex, Rect rect) async {
+    try {
+      JsObject webRect = JsObject(context['PSPDFKit']['Geometry']['Rect'], [
+        JsObject.jsify({
+          'left': rect.left,
+          'top': rect.top,
+          'width': rect.width,
+          'height': rect.height
+        })
+      ]);
+      _pspdfkitInstance.callMethod('jumpAndZoomToRect', [
+        pageIndex,
+        webRect,
+      ]);
+    } catch (e) {
+      throw Exception('Failed to zoom to rect: $e');
+    }
+  }
+
+  Future<double> getZoomScale(int pageIndex) async {
+    try {
+      var scale = _pspdfkitInstance['currentZoomLevel'];
+      return scale.toDouble();
+    } catch (e) {
+      throw Exception('Failed to get zoom scale: $e');
+    }
   }
 
   String _getFormFieldType(JsObject field) {

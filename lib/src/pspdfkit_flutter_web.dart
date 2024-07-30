@@ -92,8 +92,8 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future<bool?> processAnnotations(
-      String type, String processingMode, String destinationPath) {
+  Future<bool?> processAnnotations(AnnotationType type,
+      AnnotationProcessingMode processingMode, String destinationPath) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 

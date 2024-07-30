@@ -7,6 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'package:flutter/painting.dart';
+
 import '../../pspdfkit.dart';
 
 /// A controller for a PSPDFKit widget.
@@ -40,7 +42,10 @@ abstract class PspdfkitWidgetController {
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
   Future<bool?> processAnnotations(
-      String type, String processingMode, String destinationPath);
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  );
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool?> importXfdf(String xfdfPath);
@@ -63,4 +68,20 @@ abstract class PspdfkitWidgetController {
   /// Sets the annotation preset configurations for the given annotation tools.
   /// @param eventName The name of the event to listen to.
   void addEventListener(String eventName, Function(dynamic) callback);
+
+  /// Gets the visible rect of the given page.
+  /// pageIndex The index of the page. This is a zero-based index.
+  /// Returns a [Future] that completes with the visible rect of the given page.
+  Future<Rect> getVisibleRect(int pageIndex);
+
+  /// Zooms to the given rect on the given page.
+  /// pageIndex The index of the page. This is a zero-based index.
+  /// rect The rect to zoom to.
+  /// Returns a [Future] that completes when the zoom operation is done.
+  Future<void> zoomToRect(int pageIndex, Rect rect);
+
+  /// Gets the zoom scale of the given page.
+  /// pageIndex The index of the page. This is a zero-based index.
+  /// Returns a [Future] that completes with the zoom scale of the given page.
+  Future<double> getZoomScale(int pageIndex);
 }

@@ -18,6 +18,7 @@ import 'instant_collaboration_web.dart';
 import 'pspdfkit_annotation_preset_customisation.dart';
 import 'pspdfkit_document_example.dart';
 import 'pspdfkit_event_listeners_example.dart';
+import 'pspdfkit_zoom_example.dart';
 import 'utils/file_utils.dart';
 import 'utils/platform_utils.dart';
 import 'package:pspdfkit_example/pspdfkit_configuration_example.dart';
@@ -123,7 +124,7 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
               'Embed and save the changes made to a document into a new file',
           onTap: () => saveAsExample(context),
         ),
-      if (PlatformUtils.isCupertino(context))
+      if (PlatformUtils.isCupertino(context) || PlatformUtils.isAndroid())
         PspdfkitExampleItem(
           title: 'Process Annotations',
           description:
@@ -185,6 +186,13 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
           description: 'Instant Synchronization Web Example',
           onTap: () => goTo(const InstantCollaborationWeb(), context),
         ),
+      PspdfkitExampleItem(
+          title: 'Zoom to Rect',
+          description: 'Zoom and restore page zoom example ',
+          onTap: () async {
+            await extractAsset(context, _documentPath).then((value) =>
+                goTo(PspdfkitZoomExample(documentPath: value.path), context));
+          }),
     ];
 
 List<PspdfkitExampleItem> globalExamples(BuildContext context) => [

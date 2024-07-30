@@ -188,7 +188,10 @@ class ConfigurationAdapter {
     private static final String ENABLED_MEASUREMENT_TOOLS = "enableMeasurementTools";
     private static final String ENABLE_MAGNIFIER = "enableMagnifier";
     private static final String ENABLED_MEASUREMENT_TOOL_SNAPPING = "enableMeasurementToolSnapping";
-    
+    private  static final  String MAXIMUM_ZOOM_SCALE = "maximumZoomScale";
+    private static final String MINIMUM_ZOOM_SCALE = "minimumZoomScale";
+    private static final  String DEFAULT_ZOOM_SCALE = "defaultZoomScale";
+
     @NonNull
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable
@@ -385,6 +388,17 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, ENABLED_MEASUREMENT_TOOL_SNAPPING, Boolean.class);
             if (key != null) {
                 configureMeasurementToolSnappingEnabled(context,(Boolean) configurationMap.get(key));
+            }
+
+            key = getKeyOfType(configurationMap, MAXIMUM_ZOOM_SCALE, Double.class);
+            if (key != null) {
+                    configuration.maxZoomScale((float) configurationMap.get(key));
+            }
+
+            key = getKeyOfType(configurationMap, DEFAULT_ZOOM_SCALE, Double.class);
+            if (key != null) {
+                double value = (double) configurationMap.get(key);
+                configuration.startZoomScale((float) value);
             }
         }
     }

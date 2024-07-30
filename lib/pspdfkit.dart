@@ -13,10 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:pspdfkit_flutter/src/pspdfkit_flutter_platform_interface.dart';
-import 'package:pspdfkit_flutter/src/web/models/pspdfkit_web_toolbar_item.dart';
-
-import 'src/measurements/measurements.dart';
-import 'src/processor/processor.dart';
+import 'pspdfkit.dart';
 
 export 'src/pdf_configuration.dart';
 export 'src/web/pspdfkit_web_configuration.dart';
@@ -35,6 +32,8 @@ export 'src/document/document_save_options.dart';
 export 'src/document/document_permissions.dart';
 export 'src/document/pdf_version.dart';
 export 'src/forms/forms.dart';
+export 'src/processor/annotation_processing_mode.dart';
+export 'src/annotations/annotation_types.dart';
 
 part 'src/android_permission_status.dart';
 
@@ -120,7 +119,10 @@ class Pspdfkit {
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
   static Future<bool?> processAnnotations(
-          String type, String processingMode, String destinationPath) async =>
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) async =>
       PspdfkitFlutterPlatform.instance
           .processAnnotations(type, processingMode, destinationPath);
 

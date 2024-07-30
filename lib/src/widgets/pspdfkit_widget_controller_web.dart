@@ -7,6 +7,8 @@
 ///
 ///
 
+import 'dart:ui';
+
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
 import '../../pspdfkit.dart';
 import '../web/pspdfkit_web.dart';
@@ -63,8 +65,11 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
 
   @override
   Future<bool?> processAnnotations(
-      String type, String processingMode, String destinationPath) {
-    throw UnimplementedError('This method id not supported on the web!');
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) {
+    throw UnimplementedError('This method is not supported on the web!');
   }
 
   @override
@@ -82,7 +87,7 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
   @override
   Future<bool?> setAnnotationConfigurations(
       Map<AnnotationTool, AnnotationConfiguration> configurations) async {
-    throw UnimplementedError('This method id not supported on the web!');
+    throw UnimplementedError('This method is not supported on the web!');
   }
 
   @override
@@ -99,5 +104,21 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
   @override
   void addEventListener(String eventName, Function(dynamic) callback) {
     pspdfkitInstance.addEventListener(eventName, callback);
+  }
+
+  @override
+  Future<Rect> getVisibleRect(int pageIndex) {
+    // This method is not supported on the web.
+    throw UnimplementedError('This method is not supported yet on web!');
+  }
+
+  @override
+  Future<void> zoomToRect(int pageIndex, Rect rect) {
+    return pspdfkitInstance.zoomToRect(pageIndex, rect);
+  }
+
+  @override
+  Future<double> getZoomScale(int pageIndex) {
+    return pspdfkitInstance.getZoomScale(pageIndex);
   }
 }
