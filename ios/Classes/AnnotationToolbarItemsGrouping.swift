@@ -15,7 +15,7 @@ public class AnnotationToolbarItemsGrouping: NSObject  {
      static let annotationUnderline = "underline"
      static let annotationSquiggly = "squiggly"
      static let annotationNote = "note"
-     static let annotationFreeText = "freetext"
+     static let annotationFreeText = "freeText"
      static let annotationInk = "ink"
      static let annotationLine = "line"
      static let annotationSquare = "square"
@@ -30,19 +30,19 @@ public class AnnotationToolbarItemsGrouping: NSObject  {
      static let annotationRedaction = "redaction"
      static let annotationDistanceMeasurement = "distance"
      static let annotationPerimeterMeasurement = "perimeter"
-     static let annotationPolygonalAreaMeasurement = "area_polygon"
-     static let annotationEllipticalAreaMeasurement = "area_circle"
-     static let annotationSquareAreaMeasurement = "area_square"
+     static let annotationPolygonalAreaMeasurement = "areaPolygon"
+     static let annotationEllipticalAreaMeasurement = "areaCircle"
+     static let annotationSquareAreaMeasurement = "areaSquare"
      static let annotationInkPen = "pen"
-     static let annotationInkMagic = "magic_ink"
+     static let annotationInkMagic = "magicInk"
      static let annotationInkHighlighter = "highlighter"
      static let annotationLineArrow = "arrow"
-     static let annotationFreeTextCallout = "freetext_callout"
-     static let annotationPolygonCloud = "cloudy_polygon"
+     static let annotationFreeTextCallout = "freeTextCallout"
+     static let annotationPolygonCloud = "cloudyPolygon"
      static let annotationTextHighlighter = "highlight"
      static let annotationWidget = "widget"
      static let annotationCaret = "caret"
-     static let annotationHighligh = "highlight"
+     static let annotationHighlight = "highlight"
      static let annotationInstantCommentMarker = "instantCommentMarker"
      static let annotationScreen = "screen"
      static let annotationFile = "file"
@@ -54,25 +54,25 @@ public class AnnotationToolbarItemsGrouping: NSObject  {
    @objc public static func convertAnnotationToolbarConfiguration(toolbarItems: NSArray) -> AnnotationToolConfiguration {
          var parsedItems: [AnnotationToolConfiguration.ToolGroup] = []
           
-          for itemToParse in toolbarItems {
-            if let dict = itemToParse as? [String: Any] {
-                let subArray = dict["items"] as! [Any]
-                var subItems: [AnnotationToolConfiguration.ToolItem] = []
-              
-             for subItem in subArray {
-                  let annotationString = annotationStringFromName(name: subItem as! String)
-                  if annotationString != nil {
-                      subItems.append(AnnotationToolConfiguration.ToolItem(type: annotationString!, variant: annotationVariantStringFromName(name: subItem as! String), configurationBlock: annotationGroupItemConfigurationBlockFromName(name: subItem as! String)))
-                  }
-              }
-                
-            parsedItems.append(AnnotationToolConfiguration.ToolGroup(items: subItems))
-                
-            } else {
-              let annotationString = annotationStringFromName(name: itemToParse as! String)
-              if annotationString != nil {
-                  parsedItems.append(AnnotationToolConfiguration.ToolGroup(items: [AnnotationToolConfiguration.ToolItem(type: annotationString!, variant: annotationVariantStringFromName(name: itemToParse as! String), configurationBlock: annotationGroupItemConfigurationBlockFromName(name: itemToParse as! String))]))
-              }
+       for itemToParse in toolbarItems {
+           if let dict = itemToParse as? [String: Any] {
+               let subArray = dict["items"] as! [Any]
+               var subItems: [AnnotationToolConfiguration.ToolItem] = []
+               
+               for subItem in subArray {
+                   let annotationString = annotationStringFromName(name: subItem as! String)
+                   if annotationString != nil {
+                       subItems.append(AnnotationToolConfiguration.ToolItem(type: annotationString!, variant: annotationVariantStringFromName(name: subItem as! String), configurationBlock: annotationGroupItemConfigurationBlockFromName(name: subItem as! String)))
+                   }
+               }
+               parsedItems.append(AnnotationToolConfiguration.ToolGroup(items: subItems))
+           } else {
+               let annotationType = annotationStringFromName(name: itemToParse as! String)
+               let annotationVariant = annotationVariantStringFromName(name: itemToParse as! String)
+               
+               if annotationType != nil {
+                   parsedItems.append(AnnotationToolConfiguration.ToolGroup(items: [AnnotationToolConfiguration.ToolItem(type: annotationType!, variant: annotationVariant, configurationBlock: annotationGroupItemConfigurationBlockFromName(name: itemToParse as? String ?? ""))]))
+               }
             }
           }
          return PSPDFKit.AnnotationToolConfiguration(annotationGroups: parsedItems)
@@ -102,13 +102,23 @@ public class AnnotationToolbarItemsGrouping: NSObject  {
             annotationSignature: .signature,
             annotationWidget: .widget,
             annotationFile: .file,
-            annotationHighligh: .highlight,
+            annotationHighlight: .highlight,
             annotationCaret: .caret,
             annotationInstantCommentMarker: .instantCommentMarker,
             annotationMultimedia: .richMedia,
             annotationWatermark: .watermark,
             annotationScreen: .screen,
-            annotationTrapNet: .trapNet
+            annotationTrapNet: .trapNet,
+            annotationInkPen: .ink,
+            annotationInkHighlighter: .ink,
+            annotationPolygonCloud: .polygon,
+            annotationSquareAreaMeasurement: .square,
+            annotationDistanceMeasurement: .line,
+            annotationEllipticalAreaMeasurement:.circle,
+            annotationLineArrow: .line,
+            annotationInkMagic: .ink,
+            annotationFreeTextCallout: .freeText,
+            annotationPolygonalAreaMeasurement: .polygon
           ]
           return nameToAnnotationStringMapping[name]
     }

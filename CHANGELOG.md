@@ -1,23 +1,31 @@
 ## Newest Release
 
-### 3.12.0 - 30 Jul 2024
+### 3.12.1 - 11 Sep 2024
 
-- Adds `zoomToRect` and `getVisibleRect` APIs to PspdfkitWidgetController. (J#HYB-429)
-- Added `processAnnotations` API support for Android. (J#HYB-426)
-- Updated the `processAnnotations` parameter types to enums `AnnotationType` and `AnnotationProcessingMode`. (#44722)
-- Updates for PSPDFKit 2024.4.0 for Android. (J#HYB-422)
-- Updates for PSPDFKit 13.8.0 for iOS. (J#HYB-422)
+- Updates for PSPDFKit 2024.5.1 for Android. (J#HYB-506)
+- Updates for PSPDFKit 13.9.1 for iOS. (J#HYB-506)
+- PSPDFKit for Flutter now requires Flutter 3.24.1 or later.
+- Fixes an issue where some annotation toolbar items are not displayed when custom grouping is used. (J#HYB-440)
+- Fixes an issue where `onDocumentLoaded` is triggered multiple times. (J#HYB-494)
 
 ## Previous Releases
 
+### 3.12.0 - 30 Jul 2024
+
+- Adds `zoomToRect` and `getVisibleRect` APIs to `PspdfkitWidgetController`. (J#HYB-429)
+- Adds `processAnnotations` API support for Android. (J#HYB-426)
+- Updates the `processAnnotations` parameter types to `AnnotationType` and `AnnotationProcessingMode` enums. (#44722)
+- Updates for PSPDFKit 2024.4.0 for Android. (J#HYB-422)
+- Updates for PSPDFKit 13.8.0 for iOS. (J#HYB-422)
+
 ### 3.11.0 - 21 Jun 2024
 
-- Adds API to get form filed properties to PdfDocument. (J#HYB-169)
-- Adds instant synchronization support on Web. (J#HYB-377)
+- Adds API to get form filled properties to `PdfDocument`. (J#HYB-169)
+- Adds Instant synchronization support on Web. (J#HYB-377)
 
 ### 3.10.1 - 28 May 2024
 
-- Fixes issue where ViewUtils.generateViewId() cannot be resolved. (J#HYB-379)
+- Fixes an issue where `ViewUtils.generateViewId()` cannot be resolved. (J#HYB-379)
 
 ### 3.10.0 - 03 May 2024
 
@@ -137,7 +145,7 @@
 
 ### 3.2.0 - 14 Feb 2022
 
-- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/flutter/migration-guides/flutter-3-2-migration-guide/) for this release.
+- This release requires you to update your Android project's `compileSdkVersion` to version 31. Please refer to [our migration guide](https://pspdfkit.com/guides/flutter/migration-guides/flutter-3-2-migration-guide) for this release.
 - PSPDFKit now requires Flutter 2.10.1 or later. (#33016)
 - Adds a new configuration option to disable autosave. (#32857)
 - Adds a new example illustrating manual saving of documents with autosave disabled. (#32857)

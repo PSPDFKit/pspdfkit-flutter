@@ -50,7 +50,8 @@ class _PspdfkitInstantCollaborationExampleState
                           style: const TextStyle(color: Colors.black),
                           children: [
                         TextSpan(
-                          text: 'https://web-examples.services.demo.pspdfkit.com',
+                          text:
+                              'https://web-examples.services.demo.pspdfkit.com',
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {

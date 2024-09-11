@@ -40,5 +40,4 @@ class PdfDocumentWeb extends PdfDocument {
   Future<List<PdfFormField>> getFormFields() {
     return _instance.getFormFields();
   }
-
 }

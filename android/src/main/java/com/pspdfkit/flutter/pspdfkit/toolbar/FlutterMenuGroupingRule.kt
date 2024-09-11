@@ -77,7 +77,7 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
             "squiggly" -> return R.id.pspdf__annotation_creation_toolbar_item_squiggly
             "strikeout" -> return R.id.pspdf__annotation_creation_toolbar_item_strikeout
             "underline" -> return R.id.pspdf__annotation_creation_toolbar_item_underline
-            "freetext" -> return R.id.pspdf__annotation_creation_toolbar_item_freetext
+            "freeText" -> return R.id.pspdf__annotation_creation_toolbar_item_freetext
             "freeTextCallout" -> return R.id.pspdf__annotation_creation_toolbar_item_freetext_callout
             "signature" -> return R.id.pspdf__annotation_creation_toolbar_item_signature
             "pen" -> return R.id.pspdf__annotation_creation_toolbar_item_ink_pen

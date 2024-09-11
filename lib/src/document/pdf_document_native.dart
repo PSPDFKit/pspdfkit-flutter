@@ -73,5 +73,4 @@ class PdfDocumentNative extends PdfDocument {
       throw Exception('Error getting form fields: $error');
     });
   }
-
 }
