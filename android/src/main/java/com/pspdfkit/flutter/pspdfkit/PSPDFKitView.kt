@@ -47,6 +47,9 @@ import io.reactivex.rxjava3.subscribers.DisposableSubscriber
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
+import com.pspdfkit.preferences.PSPDFKitPreferences
+import com.pspdfkit.ui.special_mode.controller.AnnotationTool
+import com.pspdfkit.ui.special_mode.controller.AnnotationToolVariant
 
 internal class PSPDFKitView(
     val context: Context,
@@ -596,6 +599,23 @@ internal class PSPDFKitView(
                             result.error("AnnotationException", t.message, null)
                         }
                     })
+            }
+            "jumpToPage" -> {
+                val pageIndex: Int = requireNotNull(call.argument("pageIndex"))
+                pdfUiFragment.pageIndex = pageIndex
+                result.success(true)
+            }
+
+            "isShowingTwoPages" -> {
+                val pageIndex = pdfUiFragment.pdfFragment?.pageIndex ?: -1
+                result.success(pdfUiFragment.pdfFragment?.getSiblingPageIndex(pageIndex) != -1)
+            }
+
+            "enterAnnotationCreationMode" -> {
+                val authorName: String = requireNotNull(call.argument("authorName"))
+                PSPDFKitPreferences.get(context).setAnnotationCreator(authorName)
+                pdfUiFragment.pdfFragment?.enterAnnotationCreationMode(AnnotationTool.INK, AnnotationToolVariant.fromPreset(AnnotationToolVariant.Preset.PEN))
+                result.success(true)
             }
             else -> result.notImplemented()
         }

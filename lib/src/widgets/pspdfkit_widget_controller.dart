@@ -84,4 +84,16 @@ abstract class PspdfkitWidgetController {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the zoom scale of the given page.
   Future<double> getZoomScale(int pageIndex);
+
+  /// Programmatically jump to a specific page.
+  /// @param pageIndex The index of the page to jump to.
+  Future<bool?> jumpToPage(int pageIndex);
+
+  /// Returns true if the document is showing two pages.
+  /// This is especially useful when the page layout mode is automatic
+  Future<bool?> isShowingTwoPages();
+
+  /// Programmatically enters annotation creation mode.
+  /// @param authorName The name of the author for the annotation.
+  Future<bool?> enterAnnotationCreationMode(String authorName);
 }

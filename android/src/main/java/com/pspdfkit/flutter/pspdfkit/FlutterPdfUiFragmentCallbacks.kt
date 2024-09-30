@@ -3,11 +3,15 @@ package com.pspdfkit.flutter.pspdfkit
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.pspdfkit.annotations.AnnotationProvider
 import com.pspdfkit.document.PdfDocument
-import com.pspdfkit.flutter.pspdfkit.document.FlutterPdfDocument
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.ui.PdfFragment
+import com.pspdfkit.annotations.Annotation
+import com.pspdfkit.flutter.pspdfkit.document.FlutterPdfDocument
+import com.pspdfkit.ui.special_mode.controller.AnnotationCreationController
+import com.pspdfkit.ui.special_mode.manager.AnnotationManager
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 
@@ -15,7 +19,8 @@ class FlutterPdfUiFragmentCallbacks(
     private val methodChannel: MethodChannel, private val measurementConfigurations:
     List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger
-) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener {
+) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener,
+    AnnotationManager.OnAnnotationCreationModeChangeListener {
 
     private var pdfFragment: PdfFragment? = null
     private var flutterPdfDocument: FlutterPdfDocument? = null
@@ -35,6 +40,7 @@ class FlutterPdfUiFragmentCallbacks(
             }
             pdfFragment = f as PdfFragment
             pdfFragment?.addDocumentListener(this)
+            pdfFragment?.addOnAnnotationCreationModeChangeListener(this)
         }
     }
 
@@ -84,5 +90,17 @@ class FlutterPdfUiFragmentCallbacks(
                 flutterPdfDocument = null
             }
         }
+    }
+
+    override fun onEnterAnnotationCreationMode(annotationCreationController: AnnotationCreationController) {
+
+    }
+
+    override fun onChangeAnnotationCreationMode(annotationCreationController: AnnotationCreationController) {
+
+    }
+
+    override fun onExitAnnotationCreationMode(annotationCreationController: AnnotationCreationController) {
+        methodChannel.invokeMethod("onExitAnnotationCreationMode", null)
     }
 }

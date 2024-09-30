@@ -208,7 +208,41 @@
         result(nil);
     } else if ([@"getZoomScale" isEqualToString:call.method]) {
         result(FlutterMethodNotImplemented);
-    }else {
+    } else if ([@"jumpToPage" isEqualToString:call.method]) {
+        @try {
+            PSPDFPageIndex pageIndex = [call.arguments[@"pageIndex"] longLongValue];
+            [pdfViewController setPageIndex:pageIndex animated:YES];
+            result(@(YES));
+        } @catch (NSException *exception) {
+            result([FlutterError errorWithCode:@"" message:exception.reason details:nil]);
+        }
+    } else if ([@"isShowingTwoPages" isEqualToString:call.method]) {
+        BOOL showingTwoPages = pdfViewController.documentViewController.layout.spreadMode != PSPDFDocumentViewLayoutSpreadModeSingle;
+            result(@(showingTwoPages));
+    } else if([@"enterAnnotationCreationMode" isEqualToString:call.method]){
+        @try {
+            NSString *authorName = call.arguments[@"authorName"];
+            PSPDFUsernameHelper.defaultAnnotationUsername = authorName;
+
+            PSPDFDocument *document = pdfViewController.document;
+            if (!document || !document.isValid) {
+                result([FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil]);
+                return;
+            }
+            document.defaultAnnotationUsername = authorName;
+
+            [pdfViewController.annotationToolbarController updateHostView:nil container:nil viewController:pdfViewController];
+
+            [pdfViewController.annotationToolbarController showToolbarAnimated:YES completion:^(BOOL finished) {
+                if (finished) {
+                    [pdfViewController.annotationStateManager setState:PSPDFAnnotationStringInk variant:PSPDFAnnotationVariantStringInkPen];
+                }
+            }];
+            result(@(YES));
+        } @catch (NSException *exception) {
+            result([FlutterError errorWithCode:@"" message:exception.reason details:nil]);
+        }
+    } else {
         result(FlutterMethodNotImplemented);
     }
 }

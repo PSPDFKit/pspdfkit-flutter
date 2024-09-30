@@ -10,6 +10,7 @@
 import 'dart:ui';
 
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
+
 import '../../pspdfkit.dart';
 import '../web/pspdfkit_web.dart';
 
@@ -120,5 +121,20 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
   @override
   Future<double> getZoomScale(int pageIndex) {
     return pspdfkitInstance.getZoomScale(pageIndex);
+  }
+
+  @override
+  Future<bool?> jumpToPage(int pageIndex) async {
+    throw UnimplementedError('This method id not supported on the web!');
+  }
+
+  @override
+  Future<bool?> isShowingTwoPages() async {
+    throw UnimplementedError('This method id not supported on the web!');
+  }
+
+  @override
+  Future<bool?> enterAnnotationCreationMode(String authorName) async {
+    throw UnimplementedError('This method id not supported on the web!');
   }
 }

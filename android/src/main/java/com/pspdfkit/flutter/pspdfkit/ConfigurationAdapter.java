@@ -77,6 +77,7 @@ class ConfigurationAdapter {
     private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
     private static final String DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String DEFAULT_THEME_RESOURCE = "defaultThemeResource";
+    private static final String RESTORE_LAST_VIEWED_PAGE = "restoreLastViewedPage";
 
     // Thumbnail Options
     private static final String SHOW_THUMBNAIL_BAR = "showThumbnailBar";
@@ -399,6 +400,11 @@ class ConfigurationAdapter {
             if (key != null) {
                 double value = (double) configurationMap.get(key);
                 configuration.startZoomScale((float) value);
+            }
+
+            key = getKeyOfType(configurationMap, RESTORE_LAST_VIEWED_PAGE, Boolean.class);
+            if (key != null) {
+                configureRestoreLastViewedPage((Boolean) configurationMap.get(key));
             }
         }
     }
@@ -759,6 +765,10 @@ class ConfigurationAdapter {
 
     private void configureMeasurementToolSnappingEnabled(Context context,Boolean aBoolean) {
         PSPDFKitPreferences.get(context).setMeasurementSnappingEnabled(aBoolean);
+    }
+
+    private void configureRestoreLastViewedPage(boolean restoreLastViewedPage) {
+        configuration.restoreLastViewedPage(restoreLastViewedPage);
     }
 
     private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,

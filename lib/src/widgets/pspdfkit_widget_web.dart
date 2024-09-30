@@ -11,10 +11,12 @@ library pspdfkit_widget_web;
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui_web' as ui;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
+
 import '../document/pdf_document_web.dart';
 import '../web/pspdfkit_web.dart';
 import 'pspdfkit_widget_controller_web.dart';
@@ -24,7 +26,7 @@ class PspdfkitWidget extends StatefulWidget {
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
-  final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailure;
+  final PdfDocumentLoadFailedCallback? onPdfDocumentError;
   final PageChangedCallback? onPageChanged;
 
   const PspdfkitWidget({
@@ -33,7 +35,7 @@ class PspdfkitWidget extends StatefulWidget {
     this.configuration,
     this.onPspdfkitWidgetCreated,
     this.onPdfDocumentLoaded,
-    this.onPdfDocumentLoadFailure,
+    this.onPdfDocumentError,
     this.onPageChanged,
   }) : super(key: key);
 
@@ -93,7 +95,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
         widget.onPdfDocumentLoaded
             ?.call(PdfDocumentWeb(documentId: '', instance: value));
       }).catchError((error) {
-        widget.onPdfDocumentLoadFailure?.call(error.toString());
+        widget.onPdfDocumentError?.call(error.toString());
         throw Exception('Failed to load: $error');
       });
     });
