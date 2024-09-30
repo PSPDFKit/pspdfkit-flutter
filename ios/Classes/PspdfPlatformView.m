@@ -15,7 +15,7 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
-@interface PspdfPlatformView() <PSPDFViewControllerDelegate>
+@interface PspdfPlatformView() <PSPDFViewControllerDelegate, PSPDFFlexibleToolbarDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
 @property (nonatomic) FlutterMethodChannel *broadcastChannel;
@@ -70,6 +70,7 @@
             _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
             _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
             _pdfViewController.delegate = self;
+            _pdfViewController.annotationToolbarController.toolbar.toolbarDelegate = self;
             
             [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
 
@@ -167,6 +168,13 @@
 - (void)pdfViewControllerDidDismiss:(PSPDFViewController *)pdfController {
     // Don't hold on to the view controller object after dismissal.
     [self cleanup];
+}
+
+# pragma mark - PSPDFFlexibleToolbarDelegate
+
+- (void)flexibleToolbarDidHide:(PSPDFFlexibleToolbar *)toolbar {
+    // Handle annotation toolbar being hidden.
+    [_channel invokeMethod:@"onExitAnnotationCreationMode" arguments: nil];
 }
 
 @end
