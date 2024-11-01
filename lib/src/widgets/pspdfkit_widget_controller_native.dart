@@ -12,21 +12,26 @@ import '../../pspdfkit.dart';
 import '../document/pdf_document_native.dart';
 
 /// A controller for a PSPDFKit widget for native platforms that use the [MethodChannel].
+@Deprecated(
+    'Please use the new [PspdfkitFlutterWidgetControllerImpl] widget API instead.')
 class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   final MethodChannel _channel;
 
   PspdfkitWidgetControllerNative(
-    int id, {
+    this._channel, {
     PdfDocumentLoadedCallback? onPdfDocumentLoaded,
     PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed,
     PageChangedCallback? onPageChanged,
-  }) : _channel = MethodChannel('com.pspdfkit.widget.$id') {
+  }) {
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case 'onDocumentLoaded':
           var documentId = call.arguments['documentId'] as String;
-          onPdfDocumentLoaded?.call(PdfDocumentNative(
-              documentId: documentId, iosMethodChannel: _channel));
+          var api = PdfDocumentApi(
+              binaryMessenger: _channel.binaryMessenger,
+              messageChannelSuffix: documentId);
+          onPdfDocumentLoaded
+              ?.call(PdfDocumentNative(documentId: documentId, api: api));
           break;
         case 'onDocumentLoadFailed':
           onPdfDocumentLoadFailed?.call(call.arguments['error'] as String);
@@ -117,7 +122,7 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   }
 
   @override
-  void addEventListener(String eventName, Function(dynamic) callback) {
+  Future<void> addEventListener(String eventName, Function(dynamic) callback) {
     throw UnimplementedError(
         'addEventListener is not yet implemented on this platform');
   }

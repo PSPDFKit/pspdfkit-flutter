@@ -1,37 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
-class PspdfkitAnnotationPresetCustomization extends StatelessWidget {
+class PspdfkitAnnotationPresetCustomization extends StatefulWidget {
   final String documentPath;
   const PspdfkitAnnotationPresetCustomization(
       {Key? key, required this.documentPath})
       : super(key: key);
 
   @override
+  State<PspdfkitAnnotationPresetCustomization> createState() =>
+      _PspdfkitAnnotationPresetCustomizationState();
+}
+
+class _PspdfkitAnnotationPresetCustomizationState
+    extends State<PspdfkitAnnotationPresetCustomization> {
+  PspdfkitWidgetController? _controller;
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PspdfkitWidget(
-        documentPath: documentPath,
+        documentPath: widget.documentPath,
         onPspdfkitWidgetCreated: (controller) {
+          setState(() {
+            _controller = controller;
+          });
+        },
+        onPdfDocumentLoaded: (document) {
           try {
-            controller.setAnnotationConfigurations(
+            _controller?.setAnnotationConfigurations(
               {
                 AnnotationTool.inkPen: InkAnnotationConfiguration(
-                  color: Colors.red,
+                  color: Colors.purple,
                   availableColors: [
                     Colors.red,
                     Colors.green,
                     Colors.blue,
                     Colors.yellow,
-                    Colors.black
+                    Colors.purple
                   ],
-                  thickness: 10,
+                  thickness: 30,
                   fillColor: Colors.white,
-                  maxThickness: 20,
+                  maxThickness: 30,
                   minThickness: 5,
                   maxAlpha: 1,
                   minAlpha: 0.1,
-                  alpha: 0.5,
+                  alpha: 1,
                 ),
                 AnnotationTool.freeText: FreeTextAnnotationConfiguration(
                   color: Colors.red,
@@ -40,14 +53,10 @@ class PspdfkitAnnotationPresetCustomization extends StatelessWidget {
                   alpha: 0.5,
                 ),
                 AnnotationTool.arrow: LineAnnotationConfiguration(
-                    color: Colors.red,
-                    thickness: 10,
-                    fillColor: Colors.white,
-                    alpha: 0.5,
-                    lineEndingStyle: {
-                      'start': LineEndingStyle.openArrow,
-                      'end': LineEndingStyle.closedArrow
-                    }),
+                  color: Colors.green,
+                  thickness: 20,
+                  fillColor: Colors.white,
+                ),
                 AnnotationTool.highlight: MarkupAnnotationConfiguration(
                   color: Colors.red,
                 ),

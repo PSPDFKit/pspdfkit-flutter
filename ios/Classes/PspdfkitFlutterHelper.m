@@ -12,6 +12,7 @@
 #import "PspdfkitFlutterConverter.h"
 #import "pspdfkit_flutter-Swift.h"
 
+#warning "This file is deprecated. Use PspddfkitHelper.swift instead."
 
 @implementation PspdfkitFlutterHelper
 
@@ -158,7 +159,7 @@
             message:@"syncAnnotations can only be called on Instant document"
             details:nil]);
         }
-    }else if ([@"setAnnotationPresetConfigurations" isEqualToString:call.method]) {
+    }else if ([@"setAnnotationConfigurations" isEqualToString:call.method]) {
         [AnnotationsPresetConfigurations setConfigurationsWithAnnotationPreset:call.arguments[@"annotationConfigurations"]];
         result(nil);
     } else if ([@"getPageInfo" isEqualToString:call.method]) {

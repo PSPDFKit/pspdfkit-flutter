@@ -11,6 +11,7 @@ import Foundation
 import PSPDFKit.PSPDFProcessor
 
 @objc(PspdfkitPdfGenerator)
+@available(*, deprecated, message: "This class is deprecated and will be removed in a future release. Use PspdfkitApiImpl instead.")
 public class PspdfkitPdfGenerator: NSObject {
     
     static let pageAdaptor: PspdfkitPageConvertor = PspdfkitPageConvertor()

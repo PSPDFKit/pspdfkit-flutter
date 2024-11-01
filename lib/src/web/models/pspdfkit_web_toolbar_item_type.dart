@@ -54,7 +54,8 @@ enum PspdfkitWebToolbarItemType {
   callout,
   responsiveGroup,
   custom,
-  measurements
+  measurements,
+  linearizedDownloadIndicator
 }
 
 extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
@@ -154,6 +155,8 @@ extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
         return 'custom';
       case PspdfkitWebToolbarItemType.measurements:
         return 'measure';
+      case PspdfkitWebToolbarItemType.linearizedDownloadIndicator:
+        return 'linearized-download-indicator';
     }
   }
 }

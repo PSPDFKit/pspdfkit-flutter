@@ -7,9 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:pspdfkit_flutter/src/forms/form_field.dart';
-
-import 'pdf_form_options.dart';
+import '../../pspdfkit.dart';
 
 class ListBoxFormField extends PdfFormField {
   final List<String> defaultValues;
@@ -24,7 +22,16 @@ class ListBoxFormField extends PdfFormField {
   factory ListBoxFormField.fromMap(dynamic map) {
     return ListBoxFormField(
         defaultValues: List<String>.from(map['defaultValues']),
-        options: PdfFormOption.listFromMap(map['options']),
+        options: _populateOptions(map['options']),
         values: List<String>.from(map['values']));
+  }
+
+  static List<PdfFormOption> _populateOptions(dynamic json) {
+    return json
+        .map((e) => PdfFormOption(
+              value: e['value'],
+              label: e['label'],
+            ))
+        .toList();
   }
 }

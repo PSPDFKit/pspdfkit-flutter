@@ -102,8 +102,9 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
   }
 
   @override
-  void addEventListener(String eventName, Function(dynamic) callback) {
-    pspdfkitInstance.addEventListener(eventName, callback);
+  Future<void> addEventListener(
+      String eventName, Function(dynamic) callback) async {
+    return pspdfkitInstance.addEventListener(eventName, callback);
   }
 
   @override

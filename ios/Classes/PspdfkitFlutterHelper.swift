@@ -1,0 +1,488 @@
+//
+//  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+//
+//  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+//  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+//  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+//  This notice may not be removed from this file.
+//
+
+import Foundation
+import PSPDFKit
+
+// This class contains shared code.
+class PspdfkitFlutterHelper: NSObject {
+    
+    // MARK: - Document Helpers
+    
+    static func document(fromPath path: String) -> Document? {
+        let url: URL?
+        
+        if path.hasPrefix("/") {
+            url = URL(fileURLWithPath: path)
+        } else {
+            url = Bundle.main.url(forResource: path, withExtension: nil)
+        }
+        
+        guard let documentURL = url else {
+            return nil
+        }
+        
+        if isImageDocument(path) {
+            return ImageDocument(imageURL: documentURL)
+        } else {
+            return Document(url: documentURL)
+        }
+    }
+    
+    static func isImageDocument(_ path: String) -> Bool {
+        let fileExtension = path.split(separator: ".").last?.lowercased()
+        return ["png", "jpeg", "jpg", "tiff", "tif"].contains(fileExtension)
+    }
+    
+    // MARK: - File Helpers
+    
+    static func fileURL(withPath path: String) -> URL? {
+        var expandedPath = path
+        expandedPath = (expandedPath as NSString).expandingTildeInPath
+        expandedPath = expandedPath.replacingOccurrences(of: "file:", with: "")
+        if !(expandedPath as NSString).isAbsolutePath {
+            let docsFolder = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+            expandedPath = (docsFolder as NSString).appendingPathComponent(expandedPath, conformingTo: UTType.fileURL)
+        }
+        return URL(fileURLWithPath: expandedPath)
+    }
+    
+    static func writableFileURL(withPath path: String, override: Bool, copyIfNeeded: Bool) -> URL? {
+        let writableFileURL: URL
+        if (path as NSString).isAbsolutePath {
+            writableFileURL = URL(fileURLWithPath: path)
+        } else {
+            let docsFolder = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+            writableFileURL = URL(fileURLWithPath: (docsFolder as NSString).appendingPathComponent(path))
+        }
+        
+        let fileManager = FileManager.default
+        if override {
+            try? fileManager.removeItem(at: writableFileURL)
+        }
+        
+        if !fileManager.fileExists(atPath: writableFileURL.path) {
+            do {
+                try fileManager.createDirectory(atPath: (writableFileURL.path as NSString).deletingLastPathComponent, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Failed to create directory: \(error.localizedDescription)")
+                return nil
+            }
+            
+            if copyIfNeeded, let fileURL = fileURL(withPath: path), fileManager.fileExists(atPath: fileURL.path) {
+                do {
+                    try fileManager.copyItem(at: fileURL, to: writableFileURL)
+                } catch {
+                    print("Failed to copy item at URL '\(path)' with error: \(error.localizedDescription)")
+                    return nil
+                }
+            }
+        }
+        return writableFileURL
+    }
+    
+    // MARK: - Password Helper
+    
+    static func unlock(document: Document, dictionary: [String: Any]?) {
+        guard let dictionary = dictionary, !dictionary.isEmpty else {
+            return
+        }
+        if let password = dictionary["password"] as? String, !password.isEmpty {
+            document.unlock(withPassword: password)
+        }
+    }
+    
+    // MARK: - Toolbar Customization
+    
+    static func setToolbarTitle(_ toolbarTitle: String?, for pdfViewController: PDFViewController) {
+        guard let toolbarTitle = toolbarTitle else {
+            return
+        }
+        pdfViewController.title = toolbarTitle
+    }
+    
+    static func setLeftBarButtonItems(_ items: [String]?, for pdfViewController: PDFViewController) {
+        guard let items = items, !items.isEmpty else {
+            return
+        }
+        var leftItems = [UIBarButtonItem]()
+        for barButtonItemString in items {
+            if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
+               ((pdfViewController.navigationItem.rightBarButtonItems?.contains(barButtonItem)) == nil) {
+                leftItems.append(barButtonItem)
+            }
+        }
+        pdfViewController.navigationItem.setLeftBarButtonItems(leftItems, animated: false)
+    }
+    
+    static func setRightBarButtonItems(_ items: [String]?, for pdfViewController: PDFViewController) {
+        guard let items = items, !items.isEmpty else {
+            return
+        }
+        var rightItems = [UIBarButtonItem]()
+        for barButtonItemString in items {
+            if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
+               ((pdfViewController.navigationItem.leftBarButtonItems?.contains(barButtonItem)) == nil) {
+                rightItems.append(barButtonItem)
+            }
+        }
+        pdfViewController.navigationItem.setRightBarButtonItems(rightItems, animated: false)
+    }
+    
+    static func barButtonItem(fromString barButtonItem: String, for pdfViewController: PDFViewController) -> UIBarButtonItem? {
+        switch barButtonItem {
+        case "closeButtonItem":
+            return pdfViewController.closeButtonItem
+        case "outlineButtonItem":
+            return pdfViewController.outlineButtonItem
+        case "searchButtonItem":
+            return pdfViewController.searchButtonItem
+        case "thumbnailsButtonItem":
+            return pdfViewController.thumbnailsButtonItem
+        case "documentEditorButtonItem":
+            return pdfViewController.documentEditorButtonItem
+        case "printButtonItem":
+            return pdfViewController.printButtonItem
+        case "openInButtonItem":
+            return pdfViewController.openInButtonItem
+        case "emailButtonItem":
+            return pdfViewController.emailButtonItem
+        case "messageButtonItem":
+            return pdfViewController.messageButtonItem
+        case "annotationButtonItem":
+            return pdfViewController.annotationButtonItem
+        case "bookmarkButtonItem":
+            return pdfViewController.bookmarkButtonItem
+        case "brightnessButtonItem":
+            return pdfViewController.brightnessButtonItem
+        case "activityButtonItem":
+            return pdfViewController.activityButtonItem
+        case "settingsButtonItem":
+            return pdfViewController.settingsButtonItem
+        case "readerViewButtonItem":
+            return pdfViewController.readerViewButtonItem
+        default:
+            return nil
+        }
+    }
+    
+    // MARK: - Forms
+    
+    static func setFormFieldValue(_ value: String, forFieldWithFullyQualifiedName fullyQualifiedName: String, for document: Document) throws -> Bool {
+   
+        guard !fullyQualifiedName.isEmpty else {
+            throw PspdfkitApiError(code: "", message:"Fully qualified name may not be nil or empty." , details: nil)
+        }
+        
+        var success = false
+        for formElement in document.formParser?.forms ?? [] {
+            if formElement.fullyQualifiedFieldName == fullyQualifiedName {
+                if let buttonFormElement = formElement as? ButtonFormElement {
+                    if value == "selected" {
+                        buttonFormElement.select()
+                        success = true
+                    } else if value == "deselected" {
+                        buttonFormElement.deselect()
+                        success = true
+                    }
+                } else if let choiceFormElement = formElement as? ChoiceFormElement {
+                    choiceFormElement.selectedIndices = IndexSet(integer: Int(value) ?? 0)
+                    success = true
+                } else if let textFieldFormElement = formElement as? TextFieldFormElement {
+                    textFieldFormElement.contents = value
+                    success = true
+                } else if formElement is SignatureFormElement {
+                    throw PspdfkitApiError(code: "", message: "Signature form elements cannot be modified.", details: nil)
+                } else {
+                    return false
+                }
+                break
+            }
+        }
+        
+        if !success {
+            throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
+        }
+        return true
+    }
+    
+    static func getFormFieldValue(forFieldWithFullyQualifiedName fullyQualifiedName: String, for document: Document) throws -> Any {
+        guard !fullyQualifiedName.isEmpty else {
+            throw PspdfkitApiError(code: "", message: "Fully qualified name may not be nil or empty.", details : nil)
+        }
+        
+        for formElement in document.formParser?.forms ?? [] {
+            if formElement.fullyQualifiedFieldName == fullyQualifiedName {
+                if formElement.value != nil {
+                    return formElement.value!
+                } else {
+                    throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
+                }
+            }
+        }
+        
+        throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details : nil)
+    }
+    
+    static func getFormFields(for document: Document) throws -> [[String : Any]]{
+        let formFields = document.formParser?.forms ?? []
+        let data:[[String : Any]] = FormHelper.convertFormFields(formFields: formFields) as! [[String : Any]]
+        if formFields.isEmpty {
+            throw PspdfkitApiError(code: "", message: "No form fields found in the document.", details: nil)
+        }
+        return data
+    }
+    
+    // MARK: - Annotation Processing
+    
+    static func processAnnotations(ofType type: String, withProcessingMode processingMode: String, andDestinationPath destinationPath: String, for pdfViewController: PDFViewController) throws -> Bool {
+        let change = PspdfkitFlutterConverter.annotationChange(from: processingMode)
+        guard let processedDocumentURL = writableFileURL(withPath: destinationPath, override: true, copyIfNeeded: false) else {
+            throw PspdfkitApiError(code: "", message: "Could not create a new PDF file at the given path.", details : nil)
+        }
+        
+        guard let document = pdfViewController.document, document.isValid else {
+            throw PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details : nil)
+        }
+        
+        let configuration = Processor.Configuration(document: document)
+        configuration?.modifyAnnotations(ofTypes: PspdfkitFlutterConverter.annotationType(from: type), change: change)
+        
+        if configuration == nil {
+            throw PspdfkitApiError(code: "", message: "Invalid annotation type.", details : nil)
+        }
+        
+        let processor = Processor(configuration: configuration!, securityOptions: nil)
+        do {
+            try processor.write(toFileURL: processedDocumentURL)
+        } catch {
+            throw PspdfkitApiError(code: "", message: "Error writing to PDF file.", details : error.localizedDescription)
+        }
+        
+        return true
+    }
+    
+    // MARK: - Instant JSON
+    
+    static func addAnnotation(_ jsonAnnotation: Any, for document: Document) throws -> Bool {
+
+        let data: Data?
+        if let jsonString = jsonAnnotation as? String {
+            data = jsonString.data(using: .utf8)
+        } else if let jsonDict = jsonAnnotation as? [String: Any] {
+            data = try? JSONSerialization.data(withJSONObject: jsonDict, options: [])
+        } else {
+            throw PspdfkitApiError(code: "", message: "Invalid JSON Annotation.", details : nil)
+        }
+        
+        guard let annotationData = data else {
+            throw PspdfkitApiError(code: "", message: "Invalid JSON Annotation.", details: nil)
+        }
+        
+        let documentProvider = document.documentProviders.first!
+        let annotation = try? Annotation(fromInstantJSON: annotationData, documentProvider: documentProvider)
+        if annotation == nil {
+            throw PspdfkitApiError(code: "", message: "Failed to create annotation from JSON.", details: nil)
+        }
+        
+        let success = document.add(annotations: [annotation!], options: nil)
+        if !success {
+            throw PspdfkitApiError(code: "", message: "Failed to add annotation.", details: nil)
+        }
+        
+        return true
+    }
+    
+    static func removeAnnotation(_ jsonAnnotation: Any, for document: Document) throws -> Bool {
+        
+        var annotationUUID: String?
+        
+        if let jsonString = jsonAnnotation as? String {
+            if let jsonData = jsonString.data(using: .utf8),
+               let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: .allowFragments) as? [String: Any] {
+                annotationUUID = jsonDict["uuid"] as? String
+            }
+        } else if let jsonDict = jsonAnnotation as? [String: Any] {
+            annotationUUID = jsonDict["uuid"] as? String
+        }
+        
+        guard let uuid = annotationUUID, !uuid.isEmpty else {
+            throw PspdfkitApiError(code: "", message: "Invalid annotation UUID.", details: nil)
+        }
+        
+        let allAnnotations = document.allAnnotations(of: .all).values.flatMap { $0 }
+        for annotation in allAnnotations {
+            if annotation.uuid == uuid {
+                let success = document.remove(annotations: [annotation], options: nil)
+                return success
+            }
+        }
+        
+        return false
+    }
+    
+    static func getAnnotations(forPageIndex pageIndex: PageIndex, andType typeString: String, for document: Document) throws -> Any {
+        let type = annotationType(from: typeString)
+        let annotations = document.annotations(at: pageIndex, type: type)
+        let annotationsJSON = PspdfkitFlutterConverter.instantJSON(from: annotations)
+        
+        if  annotationsJSON != nil {
+            return annotationsJSON
+        } else {
+            throw PspdfkitApiError(code:"", message: "Failed to get annotations.", details:nil)
+        }
+    }
+    
+    static func getAllUnsavedAnnotations(for document: Document) throws -> Any {
+        let documentProvider = document.documentProviders.first!
+        let data = try document.generateInstantJSON(from: documentProvider, version: .v2)
+        let annotationsJSON = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        
+        if let annotationsJSON = annotationsJSON {
+            return annotationsJSON
+        } else {
+            throw PspdfkitApiError(code:"", message: "Failed to get annotations.", details:nil)
+        }
+    }
+    
+    // MARK: - XFDF
+    
+    static func importXFDF(fromString stringData: String, for document: Document) throws -> Bool {
+        // convert string into a temporary file.
+        let fileURL = try stringDataToFile(stringData)
+        
+        let dataProvider = FileDataProvider(fileURL: fileURL)
+        let parser = XFDFParser(dataProvider: dataProvider, documentProvider: document.documentProviders[0])
+        
+        do {
+            try parser.parse()
+            let annotations = parser.annotations
+            document.add(annotations: annotations, options: nil)
+            // clean up temp file.
+            _ = try? FileManager.default.removeItem(at: fileURL)
+            return true
+        } catch {
+            throw PspdfkitApiError(code: "", message: "Error while parsing XFDF file.", details: error.localizedDescription )
+        }
+    }
+    
+    static func exportXFDF(toPath path: String, for document: Document)throws -> Bool {
+        guard let fileURL = writableFileURL(withPath: path, override: true, copyIfNeeded: false) else {
+            throw PspdfkitApiError(code: "", message: "Could not create a new XFDF file at the given path.", details: nil)
+        }
+        
+        var annotations = [Annotation]()
+        for pageAnnotations in document.allAnnotations(of: .all).values {
+            annotations.append(contentsOf: pageAnnotations)
+        }
+        
+        do {
+            let dataSink = try FileDataSink(fileURL: fileURL, options: [])
+            try XFDFWriter().write(annotations, to: dataSink, documentProvider: document.documentProviders[0])
+        } catch {
+            throw PspdfkitApiError(code: "", message: "Error while exporting XFDF file.", details: error.localizedDescription)
+        }
+        
+        return true
+    }
+    
+    static func applyInstantJson(annotationsJson: String, document: Document) throws -> Bool {
+        guard let jsonData = annotationsJson.data(using: .utf8) else {
+            print("Invalid JSON data.")
+            throw PspdfkitApiError(code: "", message: "Invalid JSON data.", details : nil)
+        }
+        
+        let jsonContainer = DataContainerProvider(data: jsonData)
+        do {
+            try document.applyInstantJSON(fromDataProvider: jsonContainer, to: document.documentProviders.first!, lenient: false)
+            return true
+        } catch {
+            print("Error while importing document Instant JSON: \(error.localizedDescription)")
+            throw PspdfkitApiError(code: "", message: "Error while importing document Instant JSON.", details: error.localizedDescription)
+        }
+    }
+    
+    static func exportInstantJson(document: Document) throws -> String  {
+        do {
+            let data = try document.generateInstantJSON(from: document.documentProviders.first!)
+            if let annotationsJson = String(data: data, encoding: .utf8) {
+                return annotationsJson
+            } else {
+                throw PspdfkitApiError(code: "", message: "Error while exporting document Instant JSON.", details: nil)
+            }
+        } catch {
+            throw PspdfkitApiError(code: "", message: "Error while exporting document Instant JSON.", details: error.localizedDescription)
+        }
+    }
+    
+    static func annotationType(from typeString: String) -> Annotation.Type {
+        switch typeString {
+        case "ink":
+            return InkAnnotation.self
+        case "link":
+            return LinkAnnotation.self
+        case "highlight":
+            return HighlightAnnotation.self
+        case "squiggly":
+            return SquigglyAnnotation.self
+        case "strikeout":
+            return StrikeOutAnnotation.self
+        case "underline":
+            return UnderlineAnnotation.self
+        case "note":
+            return NoteAnnotation.self
+        case "ellipse":
+            return CircleAnnotation.self
+        case "line":
+            return LineAnnotation.self
+        case "polygon":
+            return PolygonAnnotation.self
+        case "square":
+            return SquareAnnotation.self
+        case "text":
+            return FreeTextAnnotation.self
+        case "circle":
+            return CircleAnnotation.self
+        case "redact":
+            return RedactionAnnotation.self
+        case "stamp":
+            return StampAnnotation.self
+        case "caret":
+            return CaretAnnotation.self
+        case "popup":
+            return PopupAnnotation.self
+        case "file":
+            return FileAnnotation.self
+        case "sound":
+            return SoundAnnotation.self
+        case "widget":
+            return WidgetAnnotation.self
+        case "screen":
+            return ScreenAnnotation.self
+        case "richMedia":
+            return RichMediaAnnotation.self
+        case "all":
+            return Annotation.self
+        default:
+            return Annotation.self
+        }
+    }
+    
+    private static func stringDataToFile(_ stringData: String) throws -> URL {
+        do {
+            let stringData = stringData.data(using: .utf8)!
+            let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("temp.txt")
+            try stringData.write(to: fileURL)
+            return fileURL
+        } catch {
+            throw PspdfkitApiError(code: "PSPDFKIT_ERROR_FILE_WRITE", message: "Failed to write temporary file", details: nil)
+        }
+    }
+    
+}

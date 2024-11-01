@@ -21,6 +21,7 @@ static FlutterMethodChannel *channel;
 
 @interface PspdfkitPlugin() <PSPDFViewControllerDelegate, PSPDFInstantClientDelegate>
 @property (nonatomic) PSPDFViewController *pdfViewController;
+@property PspdfkitApiImpl *apiImpl;
 @end
 
 @implementation PspdfkitPlugin
@@ -34,6 +35,9 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
     channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
+    // Register pigeon APIs.
+    instance.apiImpl = [[PspdfkitApiImpl alloc] init];
+    [instance.apiImpl registerWithBinaryMessenger:[registrar messenger]];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -79,7 +83,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         NSArray *measurementsValue = configurationDictionary[@"measurementValueConfigurations"];
         if (measurementsValue != nil) {
            for (NSDictionary *measurementValue in measurementsValue) {
-             [ PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
+             [PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
            }
         }
 
@@ -126,7 +130,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         NSArray *measurementsValue = configurationDictionary[@"measurementValueConfigurations"];
         if (measurementsValue != nil) {
            for (NSDictionary *measurementValue in measurementsValue) {
-             [ PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
+             [PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:self.pdfViewController .document configuration: measurementValue];
            }
         }
 
@@ -173,6 +177,12 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
         [presentingViewController presentViewController:navigationController animated:YES completion:nil];
         result(@(YES));
  }
+
+- (void) detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+    // Unregister the API implementation.
+    [_apiImpl unRegister];
+    _apiImpl = nil;
+}
 
 - (NSString*)getTemporaryDirectory {
     NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
@@ -243,6 +253,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 
 - (void)dealloc {
     self.pdfViewController = nil;
+    self.apiImpl = nil;
 }
 
 @end

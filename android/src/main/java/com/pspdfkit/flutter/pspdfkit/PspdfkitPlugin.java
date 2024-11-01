@@ -34,14 +34,14 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.PSPDFKit;
 import com.pspdfkit.annotations.AnnotationType;
-import com.pspdfkit.annotations.configuration.AnnotationConfiguration;
-import com.pspdfkit.document.DocumentSaveOptions;
 import com.pspdfkit.document.PdfDocument;
-import com.pspdfkit.document.PdfVersion;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
 import com.pspdfkit.document.processor.PdfProcessor;
 import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.PSPDFKitException;
+import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration;
+import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi;
+import com.pspdfkit.flutter.pspdfkit.api.PspdfkitFlutterApiCallbacks;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
@@ -83,7 +83,6 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subscribers.DisposableSubscriber;
 
-
 /**
  * PSPDFKit plugin to load PDF and image documents.
  */
@@ -96,6 +95,7 @@ public class PspdfkitPlugin
     @NonNull
     private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
+    private static final String MESSAGE_CHANNEL_SUFFIX = "pspdfkit";
 
     /**
      * Hybrid technology where the application is supposed to be working on.
@@ -123,6 +123,8 @@ public class PspdfkitPlugin
     @Nullable
     private List<Map<String,Object>> measurementValueConfigurations;
 
+    private final PspdfkitApiImpl pspdfkitApi = new PspdfkitApiImpl(null);
+
     /**
      * This {@code FlutterPlugin} has been associated with a {@link FlutterEngine} instance.
      *
@@ -146,6 +148,10 @@ public class PspdfkitPlugin
                         "com.pspdfkit.widget",
                         new PSPDFKitViewFactory(binding.getBinaryMessenger())
                 );
+        // Setup the PSPDFKit API.
+        PspdfkitApi.Companion.setUp(binding.getBinaryMessenger(),pspdfkitApi,MESSAGE_CHANNEL_SUFFIX);
+        PspdfkitFlutterApiCallbacks pspdfkitFlutterApiCallbacks = new PspdfkitFlutterApiCallbacks(binding.getBinaryMessenger(),MESSAGE_CHANNEL_SUFFIX);
+        eventDispatcher.setPspdfkitApiCallbacks(new PspdfkitApiCallbacks(pspdfkitFlutterApiCallbacks));
     }
 
     /**
@@ -164,6 +170,8 @@ public class PspdfkitPlugin
         if (disposable != null) {
             disposable.dispose();
         }
+        PspdfkitApi.Companion.setUp(binding.getBinaryMessenger(),null,MESSAGE_CHANNEL_SUFFIX);
+        pspdfkitApi.dispose();
     }
 
     @SuppressLint("CheckResult")
@@ -285,7 +293,6 @@ public class PspdfkitPlugin
                 break;
             case "applyInstantJson":
                 String annotationsJson = call.argument("annotationsJson");
-
                 requireNotNullNotEmpty(annotationsJson, "annotationsJson");
                 document =
                         requireDocumentNotNull(
@@ -642,14 +649,14 @@ public class PspdfkitPlugin
                 }
                 break;
             }
-            case "setAnnotationPresetConfigurations": {
+            case "setAnnotationConfigurations": {
                 try {
                     Map<String, Object> annotationConfigurations = call.argument("annotationConfigurations");
                     if (annotationConfigurations == null) {
                         result.error("InvalidArgument", "Annotation configurations must be a valid map", null);
                         return;
                     }
-                    Map<AnnotationType, AnnotationConfiguration> configurations =
+                    List<FlutterAnnotationPresetConfiguration> configurations =
                             AnnotationConfigurationAdaptor
                                     .convertAnnotationConfigurations(getInstantActivity(), annotationConfigurations);
 
@@ -658,8 +665,26 @@ public class PspdfkitPlugin
                         result.error("InvalidState", "PdfFragment is null", null);
                         return;
                     }
-                    for (Map.Entry<AnnotationType, AnnotationConfiguration> entry : configurations.entrySet()) {
-                        pdfFragment.getAnnotationConfiguration().put(entry.getKey(), entry.getValue());
+                    for (FlutterAnnotationPresetConfiguration config : configurations) {
+                        if (config.getAnnotationTool() != null && config.getVariant() != null) {
+                            pdfFragment.getAnnotationConfiguration().put(
+                                    config.getAnnotationTool(),
+                                    config.getVariant(),
+                                    config.getConfiguration()
+                            );
+                        }
+                        if (config.getAnnotationTool() != null && config.getType() == null) {
+                            pdfFragment.getAnnotationConfiguration().put(
+                                    config.getAnnotationTool(),
+                                    config.getConfiguration()
+                            );
+                        }
+                        if (config.getType() != null) {
+                            pdfFragment.getAnnotationConfiguration().put(
+                                    config.getType(),
+                                    config.getConfiguration()
+                            );
+                        }
                     }
                     result.success(true);
                 } catch (Exception e) {
@@ -877,6 +902,7 @@ public class PspdfkitPlugin
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
         activityPluginBinding = binding;
         binding.addRequestPermissionsResultListener(this);
+        pspdfkitApi.setActivityPluginBinding(activityPluginBinding);
     }
 
     @Override
@@ -890,6 +916,7 @@ public class PspdfkitPlugin
     ) {
         activityPluginBinding = binding;
         binding.addRequestPermissionsResultListener(this);
+        pspdfkitApi.setActivityPluginBinding(activityPluginBinding);
     }
 
     @Override
@@ -901,6 +928,7 @@ public class PspdfkitPlugin
         if (activityPluginBinding != null) {
             activityPluginBinding.removeRequestPermissionsResultListener(this);
             activityPluginBinding = null;
+            pspdfkitApi.setActivityPluginBinding(null);
         }
     }
 

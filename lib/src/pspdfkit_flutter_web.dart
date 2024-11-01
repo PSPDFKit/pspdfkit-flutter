@@ -19,7 +19,8 @@ import 'pspdfkit_flutter_platform_interface.dart';
 
 /// A web implementation of the PspdfkitFlutterPlatform of the PspdfkitFlutter plugin.
 class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
-  static const String _notSupportedOnWebMessage = 'Not supported on web';
+  static const String _notSupportedOnWebMessage =
+      'Not supported on web, Please use PspdfkitWidget instead.';
 
   /// Constructs a PspdfkitFlutterWeb
   PspdfkitFlutterWeb();
@@ -69,7 +70,7 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future<bool?> importXfdf(String xfdfPath) {
+  Future<bool?> importXfdf(String xfdfString) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 
@@ -167,4 +168,22 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   @override
   List<PspdfkitWebToolbarItem> get defaultWebToolbarItems =>
       PSPDFKitWeb.defaultToolbarItems;
+
+  @override
+  Future<String?> generatePdf(List<NewPage> pages, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> generatePdfFromHtmlString(String html, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError(_notSupportedOnWebMessage);
+  }
+
+  @override
+  Future<String?> generatePdfFromHtmlUri(Uri htmlUri, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError(_notSupportedOnWebMessage);
+  }
 }

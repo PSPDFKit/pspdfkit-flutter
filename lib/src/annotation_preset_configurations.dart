@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 ///
 ///  Copyright © 2019-2024 PSPDFKit GmbH. All rights reserved.
 ///
@@ -6,7 +8,6 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-part of pspdfkit;
 
 /// Annotation configuration class. Used to configure annotation presets.
 ///
@@ -36,7 +37,7 @@ abstract class AnnotationConfiguration {
 /// Annotation configuration class for ink annotation. Ink annotations include: InkPen, MagicInk, Highlighter, Eraser and Signature.
 class InkAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final double? alpha;
   final List<Color>? availableColors;
@@ -71,7 +72,7 @@ class InkAnnotationConfiguration extends AnnotationConfiguration {
       map['color'] = color?.toHex();
     }
 
-    if (thickness > 0.0) {
+    if (thickness != null && thickness! > 0.0) {
       map['thickness'] = thickness;
     }
 
@@ -468,13 +469,13 @@ enum AnnotationConfigurationProperty {
   /// Line annotation start and end line ending style.
   lineEndingStyle,
 
-  /// Freetext annotation font name.
+  /// FreeText annotation font name.
   fontName,
 
-  /// Freetext annotation font size.
+  /// FreeText annotation font size.
   fontSize,
 
-  /// Freetext annotation text alignment.
+  /// FreeText annotation text alignment.
   textAlignment,
 
   /// Stamp annotation name.

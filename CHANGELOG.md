@@ -1,5 +1,18 @@
 ## Newest Release
 
+### 4.0.0 - 01 Nov 2024
+
+- Adds Pigeon for communication between Flutter and native iOS and Android platforms. (J#HYB-455)
+- Fixes issue where annotation preset configurations are not applied to some annotation tools. (J#HYB-185) 
+- Fixes inconsistency in the `applyInstantJson` method parameter type. It now accepts a string on both iOS and Android. (#45541)
+- Updates for Nutrient Android SDK 2024.6.1. (#45458)
+- Updates for Nutrient iOS SDK 14.1.1. (#45458)
+- Updates for Nutrient Web SDK 2024.7.0. (#45458)
+
+## Previous Releases
+
+### 3.12.0 - 30 Jul 2024
+
 ### 3.12.1 - 11 Sep 2024
 
 - Updates for PSPDFKit 2024.5.1 for Android. (J#HYB-506)
@@ -7,8 +20,6 @@
 - PSPDFKit for Flutter now requires Flutter 3.24.1 or later.
 - Fixes an issue where some annotation toolbar items are not displayed when custom grouping is used. (J#HYB-440)
 - Fixes an issue where `onDocumentLoaded` is triggered multiple times. (J#HYB-494)
-
-## Previous Releases
 
 ### 3.12.0 - 30 Jul 2024
 

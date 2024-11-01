@@ -1,21 +1,5 @@
-///
-///  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
-///
-///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
-///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
-///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
-///  This notice may not be removed from this file.
-///
-
-import 'package:pspdfkit_flutter/src/forms/button_form_field.dart';
-import 'package:pspdfkit_flutter/src/forms/form_field_type.dart';
-import 'package:pspdfkit_flutter/src/forms/listbox_form_field.dart';
-import 'package:pspdfkit_flutter/src/forms/radio_button_form_field.dart';
-
-import 'checkbox_form_field.dart';
-import 'combobox_form_field.dart';
-import 'signature_form_field.dart';
-import 'text_form_field.dart';
+import 'package:pspdfkit_flutter/src/forms/form_field_type_extension.dart';
+import '../../pspdfkit.dart';
 
 abstract class PdfFormField {
   late String _name;

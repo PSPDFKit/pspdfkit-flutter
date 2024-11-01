@@ -1,3 +1,12 @@
+/*
+ * Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+ * <p>
+ * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ * UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ * This notice may not be removed from this file.
+ */
+
 package com.pspdfkit.flutter.pspdfkit
 
 import android.util.Log
@@ -10,6 +19,7 @@ import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
+@Deprecated("This class is deprecated and will be removed in the future. Please use the new `PspdfkitViewImpl` class instead.")
 class PspdfkitPdfGenerator(private val pageAdaptor: PdfPageAdaptor) {
 
     private var disposable: Disposable? = null

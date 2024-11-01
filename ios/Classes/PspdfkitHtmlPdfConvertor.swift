@@ -11,6 +11,7 @@ import Foundation
 import PSPDFKit.PSPDFProcessor
 
 @objc(PspdfkitHtmlPdfConvertor)
+@available(*, deprecated, message: "This class is deprecated and will be removed in a future release. Use PspdfkitApiImpl instead.")
 public class PspdfkitHtmlPdfConvertor: NSObject {
     
     @objc public static func generateFromHtmlString(html: String, outputFileURL: URL, convertionOptions: Dictionary<String,Any>?, results:@escaping FlutterResult) {

@@ -11,6 +11,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/pspdfkit_flutter_api_impl.dart';
+
 import 'pspdfkit_flutter_method_channel.dart';
 
 typedef InstantSyncStartedCallback = void Function(String? documentId);
@@ -33,11 +35,13 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static PspdfkitFlutterPlatform _instance = MethodChannelPspdfkitFlutter();
+  static PspdfkitFlutterPlatform _instance = Pspdfkit.useLegacy
+      ? MethodChannelPspdfkitFlutter()
+      : PspdfkitFlutterApiImpl();
 
   /// The default instance of [PspdfkitFlutterPlatform] to use.
   ///
-  /// Defaults to [MethodChannelPspdfkitFlutter].
+  /// Defaults to [PspdfkitFlutterApiImpl].
   static PspdfkitFlutterPlatform get instance => _instance;
 
   /// Platform-specific implementations should set this with their own
@@ -62,12 +66,7 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
       String? androidLicenseKey, String? iOSLicenseKey, String? webLicenseKey);
 
   /// Loads a [document] with a supported format using a given [configuration].
-  Future<bool?> present(String document,
-      {dynamic configuration,
-      @Deprecated('Use setMeasurementConfiguration instead.')
-      MeasurementScale? measurementScale,
-      @Deprecated('Use setMeasurementConfiguration instead.')
-      MeasurementPrecision? measurementPrecision});
+  Future<bool?> present(String document, {dynamic configuration});
 
   /// Loads an Instant document from a server [serverUrl] with using a[jwt] in a native Instant PDFViewer.
   ///
@@ -115,7 +114,7 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   );
 
   /// Imports annotations from the XFDF file at the given path.
-  Future<bool?> importXfdf(String xfdfPath);
+  Future<bool?> importXfdf(String xfdfString);
 
   /// Exports annotations to the XFDF file at the given path.
   Future<bool?> exportXfdf(String xfdfPath);
@@ -124,14 +123,14 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool?> save();
 
-  /// Sets a delay for synchronising local changes to the Instant server.
+  /// Sets a delay for synchronizing local changes to the Instant server.
   /// [delay] is the delay in milliseconds.
   Future<bool?> setDelayForSyncingLocalChanges(double delay);
 
   /// Enable or disable listening to Instant server changes.
   Future<bool?> setListenToServerChanges(bool listen);
 
-  /// Manually triggers synchronisation.
+  /// Manually triggers synchronization.
   Future<bool?> syncAnnotations();
 
   /// Checks the external storage permission for writing on Android only.
@@ -146,6 +145,30 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
 
   Future<bool?> setAnnotationPresetConfigurations(
       Map<String, dynamic> configurations);
+
+  //. Generate a PDF from the given HTML string.
+  /// [html]: The HTML string to be converted to PDF.
+  /// [outPutFile]: The path to the output file.
+  /// [options]: A map of options that can be used to customize the PDF generation.
+  /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
+  Future<String?> generatePdfFromHtmlString(String html, String outPutFile,
+      [Map<String, Object?>? options]);
+
+  /// Generates a PDF from the given HTML URI.
+  /// [htmlUri]: The URI to the HTML file to be converted to PDF. The URI can be for a local file or a remote file.
+  /// [outPutFile]: The path to the output file.
+  /// [options]: A map of options that can be used to customize the PDF generation.
+  /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
+  Future<String?> generatePdfFromHtmlUri(Uri htmlUri, String outPutFile,
+      [Map<String, Object?>? options]);
+
+  /// Generates a PDF from the given list of pages.
+  /// [pages]: The list of pages to be converted to PDF.
+  /// [outPutFile]: The path to the output file.
+  /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
+  /// The [options] parameter is a map of options that can be used to customize the PDF generation.
+  Future<String?> generatePdf(List<NewPage> pages, String outPutFile,
+      [Map<String, Object?>? options]);
 
   /// Path to the temporary directory on the device that is not backed up and is
   /// suitable for storing caches of downloaded files.

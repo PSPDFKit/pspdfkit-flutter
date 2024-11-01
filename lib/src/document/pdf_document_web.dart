@@ -5,14 +5,11 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pspdfkit_flutter/src/document/page_info.dart';
-import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
-
-import '../forms/form_field.dart';
-import 'document_save_options.dart';
-import 'pdf_document.dart';
+import '../../pspdfkit.dart';
+import '../web/pspdfkit_web_instance.dart';
 
 class PdfDocumentWeb extends PdfDocument {
   final PspdfkitWebInstance _instance;
@@ -39,5 +36,68 @@ class PdfDocumentWeb extends PdfDocument {
   @override
   Future<List<PdfFormField>> getFormFields() {
     return _instance.getFormFields();
+  }
+
+  @override
+  Future<bool?> addAnnotation(String jsonAnnotation) {
+    return _instance
+        .addAnnotation(jsonDecode(jsonAnnotation))
+        .then((value) => true);
+  }
+
+  @override
+  Future<bool?> applyInstantJson(String annotationsJson) {
+    return _instance
+        .applyInstantJson(jsonDecode(annotationsJson))
+        .then((value) => true);
+  }
+
+  @override
+  Future<String?> exportInstantJson() {
+    return _instance.exportInstantJson().then((value) => jsonEncode(value));
+  }
+
+  @override
+  Future<bool> exportXfdf(String xfdfPath) {
+    return _instance.exportXfdf(xfdfPath).then((value) => true);
+  }
+
+  @override
+  Future<Object> getAllUnsavedAnnotations() {
+    return _instance.getAllAnnotations();
+  }
+
+  @override
+  Future<Object> getAnnotations(int pageIndex, String type) {
+    return _instance.getAnnotations(pageIndex, type).then((value) => value);
+  }
+
+  @override
+  Future<String?> getFormFieldValue(String fullyQualifiedName) {
+    return _instance.getFormFieldValue(fullyQualifiedName);
+  }
+
+  @override
+  Future<bool> importXfdf(String xfdfString) {
+    return _instance.importXfdf(xfdfString).then((value) => true);
+  }
+
+  @override
+  Future<bool?> removeAnnotation(Object jsonAnnotation) {
+    return _instance
+        .removeAnnotation(jsonDecode(jsonAnnotation.toString()))
+        .then((value) => true);
+  }
+
+  @override
+  Future<bool> save(String? outputPath, DocumentSaveOptions? options) {
+    return _instance.save().then((value) => true);
+  }
+
+  @override
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) {
+    return _instance
+        .setFormFieldValue(value, fullyQualifiedName)
+        .then((value) => true);
   }
 }

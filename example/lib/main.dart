@@ -24,15 +24,14 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // Since PSPDFKit for Flutter 3.9.0, you are now required to initialize PSPDFKit with a license key.
   // If you don't have one, you can set it to null. This will show a watermark on the document.
-  // To get a trial license key, please visit https://my.pspdfkit.com/trial/new
+  // To get a trial license key, please visit https://my.nutrient.io/trial/new
   //
   // To set the license key for both platforms, use:
   // Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
   // "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE", "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
   //
   // To set the license key for the currently running platform, use:
-  // Pspdfkit.setLicenseKey(null);
-  Pspdfkit.setLicenseKey(null);
+  Pspdfkit.initialize();
   runApp(const MyApp());
 }
 

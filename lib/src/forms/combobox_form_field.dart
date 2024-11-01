@@ -7,8 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:pspdfkit_flutter/src/forms/form_field.dart';
-import 'package:pspdfkit_flutter/src/forms/pdf_form_options.dart';
+import 'package:pspdfkit_flutter/pspdfkit.dart';
 
 class ComboBoxFormField extends PdfFormField {
   final List<String> defaultValues;
@@ -26,7 +25,16 @@ class ComboBoxFormField extends PdfFormField {
     return ComboBoxFormField(
         defaultValues: List<String>.from(map['defaultValues']),
         selectedIndices: List<int>.from(map['selectedIndices']),
-        options: PdfFormOption.listFromMap(map['options']),
+        options: _populateOptions(map['options']),
         values: List<String>.from(map['values']));
+  }
+
+  static List<PdfFormOption> _populateOptions(dynamic json) {
+    return json
+        .map((e) => PdfFormOption(
+              value: e['value'],
+              label: e['label'],
+            ))
+        .toList();
   }
 }

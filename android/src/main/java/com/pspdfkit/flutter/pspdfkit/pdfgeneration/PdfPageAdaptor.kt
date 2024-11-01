@@ -13,13 +13,13 @@ import com.pspdfkit.utils.Size
 
 class PdfPageAdaptor(private val context: Context) {
 
-    fun parsePages(pages: List<HashMap<String, Any>>): List<NewPage> {
+    fun parsePages(pages: List<Map<String, Any>>): List<NewPage> {
         return pages.map {
             buildPage(it)
         }
     }
 
-    private fun buildPage(pageConfigurations: HashMap<String, Any>): NewPage {
+    private fun buildPage(pageConfigurations: Map<String, Any>): NewPage {
         val pageSize = resolvePageSize(pageConfigurations["pageSize"] as List<Float>);
         val page: NewPage.Builder = when (pageConfigurations["type"]) {
             "pattern" -> {
@@ -57,7 +57,14 @@ class PdfPageAdaptor(private val context: Context) {
         }
 
         if (pageConfigurations.containsKey("rotation")) {
-            page.rotation(pageConfigurations["rotation"] as Int)
+            var pageRotation = pageConfigurations["rotation"]
+
+            if (pageRotation is Long) {
+                pageRotation = pageRotation.toInt()
+            } else if (pageRotation !is Int) {
+                throw IllegalArgumentException("Invalid rotation")
+            }
+            page.rotation(pageRotation)
         }
 
         if (pageConfigurations.containsKey("margins")) {
@@ -72,15 +79,23 @@ class PdfPageAdaptor(private val context: Context) {
     }
 
     private fun parsePdf(pageConfig: HashMap<String, Any>): PagePdf {
+        var pageIndex = pageConfig["pageIndex"]
+
+        if (pageIndex is Long) {
+            pageIndex = pageIndex.toInt()
+        } else if (pageIndex !is Int) {
+            throw IllegalArgumentException("Invalid page index")
+        }
+
         val pdfPage = if (pageConfig.containsKey("position")) PagePdf(
             context,
             Uri.parse(pageConfig["documentUri"] as String),
-            pageConfig["pageIndex"] as Int,
+            pageIndex,
             resolvePagePosition(pageConfig["position"] as String)
         ) else PagePdf(
             context,
             Uri.parse(pageConfig["documentUri"] as String),
-            pageConfig["pageIndex"] as Int,
+            pageIndex,
         )
         return pdfPage.apply {
             if (pageConfig.containsKey("zOrder")) {
@@ -90,15 +105,31 @@ class PdfPageAdaptor(private val context: Context) {
     }
 
     private fun parseImage(imageConfig: Map<String, Any>): PageImage {
+
         return PageImage(
             context, Uri.parse(imageConfig["imageUri"] as String),
             resolvePagePosition(imageConfig["position"] as String),
         ).apply {
             if (imageConfig.containsKey("quality")) {
-                setJpegQuality(imageConfig["quality"] as Int)
+                var quality = imageConfig["quality"]
+
+                if (quality is Long) {
+                    quality = quality.toInt()
+                } else if (quality !is Int) {
+                    throw IllegalArgumentException("Invalid quality")
+                }
+
+                setJpegQuality(quality)
             }
             if (imageConfig.containsKey("rotation")) {
-                rotation = imageConfig["rotation"] as Int
+                var pageRotation = imageConfig["rotation"]
+
+                if (pageRotation is Long) {
+                    pageRotation = pageRotation.toInt()
+                } else if (pageRotation !is Int) {
+                    throw IllegalArgumentException("Invalid rotation")
+                }
+                rotation = pageRotation
             }
         }
     }

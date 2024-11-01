@@ -25,7 +25,7 @@ class PspdfkitSaveAsExampleWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  _PspdfkitSaveAsExampleWidgetState createState() =>
+  State<PspdfkitSaveAsExampleWidget> createState() =>
       _PspdfkitSaveAsExampleWidgetState();
 }
 

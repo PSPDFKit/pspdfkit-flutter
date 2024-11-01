@@ -14,8 +14,8 @@ import 'dart:js';
 import 'dart:typed_data';
 import 'package:flutter/painting.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/document/document_save_options_extension.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
-import '../document/page_info.dart';
 
 /// This class is used to interact with a
 /// [PSPDFKit.Instance](https://pspdfkit.com/api/web/PSPDFKit.Instance.html) in
@@ -358,16 +358,22 @@ class PspdfkitWebInstance {
   Future<PageInfo> getPageInfo(int pageIndex) async {
     var pageInfo =
         _pspdfkitInstance.callMethod('pageInfoForIndex', [pageIndex]);
-    return PageInfo.fromJson(pageInfo);
+    return PageInfo(
+      pageIndex: pageInfo['pageIndex'],
+      height: pageInfo['height'],
+      width: pageInfo['width'],
+      rotation: pageInfo['rotation'],
+      label: pageInfo['label'],
+    );
   }
 
   /// Exports the current document as a raw PDF file.
   /// The [options] parameter is an optional [DocumentSaveOptions] object that specifies the export options.
   /// Returns a [Future] that completes with a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) async {
-    var webOptions = options?.toWebOptions();
-    var arrayBuffer = await promiseToFuture(_pspdfkitInstance.callMethod(
-        'exportPDF', [JsObject.jsify(webOptions ?? <String, dynamic>{})]));
+    var webOptions = options!.toWebOptions();
+    var arrayBuffer = await promiseToFuture(_pspdfkitInstance
+        .callMethod('exportPDF', [JsObject.jsify(webOptions)]));
 
     var uintList = JsObject(context['Uint8Array'], [arrayBuffer]);
     JsArray jsArray = context['Array'].callMethod('from', [uintList]);

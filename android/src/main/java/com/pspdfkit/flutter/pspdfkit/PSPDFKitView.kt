@@ -1,5 +1,12 @@
+/*
+ * Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+ * <p>
+ * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ * UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ * This notice may not be removed from this file.
+ */
 package com.pspdfkit.flutter.pspdfkit
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.MutableContextWrapper
@@ -19,6 +26,8 @@ import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
+import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
+import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
@@ -50,8 +59,8 @@ import java.io.File
 
 internal class PSPDFKitView(
     val context: Context,
-    id: Int,
-    messenger: BinaryMessenger,
+    private val id: Int,
+    private val messenger: BinaryMessenger,
     documentPath: String? = null,
     configurationMap: HashMap<String, Any>? = null,
     ) : PlatformView, MethodCallHandler {
@@ -60,7 +69,10 @@ internal class PSPDFKitView(
     private val methodChannel: MethodChannel
     private val pdfUiFragment: PdfUiFragment
     private var fragmentCallbacks: FlutterPdfUiFragmentCallbacks? = null
-    
+    private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
+    private val widgetCallbacks: PspdfkitWidgetCallbacks =
+        PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
+
     init {
         fragmentContainerView?.id = View.generateViewId()
         methodChannel = MethodChannel(messenger, "com.pspdfkit.widget.$id")
@@ -93,11 +105,13 @@ internal class PSPDFKitView(
                     .build()
             }
         }
-        fragmentCallbacks = FlutterPdfUiFragmentCallbacks(methodChannel,
-            measurementValueConfigurations, messenger)
+
+        fragmentCallbacks = FlutterPdfUiFragmentCallbacks(methodChannel, measurementValueConfigurations, messenger,FlutterWidgetCallback(widgetCallbacks))
+
         fragmentCallbacks?.let {
             getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(it, true)
         }
+
         getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks( object : FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentAttached(
                 fm: FragmentManager,
@@ -119,6 +133,7 @@ internal class PSPDFKitView(
                 override fun onViewAttachedToWindow(view: View) {
                     getFragmentActivity(context).supportFragmentManager.commitNow {
                         add(it.id, pdfUiFragment)
+                        pspdfkitViewImpl.setPdfFragment(pdfUiFragment)
                         setReorderingAllowed(true)
                     }
                 }
@@ -126,6 +141,7 @@ internal class PSPDFKitView(
                 override fun onViewDetachedFromWindow(view: View) {
                     getFragmentActivity(context).supportFragmentManager.commit {
                         remove(pdfUiFragment)
+                        pspdfkitViewImpl.setPdfFragment(null)
                         setReorderingAllowed(true)
                     }
                 }
@@ -140,10 +156,22 @@ internal class PSPDFKitView(
 
     override fun dispose() {
         fragmentContainerView = null
+        // Unregister method channel.
+        PspdfkitWidgetControllerApi.setUp(messenger, null, id.toString())
+        pspdfkitViewImpl.dispose()
+        pspdfkitViewImpl.setPdfFragment(null)
         fragmentCallbacks?.let {
-            getFragmentActivity(context).supportFragmentManager.unregisterFragmentLifecycleCallbacks(it)
+            getFragmentActivity(context).supportFragmentManager.unregisterFragmentLifecycleCallbacks(
+                it,
+            )
         }
         fragmentCallbacks = null
+    }
+
+    override fun onFlutterViewAttached(flutterView: View) {
+        super.onFlutterViewAttached(flutterView)
+        // Set up the method channel for communication with Flutter.
+        PspdfkitWidgetControllerApi.setUp(messenger, pspdfkitViewImpl, id.toString())
     }
 
     @SuppressLint("CheckResult")
@@ -153,7 +181,7 @@ internal class PSPDFKitView(
         if (!pdfUiFragment.isAdded) {
             return
         }
-        var document = pdfUiFragment.document ?: return
+        val document = pdfUiFragment.document ?: return
 
         when (call.method) {
             "applyInstantJson" -> {
@@ -432,7 +460,7 @@ internal class PSPDFKitView(
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(result::success)
             }
-            "setAnnotationPresetConfigurations" -> {
+            "setAnnotationConfigurations" -> {
                 try {
                     val annotationConfigurations =
                         call.argument<Map<String?, Any?>>("annotationConfigurations")
@@ -453,8 +481,26 @@ internal class PSPDFKitView(
                         result.error("InvalidState", "PdfFragment is null", null)
                         return
                     }
-                    for ((key, value) in configurations) {
-                        pdfFragment.annotationConfiguration.put(key, value)
+                    for (config in configurations) {
+                        if (config.annotationTool != null && config.variant != null) {
+                            pdfFragment.annotationConfiguration.put(
+                                config.annotationTool,
+                                config.variant,
+                                config.configuration
+                            )
+                        }
+                        if (config.annotationTool != null && config.type == null) {
+                            pdfFragment.annotationConfiguration.put(
+                                config.annotationTool,
+                                config.configuration
+                            )
+                        }
+                        if (config.type != null) {
+                            pdfFragment.annotationConfiguration.put(
+                                config.type,
+                                config.configuration
+                            )
+                        }
                     }
                     result.success(true)
                 } catch (e: java.lang.Exception) {
@@ -579,7 +625,6 @@ internal class PSPDFKitView(
                     PdfProcessorTask.fromDocument(document)
                         .changeAnnotationsOfType(annotationType, processingMode)
                 }
-
                 PdfProcessor.processDocumentAsync(task, outputPath)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -627,7 +672,7 @@ class PSPDFKitViewFactory(
     private val messenger: BinaryMessenger,
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
     override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
-        val creationParams = args as Map<String?, Any?>?
+        val creationParams = args as Map<*, *>?
         return PSPDFKitView(
             context!!,
             viewId,

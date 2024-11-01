@@ -144,14 +144,15 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
               'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.',
           onTap: () => pushTwoPspdfWidgetsSimultaneously(context),
         ),
-      PspdfkitExampleItem(
-          title: 'PSPDFKit Events Listeners',
-          description: 'Shows how to use PSPDFKit Events Listeners.',
-          onTap: () async {
-            await extractAsset(context, _documentPath).then((value) => goTo(
-                PspdfkitEventListenerExample(documentPath: value.path),
-                context));
-          }),
+      if (kIsWeb)
+        PspdfkitExampleItem(
+            title: 'PSPDFKit Events Listeners',
+            description: 'Shows how to use PSPDFKit Events Listeners.',
+            onTap: () async {
+              await extractAsset(context, _documentPath).then((value) => goTo(
+                  PspdfkitEventListenerExample(documentPath: value.path),
+                  context));
+            }),
       PspdfkitExampleItem(
           title: 'Measurement tools',
           description: 'Shows how to use PSPDFKit Measurement tools.',
@@ -332,7 +333,7 @@ void annotationsExample(context) async {
 
 void pdfGenerationExample(context) async {
   await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
-      builder: (_) => PspdfkitPDFGenerationExampleWidget()));
+      builder: (_) => const PspdfkitPDFGenerationExampleWidget()));
 }
 
 void manualSaveExample(context) async {

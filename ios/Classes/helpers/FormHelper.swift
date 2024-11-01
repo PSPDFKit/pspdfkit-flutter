@@ -22,8 +22,8 @@ public class FormHelper: NSObject {
                 "isReadOnly": formElement.isReadOnly,
                 "fullyQualifiedName": formElement.formField?.fullyQualifiedName ?? "",
                 "alternateFieldName": formElement.formField?.alternateFieldName ?? "",
-                "isNoExport": formElement.formField?.isNoExport,
-                "isDirty": formElement.formField?.dirty,
+                "isNoExport": formElement.formField?.isNoExport ?? false,
+                "isDirty": formElement.formField?.dirty ?? false,
             ]
             
             if(formElement.formField?.type == nil){
@@ -51,6 +51,57 @@ public class FormHelper: NSObject {
             return formFieldDictionary
         } as NSArray
      return results
+    }
+    
+    
+    @objc public static func convertToFormFieldData(formFields: Array<FormElement>) -> NSArray {
+        
+        let results: [FormFieldData] = formFields.compactMap { (formElement) -> FormFieldData? in
+                
+            if(formElement.formField?.type == nil){
+                return nil
+            }
+            
+            var type: PdfFormFieldTypes? = nil
+            
+            switch formElement.formField!.type {
+            case .pushButton:
+                type = PdfFormFieldTypes.button
+            case .checkBox:
+                type = PdfFormFieldTypes.checkbox
+            case .signature:
+                type = PdfFormFieldTypes.signature
+            case .text:
+                type = PdfFormFieldTypes.text
+            case .listBox:
+                type = PdfFormFieldTypes.listBox
+            case .comboBox:
+                type = PdfFormFieldTypes.comboBox
+            case .radioButton:
+                type = PdfFormFieldTypes.radioButton
+            case .unknown:
+                type = PdfFormFieldTypes.unknown
+            }
+            
+            guard let validType = type else {
+                return nil
+            }
+            
+            let formFieldData = FormFieldData(
+                name: formElement.name ?? "",
+                alternativeFieldName: formElement.formField?.alternateFieldName ?? "",
+                fullyQualifiedName: formElement.formField?.fullyQualifiedName ?? "",
+                type: validType,
+                annotations: formElement.formField?.annotations ?? [],
+                isReadOnly: formElement.isReadOnly,
+                isRequired: formElement.isRequired,
+                isExported: !(formElement.formField?.isNoExport ?? false),
+                isDirty: formElement.formField?.dirty ?? false
+            )
+            
+            return formFieldData
+        }
+     return results as NSArray
     }
     
 }

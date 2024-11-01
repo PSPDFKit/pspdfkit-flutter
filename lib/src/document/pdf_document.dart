@@ -7,9 +7,7 @@
 
 import 'dart:typed_data';
 
-import 'package:pspdfkit_flutter/src/document/document_save_options.dart';
-import 'package:pspdfkit_flutter/src/document/page_info.dart';
-import 'package:pspdfkit_flutter/src/forms/form_field.dart';
+import '../../pspdfkit.dart';
 
 abstract class PdfDocument {
   final String documentId;
@@ -30,4 +28,40 @@ abstract class PdfDocument {
 
   /// Returns a list of all form fields in the document.
   Future<List<PdfFormField>> getFormFields();
+
+  /// Sets the value of a form field by specifying its fully qualified field name.
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName);
+
+  /// Gets the form field value by specifying its fully qualified name.
+  Future<String?> getFormFieldValue(String fullyQualifiedName);
+
+  /// Applies Instant document JSON to the presented document.
+  Future<bool?> applyInstantJson(String annotationsJson);
+
+  /// Exports Instant document JSON from the presented document.
+  Future<String?> exportInstantJson();
+
+  /// Adds the given annotation to the presented document.
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+  Future<bool?> addAnnotation(String jsonAnnotation);
+
+  /// Removes the given annotation from the presented document.
+  /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+  Future<bool?> removeAnnotation(String jsonAnnotation);
+
+  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
+  Future<Object> getAnnotations(int pageIndex, String type);
+
+  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  Future<Object> getAllUnsavedAnnotations();
+
+  /// Imports annotations from the XFDF file at the given path.
+  Future<bool> importXfdf(String xfdfString);
+
+  /// Exports annotations to the XFDF file at the given path.
+  Future<bool> exportXfdf(String xfdfPath);
+
+  /// Saves the document back to its original location if it has been changed.
+  /// If there were no changes to the document, the document file will not be modified.
+  Future<bool> save(String? outputPath, DocumentSaveOptions? options);
 }

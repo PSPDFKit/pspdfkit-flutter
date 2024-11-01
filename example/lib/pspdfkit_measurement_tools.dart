@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
@@ -43,11 +44,13 @@ class _PspdfkitMeasurementsExampleState
                     _measurementValueConfiguration
                   ],
                   pageLayoutMode: PspdfkitPageLayoutMode.single,
-                  webConfiguration: PdfWebConfiguration(toolbarItems: [
-                    ...Pspdfkit.defaultWebToolbarItems,
-                    PspdfkitWebToolbarItem(
-                        type: PspdfkitWebToolbarItemType.measurements)
-                  ])),
+                  webConfiguration: kIsWeb
+                      ? PdfWebConfiguration(toolbarItems: [
+                          ...Pspdfkit.defaultWebToolbarItems,
+                          PspdfkitWebToolbarItem(
+                              type: PspdfkitWebToolbarItemType.measurements)
+                        ])
+                      : null),
             ),
           ),
         ],

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -65,7 +67,7 @@ class _PspdfkitDocumentExampleState extends State<PspdfkitDocumentExample> {
                   : null,
               child: PspdfkitWidget(
                 documentPath: widget.documentPath,
-                onPdfDocumentLoaded: (PdfDocument document) async {
+                onPdfDocumentLoaded: (PdfDocument document) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('Document loaded ${document.documentId}')));
                   setState(() {
@@ -73,9 +75,13 @@ class _PspdfkitDocumentExampleState extends State<PspdfkitDocumentExample> {
                   });
                 },
                 onPageChanged: (pageIndex) {
-                  _document?.getPageInfo(pageIndex).then((value) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Page changed to $value')));
+                  _document?.getPageInfo(pageIndex).then((PageInfo value) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                            'Page changed to ${value.pageIndex}, Rotation: ${value.rotation}')));
+                  }).catchError((error) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('Error: $error')));
                   });
                 },
               ))),

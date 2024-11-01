@@ -1,5 +1,7 @@
 package com.pspdfkit.flutter.pspdfkit.forms
 
+import com.pspdfkit.flutter.pspdfkit.api.FormFieldData
+import com.pspdfkit.flutter.pspdfkit.api.PdfFormFieldTypes
 import com.pspdfkit.forms.CheckBoxFormField
 import com.pspdfkit.forms.ComboBoxFormField
 import com.pspdfkit.forms.FormField
@@ -12,12 +14,23 @@ import com.pspdfkit.internal.forms.getInputFormat
 
 object FormHelper {
 
+    private val formFieldTypeMap: Map<FormType, PdfFormFieldTypes> = mapOf(
+        FormType.TEXT to PdfFormFieldTypes.TEXT,
+        FormType.CHECKBOX to PdfFormFieldTypes.CHECKBOX,
+        FormType.RADIOBUTTON to PdfFormFieldTypes.RADIO_BUTTON,
+        FormType.LISTBOX to PdfFormFieldTypes.LIST_BOX,
+        FormType.COMBOBOX to PdfFormFieldTypes.COMBO_BOX,
+        FormType.SIGNATURE to PdfFormFieldTypes.SIGNATURE,
+        FormType.PUSHBUTTON to PdfFormFieldTypes.BUTTON,
+        FormType.UNDEFINED to PdfFormFieldTypes.UNKNOWN
+    )
+
     @JvmStatic
-    fun formFieldPropertiesToMap(formFields: List<FormField>): List<Map<String, Any?>> {
-        val formFieldsList: MutableList<Map<String, Any?>> = mutableListOf()
+    fun formFieldPropertiesToMap(formFields: List<FormField>): List<Map<String, Any>> {
+        val formFieldsList: MutableList<Map<String, Any>> = mutableListOf()
         // Extract the common form fields properties.
         for (formField in formFields) {
-            val formFieldsMap: MutableMap<String, Any?> = mutableMapOf()
+            val formFieldsMap: MutableMap<String, Any> = mutableMapOf()
             formFieldsMap["name"] = formField.name
             formFieldsMap["fullyQualifiedName"] = formField.fullyQualifiedName
             formFieldsMap["type"] = formField.type.name
@@ -28,7 +41,7 @@ object FormHelper {
             formFieldsMap["alternateFieldName"] = formField.alternateFieldName
             formFieldsMap["mappingName"] = formField.mappingName
             formFieldsMap["annotation"] = formField.formElement.annotation.toInstantJson()
-            formFieldsMap["inputFormatString"] = formField.formElement.getFormatString()
+            formFieldsMap["inputFormatString"] = formField.formElement.getFormatString() ?: ""
             formFieldsMap["inputFormat"] = formField.formElement.getInputFormat().name
 
             // Extract the specific form field properties.
@@ -38,16 +51,36 @@ object FormHelper {
         return formFieldsList
     }
 
+    fun formFieldsToFormFieldData(formFields: List<FormField>):List<FormFieldData> {
+        val formFieldsList: MutableList<FormFieldData> = mutableListOf()
+        // Extract the common form fields properties.
+        for (formField in formFields) {
+            val formFieldData: FormFieldData = FormFieldData(
+               name = formField.name,
+               fullyQualifiedName =  formField.fullyQualifiedName,
+               type = formFieldTypeMap[formField.type] ?: PdfFormFieldTypes.UNKNOWN,
+                isDirty = formField.isDirty,
+                isRequired = formField.isRequired,
+                isReadOnly = formField.isReadOnly,
+                isExported = formField.isExported,
+                alternativeFieldName = formField.alternateFieldName,
+                annotations = formField.formElement.annotation.toInstantJson(),
+            )
+            formFieldsList.add(formFieldData)
+        }
+        return formFieldsList
+    }
+
     @JvmStatic
     private fun getSpecificFormFieldProperties(
         formField: FormField,
-        map: MutableMap<String, Any?>
-    ): Map<String, Any?> {
+        map: MutableMap<String, Any>
+    ): Map<String, Any> {
 
         when (formField.type) {
             FormType.TEXT -> {
                 val textFormField = formField as TextFormField
-                map["text"] = textFormField.formElement.text
+                map["text"] = textFormField.formElement.text ?: ""
                 map["isMultiline"] = textFormField.formElement.isMultiLine
                 map["isPassword"] = textFormField.formElement.isPassword
                 map["isRichText"] = textFormField.formElement.isRichText
@@ -55,6 +88,7 @@ object FormHelper {
                 map["isFileSelect"] = textFormField.formElement.isFileSelect
                 map["isSpellCheckEnabled"] = textFormField.formElement.isSpellCheckEnabled
                 map["isScrollEnabled"] = textFormField.formElement.isScrollEnabled
+                map["annotations"] = textFormField.formElement.annotation.toInstantJson()
             }
 
             FormType.CHECKBOX -> {

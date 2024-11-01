@@ -101,8 +101,11 @@ PspdfkitWebToolbarItem webToolbarItemFromJsObject(JsObject jsObject) {
   var json = jsObject.toJson();
 
   return PspdfkitWebToolbarItem(
-    type: PspdfkitWebToolbarItemType.values
-        .firstWhere((e) => e.name == json['type']),
+    type: PspdfkitWebToolbarItemType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () =>
+            // Introduction of a new toolbar item type causes a runtime error.
+            throw Exception('Unknown toolbar item type: ${json['type']}')),
     title: json['title'],
     className: json['className'],
     disabled: json['disabled'],

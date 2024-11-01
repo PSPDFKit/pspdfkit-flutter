@@ -6,6 +6,10 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
@@ -107,13 +111,14 @@ class PspdfkitAnnotationsExampleWidget extends StatefulWidget {
       : super(key: key);
 
   @override
-  _PspdfkitAnnotationsExampleWidgetState createState() =>
+  State<PspdfkitAnnotationsExampleWidget> createState() =>
       _PspdfkitAnnotationsExampleWidgetState();
 }
 
 class _PspdfkitAnnotationsExampleWidgetState
     extends State<PspdfkitAnnotationsExampleWidget> {
   late PspdfkitWidgetController view;
+  late PdfDocument? document;
 
   @override
   Widget build(BuildContext context) {
@@ -131,28 +136,30 @@ class _PspdfkitAnnotationsExampleWidgetState
                   child: Column(children: <Widget>[
                     Expanded(
                       child: PspdfkitWidget(
-                        onPspdfkitWidgetCreated: (controller) {
-                          view = controller;
-                        },
                         configuration: widget.configuration,
                         documentPath: widget.documentPath,
+                        onPdfDocumentLoaded: (document) {
+                          setState(() {
+                            this.document = document;
+                          });
+                        },
                       ),
                     ),
                     SizedBox(
                         child: Column(children: <Widget>[
                       ElevatedButton(
                           onPressed: () async {
-                            await view.addAnnotation(annotationJsonHashMap);
+                            await document?.addAnnotation(annotationJsonString);
                             // To test the `view#addAnnotation` method with an InstantJSON string
                             // simply use `annotationJsonString` instead or `annotationJsonHashMap`.
-                            // E.g: `await view.addAnnotation(annotationJsonString);`
+                            // E.g: `await document?.addAnnotation(annotationJsonString);`
                           },
                           child: const Text('Add Annotation')),
                       ElevatedButton(
                           onPressed: () async {
                             const title = 'Annotation JSON';
-                            await view
-                                .getAnnotations(0, 'all')
+                            await document
+                                ?.getAnnotations(0, 'all')
                                 .then((dynamic annotationsJson) {
                               showDialog<AlertDialog>(
                                   context: context,
@@ -173,8 +180,8 @@ class _PspdfkitAnnotationsExampleWidgetState
                       ElevatedButton(
                           onPressed: () async {
                             const title = 'Unsaved Annotations';
-                            await view
-                                .getAllUnsavedAnnotations()
+                            await document
+                                ?.getAllUnsavedAnnotations()
                                 .then((dynamic annotationsJson) {
                               showDialog<AlertDialog>(
                                   context: context,
@@ -193,16 +200,16 @@ class _PspdfkitAnnotationsExampleWidgetState
                             });
                           },
                           child: const Text('Get All Unsaved Annotations')),
-                      if (PlatformUtils.isIOS() || kIsWeb)
-                        ElevatedButton(
-                            onPressed: () async {
-                              dynamic annotationsJson =
-                                  await view.getAnnotations(0, 'all');
-                              for (var annotation in annotationsJson) {
-                                await view.removeAnnotation(annotation);
-                              }
-                            },
-                            child: const Text('Remove Annotation')),
+                      ElevatedButton(
+                          onPressed: () async {
+                            dynamic annotationsJson =
+                                await document?.getAnnotations(0, 'all');
+                            for (var annotation in annotationsJson) {
+                              await document
+                                  ?.removeAnnotation(jsonEncode(annotation));
+                            }
+                          },
+                          child: const Text('Remove Annotation')),
                     ]))
                   ]))));
     } else {

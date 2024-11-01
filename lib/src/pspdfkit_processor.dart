@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
+import 'processor/processor.dart';
+
 ///
 ///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
 ///
@@ -7,14 +12,18 @@
 ///  This notice may not be removed from this file.
 ///
 
-part of pspdfkit;
-
 const convertorDocumentTitle = 'documentTitle';
 const androidConvertorBaseUrl = 'baseUrl';
 const iosConvertorPageNumber = 'numberOfPages';
 const androidConvertorIsJavascriptEnabled = 'enableJavaScript';
 
 /// This class is used to generate PDF documents from HTML,templates, patterns and images.
+@Deprecated(
+  '''
+  This class will be removed in the next major version of the plugin. 
+  Use [Pspdfkit.generatePdf] instead.
+  ''',
+)
 class PspdfkitProcessor {
   final MethodChannel _channel;
   static PspdfkitProcessor? _instance;

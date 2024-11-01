@@ -7,6 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/utils/file_utils.dart';
@@ -16,9 +18,7 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'dart:io';
 
 class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
-  final PspdfkitProcessor pdfProcessor = PspdfkitProcessor.instance;
-
-  PspdfkitPDFGenerationExampleWidget({Key? key}) : super(key: key);
+  const PspdfkitPDFGenerationExampleWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +67,11 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
               _generateFromHtmlUri(context).then((value) {
                 _dismissProgressDialogue(context);
                 Pspdfkit.present(value);
+              }).catchError((error) {
+                _dismissProgressDialogue(context);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Error generating PDF from HTML: $error'),
+                ));
               });
             },
           ),
@@ -90,7 +95,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
           pageSize: PageSize.a4)
     ];
 
-    var filePath = await pdfProcessor.generatePdf(
+    var filePath = await Pspdfkit.generatePdf(
         pages, outputPath); // or generatePDFFromImage
 
     if (filePath != null) {
@@ -100,7 +105,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
     }
   }
 
-  /// Generates a PDF from an existig PDF document page.
+  /// Generates a PDF from an existing PDF document page.
   Future<String> _generateFromTemplate(BuildContext context) async {
     File sourceDocument = await extractAsset(context, 'PDFs/PSPDFKit.pdf');
 
@@ -115,7 +120,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
       ))
     ];
 
-    var filePath = await pdfProcessor.generatePdf(pages, outputPath);
+    var filePath = await Pspdfkit.generatePdf(pages, outputPath);
 
     if (filePath != null) {
       return filePath;
@@ -140,7 +145,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
       NewPage.fromPattern(PagePattern.fromDocument(patternDocument.uri, 0),
           pageSize: PageSize.a4),
     ];
-    var filePath = await pdfProcessor.generatePdf(pages, outputPath);
+    var filePath = await Pspdfkit.generatePdf(pages, outputPath);
 
     if (filePath != null) {
       return filePath;
@@ -155,7 +160,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
     final outputFilePath = await getOutputPath('PDFs/html_String.pdf');
 
     var filePath =
-        await pdfProcessor.generatePdfFromHtmlString(html, outputFilePath);
+        await Pspdfkit.generatePdfFromHtmlString(html, outputFilePath);
 
     if (filePath != null) {
       return filePath;
@@ -172,8 +177,8 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
 
     String outputPath = await getOutputPath('pspdfkit_generated_html.pdf');
 
-    var filePath = await pdfProcessor.generatePdfFromHtmlUri(
-        Uri.parse(htmlUri), outputPath);
+    var filePath =
+        await Pspdfkit.generatePdfFromHtmlUri(Uri.parse(htmlUri), outputPath);
 
     if (filePath != null) {
       return filePath;

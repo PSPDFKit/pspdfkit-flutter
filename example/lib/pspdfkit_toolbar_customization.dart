@@ -7,6 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
@@ -20,7 +21,8 @@ class PspdfkitToolbarCustomization extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Get the default web toolbar items.
-    var defaultWebToolbarItems = Pspdfkit.defaultWebToolbarItems;
+    var defaultWebToolbarItems =
+        kIsWeb ? Pspdfkit.defaultWebToolbarItems : null;
 
     return Scaffold(
         extendBodyBehindAppBar: PlatformUtils.isAndroid(),
@@ -59,7 +61,7 @@ class PspdfkitToolbarCustomization extends StatelessWidget {
                         ],
                         webConfiguration: PdfWebConfiguration(
                             toolbarItems: [
-                              ...defaultWebToolbarItems.reversed,
+                              ...defaultWebToolbarItems?.reversed ?? [],
                               // Add custom web toolbar item.
                               PspdfkitWebToolbarItem(
                                   type: PspdfkitWebToolbarItemType.custom,

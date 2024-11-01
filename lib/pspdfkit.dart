@@ -6,7 +6,6 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
-library pspdfkit;
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -28,33 +27,39 @@ export 'src/widgets/pspdfkit_widget_controller.dart';
 export 'src/measurements/measurements.dart';
 export 'src/processor/processor.dart';
 export 'src/document/pdf_document.dart';
-export 'src/document/document_save_options.dart';
-export 'src/document/document_permissions.dart';
-export 'src/document/pdf_version.dart';
 export 'src/forms/forms.dart';
-export 'src/processor/annotation_processing_mode.dart';
-export 'src/annotations/annotation_types.dart';
+export 'src/api/pspdfkit_api.g.dart';
 
-part 'src/android_permission_status.dart';
-
-part 'src/pspdfkit_processor.dart';
-
-part 'src/annotation_preset_configurations.dart';
-
-part 'src/annotations/annotation_tools.dart';
+export 'src/pspdfkit_processor.dart';
+export 'src/annotation_preset_configurations.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
+  static bool useLegacy = false;
+
   /// Gets the PSPDFKit framework version.
   static Future<String?> get frameworkVersion =>
       PspdfkitFlutterPlatform.instance.getFrameworkVersion();
 
+  static Future<void> initialize({
+    String? androidLicenseKey,
+    String? iosLicenseKey,
+    String? webLicenseKey,
+    bool? useLegacy,
+  }) async {
+    Pspdfkit.useLegacy = useLegacy ?? false;
+    await PspdfkitFlutterPlatform.instance
+        .setLicenseKeys(androidLicenseKey, iosLicenseKey, webLicenseKey);
+  }
+
   /// Sets the license key.
   /// @param licenseKey The license key to be used.
+  @Deprecated('Use [Pspdfkit.initialize] instead.')
   static Future<void> setLicenseKey(String? licenseKey) =>
       PspdfkitFlutterPlatform.instance.setLicenseKey(licenseKey);
 
   /// Sets the license keys for both platforms.
+  @Deprecated('Use [Pspdfkit.initialize] instead.')
   static Future<void> setLicenseKeys(String? androidLicenseKey,
           String? iOSLicenseKey, String? webLicenseKey) async =>
       PspdfkitFlutterPlatform.instance
@@ -170,6 +175,20 @@ class Pspdfkit {
           Map<String, dynamic> configurations) async =>
       PspdfkitFlutterPlatform.instance
           .setAnnotationPresetConfigurations(configurations);
+
+  static Future<String?> generatePdfFromHtmlString(
+          String html, String outPutFile, [dynamic options]) async =>
+      PspdfkitFlutterPlatform.instance
+          .generatePdfFromHtmlString(html, outPutFile);
+
+  static Future<String?> generatePdfFromHtmlUri(Uri htmlUri, String outPutFile,
+          [dynamic options]) async =>
+      PspdfkitFlutterPlatform.instance
+          .generatePdfFromHtmlUri(htmlUri, outPutFile);
+
+  static Future<String?> generatePdf(List<NewPage> pages, String outPutFile,
+          [dynamic options]) async =>
+      PspdfkitFlutterPlatform.instance.generatePdf(pages, outPutFile);
 
   /// Get the annotation author name.
   static String authorName = PspdfkitFlutterPlatform.instance.authorName;

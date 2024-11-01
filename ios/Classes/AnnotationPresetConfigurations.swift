@@ -67,7 +67,7 @@ let ANNOTATION_MEASUREMENT_DISTANCE = "measurementDistance"
 @objc(AnnotationsPresetConfigurations)
 public class AnnotationsPresetConfigurations: NSObject {
 
-    @objc public static func setConfigurations(annotationPreset: Dictionary<String, Dictionary<String, Any>>) {
+    @objc public static func setConfigurations(annotationPreset: [String:[String: Any]]) {
 
         for key in annotationPreset.keys {
             switch key {

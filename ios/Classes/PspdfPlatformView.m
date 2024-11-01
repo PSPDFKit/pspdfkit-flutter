@@ -24,6 +24,7 @@
 @property (nonatomic) PSPDFNavigationController *navigationController;
 @property (nonatomic) FlutterPdfDocument *flutterPdfDocument;
 @property (nonatomic) NSObject<FlutterBinaryMessenger> *binaryMessenger;
+@property PspdfkitPlatformViewImpl *platformViewImpl;
 @end
 
 @implementation PspdfPlatformView
@@ -41,7 +42,9 @@
         _navigationController = [PSPDFNavigationController new];
         _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _navigationController.view.frame = frame;
-
+        _platformViewImpl = [[PspdfkitPlatformViewImpl alloc] init];
+        [_platformViewImpl registerWithBinaryMessenger:messenger viewId:[NSString stringWithFormat:@"%lld",viewId]];
+        
         // View controller containment
         _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         if (_flutterViewController == nil) {
@@ -114,6 +117,8 @@
 
         __weak id weakSelf = self;
         
+        [_platformViewImpl setViewControllerWithController:_pdfViewController];
+        
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
         }];
@@ -132,7 +137,9 @@
         NSDictionary *arguments = @{
             @"documentId": documentId,
         };
-        _flutterPdfDocument = [[FlutterPdfDocument alloc] initWithDocument:self.pdfViewController.document messenger: _binaryMessenger];
+        _flutterPdfDocument = [[FlutterPdfDocument alloc] initWithViewController:self.pdfViewController];
+        [_flutterPdfDocument registerWithBinaryMessenger:_binaryMessenger];
+        [_platformViewImpl onDocumentLoadedWithDocumentId:documentId];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
     }
 }
@@ -150,6 +157,10 @@
 }
 
 - (void)cleanup {
+    [self.flutterPdfDocument unRegisterWithBinaryMessenger:_binaryMessenger];
+    self.flutterPdfDocument = nil;
+    [self.platformViewImpl unRegisterWithBinaryMessenger:_binaryMessenger];
+    self.platformViewImpl = nil;
     self.pdfViewController.document = nil;
     [self.pdfViewController.view removeFromSuperview];
     [self.pdfViewController removeFromParentViewController];

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'utils/platform_utils.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';

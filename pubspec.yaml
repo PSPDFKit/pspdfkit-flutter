@@ -1,6 +1,6 @@
 name: pspdfkit_flutter
-description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful PSPDFKit PDF SDK.
-version: 3.12.1
+description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful Nutrient PDF SDK.
+version: 4.0.0
 homepage: https://pspdfkit.com/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
 issue_tracker: https://support.pspdfkit.com/hc/en-us/requests/new
@@ -10,13 +10,11 @@ environment:
   flutter: '>=3.16.9'
 
 dependencies:
-  build_runner: ^2.2.1
   flutter:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
-  mockito: ^5.3.1
 
 
 # For information on the generic Dart part of this file, see the
@@ -41,3 +39,7 @@ dev_dependencies:
   flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
+  pigeon: ^22.4.0
+  build_runner: ^2.2.1
+  pigeon_build_runner: ^1.1.1
+  mockito: ^5.3.1

@@ -16,6 +16,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'pspdfkit_flutter_widget_controller_impl.dart';
 import 'pspdfkit_widget_controller_native.dart';
 
 class PspdfkitWidget extends StatefulWidget {
@@ -44,6 +45,7 @@ class PspdfkitWidget extends StatefulWidget {
 
 class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   late PspdfkitWidgetController controller;
+  late int? _id;
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +115,39 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   }
 
   Future<void> _onPlatformViewCreated(int id) async {
-    controller = PspdfkitWidgetControllerNative(
-      id,
-      onPageChanged: widget.onPageChanged,
-      onPdfDocumentLoadFailed: widget.onPdfDocumentError,
-      onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+    setState(() {
+      _id = id;
+    });
+    MethodChannel channel = MethodChannel('com.pspdfkit.widget.$id');
+    var api = PspdfkitWidgetControllerApi(
+      binaryMessenger: channel.binaryMessenger,
+      messageChannelSuffix: '$id',
     );
+    controller = Pspdfkit.useLegacy
+        ? PspdfkitWidgetControllerNative(
+            channel,
+            onPageChanged: widget.onPageChanged,
+            onPdfDocumentLoadFailed: widget.onPdfDocumentError,
+            onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+          )
+        : PspdfkitFlutterWidgetControllerImpl(
+            api,
+            onPdfPageChanged: widget.onPageChanged,
+            onPdfDocumentLoadFailed: widget.onPdfDocumentError,
+            onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+          );
     widget.onPspdfkitWidgetCreated?.call(controller);
+    if (controller is PspdfkitFlutterWidgetControllerImpl) {
+      PspdfkitWidgetCallbacks.setUp(
+          controller as PspdfkitFlutterWidgetControllerImpl,
+          messageChannelSuffix: 'widget.callbacks.$id');
+    }
+  }
+
+  @override
+  void dispose() {
+    PspdfkitWidgetCallbacks.setUp(null,
+        messageChannelSuffix: 'widget.callbacks.$_id');
+    super.dispose();
   }
 }

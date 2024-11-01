@@ -11,19 +11,16 @@ package com.pspdfkit.flutter.pspdfkit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.pspdfkit.document.PdfDocument;
-
 import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
-
 import io.flutter.plugin.common.MethodChannel;
 
 /**
  * Internal singleton class used to communicate between activities and the PSPDFKit Flutter plugin.
  */
 public class EventDispatcher {
+
     @Nullable
     private static EventDispatcher instance;
     /**
@@ -33,8 +30,8 @@ public class EventDispatcher {
     @Nullable
     private MethodChannel channel = null;
 
-    private EventDispatcher() {
-    }
+    @Nullable
+    private PspdfkitApiCallbacks pspdfkitApiCallbacks;
 
     @NonNull
     public static synchronized EventDispatcher getInstance() {
@@ -48,20 +45,37 @@ public class EventDispatcher {
         this.channel = channel;
     }
 
+    public void setPspdfkitApiCallbacks(@Nullable PspdfkitApiCallbacks pspdfkitApiCallbacks) {
+        this.pspdfkitApiCallbacks = pspdfkitApiCallbacks;
+    }
+
     public void notifyActivityOnPause() {
         sendEvent("flutterPdfActivityOnPause");
+
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onActivityPaused();
+        }
     }
 
     public void notifyPdfFragmentAdded() {
         sendEvent("flutterPdfFragmentAdded");
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onFragmentAttached();
+        }
     }
 
     public void notifyInstantSyncStarted(String documentId) {
         sendEvent("pspdfkitInstantSyncStarted", documentId);
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onSyncStarted(documentId);
+        }
     }
 
     public void notifyInstantSyncFinished(String documentId) {
         sendEvent("pspdfkitInstantSyncFinished", documentId);
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onSyncFinished(documentId);
+        }
     }
 
     public void notifyInstantSyncFailed(String documentId, String error) {
@@ -69,6 +83,10 @@ public class EventDispatcher {
             put("documentId", documentId);
             put("error", error);
         }});
+
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onSyncError(documentId, error);
+        }
     }
 
     public void notifyInstantAuthenticationFinished(String documentId,String validJWT) {
@@ -76,6 +94,10 @@ public class EventDispatcher {
             put("documentId", documentId);
             put("jwt", validJWT);
         }});
+
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onAuthenticationFinished(documentId, validJWT);
+        }
     }
 
     public void notifyInstantAuthenticationFailed(String documentId, String error) {
@@ -83,6 +105,10 @@ public class EventDispatcher {
             put("documentId", documentId);
             put("error", error);
         }});
+
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onAuthenticationFailed(documentId, error);
+        }
     }
 
     private void sendEvent(String eventName) {
@@ -97,5 +123,8 @@ public class EventDispatcher {
 
     public void notifyDocumentLoaded(@NotNull PdfDocument document) {
         sendEvent("pspdfkitDocumentLoaded", document.getUid());
+        if (pspdfkitApiCallbacks != null) {
+            pspdfkitApiCallbacks.onDocumentLoaded(document.getUid());
+        }
     }
 }

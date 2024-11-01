@@ -16,10 +16,6 @@ class InstantCollaborationWeb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        extendBodyBehindAppBar: PlatformUtils.isAndroid(),
-        // Do not resize the the document view on Android or
-        // it won't be rendered correctly when filling forms.
-        resizeToAvoidBottomInset: PlatformUtils.isIOS(),
         appBar: AppBar(
           title: const Text('Instant Collaboration Web'),
         ),
@@ -30,14 +26,75 @@ class InstantCollaborationWeb extends StatelessWidget {
                 padding: PlatformUtils.isAndroid()
                     ? const EdgeInsets.only(top: kToolbarHeight)
                     : null,
-                child: PspdfkitWidget(
-                  documentPath: '',
-                  configuration: PdfConfiguration(
-                      webConfiguration: PdfWebConfiguration(
-                          serverUrl: 'http://localhost:8080/',
-                          instant: true,
-                          documentId: 'example-document-id',
-                          authPayload: {'jwt': '<your-jwt-token-goes-here>'})),
-                ))));
+                child: FutureBuilder<Map<String, String>?>(
+                    future: instantCredentials(context),
+                    builder: (context, snapshot) {
+                      if (snapshot.data == null) {
+                        return const Center(
+                          child: Text(
+                              'Please enter Instant Collaboration credentials.'),
+                        );
+                      }
+                      return PspdfkitWidget(
+                        documentPath: '',
+                        configuration: PdfConfiguration(
+                            webConfiguration: PdfWebConfiguration(
+                                serverUrl: snapshot.data?['serverUrl'],
+                                instant: true,
+                                documentId: snapshot.data?['documentId'],
+                                authPayload: {
+                              'jwt': snapshot.data?['jwt'],
+                            })),
+                      );
+                    }))));
+  }
+
+  Future<Map<String, String>?> instantCredentials(BuildContext context) async {
+    // Show dialog to capture the server URL, document ID, and JWT.
+    return showAdaptiveDialog<Map<String, String>>(
+        context: context,
+        builder: (context) {
+          final serverUrlController = TextEditingController();
+          final documentIdController = TextEditingController();
+          final jwtController = TextEditingController();
+          return AlertDialog(
+            title: const Text('Enter Instant Collaboration Credentials'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: serverUrlController,
+                  decoration: const InputDecoration(labelText: 'Server URL'),
+                ),
+                TextField(
+                  controller: documentIdController,
+                  decoration: const InputDecoration(labelText: 'Document ID'),
+                ),
+                TextField(
+                  controller: jwtController,
+                  decoration: const InputDecoration(labelText: 'JWT'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop({
+                    'serverUrl': serverUrlController.text,
+                    'documentId': documentIdController.text,
+                    'jwt': jwtController.text,
+                  });
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        });
   }
 }

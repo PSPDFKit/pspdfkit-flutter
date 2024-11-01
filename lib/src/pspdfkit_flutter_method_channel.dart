@@ -13,7 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'pspdfkit_flutter_platform_interface.dart';
 
-/// An implementation of [PspdfkitFlutterPlatform] that uses method channels.
+/// An implementation of [PspdfkitFlutterPlatform] that
+@Deprecated(
+    'This class is deprecated and will be removed in the future, Use [PspdfkitFlutterApiImpl] instead')
 class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -42,10 +44,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
 
   /// Loads a [document] with a supported format using a given [configuration].
   @override
-  Future<bool?> present(String document,
-      {dynamic configuration,
-      MeasurementScale? measurementScale,
-      MeasurementPrecision? measurementPrecision}) async {
+  Future<bool?> present(String document, {dynamic configuration}) async {
     Map<String, dynamic> pdfConfiguration;
 
     if (configuration == null) {
@@ -62,8 +61,6 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
     return await methodChannel.invokeMethod('present', <String, dynamic>{
       'document': document,
       'configuration': pdfConfiguration,
-      'measurementScale': measurementScale?.toMap(),
-      'measurementPrecision': measurementPrecision?.name,
     });
   }
 
@@ -165,8 +162,8 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
 
   /// Imports annotations from the XFDF file at the given path.
   @override
-  Future<bool?> importXfdf(String xfdfPath) async => methodChannel
-      .invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfPath});
+  Future<bool?> importXfdf(String xfdfString) async => methodChannel
+      .invokeMethod('importXfdf', <String, String>{'xfdfPath': xfdfString});
 
   /// Exports annotations to the XFDF file at the given path.
   @override
@@ -397,4 +394,22 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
 
   @override
   List<PspdfkitWebToolbarItem> get defaultWebToolbarItems => [];
+
+  @override
+  Future<String?> generatePdf(List<NewPage> pages, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> generatePdfFromHtmlString(String html, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> generatePdfFromHtmlUri(Uri htmlUri, String outPutFile,
+      [Map<String, Object?>? options]) {
+    throw UnimplementedError();
+  }
 }

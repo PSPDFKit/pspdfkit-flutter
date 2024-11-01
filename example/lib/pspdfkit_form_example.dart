@@ -7,6 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,12 +29,11 @@ class PspdfkitFormExampleWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _PspdfkitFormExampleWidgetState createState() =>
+  State<PspdfkitFormExampleWidget> createState() =>
       _PspdfkitFormExampleWidgetState();
 }
 
 class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
-  late PspdfkitWidgetController view;
   late PdfDocument? document;
 
   @override
@@ -54,19 +55,15 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                   child: Column(children: <Widget>[
                     Expanded(
                         child: PspdfkitWidget(
-                            documentPath: widget.documentPath,
-                            configuration: widget.configuration,
-                            onPdfDocumentLoaded: (document) {
-                              setState(() {
-                                this.document = document;
-                              });
-                            },
-                            onPspdfkitWidgetCreated: (controller) {
-                              setState(() {
-                                view = controller;
-                              });
-                              onWidgetCreated();
-                            })),
+                      documentPath: widget.documentPath,
+                      configuration: widget.configuration,
+                      onPdfDocumentLoaded: (document) {
+                        setState(() {
+                          this.document = document;
+                        });
+                        onWidgetCreated();
+                      },
+                    )),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SingleChildScrollView(
@@ -76,7 +73,7 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                             children: <Widget>[
                               ElevatedButton(
                                   onPressed: () {
-                                    view.setFormFieldValue(
+                                    document?.setFormFieldValue(
                                         'Updated Form Field Value',
                                         'Name_Last');
                                   },
@@ -84,8 +81,8 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                               const SizedBox(width: 8),
                               ElevatedButton(
                                   onPressed: () async {
-                                    await view
-                                        .getFormFieldValue('Name_Last')
+                                    await document
+                                        ?.getFormFieldValue('Name_Last')
                                         .then((formFieldValue) async {
                                       await showDialog<AlertDialog>(
                                           context: context,
@@ -137,8 +134,10 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
                                                 ],
                                               ));
                                     }).catchError((error) {
-                                      print(
-                                          'Failed to get form fields: $error');
+                                      if (kDebugMode) {
+                                        print(
+                                            'Failed to get form fields: $error');
+                                      }
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
@@ -161,26 +160,32 @@ class _PspdfkitFormExampleWidgetState extends State<PspdfkitFormExampleWidget> {
 
   void onWidgetCreated() async {
     try {
-      await view.setFormFieldValue('Lastname', 'Name_Last');
-      await view.setFormFieldValue('0123456789', 'Telephone_Home');
-      await view.setFormFieldValue('City', 'City');
-      await view.setFormFieldValue('selected', 'Sex.0');
-      await view.setFormFieldValue('deselected', 'Sex.1');
-      await view.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
+      await document?.setFormFieldValue('Lastname', 'Name_Last');
+      await document?.setFormFieldValue('0123456789', 'Telephone_Home');
+      await document?.setFormFieldValue('City', 'City');
+      await document?.setFormFieldValue('selected', 'Sex.0');
+      await document?.setFormFieldValue('deselected', 'Sex.1');
+      await document?.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
     } on PlatformException catch (e) {
-      print("Failed to set form field values '${e.message}'.");
+      if (kDebugMode) {
+        print("Failed to set form field values '${e.message}'.");
+      }
     }
 
     String? lastName;
     try {
-      lastName = await view.getFormFieldValue('Name_Last');
+      lastName = await document?.getFormFieldValue('Name_Last');
     } on PlatformException catch (e) {
-      print("Failed to get form field value '${e.message}'.");
+      if (kDebugMode) {
+        print("Failed to get form field value '${e.message}'.");
+      }
     }
 
     if (lastName != null) {
-      print(
-          "Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
+      if (kDebugMode) {
+        print(
+            "Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
+      }
     }
   }
 }
