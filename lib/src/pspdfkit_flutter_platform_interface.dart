@@ -29,6 +29,9 @@ typedef InstantDownloadFailedCallback = void Function(
 
 typedef PspdfkitDocumentLoadedCallback = void Function(String documentId);
 
+typedef AnalyticsEventsListener = void Function(
+    String event, Map<String, dynamic> attributes);
+
 abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Constructs a PspdfkitFlutterPlatform.
   PspdfkitFlutterPlatform() : super(token: _token);
@@ -36,6 +39,7 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   static final Object _token = Object();
 
   static PspdfkitFlutterPlatform _instance = Pspdfkit.useLegacy
+      // ignore: deprecated_member_use_from_same_package
       ? MethodChannelPspdfkitFlutter()
       : PspdfkitFlutterApiImpl();
 
@@ -186,6 +190,8 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// provide the directory.
   Future<Directory> getTemporaryDirectory();
 
+  Future<void> enableAnalytics(bool enabled);
+
   /// onPAuse callback for FlutterPdfActivity
   VoidCallback? flutterPdfActivityOnPause;
 
@@ -221,6 +227,8 @@ abstract class PspdfkitFlutterPlatform extends PlatformInterface {
   /// Only available on iOS.
   /// Called when instant document download fails.
   InstantDownloadFailedCallback? instantDownloadFailed;
+
+  AnalyticsEventsListener? analyticsEventsListener;
 
   /// Gets the annotation author name.
   String get authorName;

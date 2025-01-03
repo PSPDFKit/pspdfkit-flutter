@@ -16,8 +16,12 @@ package com.pspdfkit.flutter.pspdfkit
 ///  This notice may not be removed from this file.
 ///
 import android.content.Context
+import android.graphics.PointF
+import android.view.MotionEvent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.pspdfkit.annotations.Annotation
+import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.PdfDocumentApi
 import com.pspdfkit.flutter.pspdfkit.document.FlutterPdfDocument
@@ -113,5 +117,21 @@ class FlutterPdfUiFragmentCallbacks(
                 flutterPdfDocument = null
             }
         }
+    }
+
+    override fun onPageClick(
+        document: PdfDocument,
+        pageIndex: Int,
+        event: MotionEvent?,
+        pagePosition: PointF?,
+        clickedAnnotation: Annotation?
+    ): Boolean {
+        flutterWidgetCallback.onPageClick(document, pageIndex, event, pagePosition, clickedAnnotation)
+        return true
+    }
+
+    override fun onDocumentSave(document: PdfDocument, saveOptions: DocumentSaveOptions): Boolean {
+        flutterWidgetCallback.onDocumentSave(document,saveOptions)
+        return true
     }
 }

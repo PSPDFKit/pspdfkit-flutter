@@ -90,7 +90,7 @@ class PdfDocumentWeb extends PdfDocument {
   }
 
   @override
-  Future<bool> save(String? outputPath, DocumentSaveOptions? options) {
+  Future<bool> save({String? outputPath, DocumentSaveOptions? options}) {
     return _instance.save().then((value) => true);
   }
 

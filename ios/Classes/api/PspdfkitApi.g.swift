@@ -212,6 +212,27 @@ enum PdfFormFieldTypes: Int {
   case unknown = 7
 }
 
+enum NutrientEvent: Int {
+  /// Event triggered when annotations are created.
+  case annotationsCreated = 0
+  /// Event triggered when annotations are pressed.
+  case annotationsDeselected = 1
+  /// Event triggered when annotations are updated.
+  case annotationsUpdated = 2
+  /// Event triggered when annotations are deleted.
+  case annotationsDeleted = 3
+  /// Event triggered when annotations are focused.
+  case annotationsSelected = 4
+  /// Event triggered when form field values are updated.
+  case formFieldValuesUpdated = 5
+  /// Event triggered when form fields are loaded.
+  case formFieldSelected = 6
+  /// Event triggered when form fields are about to be saved.
+  case formFieldDeselected = 7
+  /// Event triggered when text selection changes.
+  case textSelectionChanged = 8
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PdfRect {
   var x: Double
@@ -443,6 +464,31 @@ struct FormFieldData {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct PointF {
+  var x: Double
+  var y: Double
+
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> PointF? {
+    let x = pigeonVar_list[0] as! Double
+    let y = pigeonVar_list[1] as! Double
+
+    return PointF(
+      x: x,
+      y: y
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      x,
+      y,
+    ]
+  }
+}
+
 private class PspdfkitApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -495,15 +541,23 @@ private class PspdfkitApiPigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 137:
-      return PdfRect.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return NutrientEvent(rawValue: enumResultAsInt)
+      }
+      return nil
     case 138:
-      return PageInfo.fromList(self.readValue() as! [Any?])
+      return PdfRect.fromList(self.readValue() as! [Any?])
     case 139:
-      return DocumentSaveOptions.fromList(self.readValue() as! [Any?])
+      return PageInfo.fromList(self.readValue() as! [Any?])
     case 140:
-      return PdfFormOption.fromList(self.readValue() as! [Any?])
+      return DocumentSaveOptions.fromList(self.readValue() as! [Any?])
     case 141:
+      return PdfFormOption.fromList(self.readValue() as! [Any?])
+    case 142:
       return FormFieldData.fromList(self.readValue() as! [Any?])
+    case 143:
+      return PointF.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -536,20 +590,26 @@ private class PspdfkitApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? PdfFormFieldTypes {
       super.writeByte(136)
       super.writeValue(value.rawValue)
-    } else if let value = value as? PdfRect {
+    } else if let value = value as? NutrientEvent {
       super.writeByte(137)
-      super.writeValue(value.toList())
-    } else if let value = value as? PageInfo {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? PdfRect {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? DocumentSaveOptions {
+    } else if let value = value as? PageInfo {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? PdfFormOption {
+    } else if let value = value as? DocumentSaveOptions {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? FormFieldData {
+    } else if let value = value as? PdfFormOption {
       super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? FormFieldData {
+      super.writeByte(142)
+      super.writeValue(value.toList())
+    } else if let value = value as? PointF {
+      super.writeByte(143)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -614,6 +674,8 @@ protocol PspdfkitApi {
   /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
   func generatePdfFromHtmlString(html: String, outPutFile: String, options: [String: Any]?, completion: @escaping (Result<String?, Error>) -> Void)
   func generatePdfFromHtmlUri(htmlUri: String, outPutFile: String, options: [String: Any]?, completion: @escaping (Result<String?, Error>) -> Void)
+  /// Configure Nutrient Analytics events.
+  func enableAnalyticsEvents(enable: Bool) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1118,6 +1180,22 @@ class PspdfkitApiSetup {
     } else {
       generatePdfFromHtmlUriChannel.setMessageHandler(nil)
     }
+    /// Configure Nutrient Analytics events.
+    let enableAnalyticsEventsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.enableAnalyticsEvents\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      enableAnalyticsEventsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let enableArg = args[0] as! Bool
+        do {
+          try api.enableAnalyticsEvents(enable: enableArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      enableAnalyticsEventsChannel.setMessageHandler(nil)
+    }
   }
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
@@ -1435,6 +1513,8 @@ protocol PspdfkitWidgetControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the zoom scale of the given page.
   func getZoomScale(pageIndex: Int64, completion: @escaping (Result<Double, Error>) -> Void)
+  func addEventListener(event: NutrientEvent) throws
+  func removeEventListener(event: NutrientEvent) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1746,6 +1826,36 @@ class PspdfkitWidgetControllerApiSetup {
       }
     } else {
       getZoomScaleChannel.setMessageHandler(nil)
+    }
+    let addEventListenerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addEventListener\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addEventListenerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let eventArg = args[0] as! NutrientEvent
+        do {
+          try api.addEventListener(event: eventArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      addEventListenerChannel.setMessageHandler(nil)
+    }
+    let removeEventListenerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeEventListener\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      removeEventListenerChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let eventArg = args[0] as! NutrientEvent
+        do {
+          try api.removeEventListener(event: eventArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      removeEventListenerChannel.setMessageHandler(nil)
     }
   }
 }
@@ -2073,6 +2183,8 @@ protocol PspdfkitWidgetCallbacksProtocol {
   func onDocumentLoaded(documentId documentIdArg: String, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
   func onDocumentError(documentId documentIdArg: String, error errorArg: String, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
   func onPageChanged(documentId documentIdArg: String, pageIndex pageIndexArg: Int64, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
+  func onPageClick(documentId documentIdArg: String, pageIndex pageIndexArg: Int64, point pointArg: PointF?, annotation annotationArg: Any?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
+  func onDocumentSaved(documentId documentIdArg: String, path pathArg: String?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
 }
 class PspdfkitWidgetCallbacks: PspdfkitWidgetCallbacksProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -2124,6 +2236,108 @@ class PspdfkitWidgetCallbacks: PspdfkitWidgetCallbacksProtocol {
     let channelName: String = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([documentIdArg, pageIndexArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PspdfkitApiError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+  func onPageClick(documentId documentIdArg: String, pageIndex pageIndexArg: Int64, point pointArg: PointF?, annotation annotationArg: Any?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([documentIdArg, pageIndexArg, pointArg, annotationArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PspdfkitApiError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+  func onDocumentSaved(documentId documentIdArg: String, path pathArg: String?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([documentIdArg, pathArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PspdfkitApiError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
+protocol NutrientEventsCallbacksProtocol {
+  func onEvent(event eventArg: NutrientEvent, data dataArg: Any?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
+}
+class NutrientEventsCallbacks: NutrientEventsCallbacksProtocol {
+  private let binaryMessenger: FlutterBinaryMessenger
+  private let messageChannelSuffix: String
+  init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") {
+    self.binaryMessenger = binaryMessenger
+    self.messageChannelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+  }
+  var codec: PspdfkitApiPigeonCodec {
+    return PspdfkitApiPigeonCodec.shared
+  }
+  func onEvent(event eventArg: NutrientEvent, data dataArg: Any?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([eventArg, dataArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PspdfkitApiError(code: code, message: message, details: details)))
+      } else {
+        completion(.success(Void()))
+      }
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
+protocol AnalyticsEventsCallbackProtocol {
+  func onEvent(event eventArg: String, attributes attributesArg: [String: Any?]?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void)
+}
+class AnalyticsEventsCallback: AnalyticsEventsCallbackProtocol {
+  private let binaryMessenger: FlutterBinaryMessenger
+  private let messageChannelSuffix: String
+  init(binaryMessenger: FlutterBinaryMessenger, messageChannelSuffix: String = "") {
+    self.binaryMessenger = binaryMessenger
+    self.messageChannelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+  }
+  var codec: PspdfkitApiPigeonCodec {
+    return PspdfkitApiPigeonCodec.shared
+  }
+  func onEvent(event eventArg: String, attributes attributesArg: [String: Any?]?, completion: @escaping (Result<Void, PspdfkitApiError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([eventArg, attributesArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

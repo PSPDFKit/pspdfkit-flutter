@@ -254,6 +254,12 @@ typedef PdfDocumentLoadFailedCallback = void Function(String error);
 
 typedef PageChangedCallback = void Function(int pageIndex);
 
+typedef PageClickedCallback = void Function(
+    String documentId, int pageIndex, PointF? point, dynamic annotation);
+
+typedef PdfDocumentSavedCallback = void Function(
+    String documentId, String? path);
+
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {
   String? get webName {

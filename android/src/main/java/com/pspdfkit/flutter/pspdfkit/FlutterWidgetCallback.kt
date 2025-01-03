@@ -9,6 +9,10 @@
 
 package com.pspdfkit.flutter.pspdfkit
 
+import android.graphics.PointF
+import android.view.MotionEvent
+import com.pspdfkit.annotations.Annotation
+import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
 import com.pspdfkit.listeners.DocumentListener
@@ -35,5 +39,36 @@ class FlutterWidgetCallback(
             exception.localizedMessage ?: "Error while loading document!"
         ) {}
         super.onDocumentLoadFailed(exception)
+    }
+
+    override fun onPageClick(
+        document: PdfDocument,
+        pageIndex: Int,
+        event: MotionEvent?,
+        pagePosition: PointF?,
+        clickedAnnotation: Annotation?
+    ): Boolean {
+        var flutterPointF: com.pspdfkit.flutter.pspdfkit.api.PointF? = null
+        pagePosition?.let {
+            flutterPointF = com.pspdfkit.flutter.pspdfkit.api.PointF(
+                pagePosition.x.toDouble(),
+                pagePosition.x.toDouble()
+            )
+        }
+        pspdfkitWidgetCallbacks?.onPageClick(
+            document.uid,
+            pageIndex.toLong(),
+            flutterPointF,
+            clickedAnnotation?.toInstantJson()
+        ) {}
+        return true
+    }
+
+    override fun onDocumentSave(document: PdfDocument, saveOptions: DocumentSaveOptions): Boolean {
+        pspdfkitWidgetCallbacks?.onDocumentSaved(
+            document.uid,
+            document.documentSource.fileUri?.path
+        ) {}
+        return true
     }
 }

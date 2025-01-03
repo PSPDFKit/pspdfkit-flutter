@@ -15,7 +15,8 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
     private var pdfViewController: PDFViewController? = nil;
     private var pspdfkitWidgetCallbacks: PspdfkitWidgetCallbacks? = nil;
     private var viewId: String? = nil;
-    
+    private var eventsHelper: FlutterEventsHelper? = nil;
+
     @objc public func setViewController(controller: PDFViewController){
         self.pdfViewController = controller
         self.pdfViewController?.delegate = self
@@ -25,17 +26,51 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
         if document != nil {
             pspdfkitWidgetCallbacks?.onDocumentLoaded(documentId: document!.uid){ _ in }
         } else {
-            pspdfkitWidgetCallbacks?.onDocumentError(documentId: "", error: "Laoding Document failed") {_ in }
+            pspdfkitWidgetCallbacks?.onDocumentError(documentId: "", error: "Loading Document failed") {_ in }
         }
     }
     
-    public func pdfViewController(_ pdfController: PDFViewController, willBeginDisplaying pageView: PDFPageView, forPageAt pageIndex: Int) {
-        guard  let document = pdfViewController?.document else {
-            return
-        }
-        pspdfkitWidgetCallbacks?.onPageChanged(documentId:document.uid , pageIndex: Int64(pageIndex)){ _ in }
+    public func pdfViewController(_ pdfController: PDFViewController, didEndDisplaying pageView: PDFPageView, forPageAt pageIndex: Int) {
+        pspdfkitWidgetCallbacks?.onPageChanged(documentId:pdfController.document?.uid ?? "", pageIndex: Int64(pageIndex)){ _ in }
     }
-        
+    
+    public func pdfViewController(_ pdfController: PDFViewController, didSelect annotations: [Annotation], on pageView: PDFPageView) {
+        // Call the event helper to notify the listeners.
+        eventsHelper?.annotationSelected(annotations: annotations)
+    }
+    
+    public func pdfViewController(_ pdfController: PDFViewController, didDeselect annotations: [Annotation], on pageView: PDFPageView) {
+        // Call the event helper to notify the listeners.
+        eventsHelper?.annotationDeselected(annotations: annotations)
+    }
+    
+    public func pdfViewController(_ pdfController: PDFViewController, didSelectText text: String, with glyphs: [Glyph], at rect: CGRect, on pageView: PDFPageView) {
+        // Call the event helper to notify the listeners.
+        eventsHelper?.textSelected(text: text, glyphs: glyphs, rect: rect)
+    }
+    
+    public func pdfViewController(_ pdfController: PDFViewController, didSave document: Document, error: (any Error)?) {
+        if let error = error {
+            pspdfkitWidgetCallbacks?.onDocumentError(documentId: document.uid, error: error.localizedDescription){_ in }
+        } else {
+            pspdfkitWidgetCallbacks?.onDocumentSaved(documentId: document.uid, path: document.fileURL?.absoluteString){_ in }
+        }
+    }
+    
+    public func pdfViewController(_ pdfController: PDFViewController, didConfigurePageView pageView: PDFPageView, forPageAt pageIndex: Int) {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handlePageTap(_:)))
+        pageView.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func handlePageTap(_ gesture: UITapGestureRecognizer) {
+        if let pageView = gesture.view as? PDFPageView {
+            let location = gesture.location(in: pageView)
+            let point: PointF = PointF(x: Double(Float(location.x)), y: Double(Float(location.y)))
+            let pageIndex = Int64(pageView.pageIndex)
+            pspdfkitWidgetCallbacks?.onPageClick(documentId: pdfViewController?.document?.uid ?? "", pageIndex: pageIndex, point: point, annotation: nil){_ in }
+        }
+    }
+
     func setFormFieldValue(value: String, fullyQualifiedName: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
@@ -232,14 +267,28 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
         pspdfkitWidgetCallbacks?.onDocumentLoaded(documentId: documentId){_ in }
     }
     
+    func addEventListener(event: NutrientEvent) throws {
+        eventsHelper?.setEventListener(event: event)
+    }
+    
+    func removeEventListener(event: NutrientEvent) throws {
+        eventsHelper?.removeEventListener(event: event)
+    }
+    
     @objc public func register( binaryMessenger: FlutterBinaryMessenger, viewId: String){
         self.viewId = viewId
         pspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "widget.callbacks.\(viewId)")
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix:viewId)
+        let nutreintEventCallback: NutrientEventsCallbacks = NutrientEventsCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "events.callbacks.\(viewId)")
+        eventsHelper = FlutterEventsHelper(nutrientCallback: nutreintEventCallback)
     }
     
     @objc public func unRegister(binaryMessenger: FlutterBinaryMessenger){
         pspdfkitWidgetCallbacks = nil
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: nil, messageChannelSuffix: viewId ?? "")
+        
+        if eventsHelper != nil {
+            eventsHelper = nil
+        }
     }
 }

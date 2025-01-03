@@ -412,4 +412,9 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
       [Map<String, Object?>? options]) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> enableAnalytics(bool enabled) {
+    throw UnimplementedError();
+  }
 }

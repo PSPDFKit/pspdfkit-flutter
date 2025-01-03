@@ -407,6 +407,9 @@ abstract class PspdfkitApi {
   @async
   String? generatePdfFromHtmlUri(
       String htmlUri, String outPutFile, Map<String, Object>? options);
+
+  /// Configure Nutrient Analytics events.
+  void enableAnalyticsEvents(bool enable);
 }
 
 @FlutterApi()
@@ -535,6 +538,10 @@ abstract class PspdfkitWidgetControllerApi {
   /// Returns a [Future] that completes with the zoom scale of the given page.
   @async
   double getZoomScale(int pageIndex);
+
+  void addEventListener(NutrientEvent event);
+
+  void removeEventListener(NutrientEvent event);
 }
 
 @HostApi()
@@ -613,4 +620,55 @@ abstract class PspdfkitWidgetCallbacks {
   void onDocumentError(String documentId, String error);
 
   void onPageChanged(String documentId, int pageIndex);
+
+  void onPageClick(
+      String documentId, int pageIndex, PointF? point, Object? annotation);
+
+  void onDocumentSaved(String documentId, String? path);
+}
+
+@FlutterApi()
+abstract class NutrientEventsCallbacks {
+  void onEvent(NutrientEvent event, Object? data);
+}
+
+class PointF {
+  final double x;
+  final double y;
+
+  PointF({required this.x, required this.y});
+}
+
+enum NutrientEvent {
+  /// Event triggered when annotations are created.
+  annotationsCreated,
+
+  /// Event triggered when annotations are pressed.
+  annotationsDeselected,
+
+  /// Event triggered when annotations are updated.
+  annotationsUpdated,
+
+  /// Event triggered when annotations are deleted.
+  annotationsDeleted,
+
+  /// Event triggered when annotations are focused.
+  annotationsSelected,
+
+  /// Event triggered when form field values are updated.
+  formFieldValuesUpdated,
+
+  /// Event triggered when form fields are loaded.
+  formFieldSelected,
+
+  /// Event triggered when form fields are about to be saved.
+  formFieldDeselected,
+
+  /// Event triggered when text selection changes.
+  textSelectionChanged,
+}
+
+@FlutterApi()
+abstract class AnalyticsEventsCallback {
+  void onEvent(String event, Map<String, Object?>? attributes);
 }

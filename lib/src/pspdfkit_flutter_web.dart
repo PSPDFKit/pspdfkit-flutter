@@ -186,4 +186,9 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
       [Map<String, Object?>? options]) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
+
+  @override
+  Future<void> enableAnalytics(bool enabled) {
+    throw UnimplementedError(_notSupportedOnWebMessage);
+  }
 }

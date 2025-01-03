@@ -27,6 +27,7 @@ import com.pspdfkit.configuration.page.PageFitMode;
 import com.pspdfkit.configuration.page.PageLayoutMode;
 import com.pspdfkit.configuration.page.PageScrollDirection;
 import com.pspdfkit.configuration.page.PageScrollMode;
+import com.pspdfkit.configuration.search.SearchType;
 import com.pspdfkit.configuration.settings.SettingsMenuItemType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
 import com.pspdfkit.configuration.theming.ThemeMode;
@@ -476,7 +477,7 @@ class ConfigurationAdapter {
     }
 
     private void configureInlineSearch(boolean inlineSearch) {
-        final int searchType = inlineSearch ? PdfActivityConfiguration.SEARCH_INLINE : PdfActivityConfiguration.SEARCH_MODULAR;
+        final SearchType searchType = inlineSearch ? SearchType.INLINE : SearchType.MODULAR;
         configuration.setSearchType(searchType);
     }
 
@@ -860,7 +861,6 @@ class ConfigurationAdapter {
             this.configuration
                     .enabledAnnotationTools(annotationTools);
         }
-
         return configuration.build();
     }
 }

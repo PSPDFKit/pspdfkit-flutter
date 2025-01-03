@@ -11,11 +11,12 @@ import PSPDFKit
 
 @objc(PspdfkitApiImpl)
 public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, InstantClientDelegate {
-
+   
     private let PSPDFSettingKeyHybridEnvironment =  SDK.Setting.init(rawValue: "com.pspdfkit.hybrid-environment")
     private var pdfViewController: PDFViewController? = nil;
     private var messenger: FlutterBinaryMessenger? = nil;
     private var pspdfkitApiCallbacks: PspdfkitFlutterApiCallbacks? = nil;
+    private var flutterAnalyticsClient: FlutterAnalyticsClient? = nil;
     
     func getFrameworkVersion(completion: @escaping (Result<String?, any Error>) -> Void) {
         let versionString:String = PSPDFKit.SDK.versionNumber
@@ -438,7 +439,10 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
             }
         }
     }
-    
+    func enableAnalyticsEvents(enable: Bool) throws {
+         PSPDFKit.SDK.shared.analytics.enabled = enable
+    }
+
     public  func instantClient(_ instantClient: InstantClient, didFinishDownloadFor documentDescriptor: any InstantDocumentDescriptor) {
         pspdfkitApiCallbacks?.onInstantDownloadFinished(documentId: documentDescriptor.identifier){_ in}
         
@@ -541,6 +545,8 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         messenger = binaryMessenger
         PspdfkitApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix: "pspdfkit")
         pspdfkitApiCallbacks = PspdfkitFlutterApiCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "pspdfkit")
+        flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: binaryMessenger, messageChannelSuffix: "pspdfkit"))
+        PSPDFKit.SDK.shared.analytics.add(flutterAnalyticsClient!)
     }
     
     // Unregister pigeon message channel.
@@ -549,5 +555,9 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
             PspdfkitApiSetup.setUp(binaryMessenger: messenger!, api: nil)
         }
         pspdfkitApiCallbacks = nil
+        
+        if flutterAnalyticsClient != nil {
+            PSPDFKit.SDK.shared.analytics.remove(flutterAnalyticsClient!)
+        }
     }
 }

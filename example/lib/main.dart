@@ -32,6 +32,12 @@ void main() {
   //
   // To set the license key for the currently running platform, use:
   Pspdfkit.initialize();
+  Pspdfkit.enableAnalytics(true);
+  Pspdfkit.analyticsEventsListener = (eventName, attributes) {
+    if (kDebugMode) {
+      print('Analytics event: $eventName with attributes: $attributes');
+    }
+  };
   runApp(const MyApp());
 }
 

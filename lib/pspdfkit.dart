@@ -216,6 +216,9 @@ class Pspdfkit {
   static Future<Directory> getTemporaryDirectory() =>
       PspdfkitFlutterPlatform.instance.getTemporaryDirectory();
 
+  static Future<void> enableAnalytics(bool enabled) async =>
+      PspdfkitFlutterPlatform.instance.enableAnalytics(enabled);
+
   /// onPause callback for FlutterPdfActivity. Only available on Android.
   static set flutterPdfActivityOnPause(
       VoidCallback? flutterPdfActivityOnPause) {
@@ -284,6 +287,10 @@ class Pspdfkit {
   /// Called when instant document download fails. Only available on iOS.
   static set instantDownloadFailed(InstantDownloadFailedCallback? callback) {
     PspdfkitFlutterPlatform.instance.instantDownloadFailed = callback;
+  }
+
+  static set analyticsEventsListener(AnalyticsEventsListener? listener) {
+    PspdfkitFlutterPlatform.instance.analyticsEventsListener = listener;
   }
 }
 

@@ -5,7 +5,10 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'package:pspdfkit_flutter/src/pspdfkit_flutter_platform_interface.dart';
 
 class PspdfkitFlutterApiImpl
-    implements PspdfkitFlutterPlatform, PspdfkitFlutterApiCallbacks {
+    implements
+        PspdfkitFlutterPlatform,
+        PspdfkitFlutterApiCallbacks,
+        AnalyticsEventsCallback {
   late PspdfkitApi _pspdfkitApi = PspdfkitApi();
   PspdfkitFlutterApiImpl() {
     var messageChannel = const MethodChannel('com.pspdfkit.global');
@@ -15,6 +18,10 @@ class PspdfkitFlutterApiImpl
         messageChannelSuffix: 'pspdfkit');
 
     PspdfkitFlutterApiCallbacks.setUp(this,
+        binaryMessenger: messageChannel.binaryMessenger,
+        messageChannelSuffix: 'pspdfkit');
+
+    AnalyticsEventsCallback.setUp(this,
         binaryMessenger: messageChannel.binaryMessenger,
         messageChannelSuffix: 'pspdfkit');
   }
@@ -54,6 +61,9 @@ class PspdfkitFlutterApiImpl
 
   @override
   VoidCallback? pdfViewControllerWillDismiss;
+
+  @override
+  AnalyticsEventsListener? analyticsEventsListener;
 
   @override
   Future<bool?> addAnnotation(jsonAnnotation) {
@@ -292,5 +302,16 @@ class PspdfkitFlutterApiImpl
       [Map<String, Object?>? options]) {
     return _pspdfkitApi.generatePdfFromHtmlUri(
         htmlUri.toString(), outPutFile, options?.cast<String, Object>());
+  }
+
+  @override
+  Future<void> enableAnalytics(bool enabled) {
+    return _pspdfkitApi.enableAnalyticsEvents(enabled);
+  }
+
+  @override
+  void onEvent(String event, Map<String, Object?>? attributes) {
+    analyticsEventsListener?.call(
+        event, attributes?.cast<String, Object>() ?? {});
   }
 }

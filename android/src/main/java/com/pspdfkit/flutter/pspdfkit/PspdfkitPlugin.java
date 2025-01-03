@@ -40,8 +40,12 @@ import com.pspdfkit.document.processor.PdfProcessor;
 import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration;
+import com.pspdfkit.flutter.pspdfkit.api.AnalyticsEventsCallback;
+import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks;
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi;
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitFlutterApiCallbacks;
+import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient;
+import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
@@ -151,6 +155,8 @@ public class PspdfkitPlugin
         // Setup the PSPDFKit API.
         PspdfkitApi.Companion.setUp(binding.getBinaryMessenger(),pspdfkitApi,MESSAGE_CHANNEL_SUFFIX);
         PspdfkitFlutterApiCallbacks pspdfkitFlutterApiCallbacks = new PspdfkitFlutterApiCallbacks(binding.getBinaryMessenger(),MESSAGE_CHANNEL_SUFFIX);
+        AnalyticsEventsCallback callback = new AnalyticsEventsCallback(binding.getBinaryMessenger(),MESSAGE_CHANNEL_SUFFIX);
+        pspdfkitApi.setAnalyticsEventClient(new FlutterAnalyticsClient(callback));
         eventDispatcher.setPspdfkitApiCallbacks(new PspdfkitApiCallbacks(pspdfkitFlutterApiCallbacks));
     }
 
@@ -268,6 +274,7 @@ public class PspdfkitPlugin
 
                 Intent intentInstant =
                         InstantPdfActivityIntentBuilder
+                                .Companion
                                 .fromInstantDocument(activity, documentUrl, jwt)
                                 .activityClass(FlutterInstantPdfActivity.class)
                                 .configuration(configurationAdapterInstant.build())
@@ -929,6 +936,7 @@ public class PspdfkitPlugin
             activityPluginBinding.removeRequestPermissionsResultListener(this);
             activityPluginBinding = null;
             pspdfkitApi.setActivityPluginBinding(null);
+
         }
     }
 

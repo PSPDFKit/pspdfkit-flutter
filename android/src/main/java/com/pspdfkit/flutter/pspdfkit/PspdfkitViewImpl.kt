@@ -18,9 +18,11 @@ import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.co
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationType
+import com.pspdfkit.flutter.pspdfkit.api.NutrientEvent
 import com.pspdfkit.flutter.pspdfkit.api.PdfRect
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApiError
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
+import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
 import com.pspdfkit.flutter.pspdfkit.util.ProcessorHelper.annotationTypeFromString
@@ -44,6 +46,7 @@ import java.util.Locale
 class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
     private var pdfUiFragment: PdfUiFragment? = null
     private var disposable: Disposable? = null
+    private var eventDispatcher: FlutterEventsHelper? = null
 
     /**
      * Sets the PdfFragment to be used by the controller.
@@ -52,6 +55,10 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
      */
     fun setPdfFragment(pdfFragment: PdfUiFragment?) {
         this.pdfUiFragment = pdfFragment
+    }
+
+    fun setEventDispatcher(eventDispatcher: FlutterEventsHelper) {
+        this.eventDispatcher = eventDispatcher
     }
 
     /**
@@ -616,5 +623,13 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 )
             }
         }
+    }
+
+    override fun addEventListener(event: NutrientEvent) {
+        eventDispatcher?.setEventListener(pdfUiFragment!!, event)
+    }
+
+    override fun removeEventListener(event: NutrientEvent) {
+        eventDispatcher?.removeEventListener(pdfUiFragment!!, event)
     }
 }

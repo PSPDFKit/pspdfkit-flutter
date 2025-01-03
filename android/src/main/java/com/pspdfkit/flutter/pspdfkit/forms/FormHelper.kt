@@ -9,11 +9,9 @@ import com.pspdfkit.forms.FormType
 import com.pspdfkit.forms.ListBoxFormField
 import com.pspdfkit.forms.RadioButtonFormField
 import com.pspdfkit.forms.TextFormField
-import com.pspdfkit.internal.forms.getFormatString
-import com.pspdfkit.internal.forms.getInputFormat
+
 
 object FormHelper {
-
     private val formFieldTypeMap: Map<FormType, PdfFormFieldTypes> = mapOf(
         FormType.TEXT to PdfFormFieldTypes.TEXT,
         FormType.CHECKBOX to PdfFormFieldTypes.CHECKBOX,
@@ -41,8 +39,6 @@ object FormHelper {
             formFieldsMap["alternateFieldName"] = formField.alternateFieldName
             formFieldsMap["mappingName"] = formField.mappingName
             formFieldsMap["annotation"] = formField.formElement.annotation.toInstantJson()
-            formFieldsMap["inputFormatString"] = formField.formElement.getFormatString() ?: ""
-            formFieldsMap["inputFormat"] = formField.formElement.getInputFormat().name
 
             // Extract the specific form field properties.
             formFieldsMap.putAll(getSpecificFormFieldProperties(formField, formFieldsMap))

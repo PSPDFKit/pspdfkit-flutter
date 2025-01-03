@@ -239,6 +239,33 @@ enum class PdfFormFieldTypes(val raw: Int) {
   }
 }
 
+enum class NutrientEvent(val raw: Int) {
+  /** Event triggered when annotations are created. */
+  ANNOTATIONS_CREATED(0),
+  /** Event triggered when annotations are pressed. */
+  ANNOTATIONS_DESELECTED(1),
+  /** Event triggered when annotations are updated. */
+  ANNOTATIONS_UPDATED(2),
+  /** Event triggered when annotations are deleted. */
+  ANNOTATIONS_DELETED(3),
+  /** Event triggered when annotations are focused. */
+  ANNOTATIONS_SELECTED(4),
+  /** Event triggered when form field values are updated. */
+  FORM_FIELD_VALUES_UPDATED(5),
+  /** Event triggered when form fields are loaded. */
+  FORM_FIELD_SELECTED(6),
+  /** Event triggered when form fields are about to be saved. */
+  FORM_FIELD_DESELECTED(7),
+  /** Event triggered when text selection changes. */
+  TEXT_SELECTION_CHANGED(8);
+
+  companion object {
+    fun ofRaw(raw: Int): NutrientEvent? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PdfRect (
   val x: Double,
@@ -427,6 +454,27 @@ data class FormFieldData (
     )
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PointF (
+  val x: Double,
+  val y: Double
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): PointF {
+      val x = pigeonVar_list[0] as Double
+      val y = pigeonVar_list[1] as Double
+      return PointF(x, y)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      x,
+      y,
+    )
+  }
+}
 private open class PspdfkitApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -471,28 +519,38 @@ private open class PspdfkitApiPigeonCodec : StandardMessageCodec() {
         }
       }
       137.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PdfRect.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          NutrientEvent.ofRaw(it.toInt())
         }
       }
       138.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PageInfo.fromList(it)
+          PdfRect.fromList(it)
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          DocumentSaveOptions.fromList(it)
+          PageInfo.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PdfFormOption.fromList(it)
+          DocumentSaveOptions.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          PdfFormOption.fromList(it)
+        }
+      }
+      142.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           FormFieldData.fromList(it)
+        }
+      }
+      143.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PointF.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -532,24 +590,32 @@ private open class PspdfkitApiPigeonCodec : StandardMessageCodec() {
         stream.write(136)
         writeValue(stream, value.raw)
       }
-      is PdfRect -> {
+      is NutrientEvent -> {
         stream.write(137)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw)
       }
-      is PageInfo -> {
+      is PdfRect -> {
         stream.write(138)
         writeValue(stream, value.toList())
       }
-      is DocumentSaveOptions -> {
+      is PageInfo -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is PdfFormOption -> {
+      is DocumentSaveOptions -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is FormFieldData -> {
+      is PdfFormOption -> {
         stream.write(141)
+        writeValue(stream, value.toList())
+      }
+      is FormFieldData -> {
+        stream.write(142)
+        writeValue(stream, value.toList())
+      }
+      is PointF -> {
+        stream.write(143)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -606,6 +672,8 @@ interface PspdfkitApi {
    */
   fun generatePdfFromHtmlString(html: String, outPutFile: String, options: Map<String, Any>?, callback: (Result<String?>) -> Unit)
   fun generatePdfFromHtmlUri(htmlUri: String, outPutFile: String, options: Map<String, Any>?, callback: (Result<String?>) -> Unit)
+  /** Configure Nutrient Analytics events. */
+  fun enableAnalyticsEvents(enable: Boolean)
 
   companion object {
     /** The codec used by PspdfkitApi. */
@@ -1187,6 +1255,24 @@ interface PspdfkitApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.enableAnalyticsEvents$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val enableArg = args[0] as Boolean
+            val wrapped: List<Any?> = try {
+              api.enableAnalyticsEvents(enableArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -1486,6 +1572,8 @@ interface PspdfkitWidgetControllerApi {
    * Returns a [Future] that completes with the zoom scale of the given page.
    */
   fun getZoomScale(pageIndex: Long, callback: (Result<Double>) -> Unit)
+  fun addEventListener(event: NutrientEvent)
+  fun removeEventListener(event: NutrientEvent)
 
   companion object {
     /** The codec used by PspdfkitWidgetControllerApi. */
@@ -1812,6 +1900,42 @@ interface PspdfkitWidgetControllerApi {
                 reply.reply(wrapResult(data))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addEventListener$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val eventArg = args[0] as NutrientEvent
+            val wrapped: List<Any?> = try {
+              api.addEventListener(eventArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeEventListener$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val eventArg = args[0] as NutrientEvent
+            val wrapped: List<Any?> = try {
+              api.removeEventListener(eventArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -2225,6 +2349,92 @@ class PspdfkitWidgetCallbacks(private val binaryMessenger: BinaryMessenger, priv
     val channelName = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(listOf(documentIdArg, pageIndexArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(PspdfkitApiError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun onPageClick(documentIdArg: String, pageIndexArg: Long, pointArg: PointF?, annotationArg: Any?, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(documentIdArg, pageIndexArg, pointArg, annotationArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(PspdfkitApiError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+  fun onDocumentSaved(documentIdArg: String, pathArg: String?, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(documentIdArg, pathArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(PspdfkitApiError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+}
+/** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
+class NutrientEventsCallbacks(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
+  companion object {
+    /** The codec used by NutrientEventsCallbacks. */
+    val codec: MessageCodec<Any?> by lazy {
+      PspdfkitApiPigeonCodec()
+    }
+  }
+  fun onEvent(eventArg: NutrientEvent, dataArg: Any?, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(eventArg, dataArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(PspdfkitApiError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
+    }
+  }
+}
+/** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
+class AnalyticsEventsCallback(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
+  companion object {
+    /** The codec used by AnalyticsEventsCallback. */
+    val codec: MessageCodec<Any?> by lazy {
+      PspdfkitApiPigeonCodec()
+    }
+  }
+  fun onEvent(eventArg: String, attributesArg: Map<String, Any?>?, callback: (Result<Unit>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(eventArg, attributesArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(PspdfkitApiError(it[0] as String, it[1] as String, it[2] as String?)))

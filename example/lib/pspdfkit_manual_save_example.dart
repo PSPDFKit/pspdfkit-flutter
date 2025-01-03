@@ -28,7 +28,7 @@ class PspdfkitManualSaveExampleWidget extends StatefulWidget {
 
 class _PspdfkitManualSaveExampleWidgetState
     extends State<PspdfkitManualSaveExampleWidget> {
-  late PspdfkitWidgetController pspdfkitWidgetController;
+  late PdfDocument document;
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +48,13 @@ class _PspdfkitManualSaveExampleWidgetState
                       child: PspdfkitWidget(
                         documentPath: widget.documentPath,
                         configuration: widget.configuration,
-                        onPspdfkitWidgetCreated: (controller) {
-                          pspdfkitWidgetController = controller;
+                        onPdfDocumentLoaded: (document) {
+                          this.document = document;
+                        },
+                        onPdfDocumentSaved: (documentId, path) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Document saved: $path'),
+                          ));
                         },
                       ),
                     ),
@@ -57,7 +62,7 @@ class _PspdfkitManualSaveExampleWidgetState
                         child: Column(children: <Widget>[
                       ElevatedButton(
                           onPressed: () async {
-                            await pspdfkitWidgetController.save();
+                            await document.save();
                           },
                           child: const Text('Save Document'))
                     ]))

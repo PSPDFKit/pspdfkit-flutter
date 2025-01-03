@@ -7,6 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -144,15 +146,14 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
               'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.',
           onTap: () => pushTwoPspdfWidgetsSimultaneously(context),
         ),
-      if (kIsWeb)
-        PspdfkitExampleItem(
-            title: 'PSPDFKit Events Listeners',
-            description: 'Shows how to use PSPDFKit Events Listeners.',
-            onTap: () async {
-              await extractAsset(context, _documentPath).then((value) => goTo(
-                  PspdfkitEventListenerExample(documentPath: value.path),
-                  context));
-            }),
+      PspdfkitExampleItem(
+          title: 'PSPDFKit Events Listeners',
+          description: 'Shows how to use PSPDFKit Events Listeners.',
+          onTap: () async {
+            await extractAsset(context, _documentPath).then((value) => goTo(
+                PspdfkitEventListenerExample(documentPath: value.path),
+                context));
+          }),
       PspdfkitExampleItem(
           title: 'Measurement tools',
           description: 'Shows how to use PSPDFKit Measurement tools.',
@@ -236,7 +237,7 @@ List<PspdfkitExampleItem> globalExamples(BuildContext context) => [
       ),
       PspdfkitExampleItem(
         title: 'PSPDFKit Instant',
-        description: 'PSPDFKit Instant Synchronisation Example',
+        description: 'PSPDFKit Instant Synchronization Example',
         onTap: () => presentInstant(context),
       ),
       PspdfkitExampleItem(
@@ -392,7 +393,9 @@ void pushTwoPspdfWidgetsSimultaneously(context) async {
       // Support for Android is coming soon.
     }
   } on PlatformException catch (e) {
-    print("Failed to present document: '${e.message}'.");
+    if (kDebugMode) {
+      print("Failed to present document: '${e.message}'.");
+    }
   }
 }
 
@@ -486,19 +489,25 @@ void showFormDocumentExampleGlobal(context) async {
     await Pspdfkit.setFormFieldValue('deselected', 'Sex.1');
     await Pspdfkit.setFormFieldValue('selected', 'HIGH SCHOOL DIPLOMA');
   } on PlatformException catch (e) {
-    print("Failed to set form field values '${e.message}'.");
+    if (kDebugMode) {
+      print("Failed to set form field values '${e.message}'.");
+    }
   }
 
   String? lastName;
   try {
     lastName = await Pspdfkit.getFormFieldValue('Name_Last');
   } on PlatformException catch (e) {
-    print("Failed to get form field value '${e.message}'.");
+    if (kDebugMode) {
+      print("Failed to get form field value '${e.message}'.");
+    }
   }
 
   if (lastName != null) {
-    print(
-        "Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
+    if (kDebugMode) {
+      print(
+          "Retrieved form field for fully qualified name 'Name_Last' is $lastName.");
+    }
   }
 }
 
@@ -513,7 +522,9 @@ void importInstantJsonExampleGlobal(context) async {
   try {
     await Pspdfkit.applyInstantJson(annotationsJson);
   } on PlatformException catch (e) {
-    print("Failed to import Instant Document JSON '${e.message}'.");
+    if (kDebugMode) {
+      print("Failed to import Instant Document JSON '${e.message}'.");
+    }
   }
 }
 

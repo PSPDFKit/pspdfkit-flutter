@@ -187,8 +187,6 @@ public class PspdfkitMeasurementConvertor :NSObject{
             return "cm"
         case .millimeter:
             return "mm"
-        case .point:
-            return "pt"
         case .meter:
             return "m"
         case .kilometer:

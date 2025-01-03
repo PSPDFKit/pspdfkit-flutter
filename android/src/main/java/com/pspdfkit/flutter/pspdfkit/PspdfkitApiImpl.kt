@@ -16,6 +16,7 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.pspdfkit.PSPDFKit
 import com.pspdfkit.PSPDFKit.VERSION
 import com.pspdfkit.PSPDFKit.initialize
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
@@ -31,6 +32,7 @@ import com.pspdfkit.flutter.pspdfkit.api.AndroidPermissionStatus
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApiError
+import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions
@@ -66,13 +68,19 @@ import java.nio.charset.StandardCharsets
 class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?) : PspdfkitApi {
 
     private var disposable: Disposable? = null
+    private var analyticsEventClient: FlutterAnalyticsClient? = null
 
     fun dispose() {
         disposable?.dispose()
+        analyticsEventClient = null
     }
 
     fun setActivityPluginBinding(activityPluginBinding: ActivityPluginBinding?) {
         this.activityPluginBinding = activityPluginBinding
+    }
+
+    fun setAnalyticsEventClient(analyticsEventClient: FlutterAnalyticsClient?) {
+        this.analyticsEventClient = analyticsEventClient
     }
 
     override fun getFrameworkVersion(callback: (Result<String?>) -> Unit) {
@@ -139,9 +147,6 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             val configurationAdapterInstant = ConfigurationAdapter(
                 activityPluginBinding?.activity as FragmentActivity, configurationMapInstant
             )
-            val annotationTools =
-                configurationAdapterInstant.build().configuration.enabledAnnotationTools
-            annotationTools.add(AnnotationTool.INSTANT_COMMENT_MARKER)
             val intentInstant = InstantPdfActivityIntentBuilder.fromInstantDocument(
                 activityPluginBinding?.activity as FragmentActivity, serverUrl, jwt
             ).activityClass(FlutterInstantPdfActivity::class.java)
@@ -474,13 +479,13 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             })
     }
 
-    override fun importXfdf(xfdfPath: String, callback: (Result<Boolean?>) -> Unit) {
+    override fun importXfdf(xfdfString: String, callback: (Result<Boolean?>) -> Unit) {
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.processAnnotations()"
         )
 
-        val dataProvider = DocumentJsonDataProvider(xfdfPath)
+        val dataProvider = DocumentJsonDataProvider(xfdfString)
         // The async parse method is recommended (so you can easily offload parsing from the UI thread).
         disposable = XfdfFormatter.parseXfdfAsync(document, dataProvider)
             .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.
@@ -745,6 +750,14 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     // Handle the error.
                     callback(Result.failure(PspdfkitApiError("", throwable.message)))
                 })
+        }
+    }
+
+    override fun enableAnalyticsEvents(enable: Boolean) {
+        if (enable) {
+            analyticsEventClient?.let { PSPDFKit.addAnalyticsClient(it) }
+        } else {
+            analyticsEventClient?.let { PSPDFKit.removeAnalyticsClient(it) }
         }
     }
 

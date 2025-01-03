@@ -204,7 +204,7 @@ class PspdfkitPDFGenerationExampleWidget extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         //prevent Back button press
-        return WillPopScope(onWillPop: () async => false, child: alert);
+        return PopScope(canPop: false, child: alert);
       },
     );
   }

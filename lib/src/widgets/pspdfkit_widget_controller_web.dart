@@ -9,6 +9,7 @@
 
 import 'dart:ui';
 
+import 'package:pspdfkit_flutter/src/events/nutrient_events_extension.dart';
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
 import '../../pspdfkit.dart';
 import '../web/pspdfkit_web.dart';
@@ -103,8 +104,13 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController {
 
   @override
   Future<void> addEventListener(
-      String eventName, Function(dynamic) callback) async {
-    return pspdfkitInstance.addEventListener(eventName, callback);
+      NutrientEvent event, Function(dynamic) callback) async {
+    return pspdfkitInstance.addEventListener(event.webName, callback);
+  }
+
+  @override
+  Future<void> removeEventListener(NutrientEvent event) {
+    throw UnimplementedError('This method is not supported on the web!');
   }
 
   @override

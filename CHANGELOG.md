@@ -1,5 +1,17 @@
 ## Newest Release
 
+### 4.1.0 - 03 January 2024
+
+- Adds support for `PspdfkitWidgetController.addEventListener` to iOS and Android. (J#HYB-550)` 
+- Adds support for the latest Android Studio version. (J#HYB-539)
+- Nutrient Flutter SDK now requires Android Gradle Plugin 8.0.0 or later. (J#HYB-539)
+- Nutrient Flutter SDK now requires Flutter 3.27.0 or later. (J#HYB-596)
+- Updates for Nutrient Android SDK 2024.9.0.
+- Updates for Nutrient iOS SDK 14.3.0. 
+- Fixes onPageChanged callback being triggered early on iOS. (J#HYB-596)
+
+## Previous Releases
+
 ### 4.0.0 - 01 Nov 2024
 
 - Adds Pigeon for communication between Flutter and native iOS and Android platforms. (J#HYB-455)
@@ -8,8 +20,6 @@
 - Updates for Nutrient Android SDK 2024.6.1. (#45458)
 - Updates for Nutrient iOS SDK 14.1.1. (#45458)
 - Updates for Nutrient Web SDK 2024.7.0. (#45458)
-
-## Previous Releases
 
 ### 3.12.0 - 30 Jul 2024
 

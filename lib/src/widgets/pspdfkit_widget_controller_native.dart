@@ -17,12 +17,10 @@ import '../document/pdf_document_native.dart';
 class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   final MethodChannel _channel;
 
-  PspdfkitWidgetControllerNative(
-    this._channel, {
-    PdfDocumentLoadedCallback? onPdfDocumentLoaded,
-    PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed,
-    PageChangedCallback? onPageChanged,
-  }) {
+  PspdfkitWidgetControllerNative(this._channel,
+      {PdfDocumentLoadedCallback? onPdfDocumentLoaded,
+      PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed,
+      PageChangedCallback? onPageChanged}) {
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case 'onDocumentLoaded':
@@ -122,9 +120,16 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   }
 
   @override
-  Future<void> addEventListener(String eventName, Function(dynamic) callback) {
+  Future<void> addEventListener(
+      NutrientEvent event, Function(dynamic) callback) {
     throw UnimplementedError(
         'addEventListener is not yet implemented on this platform');
+  }
+
+  @override
+  Future<void> removeEventListener(NutrientEvent event) {
+    throw UnimplementedError(
+        'removeEventListener is not yet implemented on this platform');
   }
 
   @override

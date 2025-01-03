@@ -26,7 +26,8 @@ class PspdfkitWidget extends StatefulWidget {
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentError;
   final PageChangedCallback? onPageChanged;
-
+  final PageClickedCallback? onPageClicked;
+  final PdfDocumentSavedCallback? onPdfDocumentSaved;
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -35,6 +36,8 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPdfDocumentLoaded,
     this.onPdfDocumentError,
     this.onPageChanged,
+    this.onPageClicked,
+    this.onPdfDocumentSaved,
   }) : super(key: key);
 
   @override
@@ -124,6 +127,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       messageChannelSuffix: '$id',
     );
     controller = Pspdfkit.useLegacy
+        // ignore: deprecated_member_use_from_same_package
         ? PspdfkitWidgetControllerNative(
             channel,
             onPageChanged: widget.onPageChanged,
@@ -135,12 +139,17 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
             onPdfPageChanged: widget.onPageChanged,
             onPdfDocumentLoadFailed: widget.onPdfDocumentError,
             onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+            onPageClicked: widget.onPageClicked,
+            onPdfDocumentSaved: widget.onPdfDocumentSaved,
           );
     widget.onPspdfkitWidgetCreated?.call(controller);
     if (controller is PspdfkitFlutterWidgetControllerImpl) {
       PspdfkitWidgetCallbacks.setUp(
           controller as PspdfkitFlutterWidgetControllerImpl,
           messageChannelSuffix: 'widget.callbacks.$id');
+      NutrientEventsCallbacks.setUp(
+          controller as PspdfkitFlutterWidgetControllerImpl,
+          messageChannelSuffix: 'events.callbacks.$id');
     }
   }
 
@@ -148,6 +157,8 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   void dispose() {
     PspdfkitWidgetCallbacks.setUp(null,
         messageChannelSuffix: 'widget.callbacks.$_id');
+    NutrientEventsCallbacks.setUp(null,
+        messageChannelSuffix: 'events.callbacks.$_id');
     super.dispose();
   }
 }

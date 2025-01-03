@@ -169,6 +169,27 @@ enum PdfFormFieldTypes {
   unknown,
 }
 
+enum NutrientEvent {
+  /// Event triggered when annotations are created.
+  annotationsCreated,
+  /// Event triggered when annotations are pressed.
+  annotationsDeselected,
+  /// Event triggered when annotations are updated.
+  annotationsUpdated,
+  /// Event triggered when annotations are deleted.
+  annotationsDeleted,
+  /// Event triggered when annotations are focused.
+  annotationsSelected,
+  /// Event triggered when form field values are updated.
+  formFieldValuesUpdated,
+  /// Event triggered when form fields are loaded.
+  formFieldSelected,
+  /// Event triggered when form fields are about to be saved.
+  formFieldDeselected,
+  /// Event triggered when text selection changes.
+  textSelectionChanged,
+}
+
 class PdfRect {
   PdfRect({
     required this.x,
@@ -427,6 +448,32 @@ class FormFieldData {
   }
 }
 
+class PointF {
+  PointF({
+    required this.x,
+    required this.y,
+  });
+
+  double x;
+
+  double y;
+
+  Object encode() {
+    return <Object?>[
+      x,
+      y,
+    ];
+  }
+
+  static PointF decode(Object result) {
+    result as List<Object?>;
+    return PointF(
+      x: result[0]! as double,
+      y: result[1]! as double,
+    );
+  }
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -459,20 +506,26 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is PdfFormFieldTypes) {
       buffer.putUint8(136);
       writeValue(buffer, value.index);
-    }    else if (value is PdfRect) {
+    }    else if (value is NutrientEvent) {
       buffer.putUint8(137);
-      writeValue(buffer, value.encode());
-    }    else if (value is PageInfo) {
+      writeValue(buffer, value.index);
+    }    else if (value is PdfRect) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    }    else if (value is DocumentSaveOptions) {
+    }    else if (value is PageInfo) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is PdfFormOption) {
+    }    else if (value is DocumentSaveOptions) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is FormFieldData) {
+    }    else if (value is PdfFormOption) {
       buffer.putUint8(141);
+      writeValue(buffer, value.encode());
+    }    else if (value is FormFieldData) {
+      buffer.putUint8(142);
+      writeValue(buffer, value.encode());
+    }    else if (value is PointF) {
+      buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -507,15 +560,20 @@ class _PigeonCodec extends StandardMessageCodec {
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PdfFormFieldTypes.values[value];
       case 137: 
-        return PdfRect.decode(readValue(buffer)!);
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : NutrientEvent.values[value];
       case 138: 
-        return PageInfo.decode(readValue(buffer)!);
+        return PdfRect.decode(readValue(buffer)!);
       case 139: 
-        return DocumentSaveOptions.decode(readValue(buffer)!);
+        return PageInfo.decode(readValue(buffer)!);
       case 140: 
-        return PdfFormOption.decode(readValue(buffer)!);
+        return DocumentSaveOptions.decode(readValue(buffer)!);
       case 141: 
+        return PdfFormOption.decode(readValue(buffer)!);
+      case 142: 
         return FormFieldData.decode(readValue(buffer)!);
+      case 143: 
+        return PointF.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1195,6 +1253,29 @@ class PspdfkitApi {
       );
     } else {
       return (pigeonVar_replyList[0] as String?);
+    }
+  }
+
+  /// Configure Nutrient Analytics events.
+  Future<void> enableAnalyticsEvents(bool enable) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.enableAnalyticsEvents$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[enable]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
     }
   }
 }
@@ -1971,6 +2052,50 @@ class PspdfkitWidgetControllerApi {
       return (pigeonVar_replyList[0] as double?)!;
     }
   }
+
+  Future<void> addEventListener(NutrientEvent event) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[event]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> removeEventListener(NutrientEvent event) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_channel.send(<Object?>[event]) as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }
 
 class PdfDocumentApi {
@@ -2391,6 +2516,10 @@ abstract class PspdfkitWidgetCallbacks {
 
   void onPageChanged(String documentId, int pageIndex);
 
+  void onPageClick(String documentId, int pageIndex, PointF? point, Object? annotation);
+
+  void onDocumentSaved(String documentId, String? path);
+
   static void setUp(PspdfkitWidgetCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
@@ -2465,6 +2594,134 @@ abstract class PspdfkitWidgetCallbacks {
               'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged was null, expected non-null int.');
           try {
             api.onPageChanged(arg_documentId!, arg_pageIndex!);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_documentId = (args[0] as String?);
+          assert(arg_documentId != null,
+              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null, expected non-null String.');
+          final int? arg_pageIndex = (args[1] as int?);
+          assert(arg_pageIndex != null,
+              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null, expected non-null int.');
+          final PointF? arg_point = (args[2] as PointF?);
+          final Object? arg_annotation = args[3];
+          try {
+            api.onPageClick(arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_documentId = (args[0] as String?);
+          assert(arg_documentId != null,
+              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved was null, expected non-null String.');
+          final String? arg_path = (args[1] as String?);
+          try {
+            api.onDocumentSaved(arg_documentId!, arg_path);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+  }
+}
+
+abstract class NutrientEventsCallbacks {
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  void onEvent(NutrientEvent event, Object? data);
+
+  static void setUp(NutrientEventsCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    {
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final NutrientEvent? arg_event = (args[0] as NutrientEvent?);
+          assert(arg_event != null,
+              'Argument for dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent was null, expected non-null NutrientEvent.');
+          final Object? arg_data = args[1];
+          try {
+            api.onEvent(arg_event!, arg_data);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+  }
+}
+
+abstract class AnalyticsEventsCallback {
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  void onEvent(String event, Map<String, Object?>? attributes);
+
+  static void setUp(AnalyticsEventsCallback? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    {
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_event = (args[0] as String?);
+          assert(arg_event != null,
+              'Argument for dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent was null, expected non-null String.');
+          final Map<String, Object?>? arg_attributes = (args[1] as Map<Object?, Object?>?)?.cast<String, Object?>();
+          try {
+            api.onEvent(arg_event!, arg_attributes);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

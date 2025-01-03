@@ -1,44 +1,61 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
-
-import 'html_pdf_converter_test.mocks.dart';
 
 ///Tests for the [HtmlPdfConverter] class.
 ///run 'flutter pub run build_runner build' to generate the Mocks.
 ///
 @GenerateMocks([MethodChannel])
 void main() {
-  final channel = MockMethodChannel();
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  const channelName =
+      'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdfFromHtmlString.pspdfkit';
   String html = '<html><body><h1>Hello World</h1></body></html>';
   String outPutFile = 'test.pdf';
 
   setUp(() {
-    when(channel.invokeMethod<String>(any, any)).thenAnswer((invocation) async {
-      return (invocation.positionalArguments[1]
-          as Map<String, dynamic>)['outputPath'] as String;
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler(
+      channelName,
+      (ByteData? message) async {
+        final List<Object?> args = PspdfkitApi.pigeonChannelCodec
+            .decodeMessage(message) as List<Object?>;
+        final String htmlInput = args[0] as String;
+        final String outputPath = args[1] as String;
+
+        if (htmlInput.isEmpty || outputPath.isEmpty) {
+          // Return a single-element list with null to indicate a null result
+          return PspdfkitApi.pigeonChannelCodec.encodeMessage([null]);
+        }
+
+        final List<Object?> response = [outputPath];
+        return PspdfkitApi.pigeonChannelCodec.encodeMessage(response);
+      },
+    );
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler(
+      channelName,
+      null,
+    );
   });
 
   test('Generate Pdf from HTML', () async {
-    PspdfkitProcessor pdfProcessor = PspdfkitProcessor(channel);
-    String? result =
-        await pdfProcessor.generatePdfFromHtmlString(html, outPutFile);
+    String? result = await Pspdfkit.generatePdfFromHtmlString(html, outPutFile);
     expect(result, 'test.pdf');
   });
 
   test('Test empty output file', () async {
-    PspdfkitProcessor pdfProcessor = PspdfkitProcessor(channel);
-    String? result = await pdfProcessor.generatePdfFromHtmlString(html, '');
+    String? result = await Pspdfkit.generatePdfFromHtmlString(html, '');
     expect(result, null);
   });
 
   test('Test empty html', () async {
-    PspdfkitProcessor pdfProcessor = PspdfkitProcessor(channel);
-    String? result =
-        await pdfProcessor.generatePdfFromHtmlString('', outPutFile);
+    String? result = await Pspdfkit.generatePdfFromHtmlString('', outPutFile);
     expect(result, null);
   });
 }

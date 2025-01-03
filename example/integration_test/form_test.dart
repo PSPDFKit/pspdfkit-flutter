@@ -35,11 +35,10 @@ void main() {
     // Setup the PSPDFKit widget
     await tester.pumpWidget(PspdfkitWidget(
       documentPath: 'assets/pspdfkit_example_document.pdf',
-      onPspdfkitWidgetCreated: (view) {
-        // Set the form field value
-        view.setFormFieldValue('Updated Form Field Value', 'Name_Last');
-      },
       onPdfDocumentLoaded: (document) async {
+        await document.setFormFieldValue(
+            'Updated Form Field Value', 'Name_Last');
+
         // Get the form fields
         final List<PdfFormField> formFields = await document.getFormFields();
         // Assert that the form fields are not empty

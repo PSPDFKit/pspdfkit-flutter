@@ -26,6 +26,8 @@ class PspdfkitWidget extends StatefulWidget {
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailure;
   final PageChangedCallback? onPageChanged;
+  final PageClickedCallback? onPageClicked;
+  final PdfDocumentSavedCallback? onPdfDocumentSaved;
 
   const PspdfkitWidget({
     Key? key,
@@ -35,6 +37,8 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPdfDocumentLoaded,
     this.onPdfDocumentLoadFailure,
     this.onPageChanged,
+    this.onPageClicked,
+    this.onPdfDocumentSaved,
   }) : super(key: key);
 
   @override
@@ -103,6 +107,19 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     webInstance.addEventListener('viewState.currentPageIndex.change',
         (pageIndex) {
       widget.onPageChanged?.call(pageIndex);
+    });
+
+    webInstance.addEventListener('page.press', (dynamic event) {
+      var point = PointF(x: event['point']['x'], y: event['point']['y']);
+      widget.onPageClicked?.call('', event['pageIndex'], point, null);
+    });
+
+    webInstance.addEventListener('document.saveStateChange', (dynamic event) {
+      if (event['hasUnsavedChanges']) {
+        return;
+      } else {
+        widget.onPdfDocumentSaved?.call('', widget.documentPath);
+      }
     });
   }
 }

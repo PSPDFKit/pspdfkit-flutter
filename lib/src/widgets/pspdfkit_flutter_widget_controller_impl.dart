@@ -5,17 +5,25 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 import '../document/pdf_document_native.dart';
 
 class PspdfkitFlutterWidgetControllerImpl
-    implements PspdfkitWidgetController, PspdfkitWidgetCallbacks {
+    implements
+        PspdfkitWidgetController,
+        PspdfkitWidgetCallbacks,
+        NutrientEventsCallbacks {
   final PspdfkitWidgetControllerApi _pspdfkitWidgetControllerApi;
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed;
   final PageChangedCallback? onPdfPageChanged;
+  final PdfDocumentSavedCallback? onPdfDocumentSaved;
+  final PageClickedCallback? onPageClicked;
+  final Map<NutrientEvent, Function(dynamic eventData)> _eventListeners = {};
 
   PspdfkitFlutterWidgetControllerImpl(
     this._pspdfkitWidgetControllerApi, {
     this.onPdfDocumentLoaded,
     this.onPdfDocumentLoadFailed,
     this.onPdfPageChanged,
+    this.onPdfDocumentSaved,
+    this.onPageClicked,
   });
 
   @override
@@ -26,8 +34,15 @@ class PspdfkitFlutterWidgetControllerImpl
 
   @override
   Future<void> addEventListener(
-      String eventName, Function(dynamic p1) callback) {
-    throw UnimplementedError();
+      NutrientEvent event, Function(dynamic eventData) callback) {
+    _eventListeners[event] = callback;
+    return _pspdfkitWidgetControllerApi.addEventListener(event);
+  }
+
+  @override
+  Future<void> removeEventListener(NutrientEvent event) {
+    _eventListeners.remove(event);
+    return _pspdfkitWidgetControllerApi.removeEventListener(event);
   }
 
   @override
@@ -138,5 +153,23 @@ class PspdfkitFlutterWidgetControllerImpl
   @override
   void onPageChanged(String documentId, int pageIndex) {
     onPdfPageChanged?.call(pageIndex);
+  }
+
+  @override
+  void onPageClick(
+      String documentId, int pageIndex, PointF? point, Object? annotation) {
+    onPageClicked?.call(documentId, pageIndex, point, annotation);
+  }
+
+  @override
+  void onEvent(NutrientEvent event, Object? data) {
+    if (_eventListeners.containsKey(event)) {
+      _eventListeners[event]?.call(data);
+    }
+  }
+
+  @override
+  void onDocumentSaved(String documentId, String? path) {
+    onPdfDocumentSaved?.call(documentId, path);
   }
 }

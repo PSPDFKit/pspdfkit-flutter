@@ -77,6 +77,7 @@ class _PspdfkitSaveAsExampleWidgetState
                             )
                                 .then((value) async {
                               await showDialog<String>(
+                                // ignore: use_build_context_synchronously
                                 context: context,
                                 builder: (BuildContext context) => AlertDialog(
                                   title: const Text('Document Saved!'),
