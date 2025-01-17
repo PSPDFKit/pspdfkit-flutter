@@ -33,7 +33,7 @@ if (flutterRoot == null) {
 
 ext.pspdfkitMavenUrl = localProperties.getProperty('pspdfkit.mavenUrl')
 if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
-    ext.pspdfkitMavenUrl = 'https://customers.pspdfkit.com/maven/'
+    ext.pspdfkitMavenUrl = 'https://my.nutrient.io/maven/'
 }
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')

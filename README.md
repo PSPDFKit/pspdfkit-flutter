@@ -1,360 +1,221 @@
-# Flutter PDF Library by Nutrient
+# Flutter Document SDK by Nutrient
 
-![Flutter Intro](screenshots/flutter.png)
+Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SDK. View, annotate, and edit PDFs seamlessly across Android, iOS, and Web platforms.
 
-Nutrient Flutter SDK is for viewing, annotating, and editing PDFs. It offers developers the ability to quickly add PDF functionality to any Flutter application. It is available at [pub.dev][pub_dev] and [GitHub][github].
+## Requirements
 
-If you are new to Flutter, make sure to check our Flutter blog posts:
+- Flutter SDK (latest stable version)
+- For Android:
+  - Android Studio (latest stable version)
+  - Android NDK
+  - Android Virtual Device or physical device
+- For iOS:
+  - Xcode 16 or later
+  - iOS 16.0 or later
+- For Web:
+  - Modern web browser with WebAssembly support
 
-- [Getting Started with Flutter PDF Library by Nutrient][blog_getting_started_with_pspdfkit_flutter].
-- [Opening a PDF in Flutter][blog_opening_a_pdf_in_flutter].
-- [How to Customize Our Flutter PDF SDK][blog_customize_flutter_pdf_sdk_android].
-- [Advances in Hybrid Technologies][blog_advances_in_hybrid_technologies].
-- [How We Maintain Our Public Flutter Project Using a Private Monorepo][blog_maintaining_open_source_repo_from_monorepo].
-- [How to Download and Display a PDF Document in Flutter with Nutrient][blog_download_display_pdf_in_flutter_with_pspdfkit].
+## Installation
 
-For our quick-start guides, [check out our website][quick_start_guides].
+1. Add the Nutrient Flutter SDK to your `pubspec.yaml`:
 
-Platform specific README exists for [Android][android_readme] and [iOS][ios_readme].
+```yaml
+dependencies:
+  pspdfkit_flutter: any
+```
 
+2. Run the following command:
 
-# Setup
+```bash
+flutter pub get
+```
 
-## Integration into a New Flutter App
+## Platform Setup
 
-### Install PSPDFKit Flutter Plugin
+### Android Setup
 
-1. Open `pubspec.yaml`:
+1. Update your Android configuration in `android/app/build.gradle`:
 
-    ```bash
-    open pubspec.yaml
-    ```
-
-2. Add the PSPDFKit dependency in `pubspec.yaml`:
-
-    ```diff
-     dependencies:
-       flutter:
-         sdk: flutter
-    +  pspdfkit_flutter: any
-    ```
-
-
-3. Open `lib/main.dart` and replace the entire content with the contents of [demo_project_main.dart.txt](doc/demo_project_main.dart.txt). This simple example will load a PDF document from local device filesystem.
-
-4. Add the PDF document you want to display in your project’s `assets` directory.
-    - First create a `PDFs` directory:
-
-        ```bash
-        mkdir PDFs
-        ```
-
-    - Move a [sample document](example/PDFs/PSPDFKit.pdf) into the newly created `PDFs` directory, and rename it as `Document.pdf`:
-
-        ```bash
-        cp ~/Downloads/PSPDFKit.pdf PDFs/Document.pdf
-        ```
-
-5. Specify the `assets` directory in `pubspec.yaml`:
-
-    ```diff
-     # The following section is specific to Flutter.
-     flutter:
-    +  assets:
-    +    - PDFs/
-     ...
-    ```
-
-6.  From the terminal app, run the following command to get all the packages:
-
-    ```bash
-    flutter pub get
-    ```
-
-### Android
-
-#### Requirements
-
-- The [latest stable version of Flutter][install-flutter]
-- The [latest stable version of Android Studio][android studio]
-- The [Android NDK][install ndk]
-- An [Android Virtual Device][managing avds] or a hardware device
-
-#### Getting Started
-
-1. Create a Flutter project called `pspdfkit_demo` with the `flutter` CLI:
-
-    ```bash
-    flutter create --org com.example.pspdfkit_demo pspdfkit_demo
-    ```
-
-2. In the terminal app, change the location of the current working directory to your project:
-
-    ```bash
-    cd pspdfkit_demo
-    ```
-
-3. Update the `pluginManagement` block in the `android/settings.gradle` file as follows:
-
-    ```diff
-    pluginManagement {
-        ...
-    +    buildscript {
-    +        repositories {
-    +            mavenCentral()
-    +            maven {
-    +                url = uri("https://storage.googleapis.com/r8-releases/raw")
-    +            }
-    +        }
-    +        dependencies {
-    +            classpath("com.android.tools:r8:8.3.37")
-    +       }
-    +    }
+```gradle
+android {
+    compileSdkVersion 35
+    
+    defaultConfig {
+        minSdkVersion 21
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
-    // Upgrade Kotlin version.
-    plugins {
-        id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-        id "com.android.application" version "7.3.0" apply false
-    -   id "org.jetbrains.kotlin.android" version "1.7.10" apply false
-    +   id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+    kotlinOptions {
+        jvmTarget = '17'
     }
-    ```
-    This step involves enabling R8 for code shrinking (not required for AGP 8.* and above) and upgrading the Kotlin version.
+}
 
-4. Open the app’s Gradle build file, `android/app/build.gradle`:
+dependencies {
+    implementation 'androidx.appcompat:appcompat:<version>'
+}
+```
 
-    ```bash
-    open android/app/build.gradle
-    ```
+2. Update your theme in `android/app/src/main/res/values/styles.xml`:
 
-5. Modify the compile SDK version and the minimum SDK version:
+```diff
+- <style name="NormalTheme" parent="Theme.AppCompat.Light.NoActionBar">
++ <style name="NormalTheme" parent="PSPDFKit.Theme.Default">
+```
 
-    ```diff
-    android {
-    -   compileSdkVersion flutter.compileSdkVersion
-    +   compileSdkVersion 34
-    ...
-        defaultConfig {
-    -        minSdkVersion flutter.minSdkVersion
-    +        minSdkVersion 21
-    ...
-        }
-        compileOptions {
-    -       sourceCompatibility JavaVersion.VERSION_1_8
-    -       targetCompatibility JavaVersion.VERSION_1_8
-    +       sourceCompatibility JavaVersion.VERSION_17
-    +       targetCompatibility JavaVersion.VERSION_17
-        }
+3. Update your main activity to use `FlutterAppCompatActivity`:
 
-    // If you have this block, update the `jvmTarget` to 17.
-        kotlinOptions {
-    -        jvmTarget = '1.8'
-    +        jvmTarget = '17'
-        }
-    ...
-    }
-    ```
-6. Add the AppCompat AndroidX library to your `android/app/build.gradle` file:
+```kotlin
+import io.flutter.embedding.android.FlutterAppCompatActivity
 
-    ```diff
-    dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    +   implementation 'androidx.appcompat:appcompat:1.4.0'
-    }
-    ```
-7. Open the project’s main activity class, `android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt`:
+class MainActivity: FlutterAppCompatActivity() {
+}
+```
 
-    ```bash
-        open android/app/src/main/kotlin/com/example/pspdfkit_demo/pspdfkit_demo/MainActivity.kt
-    ```
+### iOS Setup
 
-8. Change the base `Activity` to extend `FlutterAppCompatActivity`:
+Make sure to set the minimum iOS version to 16.0 in your `ios/Podfile`:
 
-    ```diff
-    - import io.flutter.embedding.android.FlutterActivity;
-    + import io.flutter.embedding.android.FlutterAppCompatActivity;
+```ruby
+platform :ios, '16.0'
+```
 
-    - public class MainActivity extends FlutterActivity {
-    + public class MainActivity extends FlutterAppCompatActivity {
-    }
-    ```
+### Web Setup
 
-    Alternatively you can update the `AndroidManifest.xml` file to use `FlutterAppCompatActivity` as the launcher activity:
+The Nutrient Web SDK files are distributed as an archive that needs to be extracted manually:
 
-    ```diff
-    <activity
-    -   android:name=".MainActivity"
-    +   android:name="io.flutter.embedding.android.FlutterAppCompatActivity"
-        android:launchMode="singleTop"
-        android:theme="@style/LaunchTheme"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-        android:hardwareAccelerated="true"
-        android:windowSoftInputMode="adjustResize"
-        android:exported="true">
-    ```
-    **NOTE:** <code>FlutterAppCompatActivity</code> isn’t an official part of the Flutter SDK. It’s a custom <code>Activity</code> that extends <code>AppCompatActivity</code> from the AndroidX AppCompat library, and it’s necessary to use PSPDFKit for Android with Flutter. You can read more about this in the [AppCompatActivity Migration][] guide.
+1. [Download Nutrient Web SDK][download web sdk]. The download will start immediately and save a `.tar.gz` archive like `PSPDFKit-Web-binary-<version>.tar.gz` to your computer.
 
-9. Update the theme in `android/app/src/main/res/values/styles.xml` to use `PSPDFKit.Theme.default` as the parent:
+2. Once downloaded, extract the archive and copy the **entire** contents of its `dist` folder to your project's `web/assets` folder.
 
-    ```diff
-    - <style name="NormalTheme" parent="Theme.AppCompat.Light.NoActionBar">
-    + <style name="NormalTheme" parent="PSPDFKit.Theme.Default">
-    ```
-    This is to customize the theme of the PSPDFKit UI. You can read more about this in the [appearance styling][] guide.
+3. Verify your `assets` folder contains:
+   - `pspdfkit.js` file
+   - `pspdfkit-lib` directory with library assets
 
-10. [Start your Android emulator][start-the-emulator], or connect a device.
-
-11. Run the app with:
-
-    ```bash
-    flutter run
-    ```
-
-### iOS
-
-#### Requirements
-
-- The [latest stable version of Flutter][install-flutter]
-- The [latest stable version of Xcode][xcode]
-- The [latest stable version of CocoaPods][cocoapods releases]
-
-#### Getting Started
-
-1. Create a Flutter project called `pspdfkit_demo` with the `flutter` CLI:
-
-    ```bash
-    flutter create --org com.example.pspdfkit_demo pspdfkit_demo
-    ```
-
-2. In the terminal app, change the location of the current working directory to your project:
-
-    ```bash
-    cd pspdfkit_demo
-    ```
-
-3. Open `Runner.xcworkspace` from the `ios` folder in Xcode:
-
-    ```bash
-    open ios/Runner.xcworkspace
-    ```
-
-4. Make sure the `iOS Deployment Target` is set to 15.0 or higher.
-
-    ![iOS Deployment Target](screenshots/ios-deployment-target.png)
-
-5. Change "View controller-based status bar appearance" to YES in `Info.plist`.
-
-    ![iOS View controller-based status bar appearance](screenshots/ios-info-plist-statusbarappearance.png)
-
-6. Open your project’s Podfile in a text editor:
-
-    ```bash
-    open ios/Podfile
-    ```
-
-7. Update the platform to iOS 15 and add the PSPDFKit Podspec:
-
-    ```diff
-    -# platform :ios, '9.0'
-    + platform :ios, '15.0'
-     ...
-     target 'Runner' do
-       use_frameworks!
-       use_modular_headers!`
-
-       flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-    +  pod 'PSPDFKit', podspec:'https://customers.pspdfkit.com/pspdfkit-ios/latest.podspec'
-     end
-    ```
-
-8. Run `flutter emulators --launch apple_ios_simulator` to launch the iOS Simulator.
-
-9. Run the app with:
-
-    ```bash
-    flutter run
-    ```
-
-### Web
-
-#### Requirements
-
-- The [latest stable version of Chrome][chrome]
-
-#### Getting Started
-
-PSPDFKit for Web library files are distributed as an archive that can be extracted manually.
-
-1. <a href="https://my.nutrient.io/download/web/latest" target="_blank" rel="noreferrer">Download the framework here</a>. The download will start immediately and will save a `.tar.gz` archive like `PSPDFKit-Web-binary-<%= latest_version(:web) %>.tar.gz` to your computer.
-
-2. Once the download is complete, extract the archive and copy the **entire** contents of its `dist` folder to your project’s `web/assets` folder or any other folder of your choice inside the web subfolder.
-
-3. Make sure your `assets` folder contains the `pspdfkit.js` file and a `pspdfkit-lib` directory with the library assets.
-
-4. Make sure your server has the `Content-Type: application/wasm` MIME typeset. Read more about this in the [Troubleshooting][] section.
-
-5. Include the PSPDFKit library in your `index.html` file:
+4. Add the Nutrient library to your `web/index.html`:
 
 ```html
 <script src="assets/pspdfkit.js"></script>
 ```
-6. Run the app with:
 
-    ```bash
-    flutter run
-    ```
+Note: Your server must have the `Content-Type: application/wasm` MIME type configured for WebAssembly files.
 
-# Example App
+## Sample Document Setup
 
-To see PSPDFKit for Flutter in action check out our [Flutter example app](example/).
-
-Showing a PDF document inside your Flutter app is as simple as this:
-
-```dart
-        PspdfkitWidget(documentPath: 'file:///path/to/Documentpdf')
+1. Create a `PDFs` directory in your project root:
+```bash
+mkdir PDFs
 ```
 
-# Upgrading to a Full Nutrient License Key
+2. Download our [sample PDF document][sample document] and save it as `Document.pdf` in the `PDFs` directory.
 
-Nutrient is a commercial product and requires the purchase of a license key when used in production. By default, this library will initialize in demo mode, placing a watermark on each PDF and limiting usage to 60 minutes.
+3. Add the assets directory to your `pubspec.yaml`:
+```yaml
+flutter:
+  assets:
+    - PDFs/
+```
 
-To purchase a license for production use, please reach out to us via [contact_sales].
+## Usage
 
-To initialize Nutrient using a license key, call either of the following before using any other Nutrient APIs or features:
+Create a new file `lib/main.dart` with the following content:
 
-To set the license key for both Android and iOS, use:
 ```dart
-await Pspdfkit.initialize(
-        androidLicenseKey:"YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE", 
-        iosLicenseKey:"YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE",
-        webLicenseKey: "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE"
+import 'package:flutter/material.dart';
+import 'package:pspdfkit_flutter/pspdfkit_flutter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
+const String documentPath = 'PDFs/Document.pdf';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the Nutrient SDK with your license key
+  await Pspdfkit.initialize(
+    androidLicenseKey: 'YOUR_ANDROID_LICENSE_KEY',
+    iosLicenseKey: 'YOUR_IOS_LICENSE_KEY',
+    webLicenseKey: 'YOUR_WEB_LICENSE_KEY',
+  );
+
+   runApp(const MaterialApp(
+    home: MyApp(),
+  ));
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  Future<String> extractAsset(BuildContext context, String assetPath) async {
+
+    if (kIsWeb) {
+      return assetPath;
+    }
+
+    final bytes = await DefaultAssetBundle.of(context).load(assetPath);
+    final list = bytes.buffer.asUint8List();
+    final tempDir = await Pspdfkit.getTemporaryDirectory();
+    final tempDocumentPath = '${tempDir.path}/$assetPath';
+    final file = File(tempDocumentPath);
+
+    await file.create(recursive: true);
+    file.writeAsBytesSync(list);
+    return file.path;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder<String>(
+          future: extractAsset(context, documentPath),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              /// PspdfkitWidget is a widget that displays a PDF document.
+              return PspdfkitWidget(
+                documentPath: snapshot.data!,
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('${snapshot.error}'),
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          }),
     );
+  }
+}
 ```
 
-# Migrating from Previous Version
+**Note:** Replace `'YOUR_ANDROID_LICENSE_KEY'`, `'YOUR_IOS_LICENSE_KEY'`, and `'YOUR_WEB_LICENSE_KEY'` with your actual license keys. Do not pass any license keys if you want to run the SDK in demo mode, the SDK will run in demo mode with a watermark.
 
-To upgrade Nutrient for Flutter in your app, please refer to the [Upgrade and Migration Guides][flutter_upgrade] section.
+## Learn More
 
-# Troubleshooting
+- [Documentation][documentation]
+- [Example Projects][example project]
+- [Release Notes][release notes]
+- [Customization][customization]
+- [Migration Guide][migration guide]
 
-For Troubleshooting common issues you might encounter when setting up Nutrient for Flutter, please refer to the [Troubleshooting][troubleshooting] section.
+## Support
 
-<!-- References -->
+Visit our [Support Center][support] for help with the SDK.
 
-[pub_dev]: https://pub.dev/packages/pspdfkit_flutter
-[github]: https://github.com/PSPDFKit/pspdfkit-flutter
-[blog_starting_with_flutter]: https://nutrient.io/blog/2018/starting-with-flutter/
-[blog_getting_started_with_pspdfkit_flutter]: https://nutrient.io/blog/getting-started-with-pspdfkit-flutter/
-[blog_opening_a_pdf_in_flutter]: https://nutrient.io/blog/opening-a-pdf-in-flutter/
-[blog_customize_flutter_pdf_sdk_android]: https://www.nutrient.io/guides/flutter/customize/?
-[blog_advances_in_hybrid_technologies]: https://nutrient.io/blog/advances-in-hybrid-technologies/
-[blog_maintaining_open_source_repo_from_monorepo]: https://nutrient.io/blog/maintaining-open-source-repo-from-monorepo/
-[blog_download_display_pdf_in_flutter_with_pspdfkit]: https://nutrient.io/blog/download-and-display-pdf-in-flutter-with-pspdfkit/
-[quick_start_guides]: https://nutrient.io/getting-started/mobile/?frontend=flutter
-[android_readme]: android/
-[ios_readme]: ios/
-[contact_sales]: https://nutrient.io/sdk/contact-sales
-[flutter_upgrade]: https://nutrient.io/guides/flutter/upgrade/
-[troubleshooting]: https://nutrient.io/guides/flutter/troubleshoot/
-[appcompatactivity_migration]: https://nutrient.io/guides/flutter/troubleshooting/pspdfkit-widget-appcompat-activity-issue/
+## License
+
+This project is licensed under the Nutrient Commercial License. See [LICENSE](LICENSE) for details.
+
+[documentation]: https://www.nutrient.io/guides/flutter/
+[example project]: https://github.com/PSPDFKit/pspdfkit-flutter
+[release notes]: https://www.nutrient.io/changelog/flutter
+[customization]: https://www.nutrient.io/guides/flutter/customize/
+[migration guide]: https://nutrient.io/guides/flutter/upgrade/
+[support]: https://support.nutrient.io
+[license]: https://github.com/PSPDFKit/pspdfkit-flutter/blob/main/LICENSE
+[download web sdk]: https://my.nutrient.io/download/web/latest
+[sample document]: https://www.nutrient.io/downloads/pspdfkit-web-demo.pdf

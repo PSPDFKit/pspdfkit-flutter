@@ -1,6 +1,12 @@
 ## Newest Release
 
-### 4.1.0 - 03 January 2024
+### 4.1.1 - 17 Jan 2025
+- Fixes build issues where some Android resource ids are missing. (J#HYB-625) 
+- Fixes issue where oPageChanged callback returns the wrong page index on iOS. (J#HYB-575)
+
+## Previous Releases
+
+### 4.1.0 - 03 Jan 2024
 
 - Adds support for `PspdfkitWidgetController.addEventListener` to iOS and Android. (J#HYB-550)` 
 - Adds support for the latest Android Studio version. (J#HYB-539)
@@ -9,8 +15,6 @@
 - Updates for Nutrient Android SDK 2024.9.0.
 - Updates for Nutrient iOS SDK 14.3.0. 
 - Fixes onPageChanged callback being triggered early on iOS. (J#HYB-596)
-
-## Previous Releases
 
 ### 4.0.0 - 01 Nov 2024
 

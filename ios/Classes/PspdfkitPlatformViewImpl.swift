@@ -30,10 +30,6 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
         }
     }
     
-    public func pdfViewController(_ pdfController: PDFViewController, didEndDisplaying pageView: PDFPageView, forPageAt pageIndex: Int) {
-        pspdfkitWidgetCallbacks?.onPageChanged(documentId:pdfController.document?.uid ?? "", pageIndex: Int64(pageIndex)){ _ in }
-    }
-    
     public func pdfViewController(_ pdfController: PDFViewController, didSelect annotations: [Annotation], on pageView: PDFPageView) {
         // Call the event helper to notify the listeners.
         eventsHelper?.annotationSelected(annotations: annotations)
@@ -275,15 +271,27 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
         eventsHelper?.removeEventListener(event: event)
     }
     
+    @objc func spreadIndexDidChange(_ notification: Notification) {
+          if let newSpreadIndex = notification.userInfo?["PSPDFDocumentViewControllerSpreadIndexKey"] as? Int,
+            let newPageIndex = self.pdfViewController?.documentViewController?.layout.pageRangeForSpread(at: newSpreadIndex).location {
+              pspdfkitWidgetCallbacks?.onPageChanged(documentId:  self.pdfViewController?.document?.uid ?? "" , pageIndex:Int64(newPageIndex), completion: { _ in })
+          }
+    }
+    
     @objc public func register( binaryMessenger: FlutterBinaryMessenger, viewId: String){
         self.viewId = viewId
         pspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "widget.callbacks.\(viewId)")
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix:viewId)
         let nutreintEventCallback: NutrientEventsCallbacks = NutrientEventsCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "events.callbacks.\(viewId)")
         eventsHelper = FlutterEventsHelper(nutrientCallback: nutreintEventCallback)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(spreadIndexDidChange(_:)),
+                                               name: .PSPDFDocumentViewControllerSpreadIndexDidChange,
+                                               object: nil)
     }
     
     @objc public func unRegister(binaryMessenger: FlutterBinaryMessenger){
+        NotificationCenter.default.removeObserver(self)
         pspdfkitWidgetCallbacks = nil
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: nil, messageChannelSuffix: viewId ?? "")
         

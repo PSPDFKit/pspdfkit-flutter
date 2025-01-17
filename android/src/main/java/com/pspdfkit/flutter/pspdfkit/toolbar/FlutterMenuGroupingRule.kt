@@ -13,7 +13,7 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
 import androidx.annotation.IntRange
-import com.pspdfkit.flutter.pspdfkit.R
+import com.pspdfkit.R
 import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.grouping.presets.MenuItem
 import com.pspdfkit.ui.toolbar.grouping.presets.PresetMenuItemGroupingRule
