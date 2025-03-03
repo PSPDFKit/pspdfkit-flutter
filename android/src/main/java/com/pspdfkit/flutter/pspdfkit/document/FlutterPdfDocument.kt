@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,6 +9,8 @@
 
 package com.pspdfkit.flutter.pspdfkit.document
 
+import android.util.Log
+import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
@@ -29,8 +31,7 @@ import com.pspdfkit.forms.TextFormElement
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -333,6 +334,7 @@ class FlutterPdfDocument(
 
     override fun addAnnotation(
         jsonAnnotation: String,
+        attachment:Any?,
         callback: (Result<Boolean?>) -> Unit
     ) {
         disposable =
@@ -355,16 +357,47 @@ class FlutterPdfDocument(
                 }
     }
 
-    override fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
-        //  Annotation from JSON.
+    override fun updateAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
         try {
-            val annotationObject:Map<String, *>  = Json.parseToJsonElement(jsonAnnotation).jsonObject.toMap()
-        //  Remove escaped backslashes from the JSON string.
-            val name = annotationObject["name"] as String
-            val pageIndex = annotationObject["pageIndex"] as Int
+          removeAnnotation(jsonAnnotation) { it ->
+                if (it.isSuccess) {
+                    addAnnotation(jsonAnnotation, null) {
+                        callback(it)
+                    }
+                } else {
+                    callback(it)
+                }
+            }
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
+    }
 
+    override fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
+        try {
+            val annotationObject = JSONObject(jsonAnnotation).toMap()
+
+            // Get name or UUID
+            val name = annotationObject["name"] as? String?
+            val uuid = annotationObject["id"] as? String?
+
+            if (name == null && uuid == null) {
+                callback(Result.failure(Exception("Annotation has no identifier (name or uuid)")))
+                return
+            }
+
+            val pageIndex = (annotationObject["pageIndex"] as Number).toInt()
             val allAnnotations = pdfDocument.annotationProvider.getAnnotations(pageIndex)
-            val annotation = allAnnotations.firstOrNull { it.name == name }
+
+            // First try to find by name, then by UUID if available
+            val annotation = if (name != null) {
+                allAnnotations.firstOrNull { it.name == name }
+            } else if (uuid != null) {
+                allAnnotations.firstOrNull { it.uuid == uuid }
+            } else {
+                null
+            }
+
             if (annotation == null) {
                 callback(Result.failure(Exception("Annotation not found")))
                 return
@@ -542,12 +575,19 @@ class FlutterPdfDocument(
         }
     }
 
+    override fun getPageCount(callback: (Result<Long>) -> Unit) {
+        try {
+            callback(Result.success(pdfDocument.pageCount.toLong()))
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
+    }
+
     fun dispose() {
         disposable?.dispose()
     }
 
     private fun convertDocumentSaveOptions(options: DocumentSaveOptions): com.pspdfkit.document.DocumentSaveOptions {
-
         return com.pspdfkit.document.DocumentSaveOptions(
             options.userPassword,
             options.permissions?.map { documentPermissionsMap[it?.name] }?.let {
@@ -559,3 +599,18 @@ class FlutterPdfDocument(
     }
 }
 
+fun JSONObject.toMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>()
+    val keys = this.keys()
+    while (keys.hasNext()) {
+        val key = keys.next()
+        var value = this.get(key)
+
+        if (value is JSONObject) {
+            value = value.toMap()
+        }
+
+        map[key] = value
+    }
+    return map
+}

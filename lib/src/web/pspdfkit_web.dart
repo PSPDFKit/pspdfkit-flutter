@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -19,7 +19,7 @@ const flutterWebProductId = 'FlutterForWeb';
 
 /// Provides access to PSPDFKit for web.
 ///
-/// This class represents the [PSPDFKit](https://pspdfkit.com/api/web/PSPDFKit.html) object in the PSPDFKit Web SDK.
+/// This class represents the [PSPDFKit](https://www.nutrient.io/api/web/PSPDFKit.html) object in the PSPDFKit Web SDK.
 /// All methods are static and can be accessed directly from the class.
 class PSPDFKitWeb {
   static final JsObject _pspdfkit = context['PSPDFKit'];
@@ -99,7 +99,7 @@ class PSPDFKitWeb {
     }
   }
 
-  /// Returns the version of PSPDFKit for Web.
+  /// Returns the version of Nutrient Web SDK.
   /// This is useful for debugging purposes.
   static Future<String> get version async {
     try {
@@ -112,7 +112,7 @@ class PSPDFKitWeb {
   static String get authorName => _pspdfkit['annotationCreatorName'];
 
   /// Returns a list of [PspdfkitWebToolbarItem]s default main toolbar items from [PSPDFKit.defaultToolbarItems]
-  /// (https://pspdfkit.com/api/web/PSPDFKit.html#.defaultToolbarItems)
+  /// (https://www.nutrient.io/api/web/PSPDFKit.html#.defaultToolbarItems)
   static List<PspdfkitWebToolbarItem> get defaultToolbarItems {
     try {
       var jsObjectList = _pspdfkit['defaultToolbarItems'];

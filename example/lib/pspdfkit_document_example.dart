@@ -67,9 +67,11 @@ class _PspdfkitDocumentExampleState extends State<PspdfkitDocumentExample> {
                   : null,
               child: PspdfkitWidget(
                 documentPath: widget.documentPath,
-                onPdfDocumentLoaded: (PdfDocument document) {
+                onPdfDocumentLoaded: (PdfDocument document) async {
+                  var pageCount = await document.getPageCount();
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('Document loaded ${document.documentId}')));
+                      content: Text(
+                          'Document loaded ${document.documentId} with $pageCount pages')));
                   setState(() {
                     _document = document;
                   });

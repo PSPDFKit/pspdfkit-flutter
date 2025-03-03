@@ -1,5 +1,5 @@
 //
-//  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -299,32 +299,65 @@ class PspdfkitFlutterHelper: NSObject {
         return true
     }
     
-    static func removeAnnotation(_ jsonAnnotation: Any, for document: Document) throws -> Bool {
+    static func updateAnnotation (with jsonAnnotation: Any, for document: Document) throws -> Bool {
+        // Remove annotation using the removeAnnotaiton method.
+        var success = try removeAnnotation(jsonAnnotation, for: document)
         
-        var annotationUUID: String?
+        // Add the updated annotation.
+        if success {
+            success = try addAnnotation(jsonAnnotation, for: document)
+            if success {
+                return true
+            }
+        } else {
+            throw PspdfkitApiError(code: "", message: "Failed to remove annotation.", details: nil)
+        }
+        
+        return true
+    }
+    
+    static func removeAnnotation(_ jsonAnnotation: Any, for document: Document) throws -> Bool {
+        var annotationDict: [String: Any]?
         
         if let jsonString = jsonAnnotation as? String {
             if let jsonData = jsonString.data(using: .utf8),
                let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: .allowFragments) as? [String: Any] {
-                annotationUUID = jsonDict["uuid"] as? String
+                annotationDict = jsonDict
             }
         } else if let jsonDict = jsonAnnotation as? [String: Any] {
-            annotationUUID = jsonDict["uuid"] as? String
+            annotationDict = jsonDict
         }
         
-        guard let uuid = annotationUUID, !uuid.isEmpty else {
-            throw PspdfkitApiError(code: "", message: "Invalid annotation UUID.", details: nil)
+        guard let dict = annotationDict else {
+            throw PspdfkitApiError(code: "", message: "Invalid annotation data.", details: nil)
+        }
+        
+        // Try to get identifier information, looking for name first (for consistency)
+        let name = dict["name"] as? String
+        let uuid = dict["uuid"] as? String
+        
+        if name == nil && uuid == nil {
+            throw PspdfkitApiError(code: "", message: "Annotation has no identifier (name or uuid).", details: nil)
         }
         
         let allAnnotations = document.allAnnotations(of: .all).values.flatMap { $0 }
-        for annotation in allAnnotations {
-            if annotation.uuid == uuid {
-                let success = document.remove(annotations: [annotation], options: nil)
-                return success
-            }
+        
+        // First search by name, then by UUID if available
+        var foundAnnotation: Annotation?
+        if let name = name {
+            foundAnnotation = allAnnotations.first { $0.name == name }
         }
         
-        return false
+        if foundAnnotation == nil, let uuid = uuid {
+            foundAnnotation = allAnnotations.first { $0.uuid == uuid }
+        }
+        
+        guard let annotation = foundAnnotation else {
+            return false // Annotation not found, but not an error
+        }
+        
+        let success = document.remove(annotations: [annotation], options: nil)
+        return success
     }
     
     static func getAnnotations(forPageIndex pageIndex: PageIndex, andType typeString: String, for document: Document) throws -> Any {
@@ -342,13 +375,8 @@ class PspdfkitFlutterHelper: NSObject {
     static func getAllUnsavedAnnotations(for document: Document) throws -> Any {
         let documentProvider = document.documentProviders.first!
         let data = try document.generateInstantJSON(from: documentProvider, version: .v2)
-        let annotationsJSON = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-        
-        if let annotationsJSON = annotationsJSON {
-            return annotationsJSON
-        } else {
-            throw PspdfkitApiError(code:"", message: "Failed to get annotations.", details:nil)
-        }
+        let annotationsJSONString = String(data: data, encoding: .utf8)!
+        return annotationsJSONString
     }
     
     // MARK: - XFDF
@@ -423,55 +451,83 @@ class PspdfkitFlutterHelper: NSObject {
     
     static func annotationType(from typeString: String) -> Annotation.Type {
         switch typeString {
-        case "ink":
+            
+        // Basic annotations
+        case "pspdfkit/ink":
             return InkAnnotation.self
-        case "link":
+        case "pspdfkit/link":
             return LinkAnnotation.self
-        case "highlight":
-            return HighlightAnnotation.self
-        case "squiggly":
-            return SquigglyAnnotation.self
-        case "strikeout":
-            return StrikeOutAnnotation.self
-        case "underline":
-            return UnderlineAnnotation.self
-        case "note":
+        case "pspdfkit/note":
             return NoteAnnotation.self
-        case "ellipse":
-            return CircleAnnotation.self
-        case "line":
-            return LineAnnotation.self
-        case "polygon":
-            return PolygonAnnotation.self
-        case "square":
-            return SquareAnnotation.self
-        case "text":
+        case "pspdfkit/text":
             return FreeTextAnnotation.self
-        case "circle":
-            return CircleAnnotation.self
-        case "redact":
+            
+        // Markup annotations
+        case "pspdfkit/markup/highlight":
+            return HighlightAnnotation.self
+        case "pspdfkit/markup/squiggly":
+            return SquigglyAnnotation.self
+        case "pspdfkit/markup/strikeout":
+            return StrikeOutAnnotation.self
+        case "pspdfkit/markup/underline":
+            return UnderlineAnnotation.self
+        case "pspdfkit/markup/redaction":
             return RedactionAnnotation.self
-        case "stamp":
+            
+        // Shape annotations
+        case "pspdfkit/shape/ellipse":
+            return CircleAnnotation.self
+        case "pspdfkit/shape/line":
+            return LineAnnotation.self
+        case "pspdfkit/shape/polygon":
+            return PolygonAnnotation.self
+        case "pspdfkit/shape/polyline":
+            return PolyLineAnnotation.self
+        case "pspdfkit/shape/rectangle":
+            return SquareAnnotation.self
+            
+        // Media annotations
+        case "pspdfkit/image":
             return StampAnnotation.self
-        case "caret":
-            return CaretAnnotation.self
-        case "popup":
-            return PopupAnnotation.self
-        case "file":
-            return FileAnnotation.self
-        case "sound":
+        case "pspdfkit/sound":
             return SoundAnnotation.self
-        case "widget":
-            return WidgetAnnotation.self
-        case "screen":
+        case "pspdfkit/screen":
             return ScreenAnnotation.self
-        case "richMedia":
-            return RichMediaAnnotation.self
-        case "all":
+        case "pspdfkit/3d":
             return Annotation.self
+            
+        // File annotations
+        case "pspdfkit/file":
+            return FileAnnotation.self
+            
+        // Other annotations
+        case "pspdfkit/stamp":
+            return StampAnnotation.self
+        case "pspdfkit/caret":
+            return CaretAnnotation.self
+        case "pspdfkit/popup":
+            return PopupAnnotation.self
+        case "pspdfkit/widget":
+            return WidgetAnnotation.self
+        case "pspdfkit/watermark":
+            return Annotation.self
+        case "pspdfkit/media":
+            return   RichMediaAnnotation.self
+            
+        // Special types
+        case "pspdfkit/none":
+            return Annotation.self
+        case "pspdfkit/undefined":
+            return Annotation.self
+        case "pspdfkit/all", "all":
+            return Annotation.self
+        
+            
+        // Fallback
         default:
             return Annotation.self
         }
+        
     }
     
     private static func stringDataToFile(_ stringData: String) throws -> URL {

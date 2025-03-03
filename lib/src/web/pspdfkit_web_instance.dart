@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2023-2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright @2023-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -18,7 +18,7 @@ import 'package:pspdfkit_flutter/src/document/document_save_options_extension.da
 import 'package:pspdfkit_flutter/src/web/pspdfkit_web_utils.dart';
 
 /// This class is used to interact with a
-/// [PSPDFKit.Instance](https://pspdfkit.com/api/web/PSPDFKit.Instance.html) in
+/// [PSPDFKit.Instance](https://www.nutrient.io/api/web/PSPDFKit.Instance.html) in
 /// PSPDFKit Web SDK.
 /// It is returned by [PSPDFKit.load].
 class PspdfkitWebInstance {
@@ -46,10 +46,11 @@ class PspdfkitWebInstance {
   ///
   /// The annotation is passed as a [Map<String, dynamic>].
   /// The object structure should be the same as the one returned by
-  /// `PSPDFKit.Annotations.toSerializableObject` in PSPDFKit for Web.
+  /// `PSPDFKit.Annotations.toSerializableObject` in Nutrient Web SDK.
   ///
   ///Throws an error if the operation fails.
-  Future<void> addAnnotation(Map<String, dynamic> jsonAnnotation) async {
+  Future<void> addAnnotation(Map<String, dynamic> jsonAnnotation,
+      [Map<String, dynamic>? attachment]) async {
     try {
       var annotation = context['PSPDFKit']['Annotations'].callMethod(
           'fromSerializableObject', [JsObject.jsify(jsonAnnotation)]);
@@ -60,28 +61,38 @@ class PspdfkitWebInstance {
     }
   }
 
+  /// Updates an annotation in the document.
+  ///
+  /// The annotation is passed as a [Map<String, dynamic>].
+  /// The object structure should be the same as the one returned by
+  /// `PSPDFKit.Annotations.toSerializableObject` in PSPDFKit for Web.
+  ///
+  /// Throws an error if the operation fails.
+  Future<void> updateAnnotation(Map<String, dynamic> jsonAnnotation) async {
+    try {
+      await removeAnnotation(jsonAnnotation)
+          .then((value) => addAnnotation(jsonAnnotation));
+    } catch (e) {
+      throw Exception('Failed to update annotation: $e');
+    }
+  }
+
   /// Returns a list of all annotations on the given page.
-  /// The return annotations are in the [Instant JSON](https://pspdfkit.com/guides/web/json/) format.
+  /// The return annotations are in the [Instant JSON](https://www.nutrient.io/guides/web/json/) format.
   /// [pageIndex] is the index of the page to get the annotations from.
   /// Returns a [Future] that completes with the list of annotations.
   Future<dynamic> getAnnotations(int pageIndex,
       [String? annotationType]) async {
-    var annotationsPromise =
-        await _pspdfkitInstance.callMethod('getAnnotations', [pageIndex]);
-
-    var annotations = await promiseToFuture(annotationsPromise);
+    var annotations = await _getRawAnnotations(pageIndex);
     var annotationJSON = <dynamic>[];
 
     for (var i = 0; i < annotations['size']; i++) {
       var annotation = annotations.callMethod('get', [i]);
 
-      JsObject annotationObject = context['PSPDFKit']['Annotations']
-          .callMethod('toSerializableObject', [annotation]);
-
-      var ann = annotationObject.toJson();
+      var ann = webAnnotationToJSON(annotation);
 
       if (annotationType != null) {
-        if (ann['type'] == annotationType) {
+        if (ann['type'] == annotationType || annotationType == 'pspdfkit/all') {
           annotationJSON.add(ann);
           continue;
         }
@@ -90,6 +101,12 @@ class PspdfkitWebInstance {
       }
     }
     return annotationJSON;
+  }
+
+  Future<dynamic> _getRawAnnotations(int pageIndex) async {
+    var annotationPromise =
+        await _pspdfkitInstance.callMethod('getAnnotations', [pageIndex]);
+    return await promiseToFuture(annotationPromise);
   }
 
   /// Applies the given Instant JSON string to the document.
@@ -119,7 +136,7 @@ class PspdfkitWebInstance {
     var annotationsJsonPromise =
         await _pspdfkitInstance.callMethod('exportInstantJSON');
     JsObject instant = await promiseToFuture(annotationsJsonPromise);
-    return instant.toJson().toString();
+    return jsonEncode(instant.toJson());
   }
 
   /// Imports XFDF annotations from a file path.
@@ -166,14 +183,11 @@ class PspdfkitWebInstance {
   /// Retrieves all annotations in the document.
   /// Returns a [Future] that completes with a list of unsaved annotations.
   /// The annotations are retrieved asynchronously.
-  Future<List<dynamic>> getAllAnnotations() async {
-    var pageCount = await _pspdfkitInstance['totalPageCount'];
-    var annotations = [];
-    for (var i = 0; i < pageCount - 1; i++) {
-      var pageAnnotations = await getAnnotations(i);
-      annotations.addAll(pageAnnotations);
-    }
-    return annotations;
+  Future<dynamic> getAllAnnotations() async {
+    var json = await exportInstantJson();
+    if (json == null) return {};
+    var annotationsJson = jsonDecode(json);
+    return annotationsJson;
   }
 
   /// Removes the specified annotation from the PDF document.
@@ -182,8 +196,27 @@ class PspdfkitWebInstance {
   /// Throws an error if the operation fails.
   Future<void> removeAnnotation(dynamic jsonAnnotation) async {
     try {
-      var id = jsonAnnotation['id'];
-      await _pspdfkitInstance.callMethod('delete', [id]);
+      if (jsonAnnotation is String) {
+        jsonAnnotation = jsonDecode(jsonAnnotation);
+      }
+      var annotationId = jsonAnnotation['id'];
+      var pageIndex = jsonAnnotation['pageIndex'];
+      var name = jsonAnnotation['name'];
+
+      JsObject rawAnnotations = await _getRawAnnotations(pageIndex);
+
+      for (var i = 0; i < rawAnnotations['size']; i++) {
+        var annotation = rawAnnotations.callMethod('get', [i]);
+
+        if ((annotation['id'] == annotationId &&
+                annotation['pageIndex'] == pageIndex) ||
+            (annotation['name'] == name &&
+                annotation['pageIndex'] == pageIndex)) {
+          await _pspdfkitInstance.callMethod('delete', [annotation]);
+        }
+      }
+
+      // Remove the annotation from the PDF document.
     } catch (e) {
       throw Exception('Failed to remove annotation: $e');
     }
@@ -278,7 +311,7 @@ class PspdfkitWebInstance {
   /// Applies a list of operations to the PSPDFKit instance.
   /// Returns a Future that completes with the result of the operation.
   /// The operations are represented as a list of maps, where each map represents an operation.
-  /// For a full list of supported operations, see the [PSPDFKit.DocumentOperation](https://pspdfkit.com/api/web/PSPDFKit.DocumentOperation.html) API reference.
+  /// For a full list of supported operations, see the [PSPDFKit.DocumentOperation](https://www.nutrient.io/api/web/PSPDFKit.DocumentOperation.html) API reference.
   /// The operation names and arguments are specific to the PSPDFKit API.
   /// Throws an error if the operation fails.
   Future<dynamic> applyOperations(List<Map<String, dynamic>> operations) async {
@@ -310,7 +343,7 @@ class PspdfkitWebInstance {
   /// The [eventName] parameter specifies the name of the event to listen to.
   /// The [callback] parameter specifies the callback function to be called when the event is triggered.
   /// The callback parameter function accepts varying number of arguments depending on the event.
-  /// See the [PSPDFKit.Instance.addEventListener](https://pspdfkit.com/api/web/PSPDFKit.Instance.html#addEventListener) API reference for more information about the events and their arguments.
+  /// See the [PSPDFKit.Instance.addEventListener](https://www.nutrient.io/api/web/PSPDFKit.Instance.html#addEventListener) API reference for more information about the events and their arguments.
   void addEventListener(String eventName, Function(dynamic) callback) {
     try {
       _pspdfkitInstance.callMethod('addEventListener', [
@@ -324,19 +357,68 @@ class PspdfkitWebInstance {
             callback(event);
             return;
           }
-          // If the event is a JsObject and the second event is null, pass it to the callback function.
-          if (event is JsObject && event2 == null) {
-            callback(event.toJson());
+
+          // Convert annotations in events that include them
+          if (event is JsObject) {
+            final eventData = event.toJson();
+
+            // Check for annotation events that contain annotation objects
+            if (eventData is Map<String, dynamic>) {
+              // Handle annotation events - look for common annotation event properties
+              if (eventData.containsKey('annotation')) {
+                // Check if annotation is a JsObject that needs conversion
+                final annotation = event['annotation'];
+                if (annotation is JsObject) {
+                  // Convert annotation to JSON using the helper method
+                  final jsonAnnotation = webAnnotationToJSON(annotation);
+                  // Update event data with converted annotation
+                  eventData['annotation'] = jsonAnnotation;
+                }
+              }
+
+              // Handle annotation array events (e.g., annotations in batch operations)
+              if (eventData.containsKey('annotations') &&
+                  event['annotations'] != null) {
+                final annotations = event['annotations'];
+                if (annotations is JsObject &&
+                    annotations.hasProperty('length')) {
+                  final length = annotations['length'] as int;
+                  final convertedAnnotations = <dynamic>[];
+
+                  // Convert each annotation in the array
+                  for (var i = 0; i < length; i++) {
+                    final annotation = annotations[i];
+                    if (annotation is JsObject) {
+                      // Convert annotation to JSON
+                      final jsonAnnotation = webAnnotationToJSON(annotation);
+                      convertedAnnotations.add(jsonAnnotation);
+                    } else if (annotation != null) {
+                      convertedAnnotations.add(annotation);
+                    }
+                  }
+
+                  // Update event data with converted annotations
+                  eventData['annotations'] = convertedAnnotations;
+                }
+              }
+
+              // If the second event is null, pass the processed event data to the callback
+              if (event2 == null) {
+                callback(eventData);
+                return;
+              }
+            }
+          }
+
+          /// If the event and the second event are JsObjects, process them both
+          if (event is JsObject && event2 is JsObject) {
+            final eventData1 = event.toJson();
+            final eventData2 = event2.toJson();
+            callback([eventData1, eventData2]);
             return;
           }
 
-          /// If the event and the second event are JsObjects, pass them to the callback function.
-          /// This is used for events that return multiple value for example `viewState.change` event.
-          if (event is JsObject && event2 is JsObject) {
-            callback([event, event2]);
-            return;
-          }
-          // Convert the event to JSON and pass it to the callback function.
+          // Convert any other JsObject events to JSON
           callback((event as JsObject).toJson());
         })
       ]);
@@ -386,7 +468,7 @@ class PspdfkitWebInstance {
     JsObject formFields =
         await promiseToFuture(_pspdfkitInstance.callMethod('getFormFields'));
 
-    // `getFormFields` returns a custom  (PSPDFKit.Immutable.List)[https://pspdfkit.com/api/web/PSPDFKit.Immutable.List.html]
+    // `getFormFields` returns a custom  (PSPDFKit.Immutable.List)[https://www.nutrient.io/api/web/PSPDFKit.Immutable.List.html]
     // whose value in an iterator. We need to convert this to a Dart list.
     var values = formFields.callMethod('values');
 
@@ -440,6 +522,15 @@ class PspdfkitWebInstance {
     }
   }
 
+  Future<int> getPageCount() async {
+    try {
+      var count = _pspdfkitInstance['totalPageCount'];
+      return Future.value(count);
+    } catch (e) {
+      throw Exception('Failed to get document title: $e');
+    }
+  }
+
   String _getFormFieldType(JsObject field) {
     JsObject textClass = context['PSPDFKit']['FormFields']['TextFormField'];
     JsObject signatureClass =
@@ -479,6 +570,69 @@ class PspdfkitWebInstance {
     }''';
     context.callMethod('eval', [script]);
     var result = context.callMethod('instanceOf', [formField, formFieldClass]);
+    return result;
+  }
+
+  /// Converts a PSPDFKit Web annotation to a JSON object.
+  /// The [annotation] parameter is the PSPDFKit Web annotation to convert.
+  /// Returns a JSON object representing the annotation.
+  dynamic webAnnotationToJSON(JsObject annotation) {
+    // Convert the annotation to a JSON object
+    JsObject json = context['PSPDFKit']['Annotations']
+        .callMethod('toSerializableObject', [annotation]);
+
+    final result = json.toJson();
+
+    // Add type information if result is a Map
+    if (result is Map<String, dynamic>) {
+      // Map of PSPDFKit Web annotation class names to their corresponding pspdfkit type strings
+      // as defined in annotation_type_extensions.dart
+      final annotationTypeMap = {
+        'TextAnnotation': 'pspdfkit/text',
+        'NoteAnnotation': 'pspdfkit/note',
+        'InkAnnotation': 'pspdfkit/ink',
+        'HighlightAnnotation': 'pspdfkit/markup/highlight',
+        'UnderlineAnnotation': 'pspdfkit/markup/underline',
+        'SquiggleAnnotation': 'pspdfkit/markup/squiggly',
+        'StrikeOutAnnotation': 'pspdfkit/markup/strikeout',
+        'LineAnnotation': 'pspdfkit/shape/line',
+        'RectangleAnnotation': 'pspdfkit/shape/rectangle',
+        'EllipseAnnotation': 'pspdfkit/shape/ellipse',
+        'PolygonAnnotation': 'pspdfkit/shape/polygon',
+        'PolylineAnnotation': 'pspdfkit/shape/polyline',
+        'LinkAnnotation': 'pspdfkit/link',
+        'ImageAnnotation': 'pspdfkit/image',
+        'RedactionAnnotation': 'pspdfkit/markup/redaction',
+        'StampAnnotation': 'pspdfkit/stamp',
+        'MediaAnnotation': 'pspdfkit/media',
+        'WidgetAnnotation': 'pspdfkit/widget',
+        'CommentMarkerAnnotation': 'pspdfkit/comment',
+        'MarkupAnnotation': 'pspdfkit/markup'
+      };
+
+      // Check each annotation type
+      for (final entry in annotationTypeMap.entries) {
+        final className = entry.key;
+        final typeString = entry.value;
+
+        // Skip if the class doesn't exist
+        if (!context['PSPDFKit']['Annotations'].hasProperty(className)) {
+          continue;
+        }
+
+        // Get the annotation class
+        final annotationClass = context['PSPDFKit']['Annotations'][className];
+
+        // Check if the annotation is an instance of this class
+        if (annotationClass != null &&
+            _instanceOf(annotation, annotationClass)) {
+          // Add the type to the result using the proper format
+          result['type'] = typeString;
+          break;
+        }
+      }
+    }
+
     return result;
   }
 }

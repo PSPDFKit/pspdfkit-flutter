@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -363,12 +363,11 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                     callback(Result.success(annotationJsonList))
                 }
             )
-    }
+    }   
 
     override fun getAllUnsavedAnnotations(callback: (Result<Any>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         val outputStream = ByteArrayOutputStream()
-
         disposable = DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -445,9 +444,9 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             })
     }
 
-    override fun importXfdf(xfdfPath: String, callback: (Result<Boolean>) -> Unit) {
+    override fun importXfdf(xfdfString: String, callback: (Result<Boolean>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        val dataProvider = DocumentJsonDataProvider(xfdfPath)
+        val dataProvider = DocumentJsonDataProvider(xfdfString)
         // The async parse method is recommended (so you can easily offload parsing from the UI thread).
         disposable = XfdfFormatter.parseXfdfAsync(document, dataProvider)
             .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.

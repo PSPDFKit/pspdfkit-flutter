@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright 2024-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -28,6 +28,7 @@ import 'package:pspdfkit_example/pspdfkit_instant_collaboration_example.dart';
 import 'package:pspdfkit_example/pspdfkit_measurement_tools.dart';
 import 'package:pspdfkit_example/pspdfkit_pdf_generation_example.dart';
 import 'package:pspdfkit_example/pspdfkit_save_as_example.dart';
+import 'package:pspdfkit_example/nutrient_annotation_flags.dart';
 
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 
@@ -105,6 +106,11 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
         description:
             'Programmatically adds and removes annotations using a custom Widget.',
         onTap: () => annotationsExample(context),
+      ),
+      PspdfkitExampleItem(
+        title: 'Annotation Flags Example',
+        description: 'Shows how to click an annotation and modify its flags.',
+        onTap: () => annotationFlagsExample(context),
       ),
       if (!kIsWeb)
         PspdfkitExampleItem(
@@ -570,4 +576,11 @@ void showMeasurementExampleGlobal(BuildContext context) {
 void goTo(Widget widget, BuildContext context) {
   Navigator.push<dynamic>(
       context, MaterialPageRoute<dynamic>(builder: (context) => widget));
+}
+
+void annotationFlagsExample(BuildContext context) {
+  goTo(
+    const NutrientAnnotationFlagsExample(),
+    context,
+  );
 }

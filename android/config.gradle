@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -38,7 +38,7 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '2024.9.0'
+    ext.pspdfkitVersion = '2024.9.1'
 }
 
 ext.pspdfkitMavenModuleName = 'pspdfkit'
@@ -55,5 +55,5 @@ ext.pspdfkitFlutterVersion = pubspecYaml.version
 ext.androidCompileSdkVersion = 35
 ext.androidMinSdkVersion = 21
 ext.androidTargetSdkVersion = 35
-ext.androidGradlePluginVersion = '8.7.2'
+ext.androidGradlePluginVersion = '8.7.3'
 ext.kotlinVersion = "1.9.20"

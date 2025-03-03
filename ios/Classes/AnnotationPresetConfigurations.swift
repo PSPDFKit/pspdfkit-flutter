@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -347,6 +347,16 @@ public class AnnotationsPresetConfigurations: NSObject {
             return .circle
         case "square":
             return .square
+        case "diamond":
+            return .diamond
+        case "butt":
+            return .butt
+        case "slash":
+            return .slash
+        case "reverseOpenArrow":
+            return .reverseOpenArrow
+        case "reverseClosedArrow":
+            return .reverseClosedArrow
         default:
             return .none
         }

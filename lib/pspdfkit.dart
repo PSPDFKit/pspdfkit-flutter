@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -32,6 +32,7 @@ export 'src/api/pspdfkit_api.g.dart';
 
 export 'src/pspdfkit_processor.dart';
 export 'src/annotation_preset_configurations.dart';
+export 'src/annotations/annotations.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {
@@ -105,19 +106,21 @@ class Pspdfkit {
 
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
-  static Future<bool?> addAnnotation(dynamic jsonAnnotation) async =>
-      PspdfkitFlutterPlatform.instance.addAnnotation(jsonAnnotation);
+  static Future<bool?> addAnnotation(dynamic annotation) async =>
+      PspdfkitFlutterPlatform.instance.addAnnotation(annotation);
 
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
-  static Future<bool?> removeAnnotation(dynamic jsonAnnotation) async =>
-      PspdfkitFlutterPlatform.instance.removeAnnotation(jsonAnnotation);
+  static Future<bool?> removeAnnotation(dynamic annotation) async =>
+      PspdfkitFlutterPlatform.instance.removeAnnotation(annotation);
 
   /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
   static Future<dynamic> getAnnotations(int pageIndex, String type) async =>
-      PspdfkitFlutterPlatform.instance.getAnnotations(pageIndex, type);
+      PspdfkitFlutterPlatform.instance
+          .getAnnotations(pageIndex, annotationTypeFromString(type));
 
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  @Deprecated('Use getAllUnsavedAnnotationModels instead')
   static Future<dynamic> getAllUnsavedAnnotations() async =>
       PspdfkitFlutterPlatform.instance.getAllUnsavedAnnotations();
 
@@ -143,12 +146,12 @@ class Pspdfkit {
   /// If there were no changes to the document, the document file will not be modified.
   static Future<bool?> save() async => PspdfkitFlutterPlatform.instance.save();
 
-  /// Sets a delay for synchronizing local changes to the Instant Server (PSPDFKit Document Engine).
+  /// Sets a delay for synchronizing local changes to the Instant Server (Nutrient Document Engine).
   /// [delay] is the delay in milliseconds.
   static Future<bool?> setDelayForSyncingLocalChanges(double delay) async =>
       PspdfkitFlutterPlatform.instance.setDelayForSyncingLocalChanges(delay);
 
-  /// Enable or disable listening to Instant Server (PSPDFKit Document Engine) changes.
+  /// Enable or disable listening to Instant Server (Nutrient Document Engine) changes.
   static Future<bool?> setListenToServerChanges(bool listen) async =>
       PspdfkitFlutterPlatform.instance.setListenToServerChanges(listen);
 
@@ -218,6 +221,16 @@ class Pspdfkit {
 
   static Future<void> enableAnalytics(bool enabled) async =>
       PspdfkitFlutterPlatform.instance.enableAnalytics(enabled);
+
+  /// Sets the author name for annotations.
+  static Future<void> setDefaultAuthorName(String authorName) async =>
+      PspdfkitFlutterPlatform.instance.setDefaultAuthorName(authorName);
+
+  /// Gets the author name for annotations.
+  /// Returns the author name for annotations.
+  /// Returns an empty string if the author name is not set.
+  static Future<String> getAuthorName() async =>
+      PspdfkitFlutterPlatform.instance.getAuthorName();
 
   /// onPause callback for FlutterPdfActivity. Only available on Android.
   static set flutterPdfActivityOnPause(

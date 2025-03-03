@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
 
+import '../pspdfkit.dart';
+
 ///
-///  Copyright © 2019-2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2019-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -19,7 +21,7 @@ abstract class AnnotationConfiguration {
 
   /// Returns a map of properties.
   /// This method is used internally by the SDK.
-  Map<String, dynamic> toMap();
+  Map<String, Object> toMap();
 
   /// Specify more annotation properties which can be used to configure annotation presets. These may not be available on all platforms.
   /// AnnotationConfigurationProperty is an enum which contains all the available properties.
@@ -29,8 +31,10 @@ abstract class AnnotationConfiguration {
   }
 
   /// Returns the value of the specified property.
-  Map<String, dynamic> _getProperties() {
-    return properties?.map((key, value) => MapEntry(key.name, value)) ?? {};
+  Map<String, Object?> _getProperties() {
+    return properties
+            ?.map((key, value) => MapEntry(key.name, value as Object?)) ??
+        {};
   }
 }
 
@@ -51,7 +55,7 @@ class InkAnnotationConfiguration extends AnnotationConfiguration {
 
   InkAnnotationConfiguration({
     this.color,
-    this.thickness = 0.0,
+    this.thickness,
     this.fillColor,
     this.alpha,
     this.availableColors,
@@ -65,118 +69,64 @@ class InkAnnotationConfiguration extends AnnotationConfiguration {
   });
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-
-    if (thickness != null && thickness! > 0.0) {
-      map['thickness'] = thickness;
-    }
-
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-
-    if (alpha != null) {
-      map['alpha'] = alpha;
-    }
-
-    if (availableColors != null) {
-      map['availableColors'] = availableColors?.map((e) => e.toHex()).toList();
-    }
-
-    if (availableFillColors != null) {
-      map['availableFillColors'] =
-          availableFillColors?.map((e) => e.toHex()).toList();
-    }
-
-    if (minThickness != null) {
-      map['minThickness'] = minThickness;
-    }
-
-    if (maxThickness != null) {
-      map['maxThickness'] = maxThickness;
-    }
-
-    if (minAlpha != null) {
-      map['minAlpha'] = minAlpha;
-    }
-
-    if (maxAlpha != null) {
-      map['maxAlpha'] = maxAlpha;
-    }
-
-    if (enableColorPicker != null) {
-      map['enableColorPicker'] = enableColorPicker;
-    }
-
-    if (previewEnabled != null) {
-      map['previewEnabled'] = previewEnabled;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['alpha'] = alpha;
+    map['availableColors'] = availableColors?.map((e) => e.toHex()).toList();
+    map['availableFillColors'] =
+        availableFillColors?.map((e) => e.toHex()).toList();
+    map['minThickness'] = minThickness;
+    map['maxThickness'] = maxThickness;
+    map['minAlpha'] = minAlpha;
+    map['maxAlpha'] = maxAlpha;
+    map['enableColorPicker'] = enableColorPicker;
+    map['previewEnabled'] = previewEnabled;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 /// Annotation configuration class for line annotation. Line annotations include: Line, Arrow, PolyLine and Distance Measurement.
 class LineAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final double? alpha;
-  final Map<String, LineEndingStyle>? lineEndingStyle;
+  final LineEnd? lineEndingStyle;
 
   LineAnnotationConfiguration({
     this.color,
-    this.thickness = 0.0,
+    this.thickness,
     this.fillColor,
     this.alpha,
     this.lineEndingStyle,
   });
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-
-    if (thickness > 0.0) {
-      map['thickness'] = thickness;
-    }
-
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-
-    if (alpha != null) {
-      map['alpha'] = alpha;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
+  Map<String, Object> toMap() {
+    Map<String, Object?> map = _getProperties();
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['alpha'] = alpha;
+    map['blendMode'] = blendMode?.name;
     if (lineEndingStyle != null) {
       map['lineEndStyle'] =
-          "${lineEndingStyle?['start']?.name},${lineEndingStyle?['end']?.name}";
+          '${lineEndingStyle?.start.name},${lineEndingStyle?.end.name}';
     }
-    return map;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 /// Annotation configuration class for FreeText annotation. FreeText annotations include: FreeText and FreeTextCallOut.
 class FreeTextAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final String? fontName;
   final double fontSize;
@@ -186,7 +136,7 @@ class FreeTextAnnotationConfiguration extends AnnotationConfiguration {
 
   FreeTextAnnotationConfiguration(
       {this.color,
-      this.thickness = 0.0,
+      this.thickness,
       this.fillColor,
       this.fontName,
       this.fontSize = 0.0,
@@ -195,170 +145,103 @@ class FreeTextAnnotationConfiguration extends AnnotationConfiguration {
       this.alpha});
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-
-    if (thickness > 0.0) {
-      map['thickness'] = thickness;
-    }
-
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-
-    if (alpha != null) {
-      map['alpha'] = alpha;
-    }
-
-    if (fontName != null) {
-      map['fontName'] = fontName;
-    }
-
-    if (fontSize > 0.0) {
-      map['fontSize'] = fontSize;
-    }
-
-    if (text != null) {
-      map['text'] = text;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['alpha'] = alpha;
+    map['fontName'] = fontName;
+    map['fontSize'] = fontSize as Object;
+    map['text'] = text;
+    map['textAlignment'] = textAlignment?.name;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 /// Annotation configuration class for ShapeAnnotations annotation. Shape annotations include: Square, Circle, Polygon and Area Measurement.
 class ShapeAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final double? alpha;
   final BorderStyle? borderStyle;
 
   ShapeAnnotationConfiguration({
     this.color,
-    this.thickness = 0.0,
+    this.thickness,
     this.fillColor,
     this.alpha,
     this.borderStyle,
   });
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-
-    if (thickness > 0.0) {
-      map['thickness'] = thickness;
-    }
-
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-
-    if (alpha != null) {
-      map['alpha'] = alpha;
-    }
-
-    if (borderStyle != null) {
-      map['borderStyle'] = borderStyle?.name;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['alpha'] = alpha;
+    map['borderStyle'] = borderStyle?.name;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 /// Annotation configuration class for TextMarkup annotation. TextMarkup annotations include: Highlight, Underline, StrikeOut and Squiggly.
 class MarkupAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final double? alpha;
 
   MarkupAnnotationConfiguration({
     this.color,
-    this.thickness = 0.0,
+    this.thickness,
     this.fillColor,
     this.alpha,
   });
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-
-    if (thickness > 0.0) {
-      map['thickness'] = thickness;
-    }
-
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-
-    if (alpha != null) {
-      map['alpha'] = alpha;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['alpha'] = alpha;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 /// Annotation configuration class for Stamp annotation. Stamp annotations include: Stamp and Image Annotation.
 class StampAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
-  final double thickness;
+  final double? thickness;
   final Color? fillColor;
   final String? stampName;
 
   StampAnnotationConfiguration({
     this.color,
-    this.thickness = 0.0,
+    this.thickness,
     this.fillColor,
     this.stampName,
   });
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (stampName != null) {
-      map['stampName'] = stampName;
-    }
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-    if (thickness > 0.0) {
-      map['thickness'] = thickness;
-    }
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['stampName'] = stampName;
+    map['color'] = color?.toHex();
+    map['thickness'] = thickness;
+    map['fillColor'] = fillColor?.toHex();
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
@@ -378,30 +261,16 @@ class ReductionAnnotationConfigurations extends AnnotationConfiguration {
       this.repeatOverlayText});
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-    if (fillColor != null) {
-      map['fillColor'] = fillColor?.toHex();
-    }
-    if (outlineColor != null) {
-      map['outlineColor'] = outlineColor?.toHex();
-    }
-    if (overlayText != null) {
-      map['overlayText'] = overlayText;
-    }
-    if (repeatOverlayText != null) {
-      map['repeatOverlayText'] = repeatOverlayText;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['fillColor'] = fillColor?.toHex();
+    map['outlineColor'] = outlineColor?.toHex();
+    map['overlayText'] = overlayText;
+    map['repeatOverlayText'] = repeatOverlayText;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
@@ -410,32 +279,31 @@ class NoteAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
   final String? iconName;
 
-  NoteAnnotationConfiguration(this.color, this.iconName);
+  NoteAnnotationConfiguration({this.color, this.iconName});
 
   @override
-  Map<String, dynamic> toMap() {
-    Map<String, dynamic> map = _getProperties();
-
-    if (color != null) {
-      map['color'] = color?.toHex();
-    }
-    if (iconName != null) {
-      map['iconName'] = iconName;
-    }
-
-    if (blendMode != null) {
-      map['blendMode'] = blendMode?.name;
-    }
-
-    return map;
+  Map<String, Object> toMap() {
+    final map = _getProperties();
+    map['color'] = color?.toHex();
+    map['iconName'] = iconName;
+    map['blendMode'] = blendMode?.name;
+    map.removeWhere((key, value) => value == null);
+    return map.cast<String, Object>();
   }
 }
 
 extension ColorExtension on Color {
   String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${r.toInt().toRadixString(16).padLeft(2, '0')}'
-      '${g.toInt().toRadixString(16).padLeft(2, '0')}'
-      '${b.toInt().toRadixString(16).padLeft(2, '0')}';
+      '${red.toRadixString(16).padLeft(2, '0')}'
+      '${green.toRadixString(16).padLeft(2, '0')}'
+      '${blue.toRadixString(16).padLeft(2, '0')}';
+}
+
+class LineEnd {
+  final LineEndingStyle start;
+  final LineEndingStyle end;
+
+  LineEnd({required this.start, required this.end});
 }
 
 /// Line ending style enum. Used to configure line ending style for line annotation.
@@ -528,44 +396,4 @@ enum AnnotationConfigurationProperty {
 
   /// Available only on Android.
   audioSampleRate,
-}
-
-/// Annotation intent enum. Used to configure annotation BlendMode preset.
-enum BlendMode {
-  normal,
-  multiply,
-  screen,
-  overlay,
-  darken,
-  lighten,
-  colorDodge,
-  colorBurn,
-  softLight,
-  hardLight,
-  difference,
-  exclusion,
-  hue,
-  saturation,
-  color,
-  luminosity,
-}
-
-/// Annotation BorderStyle enum. Used to configure annotation BorderStyle preset.
-enum BorderStyle {
-  solid,
-  dashed,
-  beveled,
-  inset,
-  underline,
-}
-
-/// Annotation BorderEffect enum. Used to configure annotation BorderEffect preset.
-enum BorderEffect {
-  cloudy,
-  cloudyWithRidges,
-  note,
-  fileAttachment,
-  graph,
-  pushPin,
-  star,
 }

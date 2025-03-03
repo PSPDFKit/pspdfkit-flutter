@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -41,11 +41,9 @@ import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration;
 import com.pspdfkit.flutter.pspdfkit.api.AnalyticsEventsCallback;
-import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks;
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi;
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitFlutterApiCallbacks;
 import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient;
-import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;

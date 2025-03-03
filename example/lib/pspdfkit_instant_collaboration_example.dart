@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -53,13 +53,13 @@ class _PspdfkitInstantCollaborationExampleState
                           children: [
                         TextSpan(
                           text:
-                              'https://web-examples.services.demo.pspdfkit.com',
+                              'https://web-examples.our.services.nutrient-powered.io',
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               // Open the URL in the browser.
                               launchUrl(Uri.parse(
-                                  'https://web-examples.services.demo.pspdfkit.com'));
+                                  'https://web-examples.our.services.nutrient-powered.io'));
                             },
                         ),
                         const TextSpan(

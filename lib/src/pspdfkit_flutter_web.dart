@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -30,7 +30,8 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future<bool?> addAnnotation(jsonAnnotation) {
+  Future<bool?> addAnnotation(dynamic annotation,
+      [Map<String, dynamic>? attachment]) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 
@@ -55,7 +56,7 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future getAnnotations(int pageIndex, String type) {
+  Future getAnnotationsAsJSON(int pageIndex, String type) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 
@@ -99,7 +100,12 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   }
 
   @override
-  Future<bool?> removeAnnotation(jsonAnnotation) {
+  Future<bool?> removeAnnotation(annotation) {
+    throw UnimplementedError(_notSupportedOnWebMessage);
+  }
+
+  @override
+  Future<bool?> updateAnnotation(Annotation annotation) {
     throw UnimplementedError(_notSupportedOnWebMessage);
   }
 
@@ -190,5 +196,25 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
   @override
   Future<void> enableAnalytics(bool enabled) {
     throw UnimplementedError(_notSupportedOnWebMessage);
+  }
+
+  @override
+  Future<List<Annotation>> getUnsavedAnnotations() =>
+      throw UnimplementedError(_notSupportedOnWebMessage);
+
+  @override
+  Future<List<Annotation>> getAnnotations(int pageIndex, AnnotationType type) =>
+      throw UnimplementedError(_notSupportedOnWebMessage);
+
+  @override
+  Future<String> getAuthorName() {
+    // TODO: implement getAuthorName
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setDefaultAuthorName(String authorName) {
+    // TODO: implement setDefaultAuthorName
+    throw UnimplementedError();
   }
 }

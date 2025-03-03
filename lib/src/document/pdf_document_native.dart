@@ -1,4 +1,4 @@
-///  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,8 +9,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/annotations/annotation_utils.dart';
+import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
 
-class PdfDocumentNative extends PdfDocument {
+class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   late final PdfDocumentApi _api;
 
   PdfDocumentNative({required super.documentId, required PdfDocumentApi api}) {
@@ -58,8 +60,16 @@ class PdfDocumentNative extends PdfDocument {
   }
 
   @override
-  Future<bool?> addAnnotation(String jsonAnnotation) {
-    return _api.addAnnotation(jsonAnnotation);
+  Future<bool?> addAnnotation(dynamic annotation,
+      [Map<String, dynamic>? attachment]) {
+    var jsonAnnotation = jsonEncode(annotation);
+    Map<String, dynamic>? jsonAttachment;
+
+    if (annotation is Annotation && annotation is HasAttachment) {
+      jsonAttachment = (annotation as HasAttachment).attachment?.toJson();
+    }
+
+    return _api.addAnnotation(jsonAnnotation, jsonEncode(jsonAttachment));
   }
 
   @override
@@ -83,8 +93,73 @@ class PdfDocumentNative extends PdfDocument {
   }
 
   @override
-  Future<Object> getAnnotations(int pageIndex, String type) {
-    return _api.getAnnotations(pageIndex, type).then((results) {
+  Future<List<Annotation>> getAnnotations(
+      int pageIndex, AnnotationType type) async {
+    var results = await _api.getAnnotations(pageIndex, type.fullName);
+
+    if (results is List) {
+      List<Annotation> annotations = [];
+
+      for (var element in results) {
+        if (element is Map) {
+          if (element['type'] == null || element['type'] == '') {
+            continue;
+          }
+          var annotationJSON = element.cast<String, dynamic>();
+          annotations.add(Annotation.fromJson(annotationJSON));
+        } else if (element is String) {
+          var annotationJSON = jsonDecode(element);
+          if (annotationJSON == null ||
+              annotationJSON['type'] == null ||
+              annotationJSON['type'] == '') {
+            continue;
+          }
+          annotations.add(Annotation.fromJson(annotationJSON));
+        } else {
+          throw Exception('Invalid annotation type: $element');
+        }
+      }
+
+      return annotations;
+    }
+    return [];
+  }
+
+  @override
+  Future<String?> getFormFieldValue(String fullyQualifiedName) {
+    return _api.getFormFieldValue(fullyQualifiedName);
+  }
+
+  @override
+  Future<bool> importXfdf(String xfdfString) {
+    return _api.importXfdf(xfdfString);
+  }
+
+  @override
+  Future<bool> save({String? outputPath, DocumentSaveOptions? options}) {
+    return _api.save(outputPath, options);
+  }
+
+  @override
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) {
+    return _api.setFormFieldValue(value, fullyQualifiedName);
+  }
+
+  @override
+  Future<bool?> updateAnnotation(Annotation annotation) {
+    var annotationJSON = jsonEncode(annotation.toJson());
+    return _api.updateAnnotation(annotationJSON);
+  }
+
+  @override
+  Future<bool?> addAnnotations(List<Annotation> annotations) {
+    var annotationJSON = annotationsToInstantJSON(annotations);
+    return _api.applyInstantJson(annotationJSON);
+  }
+
+  @override
+  Future getAnnotationsAsJson(int pageIndex, AnnotationType type) {
+    return _api.getAnnotations(pageIndex, type.fullName).then((results) {
       if (results is List) {
         return results.map((result) {
           if (result is Map) {
@@ -105,27 +180,29 @@ class PdfDocumentNative extends PdfDocument {
   }
 
   @override
-  Future<String?> getFormFieldValue(String fullyQualifiedName) {
-    return _api.getFormFieldValue(fullyQualifiedName);
+  Future<List<Annotation>> getUnsavedAnnotations() {
+    return _api.getAllUnsavedAnnotations().then((results) {
+      if (results is String) {
+        results = jsonDecode(results);
+        results = results as Map<String, dynamic>;
+        return AnnotationUtils.annotationsFromInstantJSON(results);
+      } else if (results is Map) {
+        return AnnotationUtils.annotationsFromInstantJSON(
+            results.cast<String, dynamic>());
+      } else {
+        return [];
+      }
+    });
   }
 
   @override
-  Future<bool> importXfdf(String xfdfString) {
-    return _api.importXfdf(xfdfString);
+  Future<bool?> removeAnnotation(annotation) {
+    var annotationJSON = convertAnnotationToJson(annotation);
+    return _api.removeAnnotation(annotationJSON);
   }
 
   @override
-  Future<bool?> removeAnnotation(String jsonAnnotation) {
-    return _api.removeAnnotation(jsonAnnotation);
-  }
-
-  @override
-  Future<bool> save({String? outputPath, DocumentSaveOptions? options}) {
-    return _api.save(outputPath, options);
-  }
-
-  @override
-  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) {
-    return _api.setFormFieldValue(value, fullyQualifiedName);
+  Future<int> getPageCount() {
+    return _api.getPageCount();
   }
 }

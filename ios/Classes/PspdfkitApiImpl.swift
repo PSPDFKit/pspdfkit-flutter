@@ -1,5 +1,5 @@
 //
-//  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,8 +11,7 @@ import PSPDFKit
 
 @objc(PspdfkitApiImpl)
 public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, InstantClientDelegate {
-   
-    private let PSPDFSettingKeyHybridEnvironment =  SDK.Setting.init(rawValue: "com.pspdfkit.hybrid-environment")
+    
     private var pdfViewController: PDFViewController? = nil;
     private var messenger: FlutterBinaryMessenger? = nil;
     private var pspdfkitApiCallbacks: PspdfkitFlutterApiCallbacks? = nil;
@@ -24,11 +23,18 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     }
     
     func setLicenseKey(licenseKey: String?, completion: @escaping (Result<Void, any Error>) -> Void) {
-        SDK.setLicenseKey(licenseKey, options: [PSPDFSettingKeyHybridEnvironment:"Flutter"])
+        initializeWith(licenseKey: licenseKey, completion: completion)
     }
     
     func setLicenseKeys(androidLicenseKey: String?, iOSLicenseKey: String?, webLicenseKey: String?, completion: @escaping (Result<Void, any Error>) -> Void) {
-        SDK.setLicenseKey(iOSLicenseKey, options: [PSPDFSettingKeyHybridEnvironment:"Flutter"])
+        initializeWith(licenseKey: iOSLicenseKey, completion: completion)
+    }
+    
+    private func initializeWith(licenseKey: String?, completion: @escaping (Result<Void, any Error>) -> Void) {
+        let PSPDFSettingKeyHybridEnvironment = SDK.Setting(rawValue: "com.pspdfkit.hybrid-environment")
+        SDK.setLicenseKey(licenseKey, options: [PSPDFSettingKeyHybridEnvironment:"Flutter"])
+        setupAnalyticsClient()
+        completion(.success(()))
     }
     
     func present(document: String, configuration: [String : Any]?, completion: @escaping (Result<Bool?, any Error>) -> Void) {
@@ -172,14 +178,14 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         }
     }
     
-    func addAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
+    func addAnnotation(annotation: String, attachment: String?, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
                 completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
-            let success = try PspdfkitFlutterHelper.addAnnotation(jsonAnnotation, for: document)
+            let success = try PspdfkitFlutterHelper.addAnnotation(annotation, for: document)
             completion(.success(success))
         } catch {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to add annotation: \(error.localizedDescription)"])
@@ -187,7 +193,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         }
     }
     
-    func removeAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
+    func removeAnnotation(annotation jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
                 completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
@@ -209,7 +215,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
                 return
             }
             let annotations = try PspdfkitFlutterHelper.getAnnotations(forPageIndex: PageIndex(Int(pageIndex)), andType: type, for: document)
-            completion(.success(annotations))
+            completion(.success(annotations as! [[String : Any]]))
         } catch {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get annotations: \(error.localizedDescription)"])
             completion(.failure(error))
@@ -224,9 +230,23 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
             }
             
             let annotations = try PspdfkitFlutterHelper.getAllUnsavedAnnotations(for: document)
-            completion(.success(annotations))
+            completion(.success(annotations as! [[String : Any]]))
         } catch {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get all unsaved annotations: \(error.localizedDescription)"])
+            completion(.failure(error))
+        }
+    }
+    
+    func updateAnnotation(annotation jsonAnnotation: String, completion: @escaping (Result<Void, any Error>) -> Void) {
+        do {
+            guard let document = pdfViewController?.document, document.isValid else {
+                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                return
+            }
+            
+           let success = try PspdfkitFlutterHelper.updateAnnotation(with:jsonAnnotation, for: document)
+            completion(.success(()))
+        } catch {
             completion(.failure(error))
         }
     }
@@ -338,8 +358,18 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         }
     }
     
+    func setAuthorName(name: String, completion: @escaping (Result<Void, any Error>) -> Void) {
+        if name != "" {
+            UsernameHelper.defaultAnnotationUsername = name
+            completion(.success(()))
+        }else{
+            let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Author name cannot be empty."])
+            completion(.failure(error))
+        }
+    }
+    
     func getAuthorName(completion: @escaping (Result<String, any Error>) -> Void) {
-        let authorName = pdfViewController?.document?.defaultAnnotationUsername
+        let authorName = UsernameHelper.defaultAnnotationUsername;
         completion(.success(authorName ?? ""))
     }
     
@@ -545,8 +575,6 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         messenger = binaryMessenger
         PspdfkitApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix: "pspdfkit")
         pspdfkitApiCallbacks = PspdfkitFlutterApiCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "pspdfkit")
-        flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: binaryMessenger, messageChannelSuffix: "pspdfkit"))
-        PSPDFKit.SDK.shared.analytics.add(flutterAnalyticsClient!)
     }
     
     // Unregister pigeon message channel.
@@ -558,6 +586,13 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
         
         if flutterAnalyticsClient != nil {
             PSPDFKit.SDK.shared.analytics.remove(flutterAnalyticsClient!)
+        }
+    }
+    
+    private func setupAnalyticsClient(){
+        if let messenger {
+            flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: messenger, messageChannelSuffix: "pspdfkit"))
+            PSPDFKit.SDK.shared.analytics.add(flutterAnalyticsClient!)
         }
     }
 }

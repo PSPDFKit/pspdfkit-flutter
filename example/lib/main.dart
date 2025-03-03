@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -22,17 +22,15 @@ const String _pspdfkitFor = 'PSPDFKit for';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Since PSPDFKit for Flutter 3.9.0, you are now required to initialize PSPDFKit with a license key.
-  // If you don't have one, you can set it to null. This will show a watermark on the document.
-  // To get a trial license key, please visit https://my.nutrient.io/trial/new
+  // To set the license key platforms, use:
+  // Pspdfkit.initialize(
+  // androidLicenseKey: "YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
+  // iosLicenseKey: "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE",
+  // webLicenseKey: "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
   //
-  // To set the license key for both platforms, use:
-  // Pspdfkit.setLicenseKeys("YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
-  // "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE", "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
-  //
-  // To set the license key for the currently running platform, use:
   Pspdfkit.initialize();
   Pspdfkit.enableAnalytics(true);
+
   Pspdfkit.analyticsEventsListener = (eventName, attributes) {
     if (kDebugMode) {
       print('Analytics event: $eventName with attributes: $attributes');

@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -431,7 +431,7 @@ class AnnotationConfigurationAdaptor {
                 throw IllegalArgumentException("Invalid line end pair: $lineEndPair")
             }
             val firstLineEnd = parseLineEnd(lineEnds[0])
-            val secondLineEnd = parseLineEnd(lineEnds[0])
+            val secondLineEnd = parseLineEnd(lineEnds[1])
             return Pair(firstLineEnd, secondLineEnd)
         }
 
@@ -446,6 +446,7 @@ class AnnotationConfigurationAdaptor {
                 "reverseOpenArrow" -> LineEndType.REVERSE_OPEN_ARROW
                 "reverseClosedArrow" -> LineEndType.REVERSE_CLOSED_ARROW
                 "diamond" -> LineEndType.DIAMOND
+                "slash" -> LineEndType.SLASH
                 else -> {
                     LineEndType.NONE
                 }

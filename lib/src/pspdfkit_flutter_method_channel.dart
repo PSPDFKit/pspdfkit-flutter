@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2024 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,12 +11,16 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
 import 'pspdfkit_flutter_platform_interface.dart';
+
+const String _notSupportedInLegacyMode = 'Not supported in legacy mode';
 
 /// An implementation of [PspdfkitFlutterPlatform] that
 @Deprecated(
     'This class is deprecated and will be removed in the future, Use [PspdfkitFlutterApiImpl] instead')
-class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
+class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform
+    with AnnotationJsonConverter {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   late final methodChannel = const MethodChannel('com.pspdfkit.global')
@@ -124,20 +128,28 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   @override
-  Future<bool?> addAnnotation(dynamic jsonAnnotation) async =>
-      methodChannel.invokeMethod(
-          'addAnnotation', <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+  Future<bool?> addAnnotation(dynamic jsonAnnotation,
+      [Map<String, dynamic>? attachment]) async {
+    return methodChannel.invokeMethod('addAnnotation', <String, dynamic>{
+      'jsonAnnotation': convertAnnotationToJson(jsonAnnotation)
+    });
+  }
 
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   @override
-  Future<bool?> removeAnnotation(dynamic jsonAnnotation) async =>
-      methodChannel.invokeMethod('removeAnnotation',
-          <String, dynamic>{'jsonAnnotation': jsonAnnotation});
+  Future<bool?> removeAnnotation(dynamic annotation) {
+    if (annotation == null) {
+      throw ArgumentError.notNull('annotation');
+    }
+    String jsonString = convertAnnotationToJson(annotation);
+    return methodChannel.invokeMethod(
+        'removeAnnotation', <String, dynamic>{'jsonAnnotation': jsonString});
+  }
 
   /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
   @override
-  Future<dynamic> getAnnotations(int pageIndex, String type) async =>
+  Future<dynamic> getAnnotationsAsJSON(int pageIndex, String type) async =>
       methodChannel.invokeMethod<dynamic>('getAnnotations',
           <String, dynamic>{'pageIndex': pageIndex, 'type': type});
 
@@ -155,7 +167,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
     String destinationPath,
   ) async =>
       methodChannel.invokeMethod('processAnnotations', <String, String>{
-        'type': type.name,
+        'type': type.fullName,
         'processingMode': processingMode.name,
         'destinationPath': destinationPath
       });
@@ -242,6 +254,42 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
     return methodChannel.invokeMethod('setAnnotationPresetConfigurations', {
       'annotationConfigurations': configurations,
     });
+  }
+
+  /// Returns a list of annotation models for all the annotations of the given `type` on the given `pageIndex`.
+  @override
+  Future<List<Annotation>> getAnnotations(
+      int pageIndex, AnnotationType type) async {
+    final dynamic result = await methodChannel.invokeMethod<dynamic>(
+        'getAnnotations',
+        <String, dynamic>{'pageIndex': pageIndex, 'type': type.fullName});
+    if (result is List) {
+      return result
+          .map((dynamic json) =>
+              Annotation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  /// Returns a list of annotation models for all the unsaved annotations in the presented document.
+  @override
+  Future<List<Annotation>> getUnsavedAnnotations() async {
+    final dynamic result =
+        await methodChannel.invokeMethod<dynamic>('getAllUnsavedAnnotations');
+    if (result is List) {
+      return result
+          .map((dynamic json) =>
+              Annotation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<bool?> updateAnnotation(Annotation annotation) {
+    return methodChannel.invokeMethod('updateAnnotation',
+        <String, dynamic>{'jsonAnnotation': annotation.toJson()});
   }
 
   /// Path to the temporary directory on the device that is not backed up and is
@@ -390,7 +438,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   }
 
   @override
-  String get authorName => throw UnimplementedError();
+  String get authorName => throw UnimplementedError(_notSupportedInLegacyMode);
 
   @override
   List<PspdfkitWebToolbarItem> get defaultWebToolbarItems => [];
@@ -398,23 +446,33 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform {
   @override
   Future<String?> generatePdf(List<NewPage> pages, String outPutFile,
       [Map<String, Object?>? options]) {
-    throw UnimplementedError();
+    throw UnimplementedError(_notSupportedInLegacyMode);
   }
 
   @override
   Future<String?> generatePdfFromHtmlString(String html, String outPutFile,
       [Map<String, Object?>? options]) {
-    throw UnimplementedError();
+    throw UnimplementedError(_notSupportedInLegacyMode);
   }
 
   @override
   Future<String?> generatePdfFromHtmlUri(Uri htmlUri, String outPutFile,
       [Map<String, Object?>? options]) {
-    throw UnimplementedError();
+    throw UnimplementedError(_notSupportedInLegacyMode);
   }
 
   @override
   Future<void> enableAnalytics(bool enabled) {
-    throw UnimplementedError();
+    throw UnimplementedError(_notSupportedInLegacyMode);
+  }
+
+  @override
+  Future<String> getAuthorName() {
+    throw UnimplementedError(_notSupportedInLegacyMode);
+  }
+
+  @override
+  Future<void> setDefaultAuthorName(String authorName) {
+    throw UnimplementedError(_notSupportedInLegacyMode);
   }
 }

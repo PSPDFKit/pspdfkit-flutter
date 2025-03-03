@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2023 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -13,10 +13,10 @@ import '../../pspdfkit.dart';
 import 'pspdfkit_web.dart';
 import 'pspdfkit_web_utils.dart';
 
-/// This is a utility class used to convert a [PdfConfiguration] to a [PSPDFKit.Configuration](https://pspdfkit.com/api/web/PSPDFKit.Configuration.html) JsObject for Web.
+/// This is a utility class used to convert a [PdfConfiguration] to a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html) JsObject for Web.
 /// It is used in [PSPDFKitWeb.load]. This class isolates the js interop code from the rest of the plugin.
 class WebConfigurationHelper {
-  /// Populates a [PSPDFKit.Configuration](https://pspdfkit.com/api/web/PSPDFKit.Configuration.html)
+  /// Populates a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html)
   /// JsObject with the values from a [PdfConfiguration] and [PdfWebConfiguration].
   ///
   /// The [id] parameter is used to identify the container element in which the PSPDFKit instance will be rendered.
@@ -27,7 +27,7 @@ class WebConfigurationHelper {
   ///
   /// The [configuration] parameter is the configuration that will be used to configure PSPDFKit.
   ///
-  /// Returns a [PSPDFKit.Configuration](https://pspdfkit.com/api/web/PSPDFKit.Configuration.html) JsObject.
+  /// Returns a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html) JsObject.
   static JsObject populateWebConfiguration(
     Element element,
     String documentPath,

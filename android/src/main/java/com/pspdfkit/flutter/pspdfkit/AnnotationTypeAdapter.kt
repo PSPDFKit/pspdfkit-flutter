@@ -12,19 +12,49 @@ class AnnotationTypeAdapter {
         @JvmStatic
         fun fromString(type: String): EnumSet<AnnotationType> {
             return when (type) {
+                // Basic annotations
                 "pspdfkit/ink" -> EnumSet.of(AnnotationType.INK)
                 "pspdfkit/link" -> EnumSet.of(AnnotationType.LINK)
+                "pspdfkit/note" -> EnumSet.of(AnnotationType.NOTE)
+                "pspdfkit/text" -> EnumSet.of(AnnotationType.FREETEXT)
+                
+                // Markup annotations
                 "pspdfkit/markup/highlight" -> EnumSet.of(AnnotationType.HIGHLIGHT)
                 "pspdfkit/markup/squiggly" -> EnumSet.of(AnnotationType.SQUIGGLY)
                 "pspdfkit/markup/strikeout" -> EnumSet.of(AnnotationType.STRIKEOUT)
                 "pspdfkit/markup/underline" -> EnumSet.of(AnnotationType.UNDERLINE)
-                "pspdfkit/note" -> EnumSet.of(AnnotationType.NOTE)
+                "pspdfkit/markup/redaction" -> EnumSet.of(AnnotationType.REDACT)
+                
+                // Shape annotations
                 "pspdfkit/shape/ellipse" -> EnumSet.of(AnnotationType.CIRCLE)
                 "pspdfkit/shape/line" -> EnumSet.of(AnnotationType.LINE)
                 "pspdfkit/shape/polygon" -> EnumSet.of(AnnotationType.POLYGON)
+                "pspdfkit/shape/polyline" -> EnumSet.of(AnnotationType.POLYLINE)
                 "pspdfkit/shape/rectangle" -> EnumSet.of(AnnotationType.SQUARE)
-                "pspdfkit/text" -> EnumSet.of(AnnotationType.FREETEXT)
-                "all", "pspdfkit/all" -> EnumSet.allOf(AnnotationType::class.java)
+                
+                // Media annotations
+                "pspdfkit/image" -> EnumSet.of(AnnotationType.STAMP)
+                "pspdfkit/sound" -> EnumSet.of(AnnotationType.SOUND)
+                "pspdfkit/richmedia" -> EnumSet.of(AnnotationType.RICHMEDIA)
+                "pspdfkit/screen" -> EnumSet.of(AnnotationType.SCREEN)
+                "pspdfkit/3d" -> EnumSet.of(AnnotationType.TYPE3D)
+                
+                // File annotations
+                "pspdfkit/file" -> EnumSet.of(AnnotationType.FILE)
+                
+                // Other annotations
+                "pspdfkit/stamp" -> EnumSet.of(AnnotationType.STAMP)
+                "pspdfkit/caret" -> EnumSet.of(AnnotationType.CARET)
+                "pspdfkit/popup" -> EnumSet.of(AnnotationType.POPUP)
+                "pspdfkit/widget" -> EnumSet.of(AnnotationType.WIDGET)
+                "pspdfkit/watermark" -> EnumSet.of(AnnotationType.WATERMARK)
+                
+                // Special types
+                "pspdfkit/none" -> EnumSet.of(AnnotationType.NONE)
+                "pspdfkit/undefined" -> EnumSet.of(AnnotationType.NONE)
+                "pspdfkit/all", "all" -> EnumSet.allOf(AnnotationType::class.java)
+                
+                // Fallback
                 else -> EnumSet.of(AnnotationType.NONE)
             }
         }

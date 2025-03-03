@@ -15,6 +15,7 @@ class PspdfkitAnnotationPresetCustomization extends StatefulWidget {
 class _PspdfkitAnnotationPresetCustomizationState
     extends State<PspdfkitAnnotationPresetCustomization> {
   PspdfkitWidgetController? _controller;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,10 +54,13 @@ class _PspdfkitAnnotationPresetCustomizationState
                   alpha: 0.5,
                 ),
                 AnnotationTool.arrow: LineAnnotationConfiguration(
-                  color: Colors.green,
-                  thickness: 20,
-                  fillColor: Colors.white,
-                ),
+                    color: Colors.green,
+                    thickness: 20,
+                    fillColor: Colors.white,
+                    alpha: 0.5,
+                    lineEndingStyle: LineEnd(
+                        start: LineEndingStyle.square,
+                        end: LineEndingStyle.openArrow)),
                 AnnotationTool.highlight: MarkupAnnotationConfiguration(
                   color: Colors.red,
                 ),

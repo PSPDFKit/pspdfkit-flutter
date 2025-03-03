@@ -1,5 +1,5 @@
 //
-//  Copyright © 2024 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -142,7 +142,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         }
     }
     
-    func addAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
+    func addAnnotation(jsonAnnotation: String, attachment: Any?, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
                 let error = PspdfkitApiError(code: "", message: "Error while adding annotation: \(jsonAnnotation)", details: nil)
@@ -155,6 +155,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
             completion(.failure(error))
         }
     }
+    
     
     func removeAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
@@ -180,6 +181,20 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
             
             let annotations = try PspdfkitFlutterHelper.getAnnotations(forPageIndex: PageIndex(pageIndex), andType: type, for: document!)
             completion(.success(annotations))
+        } catch let error {
+            completion(.failure(error))
+        }
+    }
+    
+    func updateAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
+        do {
+            if document == nil {
+                let error = PspdfkitApiError(code: "", message: "Error while updating annotation: \(jsonAnnotation)", details: nil)
+                completion(.failure(error))
+                return
+            }
+            let success = try PspdfkitFlutterHelper.updateAnnotation(with: jsonAnnotation, for: document!)
+            completion(.success(success))
         } catch let error {
             completion(.failure(error))
         }
@@ -238,6 +253,15 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
                 completion(.failure(error))
             }
         }
+    }
+    
+    func getPageCount(completion: @escaping (Result<Int64, any Error>) -> Void) {
+        if let pageCount = document?.pageCount {
+               completion(.success(Int64(pageCount)))
+           } else {
+               let error = PspdfkitApiError(code: "", message: "Failed to get page count.", details:   nil )
+               completion(.failure(error))
+           }
     }
     
     @objc public func register( binaryMessenger: FlutterBinaryMessenger){
