@@ -549,6 +549,23 @@ abstract class PspdfkitWidgetControllerApi {
   void addEventListener(NutrientEvent event);
 
   void removeEventListener(NutrientEvent event);
+
+  /// Enters annotation creation mode.
+  ///
+  /// If [annotationTool] is provided, that specific tool will be activated.
+  /// If no tool is provided, the default annotation tool will be used.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// entering annotation creation mode was successful.
+  @async
+  bool? enterAnnotationCreationMode(AnnotationTool? annotationTool);
+
+  /// Exits annotation creation mode.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// exiting annotation creation mode was successful.
+  @async
+  bool? exitAnnotationCreationMode();
 }
 
 @HostApi()

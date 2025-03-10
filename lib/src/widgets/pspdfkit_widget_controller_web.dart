@@ -202,6 +202,41 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController
   }
 
   @override
+  Future<bool?> enterAnnotationCreationMode(
+      [AnnotationTool? annotationTool]) async {
+    try {
+      if (annotationTool != null) {
+        await pspdfkitInstance.setToolMode(annotationTool);
+      } else {
+        // Use a default annotation tool (ink) if none is specified
+        // This is consistent with native implementations
+        await pspdfkitInstance.setToolMode(AnnotationTool.inkPen);
+      }
+      return Future.value(true);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error entering annotation creation mode: $e');
+      }
+      return Future.value(false);
+    }
+  }
+
+  @override
+  Future<bool?> exitAnnotationCreationMode() async {
+    try {
+      // Set tool mode to null to exit annotation creation mode
+      // This will reset to the default interaction mode
+      await pspdfkitInstance.setToolMode(null);
+      return Future.value(true);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error exiting annotation creation mode: $e');
+      }
+      return Future.value(false);
+    }
+  }
+
+  @override
   Future<Rect> getVisibleRect(int pageIndex) {
     // This method is not supported on the web.
     throw UnimplementedError('This method is not supported yet on web!');

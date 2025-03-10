@@ -1547,6 +1547,19 @@ protocol PspdfkitWidgetControllerApi {
   func getZoomScale(pageIndex: Int64, completion: @escaping (Result<Double, Error>) -> Void)
   func addEventListener(event: NutrientEvent) throws
   func removeEventListener(event: NutrientEvent) throws
+  /// Enters annotation creation mode.
+  ///
+  /// If [annotationTool] is provided, that specific tool will be activated.
+  /// If no tool is provided, the default annotation tool will be used.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// entering annotation creation mode was successful.
+  func enterAnnotationCreationMode(annotationTool: AnnotationTool?, completion: @escaping (Result<Bool?, Error>) -> Void)
+  /// Exits annotation creation mode.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// exiting annotation creation mode was successful.
+  func exitAnnotationCreationMode(completion: @escaping (Result<Bool?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1888,6 +1901,49 @@ class PspdfkitWidgetControllerApiSetup {
       }
     } else {
       removeEventListenerChannel.setMessageHandler(nil)
+    }
+    /// Enters annotation creation mode.
+    ///
+    /// If [annotationTool] is provided, that specific tool will be activated.
+    /// If no tool is provided, the default annotation tool will be used.
+    ///
+    /// Returns a [Future] that completes with a boolean indicating whether
+    /// entering annotation creation mode was successful.
+    let enterAnnotationCreationModeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.enterAnnotationCreationMode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      enterAnnotationCreationModeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let annotationToolArg: AnnotationTool? = nilOrValue(args[0])
+        api.enterAnnotationCreationMode(annotationTool: annotationToolArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      enterAnnotationCreationModeChannel.setMessageHandler(nil)
+    }
+    /// Exits annotation creation mode.
+    ///
+    /// Returns a [Future] that completes with a boolean indicating whether
+    /// exiting annotation creation mode was successful.
+    let exitAnnotationCreationModeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exitAnnotationCreationMode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      exitAnnotationCreationModeChannel.setMessageHandler { _, reply in
+        api.exitAnnotationCreationMode { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      exitAnnotationCreationModeChannel.setMessageHandler(nil)
     }
   }
 }

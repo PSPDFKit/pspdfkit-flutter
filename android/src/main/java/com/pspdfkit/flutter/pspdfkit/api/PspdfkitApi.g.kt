@@ -1618,6 +1618,23 @@ interface PspdfkitWidgetControllerApi {
   fun getZoomScale(pageIndex: Long, callback: (Result<Double>) -> Unit)
   fun addEventListener(event: NutrientEvent)
   fun removeEventListener(event: NutrientEvent)
+  /**
+   * Enters annotation creation mode.
+   *
+   * If [annotationTool] is provided, that specific tool will be activated.
+   * If no tool is provided, the default annotation tool will be used.
+   *
+   * Returns a [Future] that completes with a boolean indicating whether
+   * entering annotation creation mode was successful.
+   */
+  fun enterAnnotationCreationMode(annotationTool: AnnotationTool?, callback: (Result<Boolean?>) -> Unit)
+  /**
+   * Exits annotation creation mode.
+   *
+   * Returns a [Future] that completes with a boolean indicating whether
+   * exiting annotation creation mode was successful.
+   */
+  fun exitAnnotationCreationMode(callback: (Result<Boolean?>) -> Unit)
 
   companion object {
     /** The codec used by PspdfkitWidgetControllerApi. */
@@ -1980,6 +1997,44 @@ interface PspdfkitWidgetControllerApi {
               wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.enterAnnotationCreationMode$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val annotationToolArg = args[0] as AnnotationTool?
+            api.enterAnnotationCreationMode(annotationToolArg) { result: Result<Boolean?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exitAnnotationCreationMode$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.exitAnnotationCreationMode{ result: Result<Boolean?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

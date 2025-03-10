@@ -9,11 +9,165 @@
 
 import 'package:flutter/material.dart' hide BorderStyle, Action;
 import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:pspdfkit_flutter/src/api/pspdfkit_api.g.dart';
 
 /// Extension methods for annotation classes providing [copyWith] functionality
 extension AnnotationExtensions on Annotation {
   /// Returns updated time as ISO 8601 string for the current moment
   static String _currentTimestamp() => DateTime.now().toIso8601String();
+}
+
+/// Extension on [AnnotationTool] to provide web-specific name conversions
+extension AnnotationToolWebExtension on AnnotationTool {
+  /// Returns the appropriate string name to use with PSPDFKit Web's interaction modes
+  String toWebName([AnnotationToolVariant? variant]) {
+    switch (this) {
+      // Ink tools
+      case AnnotationTool.inkPen:
+      case AnnotationTool.inkMagic:
+      case AnnotationTool.inkHighlighter:
+        return 'inkPen';
+        
+      // Text markup tools
+      case AnnotationTool.highlight:
+        return 'highlight';
+      case AnnotationTool.underline:
+        return 'underline';
+      case AnnotationTool.strikeOut:
+        return 'strikeOut';
+      case AnnotationTool.squiggly:
+        return 'squiggly';
+        
+      // Text tools
+      case AnnotationTool.freeText:
+        return 'freeText';
+      case AnnotationTool.freeTextCallOut:
+        return 'freeTextCallOut';
+        
+      // Shape tools
+      case AnnotationTool.square:
+        return 'square';
+      case AnnotationTool.circle:
+        return 'circle';
+      case AnnotationTool.polygon:
+        return 'polygon';
+      case AnnotationTool.polyline:
+        return 'polyline';
+        
+      // Line tools
+      case AnnotationTool.line:
+        return 'line';
+      case AnnotationTool.arrow:
+        return 'arrow';
+        
+      // Other annotation tools
+      case AnnotationTool.note:
+        return 'note';
+      case AnnotationTool.stamp:
+        return 'stamp';
+      case AnnotationTool.stampImage:
+        return 'stampImage';
+      case AnnotationTool.image:
+        return 'image';
+      case AnnotationTool.signature:
+        return 'signature';
+      case AnnotationTool.eraser:
+        return 'eraser';
+      case AnnotationTool.link:
+        return 'link';
+        
+      // Measurement tools
+      case AnnotationTool.measurementDistance:
+        return 'measurementDistance';
+      case AnnotationTool.measurementPerimeter:
+        return 'measurementPerimeter';
+      case AnnotationTool.measurementAreaRect:
+        return 'measurementAreaRect';
+      case AnnotationTool.measurementAreaEllipse:
+        return 'measurementAreaEllipse';
+      case AnnotationTool.measurementAreaPolygon:
+        return 'measurementAreaPolygon';
+        
+      // Default fallback
+      default:
+        return 'pan';
+    }
+  }
+  
+  /// Returns the appropriate PSPDFKit Web InteractionMode string
+  String toWebInteractionMode([AnnotationToolVariant? variant]) {
+    switch (this) {
+      // Ink tools
+      case AnnotationTool.inkPen:
+      case AnnotationTool.inkMagic:
+      case AnnotationTool.inkHighlighter:
+        return 'INK';
+        
+      // Text markup tools
+      case AnnotationTool.highlight:
+        return 'TEXT_HIGHLIGHTER';
+      case AnnotationTool.underline:
+        return 'TEXT_UNDERLINE';
+      case AnnotationTool.strikeOut:
+        return 'TEXT_STRIKEOUT';
+      case AnnotationTool.squiggly:
+        return 'TEXT_SQUIGGLY';
+        
+      // Text tools
+      case AnnotationTool.freeText:
+        return 'TEXT';
+      case AnnotationTool.freeTextCallOut:
+        return 'CALLOUT';
+        
+      // Shape tools
+      case AnnotationTool.square:
+        return 'SHAPE_RECTANGLE';
+      case AnnotationTool.circle:
+        return 'SHAPE_ELLIPSE';
+      case AnnotationTool.polygon:
+        return 'SHAPE_POLYGON';
+      case AnnotationTool.polyline:
+        return 'SHAPE_POLYLINE';
+        
+      // Line tools
+      case AnnotationTool.line:
+        return 'SHAPE_LINE';
+      case AnnotationTool.arrow:
+        return 'ARROW';
+        
+      // Other annotation tools
+      case AnnotationTool.note:
+        return 'NOTE';
+      case AnnotationTool.stamp:
+        return 'STAMP_PICKER';
+      case AnnotationTool.stampImage:
+        return 'STAMP_CUSTOM';
+      case AnnotationTool.image:
+        return 'IMAGE';
+      case AnnotationTool.signature:
+        return 'SIGNATURE';
+      case AnnotationTool.eraser:
+        return 'INK_ERASER';
+      case AnnotationTool.link:
+        return 'LINK';
+        
+      // Measurement tools
+      case AnnotationTool.measurementDistance:
+        return 'DISTANCE';
+      case AnnotationTool.measurementPerimeter:
+        return 'PERIMETER';
+      case AnnotationTool.measurementAreaRect:
+        return 'RECTANGLE_AREA';
+      case AnnotationTool.measurementAreaEllipse:
+        return 'ELLIPSE_AREA';
+      case AnnotationTool.measurementAreaPolygon:
+        return 'POLYGON_AREA';
+        
+      // Default fallback
+      default:
+        return 'PAN';
+    }
+  }
 }
 
 /// Extension methods for [SquareAnnotation]

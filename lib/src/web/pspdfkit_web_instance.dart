@@ -339,6 +339,39 @@ class PspdfkitWebInstance {
     }
   }
 
+  /// Sets the tool mode for the PSPDFKit Web instance using the ViewState API.
+  ///
+  /// The [toolMode] parameter specifies the interaction mode to set.
+  /// This can be one of the PSPDFKit.InteractionMode values.
+  /// If null is provided, it will reset to the default interaction mode (null).
+  ///
+  /// Throws an error if the operation fails.
+  Future<void> setToolMode(AnnotationTool? toolMode) async {
+    try {
+      if (toolMode == null) {
+        // Reset to default interaction mode (null)
+        await promiseToFuture(_pspdfkitInstance.callMethod('setViewState', [
+          allowInterop((viewState) {
+            return viewState.callMethod('set', ['interactionMode', null]);
+          })
+        ]));
+      } else {
+        // Set the interaction mode using ViewState API
+        await promiseToFuture(_pspdfkitInstance.callMethod('setViewState', [
+          allowInterop((viewState) {
+            return viewState.callMethod('set', [
+              'interactionMode',
+              context['PSPDFKit']['InteractionMode']
+                  [toolMode.toWebInteractionMode()]
+            ]);
+          })
+        ]));
+      }
+    } catch (e) {
+      throw Exception('Failed to set tool mode: $e');
+    }
+  }
+
   /// Adds event listener to the PSPDFKit instance.
   /// The [eventName] parameter specifies the name of the event to listen to.
   /// The [callback] parameter specifies the callback function to be called when the event is triggered.

@@ -100,4 +100,19 @@ abstract class PspdfkitWidgetController {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the zoom scale of the given page.
   Future<double> getZoomScale(int pageIndex);
+
+  /// Enters annotation creation mode.
+  ///
+  /// If [annotationTool] is provided, that specific tool will be activated.
+  /// If no tool is provided, the default annotation tool will be used.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// entering annotation creation mode was successful.
+  Future<bool?> enterAnnotationCreationMode([AnnotationTool? annotationTool]);
+
+  /// Exits annotation creation mode.
+  ///
+  /// Returns a [Future] that completes with a boolean indicating whether
+  /// exiting annotation creation mode was successful.
+  Future<bool?> exitAnnotationCreationMode();
 }

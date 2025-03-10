@@ -1,3 +1,8 @@
+## 4.2.1 - 10 Mar 2025
+
+- Adds `enterAnnotationCreationMode` and `exitAnnotationCreationMode` APIs to `PspdfkitWidgetController`.
+- Updates base `Annotation` model class to make more base properties mutable.
+
 ## 4.2.0 - 03 Mar 2025
 
 - Adds `Annotation` model classes. (J#HYB-614)

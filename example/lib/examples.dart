@@ -39,6 +39,7 @@ import 'pspdfkit_annotations_example.dart';
 import 'pspdfkit_manual_save_example.dart';
 import 'pspdfkit_annotation_processing_example.dart';
 import 'pspdfkit_password_example.dart';
+import 'nutrient_annotation_creation_mode_example.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _measurementsDocs = 'PDFs/Measurements.pdf';
@@ -201,6 +202,15 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
             await extractAsset(context, _documentPath).then((value) =>
                 goTo(PspdfkitZoomExample(documentPath: value.path), context));
           }),
+      PspdfkitExampleItem(
+          title: 'Annotation Creation Mode',
+          description: 'Shows how to use annotation creation mode.',
+          onTap: () async {
+            await extractAsset(context, _documentPath).then((value) => goTo(
+                NutrientAnnotationCreationModeExampleWidget(
+                    documentPath: value.path),
+                context));
+          })
     ];
 
 List<PspdfkitExampleItem> globalExamples(BuildContext context) => [

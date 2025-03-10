@@ -15,16 +15,16 @@ abstract class Annotation {
   final List<double> bbox;
   final String? createdAt;
   final String? creatorName;
-  final int pageIndex;
-  final double opacity;
   final int? pdfObjectId;
-  final String? updatedAt;
   final String? name;
   final String? subject;
   final bool hidden;
   final int v;
-  final Map<String, dynamic>? customData;
-  // Leaving is mutable for now, but should be final in the future.
+  // Leaving is mutable for now until we have a better solution to this.
+  String? updatedAt;
+  int pageIndex;
+  double opacity;
+  Map<String, dynamic>? customData;
   List<AnnotationFlag>? flags;
 
   Annotation({

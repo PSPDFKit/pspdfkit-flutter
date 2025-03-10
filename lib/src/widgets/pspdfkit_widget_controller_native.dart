@@ -179,4 +179,17 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
       throw Exception('Error getting zoom scale: $error');
     });
   }
+
+  @override
+  Future<bool?> enterAnnotationCreationMode(
+      [AnnotationTool? annotationTool]) async {
+    throw UnimplementedError(
+        'Annotation creation mode is not supported in legacy mode');
+  }
+
+  @override
+  Future<bool?> exitAnnotationCreationMode() async {
+    throw UnimplementedError(
+        'Annotation creation mode is not supported in legacy mode');
+  }
 }

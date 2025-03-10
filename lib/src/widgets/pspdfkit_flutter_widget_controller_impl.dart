@@ -135,6 +135,17 @@ class PspdfkitFlutterWidgetControllerImpl
   }
 
   @override
+  Future<bool?> enterAnnotationCreationMode([AnnotationTool? annotationTool]) {
+    return _pspdfkitWidgetControllerApi
+        .enterAnnotationCreationMode(annotationTool);
+  }
+
+  @override
+  Future<bool?> exitAnnotationCreationMode() {
+    return _pspdfkitWidgetControllerApi.exitAnnotationCreationMode();
+  }
+
+  @override
   void onDocumentError(String documentId, String error) {
     onPdfDocumentLoadFailed?.call(error);
   }
