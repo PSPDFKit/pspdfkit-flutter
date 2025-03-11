@@ -20,7 +20,8 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
   PspdfkitWidgetControllerNative(this._channel,
       {PdfDocumentLoadedCallback? onPdfDocumentLoaded,
       PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed,
-      PageChangedCallback? onPageChanged}) {
+      PageChangedCallback? onPageChanged,
+      OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped}) {
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case 'onDocumentLoaded':

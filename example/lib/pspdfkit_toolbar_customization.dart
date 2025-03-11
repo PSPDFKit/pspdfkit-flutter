@@ -40,6 +40,27 @@ class PspdfkitToolbarCustomization extends StatelessWidget {
                     ? const EdgeInsets.only(top: kToolbarHeight)
                     : null,
                 child: PspdfkitWidget(
+                    customToolbarItems: [
+                      CustomToolbarItem(
+                        title: 'Custom ToolbarItem',
+                        identifier: 'custom-toolbar-item',
+                        iconColor: "#000000",
+                        iconName: "toolbar_item",
+                      ),
+                      CustomToolbarItem(
+                        title: 'Custom ToolbarItem 2',
+                        identifier: 'custom-toolbar-item-2',
+                        iconColor: "#000000",
+                        iconName: "toolbar_item",
+                      ),
+                    ],
+                    onCustomToolbarItemTapped: (identifier) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Hello from custom button!'),
+                        ),
+                      );
+                    },
                     documentPath: documentPath,
                     configuration: PdfConfiguration(
                         androidShowAnnotationListAction: false,

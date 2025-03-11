@@ -9,13 +9,15 @@ class PspdfkitFlutterWidgetControllerImpl
     implements
         PspdfkitWidgetController,
         PspdfkitWidgetCallbacks,
-        NutrientEventsCallbacks {
+        NutrientEventsCallbacks,
+        CustomToolbarCallbacks {
   final PspdfkitWidgetControllerApi _pspdfkitWidgetControllerApi;
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed;
   final PageChangedCallback? onPdfPageChanged;
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
   final PageClickedCallback? onPageClicked;
+  final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTappedListener;
   final Map<NutrientEvent, Function(dynamic eventData)> _eventListeners = {};
 
   PspdfkitFlutterWidgetControllerImpl(
@@ -24,6 +26,7 @@ class PspdfkitFlutterWidgetControllerImpl
     this.onPdfDocumentLoadFailed,
     this.onPdfPageChanged,
     this.onPdfDocumentSaved,
+    this.onCustomToolbarItemTappedListener,
     this.onPageClicked,
   });
 
@@ -290,5 +293,10 @@ class PspdfkitFlutterWidgetControllerImpl
   @override
   void onDocumentSaved(String documentId, String? path) {
     onPdfDocumentSaved?.call(documentId, path);
+  }
+
+  @override
+  void onCustomToolbarItemTapped(String identifier) {
+    onCustomToolbarItemTappedListener?.call(identifier);
   }
 }

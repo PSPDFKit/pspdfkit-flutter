@@ -22,12 +22,14 @@ import 'pspdfkit_widget_controller_native.dart';
 class PspdfkitWidget extends StatefulWidget {
   final String documentPath;
   final dynamic configuration;
+  final List<CustomToolbarItem> customToolbarItems;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentError;
   final PageChangedCallback? onPageChanged;
   final PageClickedCallback? onPageClicked;
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
+  final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -38,6 +40,8 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPageChanged,
     this.onPageClicked,
     this.onPdfDocumentSaved,
+    this.onCustomToolbarItemTapped,
+    this.customToolbarItems = const [],
   }) : super(key: key);
 
   @override
@@ -74,6 +78,8 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'document': widget.documentPath,
       'configuration': config ?? {},
+      'customToolbarItems':
+          widget.customToolbarItems.map((item) => item.toMap()).toList(),
     };
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -131,6 +137,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
         ? PspdfkitWidgetControllerNative(
             channel,
             onPageChanged: widget.onPageChanged,
+            onCustomToolbarItemTapped: widget.onCustomToolbarItemTapped,
             onPdfDocumentLoadFailed: widget.onPdfDocumentError,
             onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
           )
@@ -150,6 +157,10 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       NutrientEventsCallbacks.setUp(
           controller as PspdfkitFlutterWidgetControllerImpl,
           messageChannelSuffix: 'events.callbacks.$id');
+
+      CustomToolbarCallbacks.setUp(
+          controller as PspdfkitFlutterWidgetControllerImpl,
+          messageChannelSuffix: 'custom-toolbar.callbacks.$id');
     }
   }
 

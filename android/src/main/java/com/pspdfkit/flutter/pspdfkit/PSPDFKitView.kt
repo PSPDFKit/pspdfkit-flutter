@@ -26,6 +26,7 @@ import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
+import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
@@ -65,6 +66,7 @@ internal class PSPDFKitView(
     private val messenger: BinaryMessenger,
     documentPath: String? = null,
     configurationMap: HashMap<String, Any>? = null,
+    customToolbarItems: List<Map<String, Any>>
     ) : PlatformView, MethodCallHandler {
 
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
@@ -73,8 +75,8 @@ internal class PSPDFKitView(
     private var fragmentCallbacks: FlutterPdfUiFragmentCallbacks? = null
     private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
     private val nutrientEventsCallbacks: NutrientEventsCallbacks = NutrientEventsCallbacks(messenger, "events.callbacks.$id")
-    private val widgetCallbacks: PspdfkitWidgetCallbacks =
-        PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
+    private val widgetCallbacks: PspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
+    private val customToolbarCallbacks: CustomToolbarCallbacks? = null
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -125,7 +127,12 @@ internal class PSPDFKitView(
                     if (toolbarGroupingItems != null) {
                         val groupingRule = FlutterMenuGroupingRule(context, toolbarGroupingItems)
                         val flutterViewModeController = FlutterViewModeController(groupingRule)
-                       pdfUiFragment.setOnContextualToolbarLifecycleListener(flutterViewModeController)
+                        pdfUiFragment.setOnContextualToolbarLifecycleListener(flutterViewModeController)
+                    }
+                    
+                    // Process custom toolbar items
+                    if (customToolbarItems.isNotEmpty() && f is FlutterPdfUiFragment && customToolbarCallbacks != null) {
+                        f.setCustomToolbarItems(customToolbarItems, customToolbarCallbacks)
                     }
                 }
             }
@@ -177,6 +184,7 @@ internal class PSPDFKitView(
         val flutterEventsHelper = FlutterEventsHelper(nutrientEventsCallbacks)
         pspdfkitViewImpl.setEventDispatcher(flutterEventsHelper)
         PspdfkitWidgetControllerApi.setUp(messenger, pspdfkitViewImpl, id.toString())
+        // Set up custom toolbar API
     }
 
     @SuppressLint("CheckResult")
@@ -186,8 +194,10 @@ internal class PSPDFKitView(
         if (!pdfUiFragment.isAdded) {
             return
         }
-        val document = pdfUiFragment.document ?: return
 
+        // For other operations, we need the document to be loaded
+        val document = pdfUiFragment.document ?: return
+        
         when (call.method) {
             "applyInstantJson" -> {
                 val annotationsJson: String? = call.argument("annotationsJson")
@@ -684,6 +694,7 @@ class PSPDFKitViewFactory(
             messenger,
             creationParams?.get("document") as String?,
             creationParams?.get("configuration") as HashMap<String, Any>?,
+            creationParams?.get("customToolbarItems") as List<Map<String, Any>>
         )
     }
 }

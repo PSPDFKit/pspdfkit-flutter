@@ -260,6 +260,8 @@ typedef PageClickedCallback = void Function(
 typedef PdfDocumentSavedCallback = void Function(
     String documentId, String? path);
 
+typedef OnCustomToolbarItemTappedCallback = void Function(String identifier);
+
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {
   String? get webName {
