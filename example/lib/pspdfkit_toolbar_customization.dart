@@ -13,10 +13,20 @@ import 'package:flutter/material.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'utils/platform_utils.dart';
 
-class PspdfkitToolbarCustomization extends StatelessWidget {
+class PspdfkitToolbarCustomization extends StatefulWidget {
   final String documentPath;
 
   const PspdfkitToolbarCustomization({super.key, required this.documentPath});
+
+  @override
+  State<PspdfkitToolbarCustomization> createState() =>
+      _PspdfkitToolbarCustomizationState();
+}
+
+class _PspdfkitToolbarCustomizationState
+    extends State<PspdfkitToolbarCustomization> {
+  PspdfkitWidgetController? _pspdfkitWidgetController;
+  PdfDocument? _pdfDocument;
 
   @override
   Widget build(BuildContext context) {
@@ -42,26 +52,47 @@ class PspdfkitToolbarCustomization extends StatelessWidget {
                 child: PspdfkitWidget(
                     customToolbarItems: [
                       CustomToolbarItem(
-                        title: 'Custom ToolbarItem',
+                        title: 'Save',
                         identifier: 'custom-toolbar-item',
                         iconColor: "#000000",
                         iconName: "toolbar_item",
                       ),
                       CustomToolbarItem(
-                        title: 'Custom ToolbarItem 2',
+                        title: 'Signature',
                         identifier: 'custom-toolbar-item-2',
                         iconColor: "#000000",
                         iconName: "toolbar_item",
                       ),
                     ],
                     onCustomToolbarItemTapped: (identifier) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Hello from custom button!'),
-                        ),
-                      );
+                      switch (identifier) {
+                        case 'custom-toolbar-item':
+                          {
+                            _pdfDocument?.save();
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text('Document saved'),
+                            ));
+                          }
+                          break;
+                        case 'custom-toolbar-item-2':
+                          _pspdfkitWidgetController
+                              ?.enterAnnotationCreationMode(
+                                  AnnotationTool.signature);
+                          break;
+                      }
                     },
-                    documentPath: documentPath,
+                    documentPath: widget.documentPath,
+                    onPdfDocumentLoaded: (document) {
+                      setState(() {
+                        _pdfDocument = document;
+                      });
+                    },
+                    onPspdfkitWidgetCreated: (view) {
+                      setState(() {
+                        _pspdfkitWidgetController = view;
+                      });
+                    },
                     configuration: PdfConfiguration(
                         androidShowAnnotationListAction: false,
                         androidShowSearchAction: false,

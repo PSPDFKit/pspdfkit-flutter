@@ -148,6 +148,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
             onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
             onPageClicked: widget.onPageClicked,
             onPdfDocumentSaved: widget.onPdfDocumentSaved,
+            onCustomToolbarItemTappedListener: widget.onCustomToolbarItemTapped,
           );
     widget.onPspdfkitWidgetCreated?.call(controller);
     if (controller is PspdfkitFlutterWidgetControllerImpl) {
@@ -160,7 +161,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
 
       CustomToolbarCallbacks.setUp(
           controller as PspdfkitFlutterWidgetControllerImpl,
-          messageChannelSuffix: 'custom-toolbar.callbacks.$id');
+          messageChannelSuffix: 'customToolbar.callbacks.$id');
     }
   }
 
@@ -170,6 +171,8 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
         messageChannelSuffix: 'widget.callbacks.$_id');
     NutrientEventsCallbacks.setUp(null,
         messageChannelSuffix: 'events.callbacks.$_id');
+    CustomToolbarCallbacks.setUp(null,
+        messageChannelSuffix: 'customToolbar.callbacks.$_id');
     super.dispose();
   }
 }

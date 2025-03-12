@@ -44,6 +44,7 @@ import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
+import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
@@ -76,7 +77,7 @@ internal class PSPDFKitView(
     private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
     private val nutrientEventsCallbacks: NutrientEventsCallbacks = NutrientEventsCallbacks(messenger, "events.callbacks.$id")
     private val widgetCallbacks: PspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
-    private val customToolbarCallbacks: CustomToolbarCallbacks? = null
+    private val customToolbarCallbacks: CustomToolbarCallbacks = CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -131,8 +132,8 @@ internal class PSPDFKitView(
                     }
                     
                     // Process custom toolbar items
-                    if (customToolbarItems.isNotEmpty() && f is FlutterPdfUiFragment && customToolbarCallbacks != null) {
-                        f.setCustomToolbarItems(customToolbarItems, customToolbarCallbacks)
+                    if (customToolbarItems.isNotEmpty() && f is PdfFragment) {
+                        (pdfUiFragment as FlutterPdfUiFragment).setCustomToolbarItems(customToolbarItems, customToolbarCallbacks)
                     }
                 }
             }

@@ -87,10 +87,10 @@ class FlutterPdfUiFragment : PdfUiFragment() {
         val matchingIdentifier = customToolbarItemIds.entries.find { it.value == item.itemId }?.key
         if (matchingIdentifier != null) {
             // Notify Flutter about the tap
-            customToolbarCallbacks?.onCustomToolbarItemTapped(matchingIdentifier)
+            customToolbarCallbacks?.onCustomToolbarItemTapped(matchingIdentifier){
+            }
             return true
         }
-        
         return super.onOptionsItemSelected(item)
     }
     
@@ -114,8 +114,7 @@ class FlutterPdfUiFragment : PdfUiFragment() {
      */
     private fun addCustomToolbarItems(items: List<Map<String, Any>>) {
         if (items.isEmpty()) return
-        
-        val activity = activity ?: return
+        val activity = requireActivity()
         
         for (itemConfig in items) {
             val identifier = itemConfig["identifier"] as? String ?: continue
@@ -146,7 +145,6 @@ class FlutterPdfUiFragment : PdfUiFragment() {
                             // Invalid color format, use default
                         }
                     }
-                    
                     customToolbarItemDrawables[identifier] = drawable
                 }
             }
