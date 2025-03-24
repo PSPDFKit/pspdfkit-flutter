@@ -62,7 +62,7 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation "com.pspdfkit:$pspdfkitMavenModuleName:$pspdfkitVersion"
+    implementation "io.nutrient:$pspdfkitMavenModuleName:$pspdfkitVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "androidx.compose.material:material:1.7.8"

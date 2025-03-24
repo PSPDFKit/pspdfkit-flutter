@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'utils/platform_utils.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
@@ -37,12 +36,7 @@ class _PspdfkitDocumentExampleState extends State<PspdfkitDocumentExample> {
                         ?.exportPdf(
                             options: DocumentSaveOptions(
                                 flatten: true,
-                                userPassword: '12345',
-                                ownerPassword: '12345',
                                 excludeAnnotations: true,
-                                permissions: [
-                                  DocumentPermissions.printHighQuality
-                                ],
                                 optimize: true))
                         .then((Uint8List value) async {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

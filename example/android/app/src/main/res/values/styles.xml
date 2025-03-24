@@ -17,12 +17,10 @@
          This theme determines the color of the Android Window while your
          Flutter UI initializes, as well as behind your Flutter UI while its
          running.
-
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Default">
-        <item name="android:windowBackground">?android:colorBackground</item>
-        <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
-        <item name="colorAccent">@color/color_primary_dark</item>
+        <item name="colorPrimary">@color/primaryLight</item>
+        <item name="colorPrimaryDark">@color/onPrimaryContainerLight</item>
+        <item name="colorAccent">@color/onPrimaryContainerLight</item>
     </style>
 </resources>

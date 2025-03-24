@@ -24,6 +24,11 @@ class _PspdfkitEventListenerExampleState
         children: [
           PspdfkitWidget(
               documentPath: widget.documentPath,
+              onPdfDocumentLoaded: (document) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Document loaded: ${document.documentId}'),
+                ));
+              },
               onPdfDocumentSaved: (documentId, path) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('Document saved: $path'),
@@ -42,86 +47,33 @@ class _PspdfkitEventListenerExampleState
               onPspdfkitWidgetCreated: (controller) {
                 controller.addEventListener(NutrientEvent.annotationsCreated,
                     (event) {
-                  if (event is Map && event.containsKey('annotations')) {
-                    final annotations =
-                        event['annotations'] as List<Annotation>;
-                    if (annotations.isNotEmpty) {
-                      final annotation = annotations.first;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            'Annotation created: ${annotation.type} on page ${annotation.pageIndex}'),
-                      ));
-                    }
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Annotation created: $event'),
+                  ));
                 });
                 controller.addEventListener(NutrientEvent.annotationsUpdated,
                     (event) {
-                  if (event is Map && event.containsKey('annotations')) {
-                    final annotations =
-                        event['annotations'] as List<Annotation>;
-                    if (annotations.isNotEmpty) {
-                      final annotation = annotations.first;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            'Annotation updated: ${annotation.type} on page ${annotation.pageIndex}'),
-                      ));
-                    }
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Annotation updated: $event'),
+                  ));
                 });
                 controller.addEventListener(NutrientEvent.annotationsDeleted,
                     (event) {
-                  if (event is Map && event.containsKey('annotations')) {
-                    final annotations =
-                        event['annotations'] as List<Annotation>;
-                    if (annotations.isNotEmpty) {
-                      final annotation = annotations.first;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            'Annotation deleted: ${annotation.type} on page ${annotation.pageIndex}'),
-                      ));
-                    }
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Deleted annotation $event'),
+                  ));
                 });
                 controller.addEventListener(NutrientEvent.annotationsSelected,
                     (event) {
-                  if (event is Map && event.containsKey('annotations')) {
-                    final annotations =
-                        event['annotations'] as List<Annotation>;
-                    if (annotations.isNotEmpty) {
-                      final annotation = annotations.first;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            'Annotation selected: ${annotation.type} on page ${annotation.pageIndex}'),
-                      ));
-                    }
-                  } else if (event is Map && event.containsKey('annotation')) {
-                    final annotation = event['annotation'] as Annotation;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Annotation selected: ${annotation.type} on page ${annotation.pageIndex}'),
-                    ));
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Annotation selected: $event'),
+                  ));
                 });
-
                 controller.addEventListener(NutrientEvent.annotationsDeselected,
                     (event) {
-                  if (event is Map && event.containsKey('annotations')) {
-                    final annotations =
-                        event['annotations'] as List<Annotation>;
-                    if (annotations.isNotEmpty) {
-                      final annotation = annotations.first;
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            'Annotation deselected: ${annotation.type} on page ${annotation.pageIndex}'),
-                      ));
-                    }
-                  } else if (event is Map && event.containsKey('annotation')) {
-                    final annotation = event['annotation'] as Annotation;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(
-                          'Annotation deselected: ${annotation.type} on page ${annotation.pageIndex}'),
-                    ));
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Annotation deselected: $event'),
+                  ));
                 });
                 controller.addEventListener(NutrientEvent.formFieldSelected,
                     (event) {

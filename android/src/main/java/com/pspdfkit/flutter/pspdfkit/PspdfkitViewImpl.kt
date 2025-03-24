@@ -627,11 +627,17 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
     }
 
     override fun addEventListener(event: NutrientEvent) {
-        eventDispatcher?.setEventListener(pdfUiFragment!!, event)
+        val fragment = pdfUiFragment
+        if (fragment != null && eventDispatcher != null) {
+            eventDispatcher?.setEventListener(fragment, event)
+        }
     }
 
     override fun removeEventListener(event: NutrientEvent) {
-        eventDispatcher?.removeEventListener(pdfUiFragment!!, event)
+        val fragment = pdfUiFragment
+        if (fragment != null && eventDispatcher != null) {
+            eventDispatcher?.removeEventListener(fragment, event)
+        }
     }
 
     override fun enterAnnotationCreationMode(

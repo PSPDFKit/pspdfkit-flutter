@@ -60,4 +60,34 @@
     <!-- Text color -->
     <color name="dialog_text_color">#FF212121</color>
     <color name="error">#b71c1c</color>
+
+    <color name="primaryLight">#FF834C76</color>
+    <color name="onPrimaryLight">#FFFFFFFF</color>
+    <color name="primaryContainerLight">#FFDE9DCC</color>
+    <color name="onPrimaryContainerLight">#FF65325A</color>
+    <color name="secondaryLight">#FF256B38</color>
+    <color name="onSecondaryLight">#FFFFFFFF</color>
+    <color name="backgroundLight">#FFFFF7F9</color>
+    <color name="surfaceLight">#FFFDF8F7</color>
+    <color name="outlineVariantLight">#FFCEC5BC</color>
+
+    <color name="primaryDark">#FFFCB8E8</color>
+    <color name="onPrimaryDark">#FF4E1E45</color>
+    <color name="primaryContainerDark">#FFDE9DCC</color>
+    <color name="onPrimaryContainerDark">#FF65325A</color>
+    <color name="secondaryDark">#FF8ED798</color>
+    <color name="onSecondaryDark">#FF003915</color>
+    <color name="secondaryContainerDark">#FF6EB579</color>
+    <color name="tertiaryContainerDark">#FFF0C968</color>
+    <color name="errorDark">#FFFFB4A6</color>
+    <color name="onErrorDark">#FF660700</color>
+    <color name="errorContainerDark">#FFF56047</color>
+    <color name="backgroundDark">#FF171215</color>
+    <color name="onBackgroundDark">#FFEAE0E4</color>
+    <color name="surfaceDark">#FF141313</color>
+    <color name="onSurfaceDark">#FFE5E2E1</color>
+    <color name="onSurfaceVariantDark">#FFCEC5BC</color>
+    <color name="outlineDark">#FF988F87</color>
+    <color name="inverseOnSurfaceDark">#FF313030</color>
+    <color name="surfaceBrightDark">#FF3A3938</color>
 </resources>

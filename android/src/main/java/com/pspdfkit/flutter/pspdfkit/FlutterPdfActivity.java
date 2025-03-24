@@ -80,7 +80,7 @@ public class FlutterPdfActivity extends PdfActivity {
     @Override
     public void onAttachFragment(@NonNull Fragment fragment) {
         super.onAttachFragment(fragment);
-        if(fragment.getTag() !=null && fragment.getTag().contains("PSPDFKit.Fragment")){
+        if(fragment.getTag() !=null && fragment.getTag().contains("Nutrient.Fragment")){
             EventDispatcher.getInstance().notifyPdfFragmentAdded();
         }
     }

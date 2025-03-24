@@ -51,8 +51,8 @@ class FlutterWidgetCallback(
         var flutterPointF: com.pspdfkit.flutter.pspdfkit.api.PointF? = null
         pagePosition?.let {
             flutterPointF = com.pspdfkit.flutter.pspdfkit.api.PointF(
-                pagePosition.x.toDouble(),
-                pagePosition.x.toDouble()
+                it.x.toDouble(),
+                it.y.toDouble() 
             )
         }
         pspdfkitWidgetCallbacks?.onPageClick(

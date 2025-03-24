@@ -17,6 +17,7 @@ package com.pspdfkit.flutter.pspdfkit
 ///
 import android.content.Context
 import android.graphics.PointF
+import android.util.Log
 import android.view.MotionEvent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -31,6 +32,8 @@ import com.pspdfkit.ui.PdfFragment
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 
+private const val LOG_TAG = "FlutterPdfUiCallbacks"
+
 /**
  * Callbacks for the FlutterPdfUiFragment.
  * This class is responsible for notifying the Flutter side about document loading events.
@@ -41,8 +44,8 @@ import io.flutter.plugin.common.MethodChannel
  * @param flutterWidgetCallback The callback to notify the Flutter side about document loading events.
  */
 class FlutterPdfUiFragmentCallbacks(
-    private val methodChannel: MethodChannel, private val measurementConfigurations:
-    List<Map<String, Any>>?,
+    private val methodChannel: MethodChannel, 
+    private val measurementConfigurations: List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger,
     private val flutterWidgetCallback: FlutterWidgetCallback
 ) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener {
@@ -55,9 +58,10 @@ class FlutterPdfUiFragmentCallbacks(
         f: Fragment,
         context: Context
     ) {
-        if (f.tag?.contains("PSPDFKit.Fragment") == true) {
+        if (f.tag?.contains("Nutrient.Fragment") == true) {
             EventDispatcher.getInstance().notifyPdfFragmentAdded()
             if (f !is PdfFragment) {
+                Log.w(LOG_TAG, "Fragment is not a PdfFragment: ${f::class.java.simpleName}")
                 return
             }
             if (pdfFragment != null) {
@@ -69,45 +73,82 @@ class FlutterPdfUiFragmentCallbacks(
     }
 
     override fun onDocumentLoaded(document: PdfDocument) {
+        // Apply measurement configurations if available
         measurementConfigurations?.forEach {
-            MeasurementHelper.addMeasurementConfiguration(pdfFragment!!, it)
+            try {
+                MeasurementHelper.addMeasurementConfiguration(pdfFragment!!, it)
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Failed to apply measurement configuration", e)
+            }
         }
-        methodChannel.invokeMethod(
-            "onDocumentLoaded", mapOf(
-                "documentId" to document.uid
-            )
-        )
-        flutterWidgetCallback.onDocumentLoaded(document)
-        flutterPdfDocument =
-            FlutterPdfDocument(document);
-        PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
+
+        // Send event through method channel
+        try {
+            val eventData = mapOf("documentId" to document.uid)
+            methodChannel.invokeMethod("onDocumentLoaded", eventData)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onDocumentLoaded via method channel", e)
+        }
+
+        // Send event through widget callbacks
+        try {
+            flutterWidgetCallback.onDocumentLoaded(document)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onDocumentLoaded via widget callbacks", e)
+        }
+
+        // Set up document API for Flutter access
+        try {
+            flutterPdfDocument = FlutterPdfDocument(document)
+            PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
+        }
+
+        // Additional direct channel sending
+        try {
+            EventDispatcher.getInstance().notifyDocumentLoaded(document)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending direct event notification", e)
+        }
     }
 
     override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
         super.onPageChanged(document, pageIndex)
-        flutterWidgetCallback.onPageChanged(document, pageIndex)
-        methodChannel.invokeMethod(
-            "onPageChanged",
-            mapOf(
-                "documentId" to document.uid,
-                "pageIndex" to pageIndex
+        
+        try {
+            flutterWidgetCallback.onPageChanged(document, pageIndex)
+            methodChannel.invokeMethod(
+                "onPageChanged",
+                mapOf(
+                    "documentId" to document.uid,
+                    "pageIndex" to pageIndex
+                )
             )
-        )
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onPageChanged event", e)
+        }
     }
 
     override fun onDocumentLoadFailed(exception: Throwable) {
         super.onDocumentLoadFailed(exception)
-        flutterWidgetCallback.onDocumentLoadFailed(exception)
-        methodChannel.invokeMethod(
-            "onDocumentLoadFailed",
-            mapOf(
-                "error" to exception.message
+        Log.e(LOG_TAG, "Document load failed", exception)
+        
+        try {
+            flutterWidgetCallback.onDocumentLoadFailed(exception)
+            methodChannel.invokeMethod(
+                "onDocumentLoadFailed",
+                mapOf(
+                    "error" to exception.message
+                )
             )
-        )
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onDocumentLoadFailed event", e)
+        }
     }
 
     override fun onFragmentDetached(fm: FragmentManager, f: Fragment) {
-        if (f.tag?.contains("PSPDFKit.Fragment") == true) {
+        if (f.tag?.contains("Nutrient.Fragment") == true) {
             if (f !is PdfFragment) {
                 return
             }
@@ -126,12 +167,20 @@ class FlutterPdfUiFragmentCallbacks(
         pagePosition: PointF?,
         clickedAnnotation: Annotation?
     ): Boolean {
-        flutterWidgetCallback.onPageClick(document, pageIndex, event, pagePosition, clickedAnnotation)
+        try {
+            flutterWidgetCallback.onPageClick(document, pageIndex, event, pagePosition, clickedAnnotation)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onPageClick event", e)
+        }
         return true
     }
 
     override fun onDocumentSave(document: PdfDocument, saveOptions: DocumentSaveOptions): Boolean {
-        flutterWidgetCallback.onDocumentSave(document,saveOptions)
+        try {
+            flutterWidgetCallback.onDocumentSave(document, saveOptions)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error sending onDocumentSave event", e)
+        }
         return true
     }
 }

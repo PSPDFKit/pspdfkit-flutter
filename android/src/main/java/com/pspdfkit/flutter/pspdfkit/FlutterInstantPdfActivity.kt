@@ -100,7 +100,7 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
 
     override fun onAttachFragment(fragment: Fragment) {
         super.onAttachFragment(fragment)
-        if(fragment.tag?.contains("PSPDFKit.Fragment") == true){
+        if(fragment.tag?.contains("Nutrient.Fragment") == true){
             EventDispatcher.getInstance().notifyPdfFragmentAdded()
         }
     }

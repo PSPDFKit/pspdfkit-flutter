@@ -180,8 +180,7 @@ class PspdfkitFlutterWidgetControllerImpl
           (event == NutrientEvent.annotationsCreated ||
               event == NutrientEvent.annotationsUpdated ||
               event == NutrientEvent.annotationsSelected ||
-              event == NutrientEvent.annotationsDeselected ||
-              event == NutrientEvent.annotationsDeleted)) {
+              event == NutrientEvent.annotationsDeselected)) {
         try {
           // Process annotations data
           if (data.containsKey('annotations')) {
@@ -275,6 +274,8 @@ class PspdfkitFlutterWidgetControllerImpl
                 }
               }
             }
+          } else {
+            data = data;
           }
         } catch (e) {
           if (kDebugMode) {
@@ -282,7 +283,6 @@ class PspdfkitFlutterWidgetControllerImpl
           }
         }
       }
-
       _eventListeners[event]?.call(data);
     }
   }

@@ -16,16 +16,16 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.pspdfkit.Nutrient
 import com.pspdfkit.PSPDFKit
 import com.pspdfkit.PSPDFKit.VERSION
-import com.pspdfkit.PSPDFKit.initialize
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.document.html.HtmlToPdfConverter
 import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
-import com.pspdfkit.exceptions.PSPDFKitException
+import com.pspdfkit.exceptions.NutrientException
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
 import com.pspdfkit.flutter.pspdfkit.api.AndroidPermissionStatus
@@ -131,7 +131,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }
             activityPluginBinding?.activity?.startActivity(intent)
             callback(Result.success(activityPluginBinding?.activity != null))
-        } catch (e: PSPDFKitException) {
+        } catch (e: NutrientException) {
             callback(Result.failure(PspdfkitApiError("Error", e.message)))
         }
     }
@@ -154,7 +154,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 .configuration(configurationAdapterInstant.build()).build()
             activityPluginBinding?.activity?.startActivity(intentInstant)
             callback(Result.success(activityPluginBinding?.activity != null))
-        } catch (e: PSPDFKitException) {
+        } catch (e: NutrientException) {
             callback(Result.failure(PspdfkitApiError("Error", e.message)))
         }
     }
@@ -350,14 +350,14 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             })
     }
 
-    override fun addAnnotation(jsonAnnotation: String,attachment:String?, callback: (Result<Boolean?>) -> Unit) {
+    override fun addAnnotation(annotation: String, attachment:String?, callback: (Result<Boolean?>) -> Unit) {
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.exportInstantJson()"
         )
 
         disposable =
-            document.annotationProvider.createAnnotationFromInstantJsonAsync(jsonAnnotation)
+            document.annotationProvider.createAnnotationFromInstantJsonAsync(annotation)
                 .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ result ->
                     document.annotationProvider.addAnnotationToPage(result)
@@ -374,14 +374,14 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 }
     }
 
-    override fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
+    override fun removeAnnotation(annotation: String, callback: (Result<Boolean?>) -> Unit) {
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.exportInstantJson()"
         )
         //Annotation from JSON.
-        val annotation = document.annotationProvider.createAnnotationFromInstantJson(jsonAnnotation)
-        document.annotationProvider.removeAnnotationFromPage(annotation)
+        val annotationObject = document.annotationProvider.createAnnotationFromInstantJson(annotation)
+        document.annotationProvider.removeAnnotationFromPage(annotationObject)
         callback(Result.success(true))
     }
 
@@ -442,26 +442,26 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             })
     }
 
-    override fun updateAnnotation(jsonAnnotation: String, callback: (Result<Unit>) -> Unit) {
+    override fun updateAnnotation(annotation: String, callback: (Result<Unit>) -> Unit) {
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.updateAnnotation()"
         )
 
         try {
-            val annotationObject:Map<String, *>  = Json.parseToJsonElement(jsonAnnotation).jsonObject.toMap()
+            val annotationObject:Map<String, *>  = Json.parseToJsonElement(annotation).jsonObject.toMap()
             //  Remove escaped backslashes from the JSON string.
             val pageIndex = annotationObject["pageIndex"] as Int
             val uid = annotationObject["uid"] as String
 
             val allAnnotations = document.annotationProvider.getAnnotations(pageIndex)
-            val annotation = allAnnotations.firstOrNull { it.uuid == uid }
-            if (annotation == null) {
+            val annotationInstance = allAnnotations.firstOrNull { it.uuid == uid }
+            if (annotationInstance == null) {
                 callback(Result.failure(Exception("Annotation not found")))
                 return
             }
-            document.annotationProvider.removeAnnotationFromPage(annotation)
-            disposable = document.annotationProvider.createAnnotationFromInstantJsonAsync(jsonAnnotation)
+            document.annotationProvider.removeAnnotationFromPage(annotationInstance)
+            disposable = document.annotationProvider.createAnnotationFromInstantJsonAsync(annotation)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -817,14 +817,14 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
 
     private fun setLicenseKey(activity: FragmentActivity, licenseKey: String?) {
         try {
-            initialize(
+            Nutrient.initialize(
                 activity, InitializationOptions(
                     licenseKey,
                     listOf(),
                     CrossPlatformTechnology.Flutter,
                 )
             )
-        } catch (e: PSPDFKitException) {
+        } catch (e: NutrientException) {
             throw IllegalStateException("Error while setting license key", e)
         }
     }
@@ -838,23 +838,18 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
     private fun requestPermission(
         activity: FragmentActivity, permission: String?
     ) {
-        var permissionResult = permission
-        permissionResult = getManifestPermission(permission)
+        val permissionResult: String? = getManifestPermission(permission)
         if (permission == null) {
             return
         }
-        val perm = arrayOf(permission)
+        val perm = arrayOf(permissionResult)
         ActivityCompat.requestPermissions(activity, perm, 0)
     }
 
     private fun checkPermission(
         activity: FragmentActivity, permission: String?
     ): Boolean {
-        var permissionResult = permission
-        permissionResult = getManifestPermission(permission)
-        if (permissionResult == null) {
-            return false
-        }
+        val permissionResult: String = getManifestPermission(permission) ?: return false
         return (PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
             activity,
             permissionResult

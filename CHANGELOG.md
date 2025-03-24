@@ -1,3 +1,9 @@
+## 4.2.2 - 24 Mar 2025
+
+- Updates for Nutrient Android SDK 10.1.1 - https://www.nutrient.io/guides/android/changelog/.
+- Updates Android bridging by moving `MethodCallHandler` from `PspdfkitPlugin` to `PspdfkitPluginMethodCallHandler`, preparing for a complete migration to Pigeon and proper deprecation path. (J#HYB-690)
+- Fixes issue on Android when adding an annotationDeleted event listener. (J#HYB-640)
+
 ## 4.2.1 - 10 Mar 2025
 
 - Adds `enterAnnotationCreationMode` and `exitAnnotationCreationMode` APIs to `PspdfkitWidgetController`.
@@ -12,7 +18,7 @@
 - Adds support for annotation flags. (J#HYB-683)
 - Adds support for custom stamps. (J#HYB-685)
 - Fixes issue where setting an iOS license key shows "PSPDFKit Licensing Issue" error. (J#HYB-658)
-- Fixes Annotation preset customizations not being set correctly. (J#HYB-686)
+- Fixes annotation preset customizations not being set correctly. (J#HYB-686)
 
 ## 4.1.1 - 17 Jan 2025
 

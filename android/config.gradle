@@ -38,10 +38,10 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '2024.9.1'
+    ext.pspdfkitVersion = '10.1.1'
 }
 
-ext.pspdfkitMavenModuleName = 'pspdfkit'
+ext.pspdfkitMavenModuleName = 'nutrient'
 
 // Get our library version from the top level pubspec.yaml file.
 def pubspecFilePath = '../pubspec.yaml'

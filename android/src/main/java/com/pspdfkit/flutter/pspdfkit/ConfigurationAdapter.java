@@ -125,11 +125,13 @@ class ConfigurationAdapter {
      * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
      * Use {@code FIRST_PAGE_ALWAYS_SINGLE} instead, which replaces it.
      */
+    @Deprecated
     private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
     /**
      * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
      * Use {@code SHOW_BOOKMARKS_ACTION} instead, which replaces it.
      */
+    @Deprecated
     private static final String ENABLE_BOOKMARK_LIST = "enableBookmarkList";
 
     // Document Interaction Values

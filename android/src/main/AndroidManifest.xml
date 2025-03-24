@@ -17,7 +17,7 @@
             android:windowSoftInputMode="adjustNothing" />
 
         <meta-data
-            android:name="pspdfkit_automatic_initialize"
+            android:name="nutrient_automatic_initialize"
             android:value="false" />
     </application>
 </manifest>
