@@ -121,16 +121,22 @@ PspdfkitWebToolbarItem webToolbarItemFromJsObject(JsObject jsObject) {
 }
 
 PspdfkitWebAnnotationToolbarItem annotationToolbarItemFromJson(dynamic json) {
-  return PspdfkitWebAnnotationToolbarItem(
-    className: json['className'],
-    disabled: json['disabled'],
-    icon: json['icon'],
-    id: json['id'],
-    onPress: json['onPress'],
-    title: json['title'],
-    type: PspdfkitWebAnnotationToolbarItemType.values
-        .firstWhere((e) => e.name == json['type']),
-  );
+  var map = (json as JsObject).toJson();
+
+  try {
+    return PspdfkitWebAnnotationToolbarItem(
+      className: map['className'],
+      disabled: map['disabled'],
+      icon: map['icon'],
+      id: map['id'],
+      onPress: map['onPress'],
+      title: map['title'],
+      type: PspdfkitWebAnnotationToolbarItemType.values
+          .firstWhere((e) => e.name == map['type']),
+    );
+  } catch (e) {
+    throw Exception('Failed to convert annotation toolbar item: $e');
+  }
 }
 
 extension PSPDFKitAnnotationToolbarItemsExtension

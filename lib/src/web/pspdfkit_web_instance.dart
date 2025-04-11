@@ -486,9 +486,9 @@ class PspdfkitWebInstance {
   /// The [options] parameter is an optional [DocumentSaveOptions] object that specifies the export options.
   /// Returns a [Future] that completes with a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) async {
-    var webOptions = options!.toWebOptions();
+    var webOptions = options?.toWebOptions();
     var arrayBuffer = await promiseToFuture(_pspdfkitInstance
-        .callMethod('exportPDF', [JsObject.jsify(webOptions)]));
+        .callMethod('exportPDF', [JsObject.jsify(webOptions ?? {})]));
 
     var uintList = JsObject(context['Uint8Array'], [arrayBuffer]);
     JsArray jsArray = context['Array'].callMethod('from', [uintList]);

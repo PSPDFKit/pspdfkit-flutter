@@ -28,6 +28,8 @@ class PspdfkitWidget extends StatefulWidget {
   final PageChangedCallback? onPageChanged;
   final PageClickedCallback? onPageClicked;
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
+  final List<CustomToolbarItem> customToolbarItems;
+  final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -38,6 +40,8 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPageChanged,
     this.onPageClicked,
     this.onPdfDocumentSaved,
+    this.customToolbarItems = const [],
+    this.onCustomToolbarItemTapped,
   }) : super(key: key);
 
   @override
@@ -74,6 +78,8 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'document': widget.documentPath,
       'configuration': config ?? {},
+      'customToolbarItems':
+          widget.customToolbarItems.map((item) => item.toMap()).toList(),
     };
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -141,6 +147,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
             onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
             onPageClicked: widget.onPageClicked,
             onPdfDocumentSaved: widget.onPdfDocumentSaved,
+            onCustomToolbarItemTappedListener: widget.onCustomToolbarItemTapped,
           );
     widget.onPspdfkitWidgetCreated?.call(controller);
     if (controller is PspdfkitFlutterWidgetControllerImpl) {
@@ -150,6 +157,9 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       NutrientEventsCallbacks.setUp(
           controller as PspdfkitFlutterWidgetControllerImpl,
           messageChannelSuffix: 'events.callbacks.$id');
+      CustomToolbarCallbacks.setUp(
+          controller as PspdfkitFlutterWidgetControllerImpl,
+          messageChannelSuffix: 'customToolbar.callbacks.$id');
     }
   }
 
@@ -159,6 +169,8 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
         messageChannelSuffix: 'widget.callbacks.$_id');
     NutrientEventsCallbacks.setUp(null,
         messageChannelSuffix: 'events.callbacks.$_id');
+    CustomToolbarCallbacks.setUp(null,
+        messageChannelSuffix: 'customToolbar.callbacks.$_id');
     super.dispose();
   }
 }

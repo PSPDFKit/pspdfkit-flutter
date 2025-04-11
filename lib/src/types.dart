@@ -1,5 +1,3 @@
-import '../pspdfkit.dart';
-
 ///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
@@ -7,6 +5,9 @@ import '../pspdfkit.dart';
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+
+import 'package:flutter/widgets.dart';
+import '../pspdfkit.dart';
 
 /// Enum representing the scroll direction of PSPDFKit.
 ///
@@ -245,6 +246,118 @@ enum ShowSignatureValidationStatusMode {
   never
 }
 
+/// Enum representing the different saving strategies for a signature.
+///
+/// The possible values are:
+/// - `neverSave`: Never save the signature.
+/// - `alwaysSave`: Always save the signature.
+/// - `saveIfSelected`: Save the signature only if it is selected.
+enum SignatureSavingStrategy { neverSave, alwaysSave, saveIfSelected }
+
+/// Enum representing the different creation modes for a signature.
+///
+/// The possible values are:
+/// - `draw`: Draw the signature.
+/// - `image`: Use an image as the signature.
+/// - `type`: Type the signature.
+enum SignatureCreationMode { draw, image, type }
+
+/// A class representing a color preset for a signature.
+///
+/// The possible values are:
+/// - `color`: The color of the signature.
+/// - `id`: The unique identifier of the color preset.
+/// - `defaultMessage`: The default message associated with the color preset.
+/// - `description`: The description of the color preset.
+class SignatureColorPreset {
+  final Color color;
+  final String? id;
+  final String? defaultMessage;
+  final String? description;
+
+  SignatureColorPreset(
+      {required this.color, this.id, this.defaultMessage, this.description});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'color': color.toHex(),
+      'id': id,
+      'defaultMessage': defaultMessage,
+      'description': description
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// A class representing a set of color presets for a signature.
+///
+/// The possible values are:
+/// - `option1`: The first color preset.
+/// - `option2`: The second color preset.
+/// - `option3`: The third color preset.
+class SignatureColorOptions {
+  final SignatureColorPreset option1;
+  final SignatureColorPreset option2;
+  final SignatureColorPreset option3;
+
+  SignatureColorOptions(
+      {required this.option1, required this.option2, required this.option3});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'option1': option1.toMap(),
+      'option2': option2.toMap(),
+      'option3': option3.toMap()
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+/// Enum representing the different orientations for a signature on Android.
+///
+/// The possible values are:
+/// - `portrait`: Portrait orientation.
+/// - `landscape`: Landscape orientation.
+/// - `automatic`: Automatic orientation.
+/// - `unlocked`: Unlocked orientation.
+enum NutrientAndroidSignatureOrientation {
+  portrait,
+  landscape,
+  automatic,
+  unlocked
+}
+
+/// A class representing the configuration for creating a signature.
+///
+/// The possible values are:
+/// - `creationModes`: The list of creation modes for the signature.
+/// - `colorOptions`: The set of color presets for the signature.
+/// - `iosSignatureAspectRatio`: The aspect ratio for the signature on iOS.
+/// - `androidSignatureOrientation`: The orientation for the signature on Android.
+/// - `fonts`: The list of fonts available for the signature.
+class SignatureCreationConfiguration {
+  final List<SignatureCreationMode>? creationModes;
+  final SignatureColorOptions? colorOptions;
+  final AspectRatio? iosSignatureAspectRatio;
+  final NutrientAndroidSignatureOrientation? androidSignatureOrientation;
+  final List<String>? fonts;
+
+  SignatureCreationConfiguration(
+      {this.creationModes,
+      this.colorOptions,
+      this.iosSignatureAspectRatio,
+      this.androidSignatureOrientation,
+      this.fonts});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'creationModes': creationModes?.map((e) => e.name).toList(),
+      'colorOptions': colorOptions?.toMap(),
+      'iosSignatureAspectRatio': iosSignatureAspectRatio?.aspectRatio,
+      'androidSignatureOrientation': androidSignatureOrientation?.name,
+      'fonts': fonts
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
 typedef PspdfkitWidgetCreatedCallback = void Function(
     PspdfkitWidgetController view);
 
@@ -259,6 +372,8 @@ typedef PageClickedCallback = void Function(
 
 typedef PdfDocumentSavedCallback = void Function(
     String documentId, String? path);
+
+typedef OnCustomToolbarItemTappedCallback = void Function(String identifier);
 
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {

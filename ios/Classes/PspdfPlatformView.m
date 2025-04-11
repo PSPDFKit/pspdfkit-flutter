@@ -43,7 +43,10 @@
         _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _navigationController.view.frame = frame;
         _platformViewImpl = [[PspdfkitPlatformViewImpl alloc] init];
-        [_platformViewImpl registerWithBinaryMessenger:messenger viewId:[NSString stringWithFormat:@"%lld",viewId]];
+        // Get the list of custom toolbar items as an array of dictionaries
+        NSArray<NSDictionary *> *customToolbarItems = args[@"customToolbarItems"];
+      
+        [_platformViewImpl registerWithBinaryMessenger:messenger viewId:[NSString stringWithFormat:@"%lld",viewId] customToolbarItems: customToolbarItems];
         
         // View controller containment
         _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
@@ -69,6 +72,15 @@
 
             BOOL isImageDocument = [PspdfkitFlutterHelper isImageDocument:documentPath];
             PSPDFConfiguration *configuration = [PspdfkitFlutterConverter configuration:configurationDictionary isImageDocument:isImageDocument];
+            
+            // Only update signature settings if signatureSavingStrategy is specified in the configuration
+            if (configurationDictionary[@"signatureSavingStrategy"]) {
+                PSPDFConfiguration *updatedConfig = [configuration configurationUpdatedWithBuilder:^(PSPDFConfigurationBuilder *builder) {
+                    builder.signatureStore = [[PSPDFKeychainSignatureStore alloc] init];
+                }];
+                configuration = updatedConfig;
+            }
+            
             _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
             _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
             _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];

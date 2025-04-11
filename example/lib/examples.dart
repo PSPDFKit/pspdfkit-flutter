@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/models/papsdkit_example_item.dart';
 import 'package:pspdfkit_example/pspdfkit_toolbar_customization.dart';
 
+import 'custom_toolbar_example.dart';
 import 'instant_collaboration_web.dart';
 import 'pspdfkit_annotation_preset_customisation.dart';
 import 'pspdfkit_document_example.dart';
@@ -189,6 +190,14 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
                 ),
                 context));
           }),
+      if (!kIsWeb)
+        PspdfkitExampleItem(
+            title: 'Custom Toolbar Items',
+            description: 'Shows how to add and handle custom toolbar items.',
+            onTap: () async {
+              await extractAsset(context, _documentPath).then((value) => goTo(
+                  CustomToolbarExample(documentPath: value.path), context));
+            }),
       if (kIsWeb)
         PspdfkitExampleItem(
           title: 'Instant collaboration Web',

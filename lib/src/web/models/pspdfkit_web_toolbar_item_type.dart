@@ -14,6 +14,7 @@ enum PspdfkitWebToolbarItemType {
   sidebarBookmarks,
   sidebarSignatures,
   sidebarLayers,
+  sidebarAttachments,
   pager,
   pan,
   zoomOut,
@@ -55,7 +56,8 @@ enum PspdfkitWebToolbarItemType {
   responsiveGroup,
   custom,
   measurements,
-  linearizedDownloadIndicator
+  linearizedDownloadIndicator,
+  comment,
 }
 
 extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
@@ -157,6 +159,10 @@ extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
         return 'measure';
       case PspdfkitWebToolbarItemType.linearizedDownloadIndicator:
         return 'linearized-download-indicator';
+      case PspdfkitWebToolbarItemType.comment:
+        return 'comment';
+      case PspdfkitWebToolbarItemType.sidebarAttachments:
+        return 'sidebar-attachments';
     }
   }
 }

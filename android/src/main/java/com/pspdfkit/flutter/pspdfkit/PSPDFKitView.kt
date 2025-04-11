@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
@@ -28,6 +29,9 @@ import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
 import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
+import com.pspdfkit.signatures.storage.DatabaseSignatureStorage
+import com.pspdfkit.signatures.storage.SignatureStorage
+import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
@@ -42,6 +46,7 @@ internal class PSPDFKitView(
     private val messenger: BinaryMessenger,
     documentPath: String? = null,
     configurationMap: HashMap<String, Any>? = null,
+    customToolbarItems: List<Map<String, Any>>? = null,
     ) : PlatformView {
 
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
@@ -51,6 +56,7 @@ internal class PSPDFKitView(
     private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
     private val nutrientEventsCallbacks: NutrientEventsCallbacks = NutrientEventsCallbacks(messenger, "events.callbacks.$id")
     private val widgetCallbacks: PspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
+    private val customToolbarCallbacks: CustomToolbarCallbacks = CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
 
@@ -128,6 +134,14 @@ internal class PSPDFKitView(
                        pdfUiFragment.setOnContextualToolbarLifecycleListener(flutterViewModeController)
                     }
 
+                    // Process custom toolbar items
+                    if (customToolbarItems?.isNotEmpty() == true && f is PdfFragment) {
+                        (pdfUiFragment as FlutterPdfUiFragment).setCustomToolbarItems(
+                            customToolbarItems,
+                            customToolbarCallbacks
+                        )
+                    }
+
                     // Create method call handler to handle Flutter method calls
                     methodCallHandler =
                         pdfUiFragment.pdfFragment?.let { PSPDFKitWidgetMethodCallHandler(it) }
@@ -135,6 +149,10 @@ internal class PSPDFKitView(
                     // Set up method channel for communication with Flutter
                     methodCallHandler?.let { handler ->
                         methodChannel.setMethodCallHandler(handler)
+                    }
+
+                    if (configurationMap?.contains("signatureSavingStrategy") == true) {
+                        pdfUiFragment.pdfFragment?.let { configureSignatureStorage(it) }
                     }
                 }
             }
@@ -270,6 +288,20 @@ internal class PSPDFKitView(
         }
     }
 
+    private fun configureSignatureStorage(pdfFragment: PdfFragment){
+        // See guides: https://www.nutrient.io/guides/android/signatures/signature-storage/
+        // Set the signature storage for the PdfFragment.
+        // Set up signature storage if a signature saving strategy is configured
+            try {
+                val storage: SignatureStorage = DatabaseSignatureStorage
+                    .withName(context,"nutrient_flutter_signature_storage")
+                pdfFragment.signatureStorage = storage
+            } catch (e: Exception) {
+                // Log any errors but don't crash the app
+                Log.e("FlutterPdfActivity", "Error setting up signature storage: " + e.message)
+            }
+    }
+
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
     }
@@ -286,6 +318,7 @@ class PSPDFKitViewFactory(
             messenger,
             creationParams?.get("document") as String?,
             creationParams?.get("configuration") as HashMap<String, Any>?,
+            creationParams?.get("customToolbarItems") as List<Map<String, Any>>?,
         )
     }
 }

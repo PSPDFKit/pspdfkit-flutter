@@ -11,19 +11,22 @@ import Foundation
 import PSPDFKit
 
 @objc(PspdfkitPlatformViewImpl)
-public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PDFViewControllerDelegate {
+public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PDFViewControllerDelegate, UIGestureRecognizerDelegate {
 
     private var pdfViewController: PDFViewController? = nil;
     private var pspdfkitWidgetCallbacks: PspdfkitWidgetCallbacks? = nil;
+    private var customToolbarCallbacks: CustomToolbarCallbacks? = nil;
     private var viewId: String? = nil;
     private var eventsHelper: FlutterEventsHelper? = nil;
-
+    private var customToolbarItems: [[String: Any]] = [];
+    
     @objc public func setViewController(controller: PDFViewController){
         self.pdfViewController = controller
         self.pdfViewController?.delegate = self
         
         // Set the host view for the annotation toolbar controller
         controller.annotationToolbarController?.updateHostView(nil, container: nil, viewController: controller)
+        CustomToolbarHelper.setupCustomToolbarItems(for: pdfViewController!, customToolbarItems:customToolbarItems, callbacks: customToolbarCallbacks)
     }
     
     public func pdfViewController(_ pdfController: PDFViewController, didChange document: Document?) {
@@ -59,6 +62,7 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
     
     public func pdfViewController(_ pdfController: PDFViewController, didConfigurePageView pageView: PDFPageView, forPageAt pageIndex: Int) {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handlePageTap(_:)))
+        tapGesture.delegate = self
         pageView.addGestureRecognizer(tapGesture)
     }
     
@@ -67,8 +71,44 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
             let location = gesture.location(in: pageView)
             let point: PointF = PointF(x: Double(Float(location.x)), y: Double(Float(location.y)))
             let pageIndex = Int64(pageView.pageIndex)
-            pspdfkitWidgetCallbacks?.onPageClick(documentId: pdfViewController?.document?.uid ?? "", pageIndex: pageIndex, point: point, annotation: nil){_ in }
+            
+            // Check if there's an annotation at the tap location
+            if let document = pdfViewController?.document {
+                // Get annotations for the current page
+                let pageAnnotations = document.annotationsForPage(at: PageIndex(pageView.pageIndex), type: .all)
+                
+                // Find annotation at tap location
+                var tappedAnnotation: Annotation? = nil
+                for annotation in pageAnnotations {
+                    if annotation.boundingBox.contains(location) {
+                        tappedAnnotation = annotation
+                        break
+                    }
+                }
+                
+                // If we found an annotation at the tap location
+                if let annotation = tappedAnnotation {
+                    // Convert annotation to JSON for the callback using the project's helper
+                    if let annotationsJSON = PspdfkitFlutterConverter.instantJSON(from: [annotation]) as? [[String: Any]],
+                       let jsonData = try? JSONSerialization.data(withJSONObject: annotationsJSON.first ?? [:], options: []),
+                       let jsonString = String(data: jsonData, encoding: .utf8) {
+                        pspdfkitWidgetCallbacks?.onPageClick(documentId: document.uid, pageIndex: pageIndex, point: point, annotation: jsonString){_ in }
+                    } else {
+                        pspdfkitWidgetCallbacks?.onPageClick(documentId: document.uid, pageIndex: pageIndex, point: point, annotation: nil){_ in }
+                    }
+                } else {
+                    // No annotation at tap location
+                    pspdfkitWidgetCallbacks?.onPageClick(documentId: document.uid, pageIndex: pageIndex, point: point, annotation: nil){_ in }
+                }
+            }
         }
+    }
+    
+    // UIGestureRecognizerDelegate method to determine when to handle taps
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        // Allow simultaneous recognition with other gesture recognizers
+        // This ensures our tap recognizer doesn't block PSPDFKit's built-in gestures
+        return true
     }
 
     func setFormFieldValue(value: String, fullyQualifiedName: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
@@ -291,6 +331,32 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
                     if pdfViewController.annotationToolbarController?.isToolbarVisible == false {
                         pdfViewController.annotationToolbarController?.showToolbar(animated: true)
                     }
+                    
+                    // Handle special cases for tools that need to show pickers or dialogs
+                    if toolWithVariant.annotationTool == .stamp {
+                        // Show the stamp picker
+                        // pdfViewController.annotationStateManager.setState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
+                        pdfViewController.annotationStateManager.toggleStampController(nil)
+                        // The stamp picker will be shown automatically when the tool is selected
+                        completion(.success(true))
+                    } else if toolWithVariant.annotationTool == .image {
+                        // For image tool, we need to use the annotation state manager to trigger the image picker
+                        // pdfViewController.annotationStateManager.setState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
+                        pdfViewController.annotationStateManager.toggleImagePickerController(nil)
+                        // The image picker will be shown automatically when the tool is selected
+                        completion(.success(true))
+                    } else if toolWithVariant.annotationTool == .signature {
+                        // For signature tool, we need to use the annotation state manager to trigger the signature controller
+                        // pdfViewController.annotationStateManager.setState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
+                        pdfViewController.annotationStateManager.toggleSignatureController(nil)
+                        // The signature dialog will be shown automatically when the tool is selected
+                        completion(.success(true))
+                    } else {
+                        // For all other annotation tools, just toggle the state
+                        pdfViewController.annotationStateManager.toggleState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
+                        completion(.success(true))
+                    }
+                    
                     pdfViewController.annotationStateManager.toggleState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
                     // Ensure the annotation toolbar is visible
                     completion(.success(true))
@@ -310,6 +376,7 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
                 if pdfViewController.annotationToolbarController?.isToolbarVisible == false {
                     pdfViewController.annotationToolbarController?.showToolbar(animated: true)
                 }
+                
                 pdfViewController.annotationStateManager.toggleState(defaultTool.annotationTool, variant: defaultTool.variant)
                 completion(.success(true))
             }
@@ -336,8 +403,6 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
         }
     }
 
-
-
     @objc func spreadIndexDidChange(_ notification: Notification) {
           if let newSpreadIndex = notification.userInfo?["PSPDFDocumentViewControllerSpreadIndexKey"] as? Int,
             let newPageIndex = self.pdfViewController?.documentViewController?.layout.pageRangeForSpread(at: newSpreadIndex).location {
@@ -345,23 +410,26 @@ public class PspdfkitPlatformViewImpl: NSObject, PspdfkitWidgetControllerApi, PD
           }
     }
     
-    @objc public func register( binaryMessenger: FlutterBinaryMessenger, viewId: String){
+    @objc public func register( binaryMessenger: FlutterBinaryMessenger, viewId: String, customToolbarItems: [[String: Any]]){
         self.viewId = viewId
         pspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "widget.callbacks.\(viewId)")
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix:viewId)
-        let nutreintEventCallback: NutrientEventsCallbacks = NutrientEventsCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "events.callbacks.\(viewId)")
-        eventsHelper = FlutterEventsHelper(nutrientCallback: nutreintEventCallback)
+        let nutrientEventCallback: NutrientEventsCallbacks = NutrientEventsCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "events.callbacks.\(viewId)")
+        eventsHelper = FlutterEventsHelper(nutrientCallback: nutrientEventCallback)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(spreadIndexDidChange(_:)),
                                                name: .PSPDFDocumentViewControllerSpreadIndexDidChange,
                                                object: nil)
+        
+        customToolbarCallbacks = CustomToolbarCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "customToolbar.callbacks.\(viewId)")
+        self.customToolbarItems = customToolbarItems
     }
     
     @objc public func unRegister(binaryMessenger: FlutterBinaryMessenger){
         NotificationCenter.default.removeObserver(self)
         pspdfkitWidgetCallbacks = nil
+        customToolbarCallbacks = nil
         PspdfkitWidgetControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: nil, messageChannelSuffix: viewId ?? "")
-        
         if eventsHelper != nil {
             eventsHelper = nil
         }

@@ -174,6 +174,10 @@ class PdfConfiguration {
   /// Sets the minimum zoom scale. Defaults to null.
   final double? minimumZoomScale;
 
+  final SignatureSavingStrategy? signatureSavingStrategy;
+
+  final SignatureCreationConfiguration? signatureCreationConfiguration;
+
   PdfConfiguration(
       {this.scrollDirection,
       this.pageTransition,
@@ -222,7 +226,9 @@ class PdfConfiguration {
       this.annotationToolsGrouping,
       this.defaultZoomScale,
       this.maximumZoomScale,
-      this.minimumZoomScale});
+      this.minimumZoomScale,
+      this.signatureSavingStrategy,
+      this.signatureCreationConfiguration});
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
   /// This is used to pass the configuration to the platform side.
@@ -273,7 +279,9 @@ class PdfConfiguration {
       'toolbarItemGrouping': convertAnnotationToolsGrouping(),
       'defaultZoomScale': defaultZoomScale,
       'maximumZoomScale': maximumZoomScale,
-      'minimumZoomScale': minimumZoomScale
+      'minimumZoomScale': minimumZoomScale,
+      'signatureSavingStrategy': signatureSavingStrategy?.name,
+      'signatureCreationConfiguration': signatureCreationConfiguration?.toMap(),
     }..removeWhere((key, value) => value == null);
   }
 

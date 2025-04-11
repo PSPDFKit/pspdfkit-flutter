@@ -208,13 +208,11 @@ class PspdfkitFlutterWeb extends PspdfkitFlutterPlatform {
 
   @override
   Future<String> getAuthorName() {
-    // TODO: implement getAuthorName
     throw UnimplementedError();
   }
 
   @override
   Future<void> setDefaultAuthorName(String authorName) {
-    // TODO: implement setDefaultAuthorName
     throw UnimplementedError();
   }
 }

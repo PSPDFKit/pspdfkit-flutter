@@ -29,7 +29,7 @@ void main() {
   // webLicenseKey: "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
   //
   Pspdfkit.initialize();
-  Pspdfkit.enableAnalytics(true);
+  if (!kIsWeb) Pspdfkit.enableAnalytics(true);
 
   Pspdfkit.analyticsEventsListener = (eventName, attributes) {
     if (kDebugMode) {

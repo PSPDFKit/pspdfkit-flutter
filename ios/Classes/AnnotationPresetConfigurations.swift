@@ -27,6 +27,7 @@ let REPEAT_OVERLAY_TEXT = "repeatOverlayText"
 let DEFAULT_BORDER_EFFECT = "borderEffect"
 let DEFAULT_TEXT_ALIGNMENT = "textAlignment"
 let DEFAULT_ICON_NAME = "iconName"
+let AVAILABLE_STAMP_ITEMS = "availableStampItems"
 
 // Annotation types constants
 let ANNOTATION_INK_PEN = "inkPen"
@@ -299,6 +300,12 @@ public class AnnotationsPresetConfigurations: NSObject {
                     styleManager.setPresets(parseColorPresets(colors: colors), forKey: annotationTool, type: .colorPreset)
                 }
                 break
+            case AVAILABLE_STAMP_ITEMS:
+                if let stampItems = presets[key] as? Array<String>
+                {
+                    setDefaultStampItems(stampItems: stampItems)
+                }
+                break
             default:
                 break
             }
@@ -427,5 +434,17 @@ public class AnnotationsPresetConfigurations: NSObject {
         default:
             return .normal
         }
+    }
+    
+    private static func setDefaultStampItems (stampItems: Array<String>) {
+        var stamps = [StampAnnotation]()
+
+        for name in stampItems {
+            let stampAnnotation = StampAnnotation(title: name.uppercased())
+            let suggestedSize = stampAnnotation.sizeThatFits(CGSize(width: 200, height: 100))
+            stampAnnotation.boundingBox = CGRect(x: 0, y: 0, width: suggestedSize.width, height: suggestedSize.height)
+            stamps.append(stampAnnotation)
+        }
+        StampViewController.defaultStampAnnotations = stamps
     }
 }

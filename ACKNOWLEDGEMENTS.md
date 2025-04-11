@@ -2204,6 +2204,8 @@ that were granted to the IJG for code derived from their software.
 
 
 --------------------------------------------------------------------------------
+## magic_enum (https://github.com/Neargye/magic_enum)
+
 MIT License
 
 Copyright (c) 2019 - 2024 Daniil Goncharov
@@ -3957,7 +3959,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
 ## PorterTokenizer (https://github.com/mozilla/releases-comm-central/blob/master/mailnews/extensions/fts3/src/Normalize.c)
 
-Modified file can be obtained by emailing legal@pspdfkit.com
+Modified file can be obtained by emailing legal@nutrient.io
 
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this

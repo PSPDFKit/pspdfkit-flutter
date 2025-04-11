@@ -14,11 +14,10 @@ This is a brief example of how to use the PSPDFKit with Flutter.
 ## Running the Example Project
 
 1. Before trying to run the project, please make sure that you are on the correct versions of all the tools mentioned above.
-1. Clone the repository `git clone https://github.com/PSPDFKit/pspdfkit-flutter.git`
-1. cd `pspdfkit-flutter/example`
-1. Run `flutter pub get` to download all the dependencies
-1. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
-1. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
+2. Clone the repository `git clone https://github.com/PSPDFKit/pspdfkit-flutter.git`
+3. cd `pspdfkit-flutter/example`
+4. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
+5. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
 
 
 [install-flutter]: https://flutter.dev/docs/get-started/install

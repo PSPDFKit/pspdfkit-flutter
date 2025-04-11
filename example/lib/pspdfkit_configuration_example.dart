@@ -7,6 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pspdfkit_example/utils/platform_utils.dart';
 import 'package:pspdfkit_flutter/pspdfkit.dart';
@@ -17,6 +18,9 @@ class PspdfkitConfigurationExample extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var defaultWebToolbarItems =
+        kIsWeb ? Pspdfkit.defaultWebToolbarItems : null;
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         extendBodyBehindAppBar:
@@ -80,6 +84,27 @@ class PspdfkitConfigurationExample extends StatelessWidget {
                         showActionNavigationButtons: false,
                         pageLayoutMode: PspdfkitPageLayoutMode.double,
                         firstPageAlwaysSingle: true,
+                        signatureSavingStrategy:
+                            SignatureSavingStrategy.neverSave,
+                        signatureCreationConfiguration:
+                            SignatureCreationConfiguration(
+                                creationModes: [
+                              SignatureCreationMode.draw,
+                              SignatureCreationMode.type,
+                            ],
+                                colorOptions: SignatureColorOptions(
+                                    option1:
+                                        SignatureColorPreset(color: Colors.red),
+                                    option2: SignatureColorPreset(
+                                        color: Colors.green),
+                                    option3: SignatureColorPreset(
+                                        color: Colors.blue)),
+                                androidSignatureOrientation:
+                                    NutrientAndroidSignatureOrientation
+                                        .landscape,
+                                iosSignatureAspectRatio: const AspectRatio(
+                                  aspectRatio: 1 / 1,
+                                )),
                         webConfiguration: PdfWebConfiguration(
                             toolbarPlacement: PspdfKitToolbarPlacement.bottom,
                             enableHistory: true,
@@ -88,6 +113,13 @@ class PspdfkitConfigurationExample extends StatelessWidget {
                             interactionMode: PspdfkitWebInteractionMode.pan,
                             locale: 'de-DE',
                             zoom: PspdfkitZoomMode.fitToViewPort,
+                            toolbarItems: defaultWebToolbarItems
+                              ?..add(PspdfkitWebToolbarItem(
+                                type: PspdfkitWebToolbarItemType.comment,
+                                title: 'Comments',
+                              ))
+                              ..removeWhere((item) =>
+                                  item.type == PspdfkitWebToolbarItemType.note),
                             allowPrinting: false))))));
   }
 }

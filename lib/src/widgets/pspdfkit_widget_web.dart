@@ -28,7 +28,10 @@ class PspdfkitWidget extends StatefulWidget {
   final PageChangedCallback? onPageChanged;
   final PageClickedCallback? onPageClicked;
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
-
+  //Not used on web
+  final List<CustomToolbarItem> customToolbarItems;
+  //Not used on web
+  final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -39,6 +42,8 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPageChanged,
     this.onPageClicked,
     this.onPdfDocumentSaved,
+    this.customToolbarItems = const [],
+    this.onCustomToolbarItemTapped,
   }) : super(key: key);
 
   @override

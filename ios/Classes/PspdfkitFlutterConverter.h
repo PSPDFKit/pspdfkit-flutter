@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString;
 + (PSPDFAnnotationChange)annotationChangeFromString:(NSString *)changeString;
 + (NSArray <NSDictionary *> *)instantJSONFromAnnotations:(NSArray <PSPDFAnnotation *> *) annotations;
-
++ (PSPDFSignatureSavingStrategy)signatureSavingStrategy:(NSDictionary *)dictionary;
 @end
 
 NS_ASSUME_NONNULL_END

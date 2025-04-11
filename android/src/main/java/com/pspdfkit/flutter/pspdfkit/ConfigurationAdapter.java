@@ -12,6 +12,7 @@ import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNot
 import static io.flutter.util.Preconditions.checkNotNull;
 
 import android.content.Context;
+import android.os.Parcel;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.pspdfkit.configuration.PdfConfiguration;
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration;
 import com.pspdfkit.configuration.activity.ThumbnailBarMode;
 import com.pspdfkit.configuration.activity.UserInterfaceViewMode;
+import com.pspdfkit.configuration.forms.SignaturePickerOrientation;
 import com.pspdfkit.configuration.page.PageFitMode;
 import com.pspdfkit.configuration.page.PageLayoutMode;
 import com.pspdfkit.configuration.page.PageScrollDirection;
@@ -29,7 +31,11 @@ import com.pspdfkit.configuration.page.PageScrollMode;
 import com.pspdfkit.configuration.search.SearchType;
 import com.pspdfkit.configuration.settings.SettingsMenuItemType;
 import com.pspdfkit.configuration.sharing.ShareFeatures;
+import com.pspdfkit.configuration.signatures.SignatureColorOptions;
+import com.pspdfkit.configuration.signatures.SignatureCreationMode;
+import com.pspdfkit.configuration.signatures.SignatureSavingStrategy;
 import com.pspdfkit.configuration.theming.ThemeMode;
+import com.pspdfkit.flutter.pspdfkit.util.ColorUtil;
 import com.pspdfkit.preferences.PSPDFKitPreferences;
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool;
 
@@ -37,6 +43,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 class ConfigurationAdapter {
     private static final String LOG_TAG = "ConfigurationAdapter";
@@ -84,51 +92,55 @@ class ConfigurationAdapter {
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
 
+    private static final String SIGNATURE_SAVING_STRATEGY = "signatureSavingStrategy";
+
+    private  static final String SIGNATURE_CREATION_CONFIGURATION = "signatureCreationConfiguration";
+
     // Deprecated Options
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code SCROLL_DIRECTION} instead, which replaces it.
      */
     @Deprecated
     private static final String PAGE_SCROLL_DIRECTION = "pageScrollDirection";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code PAGE_TRANSITION} instead, which replaces it.
      */
     @Deprecated
     private static final String PAGE_SCROLL_CONTINUOUS = "scrollContinuously";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code PAGE_MODE} instead, which replaces it.
      */
     @Deprecated
     private static final String PAGE_LAYOUT_MODE = "pageLayoutMode";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code SPREAD_FITTING} instead, which replaces it.
      */
     @Deprecated
     private static final String FIT_PAGE_TO_WIDTH = "fitPageToWidth";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code SHOW_PAGE_LABELS} instead, which replaces it.
      */
     @Deprecated
     private static final String SHOW_PAGE_NUMBER_OVERLAY = "showPageNumberOverlay";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code DOCUMENT_LABEL_ENABLED} instead, which replaces it.
      */
     @Deprecated
     private static final String SHOW_DOCUMENT_LABEL = "showDocumentLabel";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code FIRST_PAGE_ALWAYS_SINGLE} instead, which replaces it.
      */
     @Deprecated
     private static final String IS_FIRST_PAGE_ALWAYS_SINGLE = "isFirstPageAlwaysSingle";
     /**
-     * @deprecated This key word was deprecated with PSPDFKit for Fluttter 3.1.
+     * @deprecated This key word was deprecated with PSPDFKit for Flutter 3.1.
      * Use {@code SHOW_BOOKMARKS_ACTION} instead, which replaces it.
      */
     @Deprecated
@@ -191,6 +203,12 @@ class ConfigurationAdapter {
     private  static final  String MAXIMUM_ZOOM_SCALE = "maximumZoomScale";
     private static final String MINIMUM_ZOOM_SCALE = "minimumZoomScale";
     private static final  String DEFAULT_ZOOM_SCALE = "defaultZoomScale";
+
+    private static final Map<String, SignatureSavingStrategy> signatureSavingStrategyMap = new HashMap<>(){{
+        put("alwaysSave", SignatureSavingStrategy.ALWAYS_SAVE);
+        put("saveIfSelected", SignatureSavingStrategy.SAVE_IF_SELECTED);
+        put("neverSave",SignatureSavingStrategy.NEVER_SAVE);
+    }};
 
     @NonNull
     private final PdfActivityConfiguration.Builder configuration;
@@ -400,9 +418,115 @@ class ConfigurationAdapter {
                 double value = (double) configurationMap.get(key);
                 configuration.startZoomScale((float) value);
             }
+            key = getKeyOfType(configurationMap, SIGNATURE_SAVING_STRATEGY,String.class);
+            if (key !=null ){
+                configureSignatureSavingStrategy(context, (String) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap,SIGNATURE_CREATION_CONFIGURATION, Map.class);
+            if (key !=null){
+                configureSignatureCreationConfiguration((HashMap<String, Object>) configurationMap.get(key));
+            }
         }
     }
 
+    private void configureSignatureCreationConfiguration(HashMap<String,Object> configuration){
+       @Nullable String key;
+
+        key = getKeyOfType(configuration,"creationModes",List.class);
+        if (key!=null){
+            configureSignatureCreationModes((List<String>) Objects.requireNonNull(configuration.get(key)));
+        }
+
+        key = getKeyOfType(configuration,"colorOptions",Map.class);
+        if (key!=null && configuration.get(key) !=null) {
+            configureSignatureColorOptions((Map<String, Map<String,Object>>) Objects.requireNonNull(configuration.get(key)));
+        }
+
+        key = getKeyOfType(configuration,"androidSignatureOrientation",String.class);
+        if (key!=null) {
+            configureSignatureOrientation((String) Objects.requireNonNull(configuration.get(key)));
+        }
+    }
+
+    private void configureSignatureSavingStrategy(Context context, String strategy) {
+        SignatureSavingStrategy mStrategy = signatureSavingStrategyMap.get(strategy);
+        if (mStrategy != null) {
+            // Set the signature saving strategy
+            configuration.signatureSavingStrategy(mStrategy);
+        }
+    }
+
+    private void configureSignatureCreationModes (List<String> modes) {
+        final Map<String,SignatureCreationMode> modeMap = new  HashMap<>(){{
+            put("draw", SignatureCreationMode.DRAW);
+            put("type",SignatureCreationMode.TYPE);
+            put("image",SignatureCreationMode.IMAGE);
+        }};
+        List<SignatureCreationMode> mModes  = new ArrayList<>();
+        for (String mode:modes) {
+            if (modeMap.containsKey(mode)){
+                mModes.add(modeMap.get(mode));
+            }
+        }
+        configuration.signatureCreationModes(mModes);
+    }
+
+    private void configureSignatureColorOptions(Map<String,Map<String,Object>> colorOptions){
+        Map<String,Object> option1 = colorOptions.get("option1");
+        Map<String,Object> option2 = colorOptions.get("option2");
+        Map<String,Object> option3 = colorOptions.get("option3");
+        configuration.signatureColorOptions(new SignatureColorOptions() {
+            @Override
+            public int option1(@Nullable Context context) {
+                if (option1 !=null){
+                    return ColorUtil.extractColor((String) option1.get("color"));
+                }
+                return 0;
+            }
+
+            @Override
+            public int option2(@Nullable Context context) {
+                if (option2 !=null){
+                    return ColorUtil.extractColor((String) option2.get("color"));
+                }
+                return 0;
+            }
+
+            @Override
+            public int option3(@Nullable Context context) {
+                if (option3 !=null){
+                    return ColorUtil.extractColor((String) option3.get("color"));
+                }
+                return 0;
+            }
+
+            @Override
+            public int describeContents() {
+                return 0;
+            }
+
+            @Override
+            public void writeToParcel(@NonNull Parcel dest, int flags) {
+            }
+        });
+    }
+
+    private void configureSignatureOrientation(String orientation){
+        SignaturePickerOrientation signaturePickerOrientation = switch (orientation) {
+            case "portrait" -> SignaturePickerOrientation.LOCKED_PORTRAIT;
+            case "landscape" -> SignaturePickerOrientation.LOCKED_LANDSCAPE;
+            case "automatic" -> SignaturePickerOrientation.AUTOMATIC;
+            case "unlocked" -> SignaturePickerOrientation.UNLOCKED;
+            default -> {
+                Log.w(LOG_TAG, "Invalid signature orientation value: " + orientation);
+               yield null;
+            }
+        };
+
+        if (signaturePickerOrientation !=null){
+            configuration.setSignaturePickerOrientation(signaturePickerOrientation);
+        }
+    }
 
     private void configurePageTransition(@NonNull final String transition) {
         switch (transition) {
@@ -705,10 +829,9 @@ class ConfigurationAdapter {
 
         EnumSet<SettingsMenuItemType> settingsMenuItemTypes = EnumSet.noneOf(SettingsMenuItemType.class);
         for (T settingsMenuItem : settingsMenuItems) {
-            if (!(settingsMenuItem instanceof String)) {
+            if (!(settingsMenuItem instanceof String menuType)) {
                 throw new IllegalArgumentException("Provided settingMenuItem " + settingsMenuItem + " must be a String.");
             }
-            String menuType = (String) settingsMenuItem;
             switch (menuType) {
                 case SETTINGS_MENU_ITEM_THEME:
                 case SETTINGS_MENU_ITEM_ANDROID_THEME:

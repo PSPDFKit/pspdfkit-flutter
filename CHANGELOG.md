@@ -1,8 +1,15 @@
+## 4.3.0 - 11 Apr 2025
+
+- Adds setting custom stamp items support. Only custom text stamps are supported, and this is available only on iOS and Android for now. (J#HYB-715) 
+- Adds signature creation configuration and signature saving strategy support. (J#HYB-739)
+- Adds support for custom main toolbar items with icons. (J#HYB-732)
+- Fixes issue where an annotation doesn't get selected when clicked on iOS. (J#HYB-735)
+
 ## 4.2.2 - 24 Mar 2025
 
-- Updates for Nutrient Android SDK 10.1.1 - https://www.nutrient.io/guides/android/changelog/.
-- Updates Android bridging by moving `MethodCallHandler` from `PspdfkitPlugin` to `PspdfkitPluginMethodCallHandler`, preparing for a complete migration to Pigeon and proper deprecation path. (J#HYB-690)
-- Fixes issue on Android when adding an annotationDeleted event listener. (J#HYB-640)
+- Updates for Nutrient Android SDK 10.1.1 — [see changelog](https://www.nutrient.io/guides/android/changelog/).
+- Updates Android bridging by moving `MethodCallHandler` from `PspdfkitPlugin` to `PspdfkitPluginMethodCallHandler`, preparing for a complete migration to Pigeon and a proper deprecation path. (J#HYB-690)
+- Fixes an issue on Android when adding an `annotationDeleted` event listener. (J#HYB-640)
 
 ## 4.2.1 - 10 Mar 2025
 

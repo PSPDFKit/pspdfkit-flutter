@@ -27,7 +27,7 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.inkMagic:
       case AnnotationTool.inkHighlighter:
         return 'inkPen';
-        
+
       // Text markup tools
       case AnnotationTool.highlight:
         return 'highlight';
@@ -37,13 +37,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'strikeOut';
       case AnnotationTool.squiggly:
         return 'squiggly';
-        
+
       // Text tools
       case AnnotationTool.freeText:
         return 'freeText';
       case AnnotationTool.freeTextCallOut:
         return 'freeTextCallOut';
-        
+
       // Shape tools
       case AnnotationTool.square:
         return 'square';
@@ -53,13 +53,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'polygon';
       case AnnotationTool.polyline:
         return 'polyline';
-        
+
       // Line tools
       case AnnotationTool.line:
         return 'line';
       case AnnotationTool.arrow:
         return 'arrow';
-        
+
       // Other annotation tools
       case AnnotationTool.note:
         return 'note';
@@ -75,7 +75,7 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'eraser';
       case AnnotationTool.link:
         return 'link';
-        
+
       // Measurement tools
       case AnnotationTool.measurementDistance:
         return 'measurementDistance';
@@ -87,13 +87,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'measurementAreaEllipse';
       case AnnotationTool.measurementAreaPolygon:
         return 'measurementAreaPolygon';
-        
+
       // Default fallback
       default:
         return 'pan';
     }
   }
-  
+
   /// Returns the appropriate PSPDFKit Web InteractionMode string
   String toWebInteractionMode([AnnotationToolVariant? variant]) {
     switch (this) {
@@ -102,7 +102,7 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.inkMagic:
       case AnnotationTool.inkHighlighter:
         return 'INK';
-        
+
       // Text markup tools
       case AnnotationTool.highlight:
         return 'TEXT_HIGHLIGHTER';
@@ -112,13 +112,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'TEXT_STRIKEOUT';
       case AnnotationTool.squiggly:
         return 'TEXT_SQUIGGLY';
-        
+
       // Text tools
       case AnnotationTool.freeText:
         return 'TEXT';
       case AnnotationTool.freeTextCallOut:
         return 'CALLOUT';
-        
+
       // Shape tools
       case AnnotationTool.square:
         return 'SHAPE_RECTANGLE';
@@ -128,13 +128,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'SHAPE_POLYGON';
       case AnnotationTool.polyline:
         return 'SHAPE_POLYLINE';
-        
+
       // Line tools
       case AnnotationTool.line:
         return 'SHAPE_LINE';
       case AnnotationTool.arrow:
         return 'ARROW';
-        
+
       // Other annotation tools
       case AnnotationTool.note:
         return 'NOTE';
@@ -150,7 +150,7 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'INK_ERASER';
       case AnnotationTool.link:
         return 'LINK';
-        
+
       // Measurement tools
       case AnnotationTool.measurementDistance:
         return 'DISTANCE';
@@ -162,7 +162,7 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'ELLIPSE_AREA';
       case AnnotationTool.measurementAreaPolygon:
         return 'POLYGON_AREA';
-        
+
       // Default fallback
       default:
         return 'PAN';

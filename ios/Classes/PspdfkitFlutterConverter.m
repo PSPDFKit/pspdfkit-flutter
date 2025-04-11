@@ -7,6 +7,7 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitFlutterConverter.h"
+#import "pspdfkit_flutter-Swift.h"
 
 @implementation PspdfkitFlutterConverter
 
@@ -200,6 +201,16 @@
         key = @"minimumZoomScale";
         if (dictionary[key]){
             builder.minimumZoomScale = [dictionary[key] doubleValue];
+        }
+        
+        key = @"signatureSavingStrategy";
+        if (dictionary[key]){
+            builder.signatureSavingStrategy = [PspdfkitFlutterConverter signatureSavingStrategy:dictionary[key]];
+        }
+        
+        key = @"signatureCreationConfiguration";
+        if (dictionary[key]) {
+             [SignatureHelper configureSignatureCreation:builder withOptions:dictionary[key]];
         }
     }];
 }
@@ -438,5 +449,17 @@
     }
     return [annotationsJSON copy];
 }
+
++ (PSPDFSignatureSavingStrategy)signatureSavingStrategy:(NSString *)strategy {
+    if ([strategy isEqualToString:@"neverSave"]) {
+        return PSPDFSignatureSavingStrategyNeverSave;
+    } else if ([strategy isEqualToString:@"alwaysSave"]) {
+        return PSPDFSignatureSavingStrategyAlwaysSave;
+    } else if ([strategy isEqualToString:@"saveIfSelected"]) {
+        return PSPDFSignatureSavingStrategySaveIfSelected;
+    } else {
+        return PSPDFSignatureSavingStrategyNeverSave;
+    }
+} 
 
 @end

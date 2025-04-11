@@ -64,6 +64,9 @@ class _PspdfkitAnnotationPresetCustomizationState
                 AnnotationTool.highlight: MarkupAnnotationConfiguration(
                   color: Colors.red,
                 ),
+                AnnotationTool.stamp: StampAnnotationConfiguration(
+                  availableStampItems: ['Approved', 'Draft', 'Final'],
+                ),
               },
             );
           } catch (e) {

@@ -220,26 +220,16 @@ class MarkupAnnotationConfiguration extends AnnotationConfiguration {
 
 /// Annotation configuration class for Stamp annotation. Stamp annotations include: Stamp and Image Annotation.
 class StampAnnotationConfiguration extends AnnotationConfiguration {
-  final Color? color;
-  final double? thickness;
-  final Color? fillColor;
-  final String? stampName;
+  final List<String>? availableStampItems;
 
   StampAnnotationConfiguration({
-    this.color,
-    this.thickness,
-    this.fillColor,
-    this.stampName,
+    this.availableStampItems,
   });
 
   @override
   Map<String, Object> toMap() {
     final map = _getProperties();
-    map['stampName'] = stampName;
-    map['color'] = color?.toHex();
-    map['thickness'] = thickness;
-    map['fillColor'] = fillColor?.toHex();
-    map['blendMode'] = blendMode?.name;
+    map['availableStampItems'] = availableStampItems;
     map.removeWhere((key, value) => value == null);
     return map.cast<String, Object>();
   }

@@ -11,6 +11,7 @@ package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import androidx.core.util.Pair
 import com.pspdfkit.annotations.AnnotationType
 import com.pspdfkit.annotations.AnnotationType.CIRCLE
@@ -46,6 +47,7 @@ import com.pspdfkit.annotations.configuration.RedactionAnnotationConfiguration
 import com.pspdfkit.annotations.configuration.ShapeAnnotationConfiguration
 import com.pspdfkit.annotations.configuration.SoundAnnotationConfiguration
 import com.pspdfkit.annotations.configuration.StampAnnotationConfiguration
+import com.pspdfkit.annotations.stamps.PredefinedStampType
 import com.pspdfkit.annotations.stamps.StampPickerItem
 import com.pspdfkit.configuration.annotations.AnnotationAggregationStrategy
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
@@ -75,7 +77,7 @@ const val AVAILABLE_BORDER_STYLES_PRESETS = "availableBorderStylePresets"
 const val DEFAULT_BORDER_STYLE = "borderStyle"
 const val AUDION_SAMPLING_RATE = "audioSamplingRate"
 const val AUDIO_RECORDING_TIME_LIMIT = "audioRecordingTimeLimit"
-const val AVAILABLE_STAMP_ITEMS = "availableStampPickers"
+const val AVAILABLE_STAMP_ITEMS = "availableStampItems"
 const val DEFAULT_ICON_NAME = "defaultIconName"
 const val AVAILABLE_ICON_NAMES = "availableIconNames"
 const val DEFAULT_LINE_END = "lineEndStyle"
@@ -248,7 +250,7 @@ class AnnotationConfigurationAdaptor {
                     }
 
                     else -> {
-                        throw IllegalArgumentException("Unknown annotation type: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown annotation type: $key. Ignoring this configuration.")
                     }
                 }
             }
@@ -300,7 +302,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown annotation configuration key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown annotation configuration key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -353,7 +355,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown annotation configuration key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown annotation configuration key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -418,7 +420,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown annotation configuration key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown annotation configuration key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -428,7 +430,8 @@ class AnnotationConfigurationAdaptor {
         private fun extractLineEndPair(lineEndPair: String): Pair<LineEndType, LineEndType> {
             val lineEnds = lineEndPair.split(",")
             if (lineEnds.size != 2) {
-                throw IllegalArgumentException("Invalid line end pair: $lineEndPair")
+                Log.w("AnnotationConfigAdaptor", "Invalid line end pair: $lineEndPair. Using default NONE,NONE pair.")
+                return Pair(LineEndType.NONE, LineEndType.NONE)
             }
             val firstLineEnd = parseLineEnd(lineEnds[0])
             val secondLineEnd = parseLineEnd(lineEnds[1])
@@ -523,7 +526,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -570,7 +573,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -604,7 +607,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
 
                 }
@@ -642,7 +645,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -670,7 +673,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -687,11 +690,11 @@ class AnnotationConfigurationAdaptor {
             while (iterator.hasNext()) {
                 when (val key = iterator.next()) {
                     AVAILABLE_STAMP_ITEMS -> (configuration[key] as List<*>?)?.let { stampItems ->
-                        builder.setAvailableStampPickerItems(
-                            extractStampPickerItems(
-                                stampItems.map { it as String }, context
-                            )
+                        val availableStampItems =  extractStampPickerItems(
+                            stampItems.map { it as String }, context
                         )
+                        if (availableStampItems.isNotEmpty())
+                        builder.setAvailableStampPickerItems(availableStampItems)
                     }
 
                     Z_INDEX_EDITING_ENABLED -> builder.setZIndexEditingEnabled(
@@ -707,7 +710,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -776,7 +779,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
 
                 }
@@ -833,7 +836,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -934,7 +937,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -1040,7 +1043,7 @@ class AnnotationConfigurationAdaptor {
 
                     FORCE_DEFAULTS -> builder.setForceDefaults(configuration[key] as Boolean)
                     else -> {
-                        throw IllegalArgumentException("Unknown key: $key")
+                        Log.w("AnnotationConfigAdaptor", "Unknown key: $key. Ignoring this property.")
                     }
                 }
             }
@@ -1115,7 +1118,7 @@ class AnnotationConfigurationAdaptor {
                         extractAggregationStrategy(configuration[key] as String)
                     )
 
-                    else -> throw IllegalArgumentException("Unknown property $key")
+                    else -> Log.w("AnnotationConfigAdaptor", "Unknown property $key. Ignoring this property.")
                 }
             }
             return builder.build();
@@ -1130,14 +1133,19 @@ class AnnotationConfigurationAdaptor {
         }
 
         private fun extractStampPickerItems(it: Any, context: Context): List<StampPickerItem> {
-            val stampPickerItems = mutableListOf<StampPickerItem>()
-            (it as ArrayList<*>).forEach { stampPickerItem ->
-                val stampPickerItemString = stampPickerItem as String
-                stampPickerItems.add(
-                    StampPickerItem.fromTitle(context, stampPickerItemString).build()
-                )
+          try {
+              val stampPickerItems = mutableListOf<StampPickerItem>()
+              (it as ArrayList<*>).forEach { stampPickerItem ->
+                  val stampPickerItemString = stampPickerItem as String
+                  stampPickerItems.add(
+                      StampPickerItem.fromTitle(context, stampPickerItemString).build()
+                  )
+              }
+              return stampPickerItems
+          }catch (e: Exception){
+              e.printStackTrace()
+              return listOf()
             }
-            return stampPickerItems
         }
 
         private fun extractBorderStyles(it: List<String>): List<BorderStylePreset> {
@@ -1176,7 +1184,10 @@ class AnnotationConfigurationAdaptor {
                 "automatic" -> AnnotationAggregationStrategy.AUTOMATIC
                 "merge" -> AnnotationAggregationStrategy.MERGE_IF_POSSIBLE
                 "separate" -> AnnotationAggregationStrategy.SEPARATE
-                else -> throw IllegalArgumentException("Unknown aggregation strategy $string")
+                else -> {
+                    Log.w("AnnotationConfigAdaptor", "Unknown aggregation strategy $string. Using AUTOMATIC as default.")
+                    AnnotationAggregationStrategy.AUTOMATIC
+                }
             }
         }
 

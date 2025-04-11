@@ -708,3 +708,10 @@ enum NutrientEvent {
 abstract class AnalyticsEventsCallback {
   void onEvent(String event, Map<String, Object?>? attributes);
 }
+
+/// Callbacks for custom toolbar item interactions
+@FlutterApi()
+abstract class CustomToolbarCallbacks {
+  /// Called when a custom toolbar item is tapped
+  void onCustomToolbarItemTapped(String identifier);
+}
