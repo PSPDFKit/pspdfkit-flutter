@@ -192,4 +192,19 @@ class PspdfkitWidgetControllerNative extends PspdfkitWidgetController {
     throw UnimplementedError(
         'Annotation creation mode is not supported in legacy mode');
   }
+
+  @override
+  void addWebEventListener(
+      NutrientWebEvent event, Function(dynamic p1) callback) {
+    // Web event listeners are not supported on native platforms.
+    throw UnimplementedError('addWebEventListener is only supported on web.');
+  }
+
+  @override
+  void removeWebEventListener(
+      NutrientWebEvent event, Function(dynamic p1) callback) {
+    // Web event listeners are not supported on native platforms.
+    throw UnimplementedError(
+        'removeWebEventListener is only supported on web.');
+  }
 }

@@ -382,81 +382,95 @@ class PspdfkitWebInstance {
       _pspdfkitInstance.callMethod('addEventListener', [
         eventName,
         allowInterop(([dynamic event, dynamic event2]) {
-          // If the event is a primitive type, pass it directly to the callback function.
-          if (event is int ||
-              event is String ||
-              event is bool ||
-              event == null) {
-            callback(event);
-            return;
-          }
+          dynamic processedEvent1;
+          dynamic processedEvent2;
 
-          // Convert annotations in events that include them
+          // --- Process event 1 ---
           if (event is JsObject) {
+            // Convert JsObject to Map, handling annotations specifically
             final eventData = event.toJson();
-
-            // Check for annotation events that contain annotation objects
             if (eventData is Map<String, dynamic>) {
-              // Handle annotation events - look for common annotation event properties
-              if (eventData.containsKey('annotation')) {
-                // Check if annotation is a JsObject that needs conversion
-                final annotation = event['annotation'];
-                if (annotation is JsObject) {
-                  // Convert annotation to JSON using the helper method
-                  final jsonAnnotation = webAnnotationToJSON(annotation);
-                  // Update event data with converted annotation
-                  eventData['annotation'] = jsonAnnotation;
-                }
+              // Handle single annotation property
+              if (eventData.containsKey('annotation') &&
+                  event['annotation'] is JsObject) {
+                eventData['annotation'] =
+                    webAnnotationToJSON(event['annotation']);
               }
-
-              // Handle annotation array events (e.g., annotations in batch operations)
+              // Handle annotations array property
               if (eventData.containsKey('annotations') &&
-                  event['annotations'] != null) {
-                final annotations = event['annotations'];
-                if (annotations is JsObject &&
-                    annotations.hasProperty('length')) {
-                  final length = annotations['length'] as int;
+                  event['annotations'] is JsObject) {
+                final jsAnnotationsArray = event['annotations'];
+                // Check if it behaves like an array (has length property)
+                if (jsAnnotationsArray.hasProperty('length')) {
+                  final length = jsAnnotationsArray['length'] as int;
                   final convertedAnnotations = <dynamic>[];
-
-                  // Convert each annotation in the array
                   for (var i = 0; i < length; i++) {
-                    final annotation = annotations[i];
+                    final annotation =
+                        jsAnnotationsArray[i]; // Access array element
                     if (annotation is JsObject) {
-                      // Convert annotation to JSON
-                      final jsonAnnotation = webAnnotationToJSON(annotation);
-                      convertedAnnotations.add(jsonAnnotation);
-                    } else if (annotation != null) {
+                      convertedAnnotations.add(webAnnotationToJSON(annotation));
+                    } else {
+                      // Keep non-JsObject elements as they are
                       convertedAnnotations.add(annotation);
                     }
                   }
-
-                  // Update event data with converted annotations
-                  eventData['annotations'] = convertedAnnotations;
+                  eventData['annotations'] =
+                      convertedAnnotations; // Update the map
                 }
               }
-
-              // If the second event is null, pass the processed event data to the callback
-              if (event2 == null) {
-                callback(eventData);
-                return;
-              }
+              processedEvent1 = eventData; // Use the processed map
+            } else {
+              processedEvent1 =
+                  eventData; // Use the result of toJson directly if not map
             }
+          } else {
+            processedEvent1 = event; // Keep primitives/null as is
           }
 
-          /// If the event and the second event are JsObjects, process them both
-          if (event is JsObject && event2 is JsObject) {
-            final eventData1 = event.toJson();
-            final eventData2 = event2.toJson();
-            callback([eventData1, eventData2]);
-            return;
+          // --- Process event 2 ---
+          if (event2 is JsObject) {
+            // Check if event2 itself looks like an annotation before generic conversion
+            // Use a heuristic: check for common annotation properties like 'id' and 'type'.
+            final id = event2['id'];
+            final type = event2['type'];
+            if (id != null && type is String && type.startsWith('pspdfkit/')) {
+              // Looks like an annotation, use the specific converter
+              processedEvent2 = webAnnotationToJSON(event2);
+            } else {
+              // Not identified as an annotation, use generic conversion
+              processedEvent2 = event2.toJson();
+            }
+          } else {
+            processedEvent2 = event2; // Keep primitives/null as is
           }
 
-          // Convert any other JsObject events to JSON
-          callback((event as JsObject).toJson());
+          // --- Pass to callback ---
+          if (event2 != null) {
+            // Two arguments were passed from JS API. Package into a Map.
+            callback({
+              'argument1': processedEvent1,
+              'argument2': processedEvent2,
+            });
+          } else {
+            // Only one (or zero) argument was passed from JS API.
+            callback(processedEvent1);
+          }
         })
       ]);
     } catch (e) {
-      throw Exception('Failed to add event listener: $e');
+      throw Exception('Failed to add event listener for $eventName: $e');
+    }
+  }
+
+  /// Removes event listener from the PSPDFKit instance.
+  /// The [eventName] parameter specifies the name of the event to remove the listener from.
+  /// The [jsCallback] parameter specifies the JavaScript function reference that was originally added.
+  void removeEventListener(String eventName, Function jsCallback) {
+    try {
+      _pspdfkitInstance
+          .callMethod('removeEventListener', [eventName, jsCallback]);
+    } catch (e) {
+      throw Exception('Failed to remove event listener for $eventName: $e');
     }
   }
 

@@ -81,9 +81,21 @@ abstract class PspdfkitWidgetController {
   Future<void> addEventListener(
       NutrientEvent event, Function(dynamic) callback);
 
+  /// This method allow you to support all events from the Nutrient Web SDK. See the [NutrientWebEvent] enum for a list of available events.
+  /// Also check out the web events API reference for more information: https://www.nutrient.io/guides/web/events/
+  /// @param event. The event to listen for.
+  /// @param callback. The callback to be called when the event is triggered.
+  void addWebEventListener(NutrientWebEvent event, Function(dynamic) callback);
+
   /// Removes an event listener for the given event.
   /// @param event. The event to remove the listener for.
   Future<void> removeEventListener(NutrientEvent event);
+
+  /// Removes a web event listener for the given event.
+  /// @param event. The event to remove the listener for.
+  /// @param callback. The callback function that was originally added.
+  void removeWebEventListener(
+      NutrientWebEvent event, Function(dynamic) callback);
 
   /// Gets the visible rect of the given page.
   /// pageIndex The index of the page. This is a zero-based index.

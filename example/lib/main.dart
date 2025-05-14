@@ -15,10 +15,10 @@ import 'package:pspdfkit_flutter/pspdfkit.dart';
 import 'example_list_view.dart';
 
 const String _pspdfkitFlutterPluginTitle =
-    'PSPDFKit Flutter Plugin example app';
-const String _pspdfkitWidgetExamples = 'PSPDFKit Widget Examples';
-const String _pspdfkitGlobalPluginExamples = 'PSPDFKit Modal View Examples';
-const String _pspdfkitFor = 'PSPDFKit for';
+    'Nutrient Flutter Plugin example app';
+const String _pspdfkitWidgetExamples = 'Nutrient Widget Examples';
+const String _pspdfkitGlobalPluginExamples = 'Nutrient Modal View Examples';
+const String _pspdfkitFor = 'Nutrient ';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

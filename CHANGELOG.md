@@ -1,3 +1,5 @@
+- Adds `addWebEventListener` and `removeWebEventListener` APIs to `PspdfkitWidgetController` for Flutter for Web. (J#HYB-760)
+
 ## 4.3.0 - 11 Apr 2025
 
 - Adds setting custom stamp items support. Only custom text stamps are supported, and this is available only on iOS and Android for now. (J#HYB-715) 
