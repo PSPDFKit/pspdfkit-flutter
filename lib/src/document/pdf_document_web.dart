@@ -151,4 +151,9 @@ class PdfDocumentWeb extends PdfDocument with AnnotationJsonConverter {
   Future<int> getPageCount() {
     return _instance.getPageCount();
   }
+
+  @override
+  Future<bool> addBookmark(String name, int pageIndex) {
+    return _instance.addBookmark(name, pageIndex).then((value) => true);
+  }
 }

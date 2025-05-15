@@ -1989,6 +1989,7 @@ protocol PdfDocumentApi {
   func save(outputPath: String?, options: DocumentSaveOptions?, completion: @escaping (Result<Bool, Error>) -> Void)
   /// Get the total number of pages in the document.
   func getPageCount(completion: @escaping (Result<Int64, Error>) -> Void)
+  func addBookmark(name: String, pageIndex: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2304,6 +2305,24 @@ class PdfDocumentApiSetup {
       }
     } else {
       getPageCountChannel.setMessageHandler(nil)
+    }
+    let addBookmarkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.addBookmark\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addBookmarkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let nameArg = args[0] as! String
+        let pageIndexArg = args[1] as! Int64
+        api.addBookmark(name: nameArg, pageIndex: pageIndexArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addBookmarkChannel.setMessageHandler(nil)
     }
   }
 }

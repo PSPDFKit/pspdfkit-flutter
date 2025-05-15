@@ -583,6 +583,20 @@ class FlutterPdfDocument(
         }
     }
 
+    override fun addBookmark(name: String, pageIndex: Long, callback: (Result<Boolean>) -> Unit) {
+        try {
+            val document = this.document ?: throw PspdfkitException("no_document", "No document is loaded")
+            
+            val bookmark = Bookmark(pageIndex.toInt(), name)
+            document.bookmarkProvider.addBookmark(bookmark)
+            document.save()
+            
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(Result.failure(PspdfkitException("bookmark_error", e.message ?: "Failed to add bookmark", null)))
+        }
+    }
+
     fun dispose() {
         disposable?.dispose()
     }

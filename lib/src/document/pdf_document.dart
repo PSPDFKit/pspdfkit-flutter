@@ -101,4 +101,6 @@ abstract class PdfDocument {
   /// Get number of pages in the document.
   /// Returns the number of pages in the document.
   Future<int> getPageCount();
+
+  Future<bool> addBookmark(String name, int pageIndex);
 }

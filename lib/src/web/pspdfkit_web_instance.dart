@@ -564,6 +564,15 @@ class PspdfkitWebInstance {
     }
   }
 
+  Future<bool> addBookmark(String name, int pageIndex) async {
+    try {
+      await _pspdfkitInstance.callMethod('addBookmark', [name, pageIndex]);
+      return true;
+    } catch (e) {
+      throw Exception('Failed to add bookmark: $e');
+    }
+  }
+
   String _getFormFieldType(JsObject field) {
     JsObject textClass = context['PSPDFKit']['FormFields']['TextFormField'];
     JsObject signatureClass =

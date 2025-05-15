@@ -649,10 +649,7 @@ abstract class PdfDocumentApi {
   int getPageCount();
 
   @async
-  bool addBookmark(String title, int pageIndex);
-
-  @async
-  bool removeBookmark(String bookmarkId);
+  bool addBookmark(String name, int pageIndex);
 }
 
 @FlutterApi()

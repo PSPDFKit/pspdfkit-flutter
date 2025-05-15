@@ -9,6 +9,8 @@
 
 import Foundation
 
+typealias PageIndex = UInt
+
 @objc(FlutterPdfDocument)
 public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     
@@ -263,6 +265,35 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
                completion(.failure(error))
            }
     }
+
+    func addBookmark(name: String, pageIndex: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
+    if let document = document {
+        // Convert Int to PageIndex (UInt)
+        let pageIndexUInt: PageIndex = PageIndex(pageIndex)
+        
+        // Create bookmark with the converted page index
+        let bookmark = Bookmark(pageIndex: pageIndexUInt)
+        
+        // If you want to set the name for the bookmark, you'll need to create a mutable copy
+        if let mutableBookmark = bookmark.mutableCopy() as? MutableBookmark {
+            mutableBookmark.name = name
+            document.bookmarkManager?.addBookmark(mutableBookmark)
+        } else {
+            document.bookmarkManager?.addBookmark(bookmark)
+        }
+        
+        do {
+            try document.save()
+            completion(.success(true))
+        } catch {
+            let pspdfkitError = PspdfkitApiError(code: "save_failed", message: "Failed to save document with bookmark.", details: nil)
+            completion(.failure(pspdfkitError))
+        }
+    } else {
+        let error = PspdfkitApiError(code: "no_document", message: "No document is loaded", details: nil)
+        completion(.failure(error))
+    }
+}
     
     @objc public func register( binaryMessenger: FlutterBinaryMessenger){
         PdfDocumentApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix: document!.uid)

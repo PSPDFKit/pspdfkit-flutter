@@ -2097,6 +2097,7 @@ interface PdfDocumentApi {
   fun save(outputPath: String?, options: DocumentSaveOptions?, callback: (Result<Boolean>) -> Unit)
   /** Get the total number of pages in the document. */
   fun getPageCount(callback: (Result<Long>) -> Unit)
+  fun addBookmark(name: String, pageIndex: Long, callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by PdfDocumentApi. */
@@ -2430,6 +2431,27 @@ interface PdfDocumentApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.getPageCount{ result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.addBookmark$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val nameArg = args[0] as String
+            val pageIndexArg = args[1] as Long
+            api.addBookmark(nameArg, pageIndexArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

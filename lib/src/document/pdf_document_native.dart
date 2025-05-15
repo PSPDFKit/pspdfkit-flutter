@@ -205,4 +205,9 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   Future<int> getPageCount() {
     return _api.getPageCount();
   }
+
+  @override
+  Future<bool> addBookmark(String name, int pageIndex) {
+    return _api.addBookmark(name, pageIndex);
+  }
 }

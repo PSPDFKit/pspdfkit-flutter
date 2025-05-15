@@ -540,5 +540,4 @@ class PspdfkitFlutterHelper: NSObject {
             throw PspdfkitApiError(code: "PSPDFKIT_ERROR_FILE_WRITE", message: "Failed to write temporary file", details: nil)
         }
     }
-    
 }

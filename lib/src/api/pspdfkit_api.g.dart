@@ -21,8 +21,7 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse(
-    {Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -132,25 +131,18 @@ enum AnnotationProcessingMode {
 enum DocumentPermissions {
   /// Allow printing of document.
   printing,
-
   /// Modify the contents of the document.
   modification,
-
   /// Copy text and images from the document.
   extract,
-
   /// Add or modify text annotations, fill in interactive form fields.
   annotationsAndForms,
-
   /// Fill in existing interactive form fields (including signature fields).
   fillForms,
-
   /// Extract text and images from the document.
   extractAccessibility,
-
   /// Assemble the document (insert, rotate, or delete pages and create document outline items or thumbnail images).
   assemble,
-
   /// Print high quality.
   printHighQuality,
 }
@@ -181,28 +173,20 @@ enum PdfFormFieldTypes {
 enum NutrientEvent {
   /// Event triggered when annotations are created.
   annotationsCreated,
-
   /// Event triggered when annotations are pressed.
   annotationsDeselected,
-
   /// Event triggered when annotations are updated.
   annotationsUpdated,
-
   /// Event triggered when annotations are deleted.
   annotationsDeleted,
-
   /// Event triggered when annotations are focused.
   annotationsSelected,
-
   /// Event triggered when form field values are updated.
   formFieldValuesUpdated,
-
   /// Event triggered when form fields are loaded.
   formFieldSelected,
-
   /// Event triggered when form fields are about to be saved.
   formFieldDeselected,
-
   /// Event triggered when text selection changes.
   textSelectionChanged,
 }
@@ -491,6 +475,7 @@ class PointF {
   }
 }
 
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -498,49 +483,49 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is AndroidPermissionStatus) {
+    }    else if (value is AndroidPermissionStatus) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    } else if (value is AnnotationType) {
+    }    else if (value is AnnotationType) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    } else if (value is AnnotationTool) {
+    }    else if (value is AnnotationTool) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    } else if (value is AnnotationToolVariant) {
+    }    else if (value is AnnotationToolVariant) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    } else if (value is AnnotationProcessingMode) {
+    }    else if (value is AnnotationProcessingMode) {
       buffer.putUint8(133);
       writeValue(buffer, value.index);
-    } else if (value is DocumentPermissions) {
+    }    else if (value is DocumentPermissions) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    } else if (value is PdfVersion) {
+    }    else if (value is PdfVersion) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    } else if (value is PdfFormFieldTypes) {
+    }    else if (value is PdfFormFieldTypes) {
       buffer.putUint8(136);
       writeValue(buffer, value.index);
-    } else if (value is NutrientEvent) {
+    }    else if (value is NutrientEvent) {
       buffer.putUint8(137);
       writeValue(buffer, value.index);
-    } else if (value is PdfRect) {
+    }    else if (value is PdfRect) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is PageInfo) {
+    }    else if (value is PageInfo) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is DocumentSaveOptions) {
+    }    else if (value is DocumentSaveOptions) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is PdfFormOption) {
+    }    else if (value is PdfFormOption) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is FormFieldData) {
+    }    else if (value is FormFieldData) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else if (value is PointF) {
+    }    else if (value is PointF) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
     } else {
@@ -551,44 +536,44 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129:
+      case 129: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AndroidPermissionStatus.values[value];
-      case 130:
+      case 130: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationType.values[value];
-      case 131:
+      case 131: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationTool.values[value];
-      case 132:
+      case 132: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationToolVariant.values[value];
-      case 133:
+      case 133: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationProcessingMode.values[value];
-      case 134:
+      case 134: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : DocumentPermissions.values[value];
-      case 135:
+      case 135: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PdfVersion.values[value];
-      case 136:
+      case 136: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PdfFormFieldTypes.values[value];
-      case 137:
+      case 137: 
         final int? value = readValue(buffer) as int?;
         return value == null ? null : NutrientEvent.values[value];
-      case 138:
+      case 138: 
         return PdfRect.decode(readValue(buffer)!);
-      case 139:
+      case 139: 
         return PageInfo.decode(readValue(buffer)!);
-      case 140:
+      case 140: 
         return DocumentSaveOptions.decode(readValue(buffer)!);
-      case 141:
+      case 141: 
         return PdfFormOption.decode(readValue(buffer)!);
-      case 142:
+      case 142: 
         return FormFieldData.decode(readValue(buffer)!);
-      case 143:
+      case 143: 
         return PointF.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -601,11 +586,9 @@ class PspdfkitApi {
   /// Constructor for [PspdfkitApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PspdfkitApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PspdfkitApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -613,10 +596,8 @@ class PspdfkitApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<String?> getFrameworkVersion() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getFrameworkVersion$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getFrameworkVersion$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -638,16 +619,13 @@ class PspdfkitApi {
   }
 
   Future<void> setLicenseKey(String? licenseKey) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setLicenseKey$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setLicenseKey$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[licenseKey]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[licenseKey]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -663,18 +641,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<void> setLicenseKeys(String? androidLicenseKey, String? iOSLicenseKey,
-      String? webLicenseKey) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setLicenseKeys$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<void> setLicenseKeys(String? androidLicenseKey, String? iOSLicenseKey, String? webLicenseKey) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setLicenseKeys$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[androidLicenseKey, iOSLicenseKey, webLicenseKey]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[androidLicenseKey, iOSLicenseKey, webLicenseKey]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -690,18 +664,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<bool?> present(String document,
-      {Map<String, Object>? configuration}) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.present$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> present(String document, {Map<String, Object>? configuration}) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.present$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[document, configuration]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[document, configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -717,21 +687,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<bool?> presentInstant(
-    String serverUrl,
-    String jwt, {
-    Map<String, Object>? configuration,
-  }) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.presentInstant$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> presentInstant(String serverUrl, String jwt, {Map<String, Object>? configuration, }) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.presentInstant$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[serverUrl, jwt, configuration]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[serverUrl, jwt, configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -747,18 +710,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<bool?> setFormFieldValue(
-      String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -775,16 +734,13 @@ class PspdfkitApi {
   }
 
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -801,16 +757,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -827,10 +780,8 @@ class PspdfkitApi {
   }
 
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -852,16 +803,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> addAnnotation(String annotation, String? attachment) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotation, attachment]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation, attachment]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -878,16 +826,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> removeAnnotation(String annotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -904,16 +849,13 @@ class PspdfkitApi {
   }
 
   Future<Object?> getAnnotations(int pageIndex, String type) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -930,10 +872,8 @@ class PspdfkitApi {
   }
 
   Future<Object?> getAllUnsavedAnnotations() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -955,16 +895,13 @@ class PspdfkitApi {
   }
 
   Future<void> updateAnnotation(String annotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.updateAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.updateAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -980,18 +917,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<bool?> processAnnotations(AnnotationType type,
-      AnnotationProcessingMode processingMode, String destinationPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.processAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> processAnnotations(AnnotationType type, AnnotationProcessingMode processingMode, String destinationPath) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.processAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[type, processingMode, destinationPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type, processingMode, destinationPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1008,16 +941,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1034,16 +964,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1060,10 +987,8 @@ class PspdfkitApi {
   }
 
   Future<bool?> save() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1085,16 +1010,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> setDelayForSyncingLocalChanges(double delay) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setDelayForSyncingLocalChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setDelayForSyncingLocalChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[delay]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[delay]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1111,16 +1033,13 @@ class PspdfkitApi {
   }
 
   Future<bool?> setListenToServerChanges(bool listen) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setListenToServerChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setListenToServerChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[listen]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[listen]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1137,10 +1056,8 @@ class PspdfkitApi {
   }
 
   Future<bool?> syncAnnotations() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.syncAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.syncAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1162,10 +1079,8 @@ class PspdfkitApi {
   }
 
   Future<bool?> checkAndroidWriteExternalStoragePermission() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.checkAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.checkAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1186,12 +1101,9 @@ class PspdfkitApi {
     }
   }
 
-  Future<AndroidPermissionStatus>
-      requestAndroidWriteExternalStoragePermission() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.requestAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.requestAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1218,10 +1130,8 @@ class PspdfkitApi {
   }
 
   Future<void> openAndroidSettings() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.openAndroidSettings$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.openAndroidSettings$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1242,18 +1152,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<bool?> setAnnotationPresetConfigurations(
-      Map<String, Object?> configurations) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setAnnotationPresetConfigurations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationPresetConfigurations(Map<String, Object?> configurations) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setAnnotationPresetConfigurations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[configurations]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configurations]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1270,10 +1176,8 @@ class PspdfkitApi {
   }
 
   Future<String> getTemporaryDirectory() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getTemporaryDirectory$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getTemporaryDirectory$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1300,16 +1204,13 @@ class PspdfkitApi {
   }
 
   Future<void> setAuthorName(String name) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setAuthorName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.setAuthorName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[name]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[name]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1326,10 +1227,8 @@ class PspdfkitApi {
   }
 
   Future<String> getAuthorName() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAuthorName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.getAuthorName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1359,18 +1258,14 @@ class PspdfkitApi {
   /// [pages]: [NewPage]s to be added to the PDF.
   /// [outputPath]: The path to the output file.
   /// Returns the path to the generated PDF path or null if the input is invalid or if the PDF generation fails.
-  Future<String?> generatePdf(
-      List<Map<String, Object>> pages, String outputPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<String?> generatePdf(List<Map<String, Object>> pages, String outputPath) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pages, outputPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pages, outputPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1391,18 +1286,14 @@ class PspdfkitApi {
   /// [html]: The HTML string to be converted to PDF.
   /// [outPutFile]: The path to the output file.
   /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
-  Future<String?> generatePdfFromHtmlString(
-      String html, String outPutFile, Map<String, Object>? options) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdfFromHtmlString$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<String?> generatePdfFromHtmlString(String html, String outPutFile, Map<String, Object>? options) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdfFromHtmlString$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[html, outPutFile, options]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[html, outPutFile, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1418,18 +1309,14 @@ class PspdfkitApi {
     }
   }
 
-  Future<String?> generatePdfFromHtmlUri(
-      String htmlUri, String outPutFile, Map<String, Object>? options) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdfFromHtmlUri$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<String?> generatePdfFromHtmlUri(String htmlUri, String outPutFile, Map<String, Object>? options) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.generatePdfFromHtmlUri$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[htmlUri, outPutFile, options]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[htmlUri, outPutFile, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1447,16 +1334,13 @@ class PspdfkitApi {
 
   /// Configure Nutrient Analytics events.
   Future<void> enableAnalyticsEvents(bool enable) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.enableAnalyticsEvents$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitApi.enableAnalyticsEvents$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[enable]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enable]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1512,19 +1396,11 @@ abstract class PspdfkitFlutterApiCallbacks {
   /// Called when instant document download fails.
   void onInstantDownloadFailed(String documentId, String error);
 
-  static void setUp(
-    PspdfkitFlutterApiCallbacks? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(PspdfkitFlutterApiCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfActivityOnPause$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfActivityOnPause$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1535,19 +1411,15 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfFragmentAdded$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfFragmentAdded$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1558,26 +1430,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onDocumentLoaded$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onDocumentLoaded$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onDocumentLoaded was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onDocumentLoaded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1587,19 +1455,15 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfViewControllerWillDismiss$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfViewControllerWillDismiss$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1610,19 +1474,15 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfViewControllerDidDismiss$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onPdfViewControllerDidDismiss$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1633,26 +1493,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncStarted$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncStarted$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncStarted was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncStarted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1662,26 +1518,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFinished$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFinished$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFinished was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1691,26 +1543,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFailed$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFailed$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFailed was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantSyncFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1723,26 +1571,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFinished$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFinished$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFinished was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1755,26 +1599,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFailed$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFailed$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFailed was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantAuthenticationFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1787,26 +1627,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFinished$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFinished$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFinished was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1816,26 +1652,22 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFailed$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFailed$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFailed was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitFlutterApiCallbacks.onInstantDownloadFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1848,9 +1680,8 @@ abstract class PspdfkitFlutterApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -1862,11 +1693,9 @@ class PspdfkitWidgetControllerApi {
   /// Constructor for [PspdfkitWidgetControllerApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PspdfkitWidgetControllerApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PspdfkitWidgetControllerApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -1875,18 +1704,14 @@ class PspdfkitWidgetControllerApi {
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   /// This method is deprecated. Use [PdfDocument.setFormFieldValue] instead.
-  Future<bool?> setFormFieldValue(
-      String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1904,16 +1729,13 @@ class PspdfkitWidgetControllerApi {
 
   /// Gets the form field value by specifying its fully qualified name.
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1931,16 +1753,13 @@ class PspdfkitWidgetControllerApi {
 
   /// Applies Instant document JSON to the presented document.
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1958,10 +1777,8 @@ class PspdfkitWidgetControllerApi {
 
   /// Exports Instant document JSON from the presented document.
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1985,16 +1802,13 @@ class PspdfkitWidgetControllerApi {
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> addAnnotation(String annotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2013,16 +1827,13 @@ class PspdfkitWidgetControllerApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> removeAnnotation(String annotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2040,16 +1851,13 @@ class PspdfkitWidgetControllerApi {
 
   /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
   Future<Object> getAnnotations(int pageIndex, String type) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2072,10 +1880,8 @@ class PspdfkitWidgetControllerApi {
 
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
   Future<Object> getAllUnsavedAnnotations() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2103,18 +1909,14 @@ class PspdfkitWidgetControllerApi {
 
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
-  Future<bool> processAnnotations(AnnotationType type,
-      AnnotationProcessingMode processingMode, String destinationPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.processAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool> processAnnotations(AnnotationType type, AnnotationProcessingMode processingMode, String destinationPath) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.processAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
-        .send(<Object?>[type, processingMode, destinationPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type, processingMode, destinationPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2137,16 +1939,13 @@ class PspdfkitWidgetControllerApi {
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2169,16 +1968,13 @@ class PspdfkitWidgetControllerApi {
 
   /// Exports annotations to the XFDF file at the given path.
   Future<bool> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2202,10 +1998,8 @@ class PspdfkitWidgetControllerApi {
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool> save() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2235,18 +2029,14 @@ class PspdfkitWidgetControllerApi {
   /// @param configurations A map of annotation tools and their corresponding configurations.
   /// @param modifyAssociatedAnnotations Whether to modify the annotations associated with the old configuration. Only used for Android.
   /// @return True if the configurations were set successfully, false otherwise.
-  Future<bool?> setAnnotationConfigurations(
-      Map<String, Map<String, Object>> configurations) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.setAnnotationConfigurations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationConfigurations(Map<String, Map<String, Object>> configurations) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.setAnnotationConfigurations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[configurations]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configurations]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2266,16 +2056,13 @@ class PspdfkitWidgetControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the visible rect of the given page.
   Future<PdfRect> getVisibleRect(int pageIndex) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getVisibleRect$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getVisibleRect$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2300,18 +2087,14 @@ class PspdfkitWidgetControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// rect The rect to zoom to.
   /// Returns a [Future] that completes when the zoom operation is done.
-  Future<bool> zoomToRect(
-      int pageIndex, PdfRect rect, bool? animated, double? duration) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.zoomToRect$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool> zoomToRect(int pageIndex, PdfRect rect, bool? animated, double? duration) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.zoomToRect$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex, rect, animated, duration]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, rect, animated, duration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2336,16 +2119,13 @@ class PspdfkitWidgetControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the zoom scale of the given page.
   Future<double> getZoomScale(int pageIndex) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getZoomScale$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.getZoomScale$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2367,16 +2147,13 @@ class PspdfkitWidgetControllerApi {
   }
 
   Future<void> addEventListener(NutrientEvent event) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addEventListener$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.addEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[event]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2393,16 +2170,13 @@ class PspdfkitWidgetControllerApi {
   }
 
   Future<void> removeEventListener(NutrientEvent event) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeEventListener$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.removeEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[event]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2425,18 +2199,14 @@ class PspdfkitWidgetControllerApi {
   ///
   /// Returns a [Future] that completes with a boolean indicating whether
   /// entering annotation creation mode was successful.
-  Future<bool?> enterAnnotationCreationMode(
-      AnnotationTool? annotationTool) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.enterAnnotationCreationMode$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> enterAnnotationCreationMode(AnnotationTool? annotationTool) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.enterAnnotationCreationMode$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotationTool]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationTool]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2457,10 +2227,8 @@ class PspdfkitWidgetControllerApi {
   /// Returns a [Future] that completes with a boolean indicating whether
   /// exiting annotation creation mode was successful.
   Future<bool?> exitAnnotationCreationMode() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exitAnnotationCreationMode$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetControllerApi.exitAnnotationCreationMode$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2486,11 +2254,9 @@ class PdfDocumentApi {
   /// Constructor for [PdfDocumentApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PdfDocumentApi(
-      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PdfDocumentApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix =
-            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -2500,16 +2266,13 @@ class PdfDocumentApi {
   /// Returns the page info for the given page index.
   /// pageIndex The index of the page. This is a zero-based index.
   Future<PageInfo> getPageInfo(int pageIndex) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getPageInfo$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getPageInfo$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2534,16 +2297,13 @@ class PdfDocumentApi {
   /// options:[DocumentSaveOptions] The options to use when exporting the document.
   /// Returns a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf(DocumentSaveOptions? options) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportPdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportPdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2565,16 +2325,13 @@ class PdfDocumentApi {
   }
 
   Future<Map<String, Object?>> getFormField(String fieldName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormField$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormField$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[fieldName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fieldName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2591,17 +2348,14 @@ class PdfDocumentApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!
-          .cast<String, Object?>();
+      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, Object?>();
     }
   }
 
   /// Returns a list of all form fields in the document.
   Future<List<Map<String, Object?>>> getFormFields() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormFields$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormFields$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2623,24 +2377,19 @@ class PdfDocumentApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as List<Object?>?)!
-          .cast<Map<String, Object?>>();
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<Map<String, Object?>>();
     }
   }
 
   /// Sets the value of a form field by specifying its fully qualified field name.
-  Future<bool?> setFormFieldValue(
-      String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2658,16 +2407,13 @@ class PdfDocumentApi {
 
   /// Gets the form field value by specifying its fully qualified name.
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2685,16 +2431,13 @@ class PdfDocumentApi {
 
   /// Applies Instant document JSON to the presented document.
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2712,10 +2455,8 @@ class PdfDocumentApi {
 
   /// Exports Instant document JSON from the presented document.
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2739,16 +2480,13 @@ class PdfDocumentApi {
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> addAnnotation(String jsonAnnotation, Object? attachment) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[jsonAnnotation, attachment]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation, attachment]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2767,16 +2505,13 @@ class PdfDocumentApi {
   /// Updates the given annotation in the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> updateAnnotation(String jsonAnnotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.updateAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.updateAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[jsonAnnotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2795,16 +2530,13 @@ class PdfDocumentApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> removeAnnotation(String jsonAnnotation) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[jsonAnnotation]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2822,16 +2554,13 @@ class PdfDocumentApi {
 
   /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
   Future<Object> getAnnotations(int pageIndex, String type) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2854,10 +2583,8 @@ class PdfDocumentApi {
 
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
   Future<Object> getAllUnsavedAnnotations() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getAllUnsavedAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2885,16 +2612,13 @@ class PdfDocumentApi {
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2917,16 +2641,13 @@ class PdfDocumentApi {
 
   /// Exports annotations to the XFDF file at the given path.
   Future<bool> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2950,16 +2671,13 @@ class PdfDocumentApi {
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool> save(String? outputPath, DocumentSaveOptions? options) async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture =
-        pigeonVar_channel.send(<Object?>[outputPath, options]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[outputPath, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2982,10 +2700,8 @@ class PdfDocumentApi {
 
   /// Get the total number of pages in the document.
   Future<int> getPageCount() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getPageCount$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel =
-        BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.getPageCount$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3010,6 +2726,34 @@ class PdfDocumentApi {
       return (pigeonVar_replyList[0] as int?)!;
     }
   }
+
+  Future<bool> addBookmark(String name, int pageIndex) async {
+    final String pigeonVar_channelName = 'dev.flutter.pigeon.pspdfkit_flutter.PdfDocumentApi.addBookmark$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[name, pageIndex]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?)!;
+    }
+  }
 }
 
 abstract class PspdfkitWidgetCallbacks {
@@ -3021,31 +2765,22 @@ abstract class PspdfkitWidgetCallbacks {
 
   void onPageChanged(String documentId, int pageIndex);
 
-  void onPageClick(
-      String documentId, int pageIndex, PointF? point, Object? annotation);
+  void onPageClick(String documentId, int pageIndex, PointF? point, Object? annotation);
 
   void onDocumentSaved(String documentId, String? path);
 
-  static void setUp(
-    PspdfkitWidgetCallbacks? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(PspdfkitWidgetCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentLoaded$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentLoaded$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentLoaded was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentLoaded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3055,26 +2790,22 @@ abstract class PspdfkitWidgetCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentError$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentError$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentError was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3087,26 +2818,22 @@ abstract class PspdfkitWidgetCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3119,26 +2846,22 @@ abstract class PspdfkitWidgetCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3147,33 +2870,28 @@ abstract class PspdfkitWidgetCallbacks {
           assert(arg_pageIndex != null,
               'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onPageClick was null, expected non-null int.');
           final PointF? arg_point = (args[2] as PointF?);
-          final Object? arg_annotation = args[3];
+          final Object? arg_annotation = (args[3] as Object?);
           try {
-            api.onPageClick(
-                arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
+            api.onPageClick(arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.PspdfkitWidgetCallbacks.onDocumentSaved was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3184,9 +2902,8 @@ abstract class PspdfkitWidgetCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -3199,39 +2916,30 @@ abstract class NutrientEventsCallbacks {
 
   void onEvent(NutrientEvent event, Object? data);
 
-  static void setUp(
-    NutrientEventsCallbacks? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(NutrientEventsCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final NutrientEvent? arg_event = (args[0] as NutrientEvent?);
           assert(arg_event != null,
               'Argument for dev.flutter.pigeon.pspdfkit_flutter.NutrientEventsCallbacks.onEvent was null, expected non-null NutrientEvent.');
-          final Object? arg_data = args[1];
+          final Object? arg_data = (args[1] as Object?);
           try {
             api.onEvent(arg_event!, arg_data);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -3244,40 +2952,30 @@ abstract class AnalyticsEventsCallback {
 
   void onEvent(String event, Map<String, Object?>? attributes);
 
-  static void setUp(
-    AnalyticsEventsCallback? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(AnalyticsEventsCallback? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_event = (args[0] as String?);
           assert(arg_event != null,
               'Argument for dev.flutter.pigeon.pspdfkit_flutter.AnalyticsEventsCallback.onEvent was null, expected non-null String.');
-          final Map<String, Object?>? arg_attributes =
-              (args[1] as Map<Object?, Object?>?)?.cast<String, Object?>();
+          final Map<String, Object?>? arg_attributes = (args[1] as Map<Object?, Object?>?)?.cast<String, Object?>();
           try {
             api.onEvent(arg_event!, arg_attributes);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -3292,26 +2990,18 @@ abstract class CustomToolbarCallbacks {
   /// Called when a custom toolbar item is tapped
   void onCustomToolbarItemTapped(String identifier);
 
-  static void setUp(
-    CustomToolbarCallbacks? api, {
-    BinaryMessenger? binaryMessenger,
-    String messageChannelSuffix = '',
-  }) {
-    messageChannelSuffix =
-        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(CustomToolbarCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
+    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<
-          Object?> pigeonVar_channel = BasicMessageChannel<
-              Object?>(
-          'dev.flutter.pigeon.pspdfkit_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped$messageChannelSuffix',
-          pigeonChannelCodec,
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.pspdfkit_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped$messageChannelSuffix', pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-              'Argument for dev.flutter.pigeon.pspdfkit_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped was null.');
+          'Argument for dev.flutter.pigeon.pspdfkit_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_identifier = (args[0] as String?);
           assert(arg_identifier != null,
@@ -3321,9 +3011,8 @@ abstract class CustomToolbarCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-                error: PlatformException(code: 'error', message: e.toString()));
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
