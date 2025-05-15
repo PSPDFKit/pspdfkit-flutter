@@ -222,6 +222,14 @@ class ConfigurationAdapter {
         if (configurationMap != null && !configurationMap.isEmpty()) {
             String key = null;
 
+            key = getKeyOfType(configurationMap, "defaultAuthorName", String.class);
+            if (key != null) {
+                configureDefaultAuthorName((String) configurationMap.get(key), context);
+            }
+            key = getKeyOfType(configurationMap, "askForAnnotationUsername", Boolean.class);
+            if (key != null) {
+                configureAskForAnnotationUsername((Boolean) configurationMap.get(key), context);
+            }
             key = getKeyOfType(configurationMap, PAGE_MODE, String.class);
             if (key != null) {
                 configurePageMode((String) configurationMap.get(key));
@@ -528,6 +536,25 @@ class ConfigurationAdapter {
         }
     }
 
+    private void configureDefaultAuthorName(@NonNull String defaultAuthorName, @NonNull Context context) {
+        PSPDFKitPreferences.get(context).setAnnotationCreator(defaultAuthorName);
+        Log.d(LOG_TAG, "defaultAuthorName set to: " + defaultAuthorName);
+    }
+
+    private void configureAskForAnnotationUsername(boolean askForAnnotationUsername, @NonNull Context context) {
+        if (askForAnnotationUsername) {
+            // Reset the annotation creator to prompt the user
+            PSPDFKitPreferences.get(context).resetAnnotationCreator();
+            Log.d(LOG_TAG, "Annotation creator reset to prompt user.");
+        } else {
+            // Ensure annotation creator is set to prevent the dialog
+            if (!PSPDFKitPreferences.get(context).isAnnotationCreatorSet()) {
+                PSPDFKitPreferences.get(context).setAnnotationCreator("");
+                Log.d(LOG_TAG, "Annotation creator set to empty string to prevent dialog.");
+            }
+        }
+    }
+
     private void configurePageTransition(@NonNull final String transition) {
         switch (transition) {
             case PAGE_TRANSITION_SCROLL_PER_SPREAD:
@@ -720,8 +747,10 @@ class ConfigurationAdapter {
     private void configureEnableAnnotationEditing(boolean enableAnnotationEditing) {
         if (enableAnnotationEditing) {
             configuration.enableAnnotationEditing();
+            configuration.enableAnnotationList();
         } else {
             configuration.disableAnnotationEditing();
+            configuration.disableAnnotationList();
         }
     }
 

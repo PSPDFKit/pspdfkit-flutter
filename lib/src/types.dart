@@ -254,6 +254,9 @@ enum ShowSignatureValidationStatusMode {
 /// - `saveIfSelected`: Save the signature only if it is selected.
 enum SignatureSavingStrategy { neverSave, alwaysSave, saveIfSelected }
 
+typedef AnnotationsChangedCallback = void Function(
+    PspdfkitWidgetController controller);
+
 /// Enum representing the different creation modes for a signature.
 ///
 /// The possible values are:

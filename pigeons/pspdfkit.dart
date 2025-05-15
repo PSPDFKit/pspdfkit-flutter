@@ -647,6 +647,12 @@ abstract class PdfDocumentApi {
   /// Get the total number of pages in the document.
   @async
   int getPageCount();
+
+  @async
+  bool addBookmark(String title, int pageIndex);
+
+  @async
+  bool removeBookmark(String bookmarkId);
 }
 
 @FlutterApi()

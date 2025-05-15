@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.MotionEvent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.pspdfkit.annotations.AnnotationProvider.OnAnnotationUpdatedListener
 import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
@@ -31,6 +32,7 @@ import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.ui.PdfFragment
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
+import com.pspdfkit.annotations.Annotation
 
 private const val LOG_TAG = "FlutterPdfUiCallbacks"
 
@@ -44,7 +46,7 @@ private const val LOG_TAG = "FlutterPdfUiCallbacks"
  * @param flutterWidgetCallback The callback to notify the Flutter side about document loading events.
  */
 class FlutterPdfUiFragmentCallbacks(
-    private val methodChannel: MethodChannel, 
+    private val methodChannel: MethodChannel,
     private val measurementConfigurations: List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger,
     private val flutterWidgetCallback: FlutterWidgetCallback
@@ -52,6 +54,7 @@ class FlutterPdfUiFragmentCallbacks(
 
     private var pdfFragment: PdfFragment? = null
     private var flutterPdfDocument: FlutterPdfDocument? = null
+    private var annotationUpdatedListener: OnAnnotationUpdatedListener? = null
 
     override fun onFragmentAttached(
         fm: FragmentManager,
@@ -99,7 +102,29 @@ class FlutterPdfUiFragmentCallbacks(
 
         // Set up document API for Flutter access
         try {
-            flutterPdfDocument = FlutterPdfDocument(document)
+            flutterPdfDocument = FlutterPdfDocument(document, binaryMessenger)
+            annotationUpdatedListener = object : OnAnnotationUpdatedListener {
+                override fun onAnnotationCreated(annotation: Annotation) {
+                    methodChannel.invokeMethod("onAnnotationsChanged", null)
+                }
+
+                override fun onAnnotationUpdated(annotation: Annotation) {
+                    methodChannel.invokeMethod("onAnnotationsChanged", null)
+                }
+
+                override fun onAnnotationRemoved(annotation: Annotation) {
+                    methodChannel.invokeMethod("onAnnotationsChanged", null)
+                }
+
+                override fun onAnnotationZOrderChanged(
+                    pageIndex: Int,
+                    oldOrder: List<Annotation>,
+                    newOrder: List<Annotation>
+                ) {
+                    methodChannel.invokeMethod("onAnnotationsChanged", null)
+                }
+            }
+            pdfFragment?.addOnAnnotationUpdatedListener(annotationUpdatedListener!!)
             PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
@@ -154,6 +179,11 @@ class FlutterPdfUiFragmentCallbacks(
             }
             if (pdfFragment == f) {
                 pdfFragment?.removeDocumentListener(this)
+                 // Remove the annotation updated listener
+                if (annotationUpdatedListener != null) {
+                    pdfFragment?.removeOnAnnotationUpdatedListener(annotationUpdatedListener!!)
+                    annotationUpdatedListener = null
+                }
                 pdfFragment = null
                 flutterPdfDocument = null
             }

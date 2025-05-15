@@ -30,6 +30,7 @@ class PspdfkitWidget extends StatefulWidget {
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
   final List<CustomToolbarItem> customToolbarItems;
   final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
+  final AnnotationsChangedCallback? onAnnotationsChanged;
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -42,6 +43,7 @@ class PspdfkitWidget extends StatefulWidget {
     this.onPdfDocumentSaved,
     this.customToolbarItems = const [],
     this.onCustomToolbarItemTapped,
+    this.onAnnotationsChanged,
   }) : super(key: key);
 
   @override
@@ -139,6 +141,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
             onPageChanged: widget.onPageChanged,
             onPdfDocumentLoadFailed: widget.onPdfDocumentError,
             onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+            onAnnotationsChanged: widget.onAnnotationsChanged,
           )
         : PspdfkitFlutterWidgetControllerImpl(
             api,

@@ -18,20 +18,40 @@ class PspdfkitBasicExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        extendBodyBehindAppBar: PlatformUtils.isAndroid(),
-        // Do not resize the the document view on Android or
-        // it won't be rendered correctly when filling forms.
-        resizeToAvoidBottomInset: PlatformUtils.isIOS(),
-        appBar: AppBar(),
-        body: SafeArea(
-            top: false,
-            bottom: false,
-            child: Container(
-                padding: PlatformUtils.isAndroid()
-                    ? const EdgeInsets.only(top: kToolbarHeight)
-                    : null,
-                child: PspdfkitWidget(
-                  documentPath: documentPath,
-                ))));
+      extendBodyBehindAppBar: PlatformUtils.isAndroid(),
+      // Do not resize the the document view on Android or
+      // it won't be rendered correctly when filling forms.
+      resizeToAvoidBottomInset: PlatformUtils.isIOS(),
+      appBar: AppBar(),
+      body: SafeArea(
+        top: false,
+        bottom: false,
+        child: Container(
+          padding: PlatformUtils.isAndroid()
+              ? const EdgeInsets.only(top: kToolbarHeight)
+              : null,
+          child: PspdfkitWidget(
+            documentPath: documentPath,
+            onAnnotationsChanged: (controller) async {
+              print("test annotation changed");
+              print("test controller ${await controller.getZoomScale(0)}");
+            },
+            onPspdfkitWidgetCreated: (controller) async {
+              await controller.setAnnotationConfigurations({
+                AnnotationTool.inkPen: InkAnnotationConfiguration(
+                  thickness: 2,
+                  color: Colors.black,
+                )
+              });
+            },
+            configuration: PdfConfiguration(
+              askForAnnotationUsername: false,
+              allowAnnotationDeletion: false,
+              enableAnnotationEditing: true,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

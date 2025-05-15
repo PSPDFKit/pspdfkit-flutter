@@ -178,6 +178,15 @@ class PdfConfiguration {
 
   final SignatureCreationConfiguration? signatureCreationConfiguration;
 
+  /// Sets whether to ask for the username when adding an annotation.
+  final bool askForAnnotationUsername;
+
+  /// Sets whether to show the author name in the annotation inspector.
+  final String defaultAuthorName;
+
+  /// Sets whether to allow the deletion of annotations from outline window.
+  final bool allowAnnotationDeletion;
+
   PdfConfiguration(
       {this.scrollDirection,
       this.pageTransition,
@@ -228,7 +237,10 @@ class PdfConfiguration {
       this.maximumZoomScale,
       this.minimumZoomScale,
       this.signatureSavingStrategy,
-      this.signatureCreationConfiguration});
+      this.signatureCreationConfiguration,
+      this.defaultAuthorName = 'unnamed',
+      this.askForAnnotationUsername = true,
+      this.allowAnnotationDeletion = true});
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
   /// This is used to pass the configuration to the platform side.
@@ -282,6 +294,9 @@ class PdfConfiguration {
       'minimumZoomScale': minimumZoomScale,
       'signatureSavingStrategy': signatureSavingStrategy?.name,
       'signatureCreationConfiguration': signatureCreationConfiguration?.toMap(),
+      'askForAnnotationUsername': askForAnnotationUsername,
+      'defaultAuthorName': defaultAuthorName,
+      'allowAnnotationDeletion': allowAnnotationDeletion,
     }..removeWhere((key, value) => value == null);
   }
 

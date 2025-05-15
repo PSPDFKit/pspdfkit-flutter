@@ -465,7 +465,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pspdfkit.flutter.pspdfkitExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pspdfkit.flutter.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -491,7 +491,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Flutter",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pspdfkit.flutter.pspdfkitExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pspdfkit.flutter.example;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
