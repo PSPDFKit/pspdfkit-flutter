@@ -20,6 +20,7 @@ import '../web/pspdfkit_web.dart';
 import 'pspdfkit_widget_controller_web.dart';
 
 class PspdfkitWidget extends StatefulWidget {
+  
   final String documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
@@ -32,6 +33,7 @@ class PspdfkitWidget extends StatefulWidget {
   final List<CustomToolbarItem> customToolbarItems;
   //Not used on web
   final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
+
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -54,24 +56,58 @@ class PspdfkitWidget extends StatefulWidget {
 
 class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   late PspdfkitWidgetControllerWeb controller;
+  bool _isInitialized = false;
+  PspdfkitWebInstance? _webInstance;
+  final Map<String, Function> _eventListeners = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Wait for the first frame to be rendered before initializing the viewer.
+    // This is likely to affect performace a bit but will guarantee that the pdfview loads every time.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const SizedBox.shrink();
+    }
+
+    // Register the view factory
     ui.platformViewRegistry.registerViewFactory('pspdfkit-widget',
         (int viewId) {
-      return html.DivElement()..id = 'pspdfkit-$viewId';
+      return html.DivElement()
+        ..id = 'pspdfkit-$viewId'
+        ..style.width = '100%'
+        ..style.height = '100%';
     });
-    return HtmlElementView(
-        viewType: 'pspdfkit-widget',
-        onPlatformViewCreated: (int id) {
-          // Elements are no longer available when onPlatformViewCreated is called.
-          // Therefore we need to pass the element to the PSPDFKit.load method instead of the id.
-          // See this GH issue for more details: https://github.com/flutter/flutter/issues/143922#issuecomment-1960133128
-          var div = (ui.platformViewRegistry.getViewById(id) as html.Element)
-            ..style.width = '100%'
-            ..style.height = '100%';
-          _onPlatformViewCreated(div);
-        });
+
+    // Wrap HtmlElementView in a container with explicit dimensions
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: HtmlElementView(
+            viewType: 'pspdfkit-widget',
+            onPlatformViewCreated: (int id) {
+              var element =
+                  (ui.platformViewRegistry.getViewById(id) as html.Element)
+                    ..style.width = '100%'
+                    ..style.height = '100%';
+              _onPlatformViewCreated(element);
+            },
+          ),
+        );
+      },
+    );
   }
 
   /// Load the document and create the PSPDFKit instance.
@@ -90,41 +126,106 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     } else {
       configuration = null;
     }
-    // Adding a delay to ensure that the view is properly registered before we try to create the PSPDFKit instance.
-    Future.delayed(const Duration(milliseconds: 10), () async {
-      await PSPDFKitWeb.load(widget.documentPath, id, configuration)
-          .then((value) {
+    // Use addPostFrameCallback to ensure the view is properly added to the widget tree
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      try {
+        final value =
+            await PSPDFKitWeb.load(widget.documentPath, id, configuration);
+        if (!mounted) return;
         _addDefaultEventListeners(value);
-        var controller = PspdfkitWidgetControllerWeb(
-          value,
-        );
+        controller = PspdfkitWidgetControllerWeb(value);
         widget.onPspdfkitWidgetCreated?.call(controller);
         widget.onPdfDocumentLoaded
             ?.call(PdfDocumentWeb(documentId: '', instance: value));
-      }).catchError((error) {
+      } catch (error) {
+        if (!mounted) return;
         widget.onPdfDocumentLoadFailure?.call(error.toString());
-        throw Exception('Failed to load: $error');
-      });
+      }
     });
   }
 
-  void _addDefaultEventListeners(PspdfkitWebInstance webInstance) {
-    webInstance.addEventListener('viewState.currentPageIndex.change',
-        (pageIndex) {
-      widget.onPageChanged?.call(pageIndex);
-    });
+  @override
+  void dispose() {
+    _removeEventListeners();
+    super.dispose();
+  }
 
-    webInstance.addEventListener('page.press', (dynamic event) {
-      var point = PointF(x: event['point']['x'], y: event['point']['y']);
-      widget.onPageClicked?.call('', event['pageIndex'], point, null);
-    });
-
-    webInstance.addEventListener('document.saveStateChange', (dynamic event) {
-      if (event['hasUnsavedChanges']) {
-        return;
-      } else {
-        widget.onPdfDocumentSaved?.call('', widget.documentPath);
+  void _removeEventListeners() {
+    // Clean up event listeners to prevent memory leaks
+    if (_webInstance != null) {
+      for (final entry in _eventListeners.entries) {
+        try {
+          _webInstance!.removeEventListener(entry.key, entry.value);
+        } catch (e) {
+          // Silently handle potential errors during cleanup
+          debugPrint('Error removing event listener: $e');
+        }
       }
-    });
+      _eventListeners.clear();
+    }
+  }
+
+  void _addDefaultEventListeners(PspdfkitWebInstance webInstance) {
+    _webInstance = webInstance;
+
+    // Page change event listener
+    void pageChangeListener(pageIndex) {
+      if (!mounted) return;
+      widget.onPageChanged?.call(pageIndex);
+    }
+
+    webInstance.addEventListener(
+        'viewState.currentPageIndex.change', pageChangeListener);
+    _eventListeners['viewState.currentPageIndex.change'] = pageChangeListener;
+
+    // Page press event listener with safety checks
+    void pagePressListener(dynamic event) {
+      if (!mounted) return;
+
+      try {
+        // Check if event and point exist
+        if (event == null ||
+            event['point'] == null ||
+            event['pageIndex'] == null) {
+          return;
+        }
+
+        final x = event['point']['x'];
+        final y = event['point']['y'];
+
+        if (x != null && y != null) {
+          final point = PointF(
+              x: x is num ? x.toDouble() : 0.0,
+              y: y is num ? y.toDouble() : 0.0);
+          widget.onPageClicked?.call('', event['pageIndex'], point, null);
+        }
+      } catch (e) {
+        debugPrint('Error processing page press event: $e');
+      }
+    }
+
+    webInstance.addEventListener('page.press', pagePressListener);
+    _eventListeners['page.press'] = pagePressListener;
+
+    // Document save state change event listener
+    void saveStateListener(dynamic event) {
+      if (!mounted) return;
+
+      try {
+        // Only proceed if event exists and has the right property
+        if (event == null) return;
+
+        final hasUnsavedChanges = event['hasUnsavedChanges'];
+        if (hasUnsavedChanges == false) {
+          widget.onPdfDocumentSaved?.call('', widget.documentPath);
+        }
+      } catch (e) {
+        debugPrint('Error processing save state change event: $e');
+      }
+    }
+
+    webInstance.addEventListener('document.saveStateChange', saveStateListener);
+    _eventListeners['document.saveStateChange'] = saveStateListener;
   }
 }

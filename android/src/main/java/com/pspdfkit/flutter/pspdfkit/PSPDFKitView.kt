@@ -11,9 +11,9 @@ package com.pspdfkit.flutter.pspdfkit
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.MutableContextWrapper
-import android.net.Uri
 import android.util.Log
 import android.view.View
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
@@ -39,6 +39,9 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
+import io.nutrient.data.models.AiAssistantConfiguration
+import io.nutrient.domain.ai.AiAssistant
+import io.nutrient.domain.ai.standaloneAiAssistant
 
 internal class PSPDFKitView(
     val context: Context,
@@ -59,6 +62,7 @@ internal class PSPDFKitView(
     private val customToolbarCallbacks: CustomToolbarCallbacks = CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
+    private var aiAssistant: AiAssistant? = null
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -70,6 +74,7 @@ internal class PSPDFKitView(
         val toolbarGroupingItems: List<Any>? = configurationMap?.get("toolbarItemGrouping") as List<Any>?
         val measurementValueConfigurations =
             configurationMap?.get("measurementValueConfigurations") as List<Map<String, Any>>?
+        val aiAssistantConfigurationMap = configurationMap?.get("aiAssistant") as Map<String, Any>?
 
         try {
             //noinspection pspdfkit-experimental
@@ -79,9 +84,9 @@ internal class PSPDFKitView(
                     FlutterPdfUiFragment::class.java
                 ).configuration(pdfConfiguration).build()
             } else {
-                val uri = Uri.parse(addFileSchemeIfMissing(documentPath))
+                val uri = addFileSchemeIfMissing(documentPath).toUri()
                 Log.d(LOG_TAG, "Loading document from URI: $uri")
-                
+
                 // Validate that the URI is accessible
                 try {
                     context.contentResolver.openInputStream(uri)?.close()
@@ -89,7 +94,7 @@ internal class PSPDFKitView(
                     Log.w(LOG_TAG, "Document URI may not be accessible: $uri", e)
                     // Continue anyway as PSPDFKit might handle this differently
                 }
-                
+
                 val isImageDocument = isImageDocument(documentPath)
                 if (isImageDocument) {
                     Log.d(LOG_TAG, "Initializing PdfUiFragment with image document")
@@ -105,10 +110,10 @@ internal class PSPDFKitView(
                         .build()
                 }
             }
-            Log.d(LOG_TAG, "PdfUiFragment initialized successfully")
+            setupAiAssistant(context, aiAssistantConfigurationMap)
 
             fragmentCallbacks = FlutterPdfUiFragmentCallbacks(methodChannel, measurementValueConfigurations,
-                messenger,FlutterWidgetCallback(widgetCallbacks))
+                messenger,FlutterWidgetCallback(widgetCallbacks),aiAssistant)
 
             fragmentCallbacks?.let { callbacks ->
                 getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(callbacks, true)
@@ -158,7 +163,7 @@ internal class PSPDFKitView(
             }
         }, true)
 
-        fragmentContainerView?.let { it ->
+        fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(view: View) {
                     try {
@@ -208,7 +213,7 @@ internal class PSPDFKitView(
             if (isFragmentAttached) {
                 try {
                     val fragmentActivity = getFragmentActivity(context)
-                    if (!fragmentActivity.isFinishing && !fragmentActivity.isDestroyed 
+                    if (!fragmentActivity.isFinishing && !fragmentActivity.isDestroyed
                         && fragmentActivity.supportFragmentManager.isDestroyed.not()) {
                         fragmentActivity.supportFragmentManager.commit {
                             pdfUiFragment.let { if (it.isAdded) remove(it) }
@@ -220,11 +225,11 @@ internal class PSPDFKitView(
                 }
                 isFragmentAttached = false
             }
-            
+
             // Cleanup other resources
             pspdfkitViewImpl.setPdfFragment(null)
             pspdfkitViewImpl.dispose()
-            
+
             // Unregister callbacks and listeners
             fragmentCallbacks?.let {
                 try {
@@ -233,14 +238,14 @@ internal class PSPDFKitView(
                     Log.e(LOG_TAG, "Error unregistering fragment lifecycle callbacks", e)
                 }
             }
-            
+
             // Null out references
             fragmentCallbacks = null
             fragmentContainerView = null
-            
+
             // Unregister method channel
             PspdfkitWidgetControllerApi.setUp(messenger, null, id.toString())
-            
+
             Log.d(LOG_TAG, "PSPDFKitView disposed successfully")
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error during PSPDFKitView disposal", e)
@@ -300,6 +305,29 @@ internal class PSPDFKitView(
                 // Log any errors but don't crash the app
                 Log.e("FlutterPdfActivity", "Error setting up signature storage: " + e.message)
             }
+    }
+
+    private fun setupAiAssistant(
+        context: Context,
+        configuration: Map<String, Any>?
+    ) {
+        // Initialize the AiAssistant with the provided parameters
+        val serverUrl = configuration?.get("serverUrl") as String?
+        val jwt = configuration?.get("jwt") as String?
+        val sessionId = configuration?.get("sessionId") as String?
+        val userId = configuration?.get("userId") as String?
+
+        if (serverUrl != null && jwt != null) {
+            val aiAssistantConfiguration = AiAssistantConfiguration(
+                serverUrl = serverUrl,
+                jwt = jwt ,
+                sessionId = sessionId?: "",
+                userId = userId ?: ""
+            )
+            aiAssistant = standaloneAiAssistant(context, aiAssistantConfiguration)
+        } else {
+            Log.e(LOG_TAG, "Invalid AI Assistant configuration")
+        }
     }
 
     companion object {

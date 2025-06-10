@@ -1,6 +1,6 @@
 name: pspdfkit_example
 description: Demonstrates how to use the pspdfkit plugin.
-version: 4.3.0
+version: 4.4.0
 homepage: https://pspdfkit.com/
 publish_to: 'none'  # Remove this line if you wish to publish to pub.dev
 environment:
@@ -14,6 +14,8 @@ dependencies:
   cupertino_icons: ^1.0.3
   http: ^0.13.5
   url_launcher: ^6.1.10
+  dart_jsonwebtoken: ^2.12.1
+  uuid: ^4.3.3
   pspdfkit_flutter:
     path: ../
 
@@ -39,3 +41,7 @@ flutter:
   assets:
     - PDFs/
     - PDFs/Instant/
+
+# Ignore false positives for security scanning
+false_secrets:
+  - lib/utils/jwt_util.dart

@@ -33,6 +33,8 @@ export 'src/api/pspdfkit_api.g.dart';
 export 'src/pspdfkit_processor.dart';
 export 'src/annotation_preset_configurations.dart';
 export 'src/annotations/annotations.dart';
+export 'src/web/models/nutrient_web_events.dart';
+export 'src/ai/ai_assistant_configuration.dart';
 
 /// PSPDFKit plugin to load PDF and image documents on both platform iOS and Android.
 class Pspdfkit {

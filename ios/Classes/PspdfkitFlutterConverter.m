@@ -212,6 +212,10 @@
         if (dictionary[key]) {
              [SignatureHelper configureSignatureCreation:builder withOptions:dictionary[key]];
         }
+        key = @"aiAssistant";
+        if (dictionary[key]) {
+            [AiAssistantHelper configureAiAssistant:builder withOptions:dictionary[key]];
+        }
     }];
 }
 

@@ -31,6 +31,7 @@ import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.ui.PdfFragment
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
+import io.nutrient.domain.ai.AiAssistant
 
 private const val LOG_TAG = "FlutterPdfUiCallbacks"
 
@@ -47,7 +48,9 @@ class FlutterPdfUiFragmentCallbacks(
     private val methodChannel: MethodChannel, 
     private val measurementConfigurations: List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger,
-    private val flutterWidgetCallback: FlutterWidgetCallback
+    private val flutterWidgetCallback: FlutterWidgetCallback,
+    private val aiAssistant: AiAssistant?
+
 ) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener {
 
     private var pdfFragment: PdfFragment? = null
@@ -110,6 +113,14 @@ class FlutterPdfUiFragmentCallbacks(
             EventDispatcher.getInstance().notifyDocumentLoaded(document)
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error sending direct event notification", e)
+        }
+
+        aiAssistant?.let {
+            try {
+                document.setAiAssistant(it)
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Error setting AiAssistant on loaded document", e)
+            }
         }
     }
 

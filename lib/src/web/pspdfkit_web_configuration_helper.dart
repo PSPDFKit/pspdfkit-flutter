@@ -158,7 +158,8 @@ class WebConfigurationHelper {
       'toolbarItems': toolbarItems,
       'annotationToolbarItems': annotationToolbarItemsCallback,
       'measurementValueConfiguration': measurementValueConfigurationCallback,
-      ...?finalWebConfigurations
+      ...?finalWebConfigurations,
+      'aiAssistant': configuration?.aiAssistantConfiguration?.toWebMap(),
     };
 
     var config = map..removeWhere((key, value) => value == null);

@@ -9,8 +9,6 @@
 
 package com.pspdfkit.flutter.pspdfkit.document
 
-import android.util.Log
-import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
@@ -37,6 +35,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.EnumSet
+import android.util.Log
+import com.pspdfkit.annotations.Annotation
+import kotlinx.serialization.json.Json
 
 class FlutterPdfDocument(
     private val pdfDocument: PdfDocument
@@ -375,8 +376,7 @@ class FlutterPdfDocument(
 
     override fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
         try {
-            val annotationObject = JSONObject(jsonAnnotation).toMap()
-
+            val annotationObject = Json.decodeFromString<Map<String,Any>>(jsonAnnotation)
             // Get name or UUID
             val name = annotationObject["name"] as? String?
             val uuid = annotationObject["id"] as? String?
@@ -597,20 +597,4 @@ class FlutterPdfDocument(
             pdfVersionMap[options.pdfVersion]
         )
     }
-}
-
-fun JSONObject.toMap(): Map<String, Any> {
-    val map = mutableMapOf<String, Any>()
-    val keys = this.keys()
-    while (keys.hasNext()) {
-        val key = keys.next()
-        var value = this.get(key)
-
-        if (value is JSONObject) {
-            value = value.toMap()
-        }
-
-        map[key] = value
-    }
-    return map
 }

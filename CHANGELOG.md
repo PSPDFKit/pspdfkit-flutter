@@ -1,3 +1,10 @@
+## 4.4.0 - 10 Jun 2025
+
+- Adds AI Assistant support. (J#HYB-742)
+- Adds `addWebEventListener` and `removeWebEventListener` APIs to `PspdfkitWidgetController` for Flutter Web. (J#HYB-760)
+- Fixes missing resource ID issue with Android Gradle Plugin (AGP) version 8.9.2. (J#HYB-808)
+- Fixes issue where PDF viewer fails to load when the mounting container has zero width on Flutter Web. (J#HYB-812)
+
 ## 4.3.0 - 11 Apr 2025
 
 - Adds setting custom stamp items support. Only custom text stamps are supported, and this is available only on iOS and Android for now. (J#HYB-715) 

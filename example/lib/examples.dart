@@ -14,6 +14,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pspdfkit_example/models/papsdkit_example_item.dart';
+import 'package:pspdfkit_example/nutrient_ai_assistant_example.dart';
+import 'package:pspdfkit_example/nutrient_web_event_listeners.dart';
 import 'package:pspdfkit_example/pspdfkit_toolbar_customization.dart';
 
 import 'custom_toolbar_example.dart';
@@ -149,22 +151,31 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
       ),
       if (PlatformUtils.isCupertino(context))
         PspdfkitExampleItem(
-          title: 'Shows two PSPDFKit Widgets simultaneously',
+          title: 'Shows two Nutrient Widgets simultaneously',
           description:
-              'Opens two different PDF documents simultaneously using two PSPDFKit Widgets.',
+              'Opens two different PDF documents simultaneously using two Nutrient Widgets.',
           onTap: () => pushTwoPspdfWidgetsSimultaneously(context),
         ),
       PspdfkitExampleItem(
-          title: 'PSPDFKit Events Listeners',
-          description: 'Shows how to use PSPDFKit Events Listeners.',
+          title: 'Nutrient Events Listeners',
+          description: 'Shows how to use Nutrient Events Listeners.',
           onTap: () async {
             await extractAsset(context, _documentPath).then((value) => goTo(
                 PspdfkitEventListenerExample(documentPath: value.path),
                 context));
           }),
+      if (kIsWeb)
+        PspdfkitExampleItem(
+            title: 'Nutrient Web Events Listeners',
+            description: 'Shows how to use Nutrient Web Events Listeners.',
+            onTap: () async {
+              await extractAsset(context, _documentPath).then((value) => goTo(
+                  NutrientWebEventListenersExample(documentPath: value.path),
+                  context));
+            }),
       PspdfkitExampleItem(
           title: 'Measurement tools',
-          description: 'Shows how to use PSPDFKit Measurement tools.',
+          description: 'Shows how to use Nutrient Measurement tools.',
           onTap: () async {
             await extractAsset(context, _measurementsDocs).then((value) => goTo(
                 PspdfkitMeasurementsExample(documentPath: value.path),
@@ -173,7 +184,7 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
       if (!kIsWeb)
         PspdfkitExampleItem(
             title: 'Annotations Preset Customization',
-            description: 'PSPDFKit Annotations Preset Customization Example.',
+            description: 'Nutrient Annotations Preset Customization Example.',
             onTap: () async {
               await extractAsset(context, _documentPath).then((value) => goTo(
                   PspdfkitAnnotationPresetCustomization(
@@ -219,6 +230,13 @@ List<PspdfkitExampleItem> examples(BuildContext context) => [
                 NutrientAnnotationCreationModeExampleWidget(
                     documentPath: value.path),
                 context));
+          }),
+      PspdfkitExampleItem(
+          title: 'AI Assistant',
+          description: 'Shows how to use AI Assistant.',
+          onTap: () async {
+            await extractAsset(context, _documentPath).then((value) => goTo(
+                NutrientAiAssistantExample(documentPath: value.path), context));
           })
     ];
 
@@ -261,13 +279,13 @@ List<PspdfkitExampleItem> globalExamples(BuildContext context) => [
         onTap: () => importInstantJsonExampleGlobal(context),
       ),
       PspdfkitExampleItem(
-        title: 'PSPDFKit Instant',
-        description: 'PSPDFKit Instant Synchronization Example',
+        title: 'Nutrient Instant',
+        description: 'Nutrient Instant Synchronization Example',
         onTap: () => presentInstant(context),
       ),
       PspdfkitExampleItem(
         title: 'Measurement tools',
-        description: 'Shows how to use PSPDFKit Measurement tools.',
+        description: 'Shows how to use Nutrient Measurement tools.',
         onTap: () => showMeasurementExampleGlobal(context),
       ),
     ];

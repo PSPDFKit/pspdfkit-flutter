@@ -10,9 +10,7 @@
 package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -25,13 +23,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.toColorInt
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.ui.PdfUiFragment
-
+import com.pspdfkit.R
 
 class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
 
@@ -39,7 +38,6 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
     private val customToolbarItemIds = HashMap<String, Int>()
     private var customToolbarCallbacks: CustomToolbarCallbacks? = null
     private var customToolbarItems: List<Map<String, Any>>? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +49,6 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
             setDisplayShowHomeEnabled(true)
         }
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -227,7 +224,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
             // Apply tint if specified
             if (drawable != null && iconColorHex != null) {
                 try {
-                    val color = Color.parseColor(iconColorHex)
+                    val color = iconColorHex.toColorInt()
                     DrawableCompat.setTint(drawable, color)
                     Log.d(
                         "FlutterPdfUiFragment",

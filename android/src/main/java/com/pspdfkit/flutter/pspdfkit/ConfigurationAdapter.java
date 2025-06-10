@@ -204,6 +204,8 @@ class ConfigurationAdapter {
     private static final String MINIMUM_ZOOM_SCALE = "minimumZoomScale";
     private static final  String DEFAULT_ZOOM_SCALE = "defaultZoomScale";
 
+    private static final String ENABLE_AI_ASSISTANT = "enableAiAssistant";
+
     private static final Map<String, SignatureSavingStrategy> signatureSavingStrategyMap = new HashMap<>(){{
         put("alwaysSave", SignatureSavingStrategy.ALWAYS_SAVE);
         put("saveIfSelected", SignatureSavingStrategy.SAVE_IF_SELECTED);
@@ -425,6 +427,10 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap,SIGNATURE_CREATION_CONFIGURATION, Map.class);
             if (key !=null){
                 configureSignatureCreationConfiguration((HashMap<String, Object>) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, ENABLE_AI_ASSISTANT, Boolean.class);
+            if (key != null) {
+                configureAiAssistant((Boolean) configurationMap.get(key));
             }
         }
     }
@@ -882,6 +888,10 @@ class ConfigurationAdapter {
 
     private void configureMeasurementToolSnappingEnabled(Context context,Boolean aBoolean) {
         PSPDFKitPreferences.get(context).setMeasurementSnappingEnabled(aBoolean);
+    }
+
+    private void configureAiAssistant(Boolean aBoolean) {
+        configuration.setAiAssistantEnabled(aBoolean);
     }
 
     private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,

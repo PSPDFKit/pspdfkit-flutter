@@ -58,6 +58,7 @@ enum PspdfkitWebToolbarItemType {
   measurements,
   linearizedDownloadIndicator,
   comment,
+  aiAssistant,
 }
 
 extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
@@ -163,6 +164,8 @@ extension WebToolbarItemTypeX on PspdfkitWebToolbarItemType {
         return 'comment';
       case PspdfkitWebToolbarItemType.sidebarAttachments:
         return 'sidebar-attachments';
+      case PspdfkitWebToolbarItemType.aiAssistant:
+        return 'ai-assistant';
     }
   }
 }

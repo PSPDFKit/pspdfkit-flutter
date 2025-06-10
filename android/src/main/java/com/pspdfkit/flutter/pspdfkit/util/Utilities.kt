@@ -4,6 +4,7 @@ package com.pspdfkit.flutter.pspdfkit.util
 import android.net.Uri
 import java.lang.NumberFormatException
 import java.util.Locale
+import androidx.core.net.toUri
 
 private const val FILE_SCHEME = "file:///"
 
@@ -14,7 +15,7 @@ private const val FILE_SCHEME = "file:///"
  */
 fun addFileSchemeIfMissing(documentPath: String): String {
     var result = documentPath
-    if (Uri.parse(result).scheme == null) {
+    if (result.toUri().scheme == null) {
         if (result.startsWith("/")) {
             result = documentPath.substring(1)
         }
