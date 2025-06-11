@@ -90,4 +90,12 @@
     <color name="outlineDark">#FF988F87</color>
     <color name="inverseOnSurfaceDark">#FF313030</color>
     <color name="surfaceBrightDark">#FF3A3938</color>
+
+    <!-- PSPDFKit signature styling -->
+    <color name="bg_light">#FFFFFF</color>
+    <color name="primary_color">#4537DE</color>
+    <color name="secondary_color">#2B1CC1</color>
+    <color name="error_primary_light">#EF5350</color>
+    <color name="highlight_color">#E0E0E0</color>
+    <color name="text_primary_dark">#000000</color>
 </resources>
