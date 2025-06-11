@@ -17,10 +17,27 @@
          This theme determines the color of the Android Window while your
          Flutter UI initializes, as well as behind your Flutter UI while its
          running.
+
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Default">
+        <item name="android:windowBackground">?android:colorBackground</item>
         <item name="colorPrimary">@color/primaryLight</item>
         <item name="colorPrimaryDark">@color/onPrimaryContainerLight</item>
         <item name="colorAccent">@color/onPrimaryContainerLight</item>
+        <item name="pspdf__signatureLayoutStyle">@style/NutrientSDK.Theme.Light.SignatureStyles</item>
+    </style>
+
+    <style name="NutrientSDK.Theme.Light.SignatureStyles" parent="PSPDFKit.SignatureLayout">
+        <item name="pspdf__backgroundColor">#ffbb33</item>
+        <item name="pspdf__addSignatureIconColor">@color/primary_color</item>
+        <item name="pspdf__addSignatureIconBackgroundColor">@color/primary_color</item>
+        <item name="pspdf__acceptSignatureIconColor">@color/text_primary_dark</item>
+        <item name="pspdf__acceptSignatureIconBackgroundColor">@color/primary_color</item>
+        <item name="pspdf__clearSignatureCanvasIconColor">@color/text_primary_dark</item>
+        <item name="pspdf__signatureInkColorPrimary">@color/primary_color</item>
+        <item name="pspdf__signatureInkColorSecondary">@color/secondary_color</item>
+        <item name="pspdf__signatureInkColorTertiary">@color/error_primary_light</item>
+        <item name="pspdf__signerListSelectedItemBackground">@color/highlight_color</item>
+        <item name="pspdf__signatureListSelectedItemBackground">@color/highlight_color</item>
     </style>
 </resources>
