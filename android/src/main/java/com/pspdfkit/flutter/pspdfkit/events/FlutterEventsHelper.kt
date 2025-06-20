@@ -62,7 +62,7 @@ class FlutterEventsHelper(private val eventCallbacks: NutrientEventsCallbacks? =
                 pdfFragment.document?.invalidateCache()
             }
             NutrientEvent.ANNOTATIONS_SELECTED -> {
-                val listener = object : AnnotationManager.OnAnnotationSelectedListener {
+                val listener = object : com.pspdfkit.ui.annotations.OnAnnotationSelectedListener{
                     override fun onPrepareAnnotationSelection(
                         controller: AnnotationSelectionController,
                         annotation: Annotation,
@@ -78,23 +78,51 @@ class FlutterEventsHelper(private val eventCallbacks: NutrientEventsCallbacks? =
                             "isMultipleSelection" to isMultipleSelection
                         ))
                     }
+
+                    override fun onAnnotationDeselected(
+                        annotation: Annotation?,
+                        reselected: Boolean
+                    ) {
+                        super.onAnnotationDeselected(annotation, reselected)
+                    }
                 }
                 pdfFragment.addOnAnnotationSelectedListener(listener)
                 eventsMap[event] = listener
             }
             NutrientEvent.ANNOTATIONS_DESELECTED -> {
-                val listener = AnnotationManager.OnAnnotationDeselectedListener { annotation, isMultipleSelection ->
-                    sendEvent(event, mapOf(
-                        "deselected" to mapOf(
-                            "name" to annotation.name,
-                            "type" to annotation.type.name,
-                            "id" to annotation.uuid,
-                            "objectNumber" to annotation.objectNumber
-                        ),
-                        "isMultipleSelection" to isMultipleSelection
-                    ))
+                val listener = object : com.pspdfkit.ui.annotations.OnAnnotationSelectedListener{
+                    override fun onPrepareAnnotationSelection(
+                        controller: AnnotationSelectionController,
+                        annotation: Annotation,
+                        isMultipleSelection: Boolean
+                    ): Boolean = true
+
+                    override fun onAnnotationSelected(
+                        annotation: Annotation,
+                        isMultipleSelection: Boolean
+                    ) {
+
+                    }
+
+                    override fun onAnnotationDeselected(
+                        annotation: Annotation?,
+                        reselected: Boolean
+                    ) {
+                        super.onAnnotationDeselected(annotation, reselected)
+                        if (annotation != null) {
+                            sendEvent(event, mapOf(
+                                "deselected" to mapOf(
+                                    "name" to annotation.name,
+                                    "type" to annotation.type.name,
+                                    "id" to annotation.uuid,
+                                    "objectNumber" to annotation.objectNumber,
+                                    "reselected" to reselected
+                                ),
+                            ))
+                        }
+                    }
                 }
-                pdfFragment.addOnAnnotationDeselectedListener(listener)
+                pdfFragment.addOnAnnotationSelectedListener(listener)
                 eventsMap[event] = listener
             }
             NutrientEvent.TEXT_SELECTION_CHANGED -> {
@@ -168,10 +196,10 @@ class FlutterEventsHelper(private val eventCallbacks: NutrientEventsCallbacks? =
                 pdfFragment.removeOnAnnotationUpdatedListener(listener as AnnotationProvider.OnAnnotationUpdatedListener)
             }
             NutrientEvent.ANNOTATIONS_SELECTED -> {
-                pdfFragment.removeOnAnnotationSelectedListener(listener as AnnotationManager.OnAnnotationSelectedListener)
+                pdfFragment.removeOnAnnotationSelectedListener(listener as com.pspdfkit.ui.annotations.OnAnnotationSelectedListener)
             }
             NutrientEvent.ANNOTATIONS_DESELECTED -> {
-                pdfFragment.removeOnAnnotationDeselectedListener(listener as AnnotationManager.OnAnnotationDeselectedListener)
+                pdfFragment.removeOnAnnotationSelectedListener(listener as com.pspdfkit.ui.annotations.OnAnnotationSelectedListener)
             }
             NutrientEvent.TEXT_SELECTION_CHANGED -> {
                 pdfFragment.removeOnTextSelectionChangeListener(listener as TextSelectionManager.OnTextSelectionChangeListener)

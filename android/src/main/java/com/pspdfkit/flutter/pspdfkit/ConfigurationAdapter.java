@@ -637,11 +637,7 @@ class ConfigurationAdapter {
     }
 
     private void configureShowSearchAction(boolean showSearchAction) {
-        if (showSearchAction) {
-            configuration.enableSearch();
-        } else {
-            configuration.disableSearch();
-        }
+        configuration.searchEnabled(showSearchAction);
     }
 
     private void configureImmersiveMode(boolean immersiveMode) {
@@ -670,45 +666,24 @@ class ConfigurationAdapter {
     }
 
     private void configureShowThumbnailGridAction(boolean showThumbnailGridAction) {
-        if (showThumbnailGridAction) {
-            configuration.showThumbnailGrid();
-        } else {
-            configuration.hideThumbnailGrid();
-        }
+        configuration.thumbnailGridEnabled(showThumbnailGridAction);
     }
 
     private void configureShowOutlineAction(boolean showOutlineAction) {
-        if (showOutlineAction) {
-            configuration.enableOutline();
-        } else {
-            configuration.disableOutline();
-        }
+        configuration.outlineEnabled(showOutlineAction);
     }
 
     private void configureShowAnnotationListAction(boolean showAnnotationListAction) {
-        if (showAnnotationListAction) {
-            configuration.enableAnnotationList();
-        } else {
-            configuration.disableAnnotationList();
-        }
+        configuration.annotationListEnabled(showAnnotationListAction);
     }
 
     private void configureShowPageLabels(boolean showPageLabels) {
-        if (showPageLabels) {
-            configuration.showPageNumberOverlay();
-            configuration.showPageLabels();
-        } else {
-            configuration.hidePageNumberOverlay();
-            configuration.hidePageLabels();
-        }
+        configuration.pageLabelsEnabled(showPageLabels);
+        configuration.pageNumberOverlayEnabled(showPageLabels);
     }
 
     private void configureDocumentLabelEnabled(boolean documentLabelEnabled) {
-        if (documentLabelEnabled) {
-            configuration.showDocumentTitleOverlay();
-        } else {
-            configuration.hideDocumentTitleOverlay();
-        }
+        configuration.documentTitleOverlayEnabled(documentLabelEnabled);
     }
 
     private void configureToolbarTitle(@Nullable String toolbarTitle) {
@@ -724,11 +699,7 @@ class ConfigurationAdapter {
     }
 
     private void configureEnableAnnotationEditing(boolean enableAnnotationEditing) {
-        if (enableAnnotationEditing) {
-            configuration.enableAnnotationEditing();
-        } else {
-            configuration.disableAnnotationEditing();
-        }
+        configuration.annotationEditingEnabled(enableAnnotationEditing);
     }
 
     private void configureShowShareAction(boolean showShareAction) {
@@ -740,11 +711,7 @@ class ConfigurationAdapter {
     }
 
     private void configureShowPrintAction(boolean showPrintAction) {
-        if (showPrintAction) {
-            configuration.enablePrinting();
-        } else {
-            configuration.disablePrinting();
-        }
+        configuration.printingEnabled(showPrintAction);
     }
 
     private void configureEnableTextSelection(boolean enableTextSelection) {
@@ -752,27 +719,15 @@ class ConfigurationAdapter {
     }
 
     private void configureShowBookmarksAction(boolean enableBookmarkList) {
-        if (enableBookmarkList) {
-            configuration.enableBookmarkList();
-        } else {
-            configuration.disableBookmarkList();
-        }
+        configuration.bookmarkListEnabled(enableBookmarkList);
     }
 
     private void configureEnableDocumentEditor(boolean enableDocumentEditor) {
-        if (enableDocumentEditor) {
-            configuration.enableDocumentEditor();
-        } else {
-            configuration.disableDocumentEditor();
-        }
+        configuration.documentEditorEnabled(enableDocumentEditor);
     }
 
     private void configureDocumentInfoView(boolean enableDocumentInfoView) {
-        if (enableDocumentInfoView) {
-            configuration.enableDocumentInfoView();
-        } else {
-            configuration.disableDocumentInfoView();
-        }
+        configuration.documentInfoViewEnabled(enableDocumentInfoView);
     }
 
     private void configureAppearanceMode(@NonNull String appearanceMode) {
@@ -812,11 +767,7 @@ class ConfigurationAdapter {
     }
 
     private void configureShowNavigationButtons(boolean showNavigationButtons) {
-        if (showNavigationButtons) {
-            configuration.showNavigationButtons();
-        } else {
-            configuration.hideNavigationButtons();
-        }
+        configuration.navigationButtonsEnabled(showNavigationButtons);
     }
 
     private static int getStyleResourceId(@NonNull String styleName, @NonNull Context context) {

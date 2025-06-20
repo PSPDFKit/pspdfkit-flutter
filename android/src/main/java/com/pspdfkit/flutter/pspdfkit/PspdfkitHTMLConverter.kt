@@ -36,12 +36,12 @@ object PspdfkitHTMLConverter {
             context,
             html,
             options["baseUrl"] as String
-        ) else HtmlToPdfConverter.fromHTMLString(context, html)
+        ) else HtmlToPdfConverter.fromHTMLString(context, html, options?.get("baseUrl") as String)
 
-        if (options?.contains("enableJavaScript") == true)
+        if (options.contains("enableJavaScript"))
             converter.setJavaScriptEnabled(options["enableJavaScript"] as Boolean)
 
-        if (options?.contains("documentTitle") == true)
+        if (options.contains("documentTitle"))
             converter.title(options["documentTitle"] as String)
 
         converter

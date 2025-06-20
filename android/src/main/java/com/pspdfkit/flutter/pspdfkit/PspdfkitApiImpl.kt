@@ -65,6 +65,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
+import androidx.core.net.toUri
 
 class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?) : PspdfkitApi {
 
@@ -745,7 +746,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 html,
                 options["baseUrl"] as String
             )
-        } else activityPluginBinding?.let { HtmlToPdfConverter.fromHTMLString(it.activity, html) }
+        } else activityPluginBinding?.let { HtmlToPdfConverter.fromHTMLString(it.activity, html, options?.get("baseUrl") as String) }
 
         if (options?.contains("enableJavaScript") == true)
             converter?.setJavaScriptEnabled(options["enableJavaScript"] as Boolean)
@@ -778,7 +779,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val convertor = activityPluginBinding?.let {
             HtmlToPdfConverter.fromUri(
                 it.activity,
-                Uri.parse(htmlUri)
+                htmlUri.toUri()
             )
         }
 

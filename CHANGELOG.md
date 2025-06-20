@@ -1,3 +1,8 @@
+## 4.4.1 - 20 Jun 2025
+
+- Updates for Nutrient Android SDK 10.4.0.
+- Fixes issue where the Android signature dialog custom style is not applied. (HYB-820)
+
 ## 4.4.0 - 10 Jun 2025
 
 - Adds AI Assistant support. (J#HYB-742)
@@ -7,7 +12,7 @@
 
 ## 4.3.0 - 11 Apr 2025
 
-- Adds setting custom stamp items support. Only custom text stamps are supported, and this is available only on iOS and Android for now. (J#HYB-715) 
+- Adds setting custom stamp items support. Only custom text stamps are supported, and this is available only on iOS and Android for now. (J#HYB-715)
 - Adds signature creation configuration and signature saving strategy support. (J#HYB-739)
 - Adds support for custom main toolbar items with icons. (J#HYB-732)
 - Fixes issue where an annotation doesn't get selected when clicked on iOS. (J#HYB-735)

@@ -1,6 +1,6 @@
 name: pspdfkit_example
 description: Demonstrates how to use the pspdfkit plugin.
-version: 4.4.0
+version: 4.4.1
 homepage: https://pspdfkit.com/
 publish_to: 'none'  # Remove this line if you wish to publish to pub.dev
 environment:
