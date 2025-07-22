@@ -14,10 +14,10 @@ import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.flutter.pspdfkit.AnnotationTypeAdapter
 import com.pspdfkit.flutter.pspdfkit.api.DocumentSaveOptions
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
 import com.pspdfkit.flutter.pspdfkit.api.PageInfo
 import com.pspdfkit.flutter.pspdfkit.api.PdfDocumentApi
 import com.pspdfkit.flutter.pspdfkit.api.PdfVersion
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApiError
 import com.pspdfkit.flutter.pspdfkit.forms.FormHelper
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
@@ -29,15 +29,12 @@ import com.pspdfkit.forms.TextFormElement
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import org.json.JSONObject
+import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.EnumSet
-import android.util.Log
-import com.pspdfkit.annotations.Annotation
-import kotlinx.serialization.json.Json
 
 class FlutterPdfDocument(
     private val pdfDocument: PdfDocument
@@ -140,7 +137,7 @@ class FlutterPdfDocument(
                             else -> {
                                 callback(
                                     Result.failure(
-                                        PspdfkitApiError(
+                                        NutrientApiError(
                                             "Invalid value for editable button form element",
                                             "Value must be either \"selected\" or \"deselected\""
                                         )
@@ -156,7 +153,7 @@ class FlutterPdfDocument(
                         } else {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Invalid value for choice form element",
                                         "\"value\" argument needs a list of " +
                                                 "integers to set selected indexes for a choice " +
@@ -168,7 +165,7 @@ class FlutterPdfDocument(
                     } else if (formElement is SignatureFormElement) {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "Signature form elements cannot be set programmatically",
                                     "Signature form elements are not supported.",
                                 )
@@ -177,7 +174,7 @@ class FlutterPdfDocument(
                     } else {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "Invalid form element type",
                                     "Form element with name $fullyQualifiedName is not a text, " +
                                             "editable button, choice, or signature form element."
@@ -189,7 +186,7 @@ class FlutterPdfDocument(
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while searching for a form element with name $fullyQualifiedName",
                                 throwable.message ?: "",
                             )
@@ -197,7 +194,7 @@ class FlutterPdfDocument(
                     )
                 }
             ) // Form element for the given name not found.
-            { callback(Result.failure(PspdfkitApiError("Form element not found", ""))) }
+            { callback(Result.failure(NutrientApiError("Form element not found", ""))) }
     }
 
     override fun getFormFieldValue(
@@ -239,7 +236,7 @@ class FlutterPdfDocument(
                         is SignatureFormElement -> {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Signature form elements cannot be read programmatically",
                                         "Signature form elements are not supported.",
                                     )
@@ -250,7 +247,7 @@ class FlutterPdfDocument(
                         else -> {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Invalid form element type",
                                         "Form element with name $fullyQualifiedName is not a text, " +
                                                 "editable button, choice, or signature form element."
@@ -263,7 +260,7 @@ class FlutterPdfDocument(
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while searching for a form element with name $fullyQualifiedName",
                                 throwable.message ?: "",
                             )
@@ -274,7 +271,7 @@ class FlutterPdfDocument(
             {
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Form field not found.",
                             "Form element with name $fullyQualifiedName not found"
                         )
@@ -301,7 +298,7 @@ class FlutterPdfDocument(
             ) { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Failed to apply Instant JSON",
                             throwable.message ?: "",
                         )
@@ -324,7 +321,7 @@ class FlutterPdfDocument(
             ) { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Failed to export Instant JSON",
                             throwable.message ?: "",
                         )
@@ -349,7 +346,7 @@ class FlutterPdfDocument(
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while creating annotation",
                                 throwable.message ?: "",
                             )
@@ -428,7 +425,7 @@ class FlutterPdfDocument(
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while retrieving annotation of type $type",
                                 throwable.message ?: "",
                             )
@@ -452,7 +449,7 @@ class FlutterPdfDocument(
             }, { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while getting unsaved JSON annotations.",
                             throwable.message ?: "",
                         )
@@ -496,7 +493,7 @@ class FlutterPdfDocument(
                     // An error occurred while writing XFDF.
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while exporting XFDF",
                                 throwable.message ?: "",
                             )
@@ -527,7 +524,7 @@ class FlutterPdfDocument(
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while saving document",
                                 throwable.message ?: "",
                             )
@@ -545,7 +542,7 @@ class FlutterPdfDocument(
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while saving document",
                                 throwable.message ?: "",
                             )
@@ -565,7 +562,7 @@ class FlutterPdfDocument(
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while saving document",
                                 throwable.message ?: "",
                             )

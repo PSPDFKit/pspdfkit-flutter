@@ -5,7 +5,7 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Options for saving/exporting a document.
 extension DocumentSaveOptionsX on DocumentSaveOptions {

@@ -21,7 +21,7 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
 
 ```yaml
 dependencies:
-  pspdfkit_flutter: any
+  nutrient_flutter: any
 ```
 
 2. Run the following command:
@@ -125,7 +125,7 @@ Create a new file `lib/main.dart` with the following content:
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit_flutter.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 

@@ -177,7 +177,7 @@ class PspdfkitFlutterHelper: NSObject {
     static func setFormFieldValue(_ value: String, forFieldWithFullyQualifiedName fullyQualifiedName: String, for document: Document) throws -> Bool {
    
         guard !fullyQualifiedName.isEmpty else {
-            throw PspdfkitApiError(code: "", message:"Fully qualified name may not be nil or empty." , details: nil)
+            throw NutrientApiError(code: "", message:"Fully qualified name may not be nil or empty." , details: nil)
         }
         
         var success = false
@@ -198,7 +198,7 @@ class PspdfkitFlutterHelper: NSObject {
                     textFieldFormElement.contents = value
                     success = true
                 } else if formElement is SignatureFormElement {
-                    throw PspdfkitApiError(code: "", message: "Signature form elements cannot be modified.", details: nil)
+                    throw NutrientApiError(code: "", message: "Signature form elements cannot be modified.", details: nil)
                 } else {
                     return false
                 }
@@ -207,14 +207,14 @@ class PspdfkitFlutterHelper: NSObject {
         }
         
         if !success {
-            throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
+            throw NutrientApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
         }
         return true
     }
     
     static func getFormFieldValue(forFieldWithFullyQualifiedName fullyQualifiedName: String, for document: Document) throws -> Any {
         guard !fullyQualifiedName.isEmpty else {
-            throw PspdfkitApiError(code: "", message: "Fully qualified name may not be nil or empty.", details : nil)
+            throw NutrientApiError(code: "", message: "Fully qualified name may not be nil or empty.", details : nil)
         }
         
         for formElement in document.formParser?.forms ?? [] {
@@ -222,19 +222,19 @@ class PspdfkitFlutterHelper: NSObject {
                 if formElement.value != nil {
                     return formElement.value!
                 } else {
-                    throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
+                    throw NutrientApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details: nil)
                 }
             }
         }
         
-        throw PspdfkitApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details : nil)
+        throw NutrientApiError(code: "", message: "Error while searching for a form element with name \(fullyQualifiedName).", details : nil)
     }
     
     static func getFormFields(for document: Document) throws -> [[String : Any]]{
         let formFields = document.formParser?.forms ?? []
         let data:[[String : Any]] = FormHelper.convertFormFields(formFields: formFields) as! [[String : Any]]
         if formFields.isEmpty {
-            throw PspdfkitApiError(code: "", message: "No form fields found in the document.", details: nil)
+            throw NutrientApiError(code: "", message: "No form fields found in the document.", details: nil)
         }
         return data
     }
@@ -244,25 +244,25 @@ class PspdfkitFlutterHelper: NSObject {
     static func processAnnotations(ofType type: String, withProcessingMode processingMode: String, andDestinationPath destinationPath: String, for pdfViewController: PDFViewController) throws -> Bool {
         let change = PspdfkitFlutterConverter.annotationChange(from: processingMode)
         guard let processedDocumentURL = writableFileURL(withPath: destinationPath, override: true, copyIfNeeded: false) else {
-            throw PspdfkitApiError(code: "", message: "Could not create a new PDF file at the given path.", details : nil)
+            throw NutrientApiError(code: "", message: "Could not create a new PDF file at the given path.", details : nil)
         }
         
         guard let document = pdfViewController.document, document.isValid else {
-            throw PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details : nil)
+            throw NutrientApiError(code: "", message: "PDF document not found or is invalid.", details : nil)
         }
         
         let configuration = Processor.Configuration(document: document)
         configuration?.modifyAnnotations(ofTypes: PspdfkitFlutterConverter.annotationType(from: type), change: change)
         
         if configuration == nil {
-            throw PspdfkitApiError(code: "", message: "Invalid annotation type.", details : nil)
+            throw NutrientApiError(code: "", message: "Invalid annotation type.", details : nil)
         }
         
         let processor = Processor(configuration: configuration!, securityOptions: nil)
         do {
             try processor.write(toFileURL: processedDocumentURL)
         } catch {
-            throw PspdfkitApiError(code: "", message: "Error writing to PDF file.", details : error.localizedDescription)
+            throw NutrientApiError(code: "", message: "Error writing to PDF file.", details : error.localizedDescription)
         }
         
         return true
@@ -278,22 +278,22 @@ class PspdfkitFlutterHelper: NSObject {
         } else if let jsonDict = jsonAnnotation as? [String: Any] {
             data = try? JSONSerialization.data(withJSONObject: jsonDict, options: [])
         } else {
-            throw PspdfkitApiError(code: "", message: "Invalid JSON Annotation.", details : nil)
+            throw NutrientApiError(code: "", message: "Invalid JSON Annotation.", details : nil)
         }
         
         guard let annotationData = data else {
-            throw PspdfkitApiError(code: "", message: "Invalid JSON Annotation.", details: nil)
+            throw NutrientApiError(code: "", message: "Invalid JSON Annotation.", details: nil)
         }
         
         let documentProvider = document.documentProviders.first!
         let annotation = try? Annotation(fromInstantJSON: annotationData, documentProvider: documentProvider)
         if annotation == nil {
-            throw PspdfkitApiError(code: "", message: "Failed to create annotation from JSON.", details: nil)
+            throw NutrientApiError(code: "", message: "Failed to create annotation from JSON.", details: nil)
         }
         
         let success = document.add(annotations: [annotation!], options: nil)
         if !success {
-            throw PspdfkitApiError(code: "", message: "Failed to add annotation.", details: nil)
+            throw NutrientApiError(code: "", message: "Failed to add annotation.", details: nil)
         }
         
         return true
@@ -310,7 +310,7 @@ class PspdfkitFlutterHelper: NSObject {
                 return true
             }
         } else {
-            throw PspdfkitApiError(code: "", message: "Failed to remove annotation.", details: nil)
+            throw NutrientApiError(code: "", message: "Failed to remove annotation.", details: nil)
         }
         
         return true
@@ -329,7 +329,7 @@ class PspdfkitFlutterHelper: NSObject {
         }
         
         guard let dict = annotationDict else {
-            throw PspdfkitApiError(code: "", message: "Invalid annotation data.", details: nil)
+            throw NutrientApiError(code: "", message: "Invalid annotation data.", details: nil)
         }
         
         // Try to get identifier information, looking for name first (for consistency)
@@ -337,7 +337,7 @@ class PspdfkitFlutterHelper: NSObject {
         let uuid = dict["uuid"] as? String
         
         if name == nil && uuid == nil {
-            throw PspdfkitApiError(code: "", message: "Annotation has no identifier (name or uuid).", details: nil)
+            throw NutrientApiError(code: "", message: "Annotation has no identifier (name or uuid).", details: nil)
         }
         
         let allAnnotations = document.allAnnotations(of: .all).values.flatMap { $0 }
@@ -368,7 +368,7 @@ class PspdfkitFlutterHelper: NSObject {
         if  annotationsJSON != nil {
             return annotationsJSON
         } else {
-            throw PspdfkitApiError(code:"", message: "Failed to get annotations.", details:nil)
+            throw NutrientApiError(code:"", message: "Failed to get annotations.", details:nil)
         }
     }
     
@@ -396,13 +396,13 @@ class PspdfkitFlutterHelper: NSObject {
             _ = try? FileManager.default.removeItem(at: fileURL)
             return true
         } catch {
-            throw PspdfkitApiError(code: "", message: "Error while parsing XFDF file.", details: error.localizedDescription )
+            throw NutrientApiError(code: "", message: "Error while parsing XFDF file.", details: error.localizedDescription )
         }
     }
     
     static func exportXFDF(toPath path: String, for document: Document)throws -> Bool {
         guard let fileURL = writableFileURL(withPath: path, override: true, copyIfNeeded: false) else {
-            throw PspdfkitApiError(code: "", message: "Could not create a new XFDF file at the given path.", details: nil)
+            throw NutrientApiError(code: "", message: "Could not create a new XFDF file at the given path.", details: nil)
         }
         
         var annotations = [Annotation]()
@@ -414,7 +414,7 @@ class PspdfkitFlutterHelper: NSObject {
             let dataSink = try FileDataSink(fileURL: fileURL, options: [])
             try XFDFWriter().write(annotations, to: dataSink, documentProvider: document.documentProviders[0])
         } catch {
-            throw PspdfkitApiError(code: "", message: "Error while exporting XFDF file.", details: error.localizedDescription)
+            throw NutrientApiError(code: "", message: "Error while exporting XFDF file.", details: error.localizedDescription)
         }
         
         return true
@@ -423,7 +423,7 @@ class PspdfkitFlutterHelper: NSObject {
     static func applyInstantJson(annotationsJson: String, document: Document) throws -> Bool {
         guard let jsonData = annotationsJson.data(using: .utf8) else {
             print("Invalid JSON data.")
-            throw PspdfkitApiError(code: "", message: "Invalid JSON data.", details : nil)
+            throw NutrientApiError(code: "", message: "Invalid JSON data.", details : nil)
         }
         
         let jsonContainer = DataContainerProvider(data: jsonData)
@@ -432,7 +432,7 @@ class PspdfkitFlutterHelper: NSObject {
             return true
         } catch {
             print("Error while importing document Instant JSON: \(error.localizedDescription)")
-            throw PspdfkitApiError(code: "", message: "Error while importing document Instant JSON.", details: error.localizedDescription)
+            throw NutrientApiError(code: "", message: "Error while importing document Instant JSON.", details: error.localizedDescription)
         }
     }
     
@@ -442,10 +442,10 @@ class PspdfkitFlutterHelper: NSObject {
             if let annotationsJson = String(data: data, encoding: .utf8) {
                 return annotationsJson
             } else {
-                throw PspdfkitApiError(code: "", message: "Error while exporting document Instant JSON.", details: nil)
+                throw NutrientApiError(code: "", message: "Error while exporting document Instant JSON.", details: nil)
             }
         } catch {
-            throw PspdfkitApiError(code: "", message: "Error while exporting document Instant JSON.", details: error.localizedDescription)
+            throw NutrientApiError(code: "", message: "Error while exporting document Instant JSON.", details: error.localizedDescription)
         }
     }
     
@@ -537,7 +537,7 @@ class PspdfkitFlutterHelper: NSObject {
             try stringData.write(to: fileURL)
             return fileURL
         } catch {
-            throw PspdfkitApiError(code: "PSPDFKIT_ERROR_FILE_WRITE", message: "Failed to write temporary file", details: nil)
+            throw NutrientApiError(code: "PSPDFKIT_ERROR_FILE_WRITE", message: "Failed to write temporary file", details: nil)
         }
     }
     

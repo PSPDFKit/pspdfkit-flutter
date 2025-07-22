@@ -11,7 +11,7 @@
 #import "PspdfPlatformViewFactory.h"
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
-#import "pspdfkit_flutter-Swift.h"
+#import "nutrient_flutter-Swift.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -30,9 +30,9 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
-    [registrar registerViewFactory:platformViewFactory withId:@"com.pspdfkit.widget"];
+    [registrar registerViewFactory:platformViewFactory withId:@"com.nutrient.widget"];
     
-    channel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:[registrar messenger]];
+    channel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     // Register pigeon APIs.

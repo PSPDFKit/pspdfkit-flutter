@@ -1,11 +1,11 @@
 {
-    "name": "pspdfkit_flutter_example",
-    "short_name": "pspdfkit_flutter_example",
+    "name": "nutrient_flutter_example",
+    "short_name": "nutrient_flutter_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Demonstrates how to use the pspdfkit_flutter plugin.",
+    "description": "Demonstrates how to use the nutrient_flutter plugin.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

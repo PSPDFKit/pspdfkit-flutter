@@ -1,12 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart' hide BorderStyle, Action;
-import 'package:pspdfkit_flutter/src/annotations/annotation_actions.dart';
-import '../api/pspdfkit_api.g.dart';
-import '../measurements/measurement_precision.dart';
-import '../measurements/measurement_scale.dart';
-import 'annotation_attachment.dart';
-import 'annotation_styles.dart';
-import 'annotation_type_extensions.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Base class for all Nutrient annotations
 abstract class Annotation {
@@ -68,16 +62,13 @@ abstract class Annotation {
 
   /// Helper method to convert a Color to hex string
   static String? _colorToHex(Color? color) {
-    if (color == null) return null;
-    String hex = color.value.toRadixString(16).padLeft(8, '0');
-    return '#${hex.substring(2)}'; // Remove alpha channel
+    // Remove alpha channel
+    return color?.toHex();
   }
 
   /// Helper method to convert a hex string to Color
   static Color? _hexToColor(String? hex) {
-    if (hex == null) return null;
-    hex = hex.replaceFirst('#', '');
-    return Color(int.parse('ff$hex', radix: 16)); // Add full opacity
+    return hex?.toColor(); // Add full opacity
   }
 
   /// Helper method to convert a list of strings to a list of AnnotationFlags

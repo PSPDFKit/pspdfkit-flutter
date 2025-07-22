@@ -8,9 +8,9 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/annotations/annotation_utils.dart';
-import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/annotations/annotation_utils.dart';
+import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 
 class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   late final PdfDocumentApi _api;

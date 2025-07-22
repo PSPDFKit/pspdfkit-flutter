@@ -22,15 +22,14 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.flutter.pspdfkit.api.AnalyticsEventsCallback;
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi;
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitFlutterApiCallbacks;
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApi;
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApiCallbacks;
 import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
 import com.pspdfkit.listeners.SimpleDocumentListener;
 import com.pspdfkit.ui.PdfFragment;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -51,7 +50,7 @@ public class PspdfkitPlugin
     @NonNull
     private static final EventDispatcher eventDispatcher = EventDispatcher.getInstance();
     private static final String LOG_TAG = "PSPDFKitPlugin";
-    private static final String MESSAGE_CHANNEL_SUFFIX = "pspdfkit";
+    private static final String MESSAGE_CHANNEL_SUFFIX = "nutrient";
 
     @Nullable
     private ActivityPluginBinding activityPluginBinding;
@@ -74,19 +73,19 @@ public class PspdfkitPlugin
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         channel = new MethodChannel(
                 binding.getBinaryMessenger(),
-                "com.pspdfkit.global"
+                "com.nutrient.global"
         );
         eventDispatcher.setChannel(channel);
         // Register the view factory for the PSPDFKit widget provided by `PSPDFKitViewFactory`.
         binding
                 .getPlatformViewRegistry()
                 .registerViewFactory(
-                        "com.pspdfkit.widget",
+                        "com.nutrient.widget",
                         new PSPDFKitViewFactory(binding.getBinaryMessenger())
                 );
         // Setup the PSPDFKit API.
-        PspdfkitApi.Companion.setUp(binding.getBinaryMessenger(), pspdfkitApi, MESSAGE_CHANNEL_SUFFIX);
-        PspdfkitFlutterApiCallbacks pspdfkitFlutterApiCallbacks = new PspdfkitFlutterApiCallbacks(binding.getBinaryMessenger(), MESSAGE_CHANNEL_SUFFIX);
+        NutrientApi.Companion.setUp(binding.getBinaryMessenger(), pspdfkitApi, MESSAGE_CHANNEL_SUFFIX);
+        NutrientApiCallbacks pspdfkitFlutterApiCallbacks = new NutrientApiCallbacks(binding.getBinaryMessenger(), MESSAGE_CHANNEL_SUFFIX);
         AnalyticsEventsCallback callback = new AnalyticsEventsCallback(binding.getBinaryMessenger(), MESSAGE_CHANNEL_SUFFIX);
         pspdfkitApi.setAnalyticsEventClient(new FlutterAnalyticsClient(callback));
         eventDispatcher.setPspdfkitApiCallbacks(new PspdfkitApiCallbacks(pspdfkitFlutterApiCallbacks));
@@ -108,10 +107,9 @@ public class PspdfkitPlugin
         if (methodCallHandler != null) {
             methodCallHandler.dispose();
         }
-        PspdfkitApi.Companion.setUp(binding.getBinaryMessenger(), null, MESSAGE_CHANNEL_SUFFIX);
+        NutrientApi.Companion.setUp(binding.getBinaryMessenger(), null, MESSAGE_CHANNEL_SUFFIX);
         pspdfkitApi.dispose();
     }
-
 
     @Override
     public boolean onRequestPermissionsResult(

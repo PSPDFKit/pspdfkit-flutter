@@ -20,10 +20,10 @@ import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfigur
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationTool
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationType
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEvent
+import com.pspdfkit.flutter.pspdfkit.api.NutrientViewControllerApi
 import com.pspdfkit.flutter.pspdfkit.api.PdfRect
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApiError
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
 import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
@@ -45,7 +45,7 @@ import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
+class PspdfkitViewImpl : NutrientViewControllerApi {
     private var pdfUiFragment: PdfUiFragment? = null
     private var disposable: Disposable? = null
     private var eventDispatcher: FlutterEventsHelper? = null
@@ -102,7 +102,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                             else -> {
                                 callback(
                                     Result.failure(
-                                        PspdfkitApiError(
+                                        NutrientApiError(
                                             "Invalid value for editable button form element",
                                             "Value must be either \"selected\" or \"deselected\""
                                         )
@@ -118,7 +118,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                         } else {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Invalid value for choice form element",
                                         "\"value\" argument needs a list of " +
                                                 "integers to set selected indexes for a choice " +
@@ -130,7 +130,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                     } else if (formElement is SignatureFormElement) {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "Signature form elements cannot be set programmatically",
                                     "Signature form elements are not supported.",
                                 )
@@ -139,7 +139,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                     } else {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "Invalid form element type",
                                     "Form element with name $fullyQualifiedName is not a text, " +
                                             "editable button, choice, or signature form element."
@@ -151,7 +151,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while searching for a form element with name $fullyQualifiedName",
                                 throwable.message ?: "",
                             )
@@ -159,7 +159,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                     )
                 }
             ) // Form element for the given name not found.
-            { callback(Result.failure(PspdfkitApiError("Form element not found", ""))) }
+            { callback(Result.failure(NutrientApiError("Form element not found", ""))) }
     }
 
     override fun getFormFieldValue(
@@ -203,7 +203,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                         is SignatureFormElement -> {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Signature form elements cannot be read programmatically",
                                         "Signature form elements are not supported.",
                                     )
@@ -214,7 +214,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                         else -> {
                             callback(
                                 Result.failure(
-                                    PspdfkitApiError(
+                                    NutrientApiError(
                                         "Invalid form element type",
                                         "Form element with name $fullyQualifiedName is not a text, " +
                                                 "editable button, choice, or signature form element."
@@ -227,7 +227,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while searching for a form element with name $fullyQualifiedName",
                                 throwable.message ?: "",
                             )
@@ -238,7 +238,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             {
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Form field not found.",
                             "Form element with name $fullyQualifiedName not found"
                         )
@@ -266,7 +266,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             ) { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Failed to apply Instant JSON",
                             throwable.message ?: "",
                         )
@@ -291,7 +291,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             ) { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Failed to export Instant JSON",
                             throwable.message ?: "",
                         )
@@ -316,7 +316,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while creating annotation",
                                 throwable.message ?: "",
                             )
@@ -354,7 +354,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while retrieving annotation of type $type",
                                 throwable.message ?: "",
                             )
@@ -379,7 +379,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             }, { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while getting unsaved JSON annotations.",
                             throwable.message ?: "",
                         )
@@ -406,7 +406,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         if (outputPath.parentFile?.exists() != true && outputPath.parentFile?.mkdirs() != true) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Invalid output path",
                         "Output path is invalid: $outputPath"
                     )
@@ -436,7 +436,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 override fun onError(t: Throwable) {
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while processing annotations",
                                 t.message ?: "",
                             )
@@ -484,7 +484,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                     // An error occurred while writing XFDF.
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while exporting XFDF",
                                 throwable.message ?: "",
                             )
@@ -506,7 +506,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             ) { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while saving document",
                             throwable.message ?: "",
                         )
@@ -550,7 +550,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         if (pageIndex < 0 || pageIndex >= document.pageCount) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Invalid page index",
                         "Page index must be in the range [0, ${document.pageCount})"
                     )
@@ -589,7 +589,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         } catch (e: Exception) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Error while zooming to rect",
                         e.message ?: ""
                     )
@@ -603,7 +603,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         if (pageIndex < 0 || pageIndex >= document.pageCount) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Invalid page index",
                         "Page index must be in the range [0, ${document.pageCount})"
                     )
@@ -616,7 +616,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             } else {
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while getting zoom scale",
                             "Zoom scale is null"
                         )
@@ -648,7 +648,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         if (pdfFragment == null) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Error entering annotation creation mode",
                         "PDF fragment is null"
                     )
@@ -678,7 +678,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
                 // If the tool was provided but couldn't be mapped, return an error
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Invalid annotation tool",
                             "The annotation tool '$annotationTool' is not supported"
                         )
@@ -692,7 +692,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         } catch (e: Exception) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Error entering annotation creation mode",
                         e.message ?: "Unknown error"
                     )
@@ -706,7 +706,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         if (pdfFragment == null) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Error exiting annotation creation mode",
                         "PDF fragment is null"
                     )
@@ -714,7 +714,6 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
             )
             return
         }
-
         try {
             // Exit annotation creation mode
             pdfFragment.exitCurrentlyActiveMode()
@@ -722,7 +721,7 @@ class PspdfkitViewImpl : PspdfkitWidgetControllerApi {
         } catch (e: Exception) {
             callback(
                 Result.failure(
-                    PspdfkitApiError(
+                    NutrientApiError(
                         "Error exiting annotation creation mode",
                         e.message ?: "Unknown error"
                     )

@@ -8,7 +8,7 @@
 ///
 
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 import '../utils/platform_utils.dart';
 
@@ -24,7 +24,7 @@ class PdfViewerScaffold extends StatefulWidget {
   final List<Widget> controlPanels;
 
   /// Callback when the PSPDFKit widget is created
-  final Function(PspdfkitWidgetController)? onPspdfkitWidgetCreated;
+  final Function(NutrientViewController)? onNutrientWidgetCreated;
 
   /// Callback when the PDF document is loaded
   final Function(PdfDocument)? onPdfDocumentLoaded;
@@ -49,7 +49,7 @@ class PdfViewerScaffold extends StatefulWidget {
     required this.documentPath,
     this.configuration,
     this.controlPanels = const [],
-    this.onPspdfkitWidgetCreated,
+    this.onNutrientWidgetCreated,
     this.onPdfDocumentLoaded,
     this.appBar,
     this.floatingActionButton,
@@ -83,13 +83,13 @@ class _PdfViewerScaffoldState extends State<PdfViewerScaffold> {
         children: [
           // PDF viewer takes full screen
           _documentLoaded
-              ? PspdfkitWidget(
+              ? NutrientView(
                   documentPath: widget.documentPath,
                   configuration: widget.configuration ?? PdfConfiguration(),
-                  onPspdfkitWidgetCreated: (controller) {
-                    widget.onPspdfkitWidgetCreated?.call(controller);
+                  onViewCreated: (controller) {
+                    widget.onNutrientWidgetCreated?.call(controller);
                   },
-                  onPdfDocumentLoaded: (document) {
+                  onDocumentLoaded: (document) {
                     setState(() {
                       _document = document;
                     });

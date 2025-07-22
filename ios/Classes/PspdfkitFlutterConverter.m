@@ -7,7 +7,7 @@
 //  This notice may not be removed from this file.
 //
 #import "PspdfkitFlutterConverter.h"
-#import "pspdfkit_flutter-Swift.h"
+#import "nutrient_flutter-Swift.h"
 
 @implementation PspdfkitFlutterConverter
 

@@ -1,4 +1,4 @@
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 ///
 ///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.

@@ -1,5 +1,5 @@
-import 'package:pspdfkit_flutter/src/forms/form_field_type_extension.dart';
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/forms/form_field_type_extension.dart';
 
 abstract class PdfFormField {
   late String _name;

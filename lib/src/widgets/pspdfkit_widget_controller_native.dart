@@ -8,7 +8,7 @@
 ///
 
 import 'package:flutter/services.dart';
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import '../document/pdf_document_native.dart';
 
 /// A controller for a PSPDFKit widget for native platforms that use the [MethodChannel].

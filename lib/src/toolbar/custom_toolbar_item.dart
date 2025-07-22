@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 import 'dart:ui';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Represents a custom toolbar item for PSPDFKit.
 class CustomToolbarItem {

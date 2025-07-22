@@ -30,8 +30,8 @@ import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.co
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
 import com.pspdfkit.flutter.pspdfkit.api.AndroidPermissionStatus
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApi
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitApiError
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApi
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
 import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
@@ -67,7 +67,7 @@ import java.io.FileOutputStream
 import java.nio.charset.StandardCharsets
 import androidx.core.net.toUri
 
-class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?) : PspdfkitApi {
+class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?) : NutrientApi {
 
     private var disposable: Disposable? = null
     private var analyticsEventClient: FlutterAnalyticsClient? = null
@@ -133,7 +133,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity?.startActivity(intent)
             callback(Result.success(activityPluginBinding?.activity != null))
         } catch (e: NutrientException) {
-            callback(Result.failure(PspdfkitApiError("Error", e.message)))
+            callback(Result.failure(NutrientApiError("Error", e.message)))
         }
     }
 
@@ -156,7 +156,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity?.startActivity(intentInstant)
             callback(Result.success(activityPluginBinding?.activity != null))
         } catch (e: NutrientException) {
-            callback(Result.failure(PspdfkitApiError("Error", e.message)))
+            callback(Result.failure(NutrientApiError("Error", e.message)))
         }
     }
 
@@ -197,7 +197,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     } else {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "InvalidArgument",
                                     "\"value\" argument needs a list of " + "integers to set selected indexes for a choice " + "form element (e.g.: \"1, 3, 5\")."
                                 )
@@ -207,7 +207,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 } else if (formElement is SignatureFormElement) {
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "UnsupportedOperation",
                                 "Signature form elements are not supported."
                             )
@@ -219,7 +219,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }, { throwable: Throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error", String.format(
                                 "Error while searching for a form element with name %s",
                                 fullyQualifiedName
@@ -269,7 +269,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     is SignatureFormElement -> {
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "UnsupportedOperation",
                                     "Signature form elements are not supported."
                                 )
@@ -284,7 +284,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }, { throwable: Throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error", String.format(
                                 "Error while searching for a form element with name %s",
                                 fullyQualifiedName
@@ -296,7 +296,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 {
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error", String.format(
                                     "Form element not found with name %s", fullyQualifiedName
                                 )
@@ -318,7 +318,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 .subscribe({ callback(Result.success(true)) }, { throwable: Throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error",
                                 "Error while importing document Instant JSON",
                                 throwable.message
@@ -341,7 +341,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }, { throwable: Throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error",
                             "Error while exporting document Instant JSON",
                             throwable.message
@@ -366,7 +366,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 }) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while creating annotation",
                                 throwable.message ?: "",
                             )
@@ -408,7 +408,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }, { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while retrieving annotation of type $type",
                             throwable.message ?: "",
                         )
@@ -434,7 +434,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             }, { throwable ->
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while getting unsaved JSON annotations.",
                             throwable.message ?: "",
                         )
@@ -472,7 +472,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 ) { throwable ->
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error while updating annotation",
                                 throwable.message ?: "",
                             )
@@ -518,7 +518,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 override fun onError(t: Throwable) {
                     callback(
                         Result.failure(
-                            PspdfkitApiError(
+                            NutrientApiError(
                                 "Error", "Error while processing annotations", t.message
                             )
                         )
@@ -566,7 +566,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 // An error occurred while writing XFDF.
                 callback(
                     Result.failure(
-                        PspdfkitApiError(
+                        NutrientApiError(
                             "Error while exporting XFDF",
                             throwable.message ?: "",
                         )
@@ -620,7 +620,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     { throwable: Throwable ->
                         callback(
                             Result.failure(
-                                PspdfkitApiError(
+                                NutrientApiError(
                                     "Error", "Error while syncing annotations", throwable.message
                                 )
                             )
@@ -725,7 +725,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 //Log.d("PDF Generation", "generatePdf: Processing page ${it.pagesProcessed + 1} of ${it.totalPages}")
             }, { throwable ->
                 // Handle the error.
-                callback(Result.failure(PspdfkitApiError("Error generating PDF", throwable.message)))
+                callback(Result.failure(NutrientApiError("Error generating PDF", throwable.message)))
             }, {  // Handle the completion.
                 callback(Result.success(outputPath))
             })
@@ -765,7 +765,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     callback(Result.success(outputFile.absolutePath))
                 },
                 {
-                    callback(Result.failure(PspdfkitApiError("HTML_TO_PDF_ERROR", it.message)))
+                    callback(Result.failure(NutrientApiError("HTML_TO_PDF_ERROR", it.message)))
                 })
     }
 
@@ -803,7 +803,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     callback(Result.success(outputFile.absolutePath))
                 }, { throwable ->
                     // Handle the error.
-                    callback(Result.failure(PspdfkitApiError("", throwable.message)))
+                    callback(Result.failure(NutrientApiError("", throwable.message)))
                 })
         }
     }

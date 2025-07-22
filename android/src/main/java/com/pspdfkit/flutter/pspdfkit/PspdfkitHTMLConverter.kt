@@ -17,6 +17,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
+import androidx.core.net.toUri
 
 @Deprecated("This class is deprecated and will be removed in the future. Please use the new `PspdfkitApiImpl` class instead.")
 object PspdfkitHTMLConverter {
@@ -38,10 +39,10 @@ object PspdfkitHTMLConverter {
             options["baseUrl"] as String
         ) else HtmlToPdfConverter.fromHTMLString(context, html, options?.get("baseUrl") as String)
 
-        if (options.contains("enableJavaScript"))
+        if (options?.contains("enableJavaScript") ==true)
             converter.setJavaScriptEnabled(options["enableJavaScript"] as Boolean)
 
-        if (options.contains("documentTitle"))
+        if (options?.contains("documentTitle")==true)
             converter.title(options["documentTitle"] as String)
 
         converter
@@ -65,7 +66,7 @@ object PspdfkitHTMLConverter {
         results: MethodChannel.Result
     ) {
         val outputFile = File(outputFilePath)// Output file for the converted PDF.
-        val convertor = HtmlToPdfConverter.fromUri(context, Uri.parse(htmlUriString))
+        val convertor = HtmlToPdfConverter.fromUri(context, htmlUriString.toUri())
 
         // Configure javascript enabled
         if (options?.contains("enableJavaScript") == true)

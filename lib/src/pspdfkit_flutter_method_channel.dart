@@ -10,16 +10,16 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
-import 'pspdfkit_flutter_platform_interface.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'nutrient_flutter_platform_interface.dart';
 
 const String _notSupportedInLegacyMode = 'Not supported in legacy mode';
 
 /// An implementation of [PspdfkitFlutterPlatform] that
 @Deprecated(
     'This class is deprecated and will be removed in the future, Use [PspdfkitFlutterApiImpl] instead')
-class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform
+class MethodChannelPspdfkitFlutter extends NutrientFlutterPlatform
     with AnnotationJsonConverter {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -327,7 +327,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform
 
   @override
   set flutterPdfDocumentLoaded(
-      PspdfkitDocumentLoadedCallback? flutterPdfDocumentLoaded);
+      NutrientDocumentLoadedCallback? flutterPdfDocumentLoaded);
 
   /// ViewControllerWillDismiss callback for PDFViewController
   @override
@@ -441,7 +441,7 @@ class MethodChannelPspdfkitFlutter extends PspdfkitFlutterPlatform
   String get authorName => throw UnimplementedError(_notSupportedInLegacyMode);
 
   @override
-  List<PspdfkitWebToolbarItem> get defaultWebToolbarItems => [];
+  List<NutrientWebToolbarItem> get defaultWebToolbarItems => [];
 
   @override
   Future<String?> generatePdf(List<NewPage> pages, String outPutFile,

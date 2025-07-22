@@ -1,4 +1,4 @@
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 extension NutrientEventX on NutrientEvent {
   String get webName {

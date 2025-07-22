@@ -7,16 +7,16 @@
 ///  This notice may not be removed from this file.
 ///
 
-import '../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// A class representing the configuration options for a PDF document.
 class PdfConfiguration {
   /// Sets the direction in which pages are laid out horizontally.
   /// This is available only on Android and iOS.
-  final PspdfkitScrollDirection? scrollDirection;
+  final ScrollDirection? scrollDirection;
 
   /// Sets the page transition mode. This is only applicable to continuous scroll modes.
-  final PspdfkitPageTransition? pageTransition;
+  final PageTransition? pageTransition;
 
   /// Enables text selection. Defaults to true.
   final bool? enableTextSelection;
@@ -25,10 +25,10 @@ class PdfConfiguration {
   final bool? disableAutosave;
 
   /// Document Presentation Options
-  final PspdfkitPageLayoutMode? pageLayoutMode;
+  final PageLayoutMode? pageLayoutMode;
 
   /// Sets the spread fitting mode. This is only applicable to double page modes.
-  final PspdfkitSpreadFitting? spreadFitting;
+  final SpreadFitting? spreadFitting;
 
   /// Sets whether to show page labels instead of page numbers.
   final bool? showPageLabels;
@@ -62,13 +62,13 @@ class PdfConfiguration {
   final bool? showActionNavigationButtons;
 
   /// Sets the user interface view mode. Defaults to automatic.
-  final PspdfkitUserInterfaceViewMode? userInterfaceViewMode;
+  final UserInterfaceViewMode? userInterfaceViewMode;
 
   /// Sets whether to enable immersive mode. Defaults to false.
   final bool? immersiveMode;
 
   /// Sets the appearance mode. Defaults to defaultMode.
-  final PspdfkitAppearanceMode? appearanceMode;
+  final AppearanceMode? appearanceMode;
 
   /// Sets the items to show in the settings menu.
   final List<String>? settingsMenuItems;
@@ -88,6 +88,10 @@ class PdfConfiguration {
   /// Sets whether to enable the document editor. Defaults to true.
   /// This feature requires a document editor license.
   final bool? androidEnableDocumentEditor;
+
+  /// Sets whether to enable the content editor. Defaults to true.
+  /// This feature requires a content editor license.
+  final bool? androidContentEditorEnabled;
 
   /// Sets whether to show the share action in the Android toolbar. Defaults
   /// to true.
@@ -119,7 +123,7 @@ class PdfConfiguration {
 
   /// Thumbnail Options
   /// Sets the thumbnail bar mode. Defaults to defaultMode.
-  final PspdfkitThumbnailBarMode? showThumbnailBar;
+  final ThumbnailBarMode? showThumbnailBar;
 
   /// Sets whether to show the thumbnail grid action in the Android toolbar.
   /// Defaults to true.
@@ -145,7 +149,7 @@ class PdfConfiguration {
   final List<String>? editableAnnotationTypes;
 
   /// Sets the toolbar menu items. Defaults to null.
-  final List<PspdfkitToolbarMenuItems>? toolbarMenuItems;
+  final List<ToolbarMenuItems>? toolbarMenuItems;
 
   /// Sets the measurement configuration. Defaults to null.
   /// This feature requires a Measurement license.
@@ -207,6 +211,7 @@ class PdfConfiguration {
     this.androidShowOutlineAction,
     this.androidShowBookmarksAction,
     this.androidEnableDocumentEditor,
+    this.androidContentEditorEnabled,
     this.androidShowShareAction,
     this.androidShowPrintAction,
     this.androidShowDocumentInfoView,
@@ -265,6 +270,7 @@ class PdfConfiguration {
       'androidShowOutlineAction': androidShowOutlineAction,
       'androidShowBookmarksAction': androidShowBookmarksAction,
       'androidEnableDocumentEditor': androidEnableDocumentEditor,
+      'androidEnableContentEditor': androidContentEditorEnabled,
       'androidShowShareAction': androidShowShareAction,
       'androidShowPrintAction': androidShowPrintAction,
       'androidShowDocumentInfoView': androidShowDocumentInfoView,

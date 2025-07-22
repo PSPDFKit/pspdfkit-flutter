@@ -1,4 +1,4 @@
-import 'package:pspdfkit_flutter/src/api/pspdfkit_api.g.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Extension on [AnnotationType] to provide additional functionality
 extension AnnotationTypeExtension on AnnotationType {

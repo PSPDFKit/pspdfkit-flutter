@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 Future<String> getOutputPath(String filename) async {
-  final tempDir = await Pspdfkit.getTemporaryDirectory();
+  final tempDir = await Nutrient.getTemporaryDirectory();
   final tempDocumentPath = '${tempDir.path}/$filename';
   return tempDocumentPath;
 }
@@ -18,7 +18,7 @@ Future<File> extractAsset(BuildContext context, String assetPath,
   final bytes = await DefaultAssetBundle.of(context).load(assetPath);
   final list = bytes.buffer.asUint8List();
 
-  final tempDir = await Pspdfkit.getTemporaryDirectory();
+  final tempDir = await Nutrient.getTemporaryDirectory();
   final tempDocumentPath = '${tempDir.path}/$prefix$assetPath';
   final file = File(tempDocumentPath);
 

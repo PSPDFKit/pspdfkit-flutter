@@ -67,6 +67,13 @@ let ANNOTATION_MEASUREMENT_DISTANCE = "measurementDistance"
  */
 @objc(AnnotationsPresetConfigurations)
 public class AnnotationsPresetConfigurations: NSObject {
+    
+    // Track whether custom default stamps have been configured
+    private static var customStampsConfigured = false
+    
+    @objc public static func hasCustomStampsConfigured() -> Bool {
+        return customStampsConfigured
+    }
 
     @objc public static func setConfigurations(annotationPreset: [String:[String: Any]]) {
 
@@ -446,5 +453,8 @@ public class AnnotationsPresetConfigurations: NSObject {
             stamps.append(stampAnnotation)
         }
         StampViewController.defaultStampAnnotations = stamps
+        
+        // Mark that custom stamps have been configured
+        customStampsConfigured = true
     }
 }

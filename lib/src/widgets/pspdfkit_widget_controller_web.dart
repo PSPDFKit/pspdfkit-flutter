@@ -12,16 +12,18 @@ import 'dart:ui';
 import 'dart:js';
 
 import 'package:flutter/foundation.dart';
-import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
-import 'package:pspdfkit_flutter/src/events/nutrient_events_extension.dart';
-import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
-import '../../pspdfkit.dart';
-import '../web/pspdfkit_web.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter/src/events/nutrient_events_extension.dart';
+
+import '../web/nutrient_web.dart';
+import '../web/nutrient_web_instance.dart';
 
 /// A controller for a PSPDFKit widget for Web.
+@Deprecated('Please use the new [NutrientViewControllerWeb] instead.')
 class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController
     with AnnotationJsonConverter {
-  final PspdfkitWebInstance pspdfkitInstance;
+  final NutrientWebInstance pspdfkitInstance;
 
   PspdfkitWidgetControllerWeb(this.pspdfkitInstance);
 
@@ -133,7 +135,7 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController
     // Remove all listeners before unloading?
     // It might be safer to let users remove listeners explicitly.
     _webEventListeners.clear(); // Clear listener map on dispose
-    PSPDFKitWeb.unload(pspdfkitInstance.jsObject);
+    NutrientWeb.unload(pspdfkitInstance.jsObject);
   }
 
   @override
@@ -357,6 +359,7 @@ class PspdfkitWidgetControllerWeb extends PspdfkitWidgetController
 
       // Debug log for events with annotations (useful for troubleshooting)
       if (kDebugMode && eventEnum.toString().contains('annotations')) {
+        // ignore: avoid_print
         print('Processing ${eventEnum.toString()} event: $finalData');
       }
 

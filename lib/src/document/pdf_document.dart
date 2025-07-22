@@ -6,8 +6,7 @@
 ///  This notice may not be removed from this file.
 
 import 'package:flutter/foundation.dart';
-
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 abstract class PdfDocument {
   final String documentId;

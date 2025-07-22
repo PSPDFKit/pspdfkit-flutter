@@ -6,6 +6,8 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+// ignore_for_file: deprecated_member_use_from_same_package
+
 library pspdfkit_widget;
 
 import 'dart:async';
@@ -15,21 +17,49 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/pspdfkit_flutter.dart';
 import 'pspdfkit_flutter_widget_controller_impl.dart';
 import 'pspdfkit_widget_controller_native.dart';
 
+/// A widget that displays a PDF document using Nutrient.
+///
+/// @deprecated Use [NutrientView] instead.
+@Deprecated('Use NutrientView instead')
 class PspdfkitWidget extends StatefulWidget {
+  /// The path to the document to display.
   final String documentPath;
+
+  /// The configuration to use for the document.
   final dynamic configuration;
+
+  /// Called when the widget is created.
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
+
+  /// Called when the document is loaded.
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
+
+  /// Called when the document fails to load.
   final PdfDocumentLoadFailedCallback? onPdfDocumentError;
+
+  /// Called when the page changes.
   final PageChangedCallback? onPageChanged;
+
+  /// Called when a page is clicked.
   final PageClickedCallback? onPageClicked;
+
+  /// Called when the document is saved.
   final PdfDocumentSavedCallback? onPdfDocumentSaved;
+
+  /// Custom toolbar items to add to the toolbar.
   final List<CustomToolbarItem> customToolbarItems;
+
+  /// Called when a custom toolbar item is tapped.
   final OnCustomToolbarItemTappedCallback? onCustomToolbarItemTapped;
+
+  /// Creates a new [PspdfkitWidget] widget.
+  ///
+  /// @deprecated Use [NutrientView] instead.
   const PspdfkitWidget({
     Key? key,
     required this.documentPath,
@@ -73,7 +103,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     }
 
     // This is used in the platform side to register the view.
-    const String viewType = 'com.pspdfkit.widget';
+    const String viewType = 'com.nutrient.widget';
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'document': widget.documentPath,
@@ -119,7 +149,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       );
     } else {
       return Text(
-          '$defaultTargetPlatform is not yet supported by PSPDFKit for Flutter.');
+          '$defaultTargetPlatform is not yet supported by Nutrient for Flutter.');
     }
   }
 
@@ -127,13 +157,12 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     setState(() {
       _id = id;
     });
-    MethodChannel channel = MethodChannel('com.pspdfkit.widget.$id');
-    var api = PspdfkitWidgetControllerApi(
+    MethodChannel channel = MethodChannel('com.nutrient.widget.$id');
+    var api = NutrientViewControllerApi(
       binaryMessenger: channel.binaryMessenger,
       messageChannelSuffix: '$id',
     );
     controller = Pspdfkit.useLegacy
-        // ignore: deprecated_member_use_from_same_package
         ? PspdfkitWidgetControllerNative(
             channel,
             onPageChanged: widget.onPageChanged,
@@ -151,7 +180,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
           );
     widget.onPspdfkitWidgetCreated?.call(controller);
     if (controller is PspdfkitFlutterWidgetControllerImpl) {
-      PspdfkitWidgetCallbacks.setUp(
+      NutrientViewCallbacks.setUp(
           controller as PspdfkitFlutterWidgetControllerImpl,
           messageChannelSuffix: 'widget.callbacks.$id');
       NutrientEventsCallbacks.setUp(
@@ -165,7 +194,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
 
   @override
   void dispose() {
-    PspdfkitWidgetCallbacks.setUp(null,
+    NutrientViewCallbacks.setUp(null,
         messageChannelSuffix: 'widget.callbacks.$_id');
     NutrientEventsCallbacks.setUp(null,
         messageChannelSuffix: 'events.callbacks.$_id');

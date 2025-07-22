@@ -1,3 +1,14 @@
+## 5.0.0 - 22 Jul 2025
+
+- Rebrands the PSPDFKit Flutter SDK to Nutrient Flutter SDK. Now available as [`nutrient_flutter`](https://pub.dev/packages/nutrient_flutter) on pub.dev.(J#HG-682)
+- Adds the `androidContentEditorEnabled` configuration option to `PdfConfiguration` for controlling content editor availability on Android. (J#HYB-834)
+- Adds automatic disabling of date stamps when custom default stamps are configured on iOS for a better user experience. (J#HYB-835)
+- Introduces a migration script for seamless upgrade to Nutrient Flutter SDK 5.0.0. (#48175)
+- Updates to Nutrient Android SDK 10.5.0 with the latest features and fixes.
+- Updates to Nutrient iOS SDK 14.10.0 with the latest features and fixes.
+- Now requires Flutter 3.30.0 or later.
+- Fixes an issue where the `onPageChanged` callback was triggering multiple times on iOS. (J#HYB-839)
+
 ## 4.4.1 - 20 Jun 2025
 
 - Updates for Nutrient Android SDK 10.4.0.
@@ -41,23 +52,23 @@
 
 ## 4.1.1 - 17 Jan 2025
 
-- Fixes build issues where some Android resource IDs are missing. (J#HYB-625) 
+- Fixes build issues where some Android resource IDs are missing. (J#HYB-625)
 - Fixes issue where `onPageChanged` callback returns the wrong page index on iOS. (J#HYB-575)
 
 ## 4.1.0 - 03 Jan 2025
 
-- Adds support for `PspdfkitWidgetController.addEventListener` to iOS and Android. (J#HYB-550)` 
+- Adds support for `PspdfkitWidgetController.addEventListener` to iOS and Android. (J#HYB-550)`
 - Adds support for the latest Android Studio version. (J#HYB-539)
 - Nutrient Flutter SDK now requires Android Gradle Plugin 8.0.0 or later. (J#HYB-539)
 - Nutrient Flutter SDK now requires Flutter 3.27.0 or later. (J#HYB-596)
 - Updates for Nutrient Android SDK 2024.9.0.
-- Updates for Nutrient iOS SDK 14.3.0. 
+- Updates for Nutrient iOS SDK 14.3.0.
 - Fixes onPageChanged callback being triggered early on iOS. (J#HYB-596)
 
 ## 4.0.0 - 01 Nov 2024
 
 - Adds Pigeon for communication between Flutter and native iOS and Android platforms. (J#HYB-455)
-- Fixes issue where annotation preset configurations are not applied to some annotation tools. (J#HYB-185) 
+- Fixes issue where annotation preset configurations are not applied to some annotation tools. (J#HYB-185)
 - Fixes inconsistency in the `applyInstantJson` method parameter type. It now accepts a string on both iOS and Android. (#45541)
 - Updates for Nutrient Android SDK 2024.6.1. (#45458)
 - Updates for Nutrient iOS SDK 14.1.1. (#45458)
@@ -127,10 +138,10 @@
 - Adds Flutter for Web support. (#42151)
 - Replaces configuration `Map` with a dedicated `PdfConfiguration` class. (#42191)
 - Deprecates imports for `package:pspdfkit_flutter/widgets/pspdfkit_widget.dart` and `package:pspdfkit_flutter/widgets/pspdfkit_widget_controller.dart`.
-    Use `package:pspdfkit_flutter/pspdfkit.dart` instead. (#43254)
+  Use `package:pspdfkit_flutter/pspdfkit.dart` instead. (#43254)
 - Updates for PSPDFKit 2024.1.0 for Android. (#43305)
 - Updates for PSPDFKit 13.3.0 for iOS. (#43305)
-- Compile SDK version 34 is now required on Android. (#43305) 
+- Compile SDK version 34 is now required on Android. (#43305)
 
 ## 3.7.2 - 12 Jan 2024
 
@@ -165,14 +176,14 @@
 
 ## 3.5.0 - 17 Jan 2023
 
-- Adds Instant Synchronization support. (#37675) 
+- Adds Instant Synchronization support. (#37675)
 - Updates for PSPDFKit 8.5 for Android. (#38136)
 - Updates for PSPDFKit 12.0.2 for iOS. (#38136)
 
 ## 3.4.1 - 18 Nov 2022
 
 - Updates for PSPDFKit 12.0 for iOS. (#37508)
-- Fixes missing header file issue. (#37283) 
+- Fixes missing header file issue. (#37283)
 
 ## 3.4.0 - 26 Oct 2022
 

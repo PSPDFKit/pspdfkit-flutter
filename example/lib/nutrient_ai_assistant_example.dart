@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_example/utils/jwt_util.dart';
-import 'package:pspdfkit_example/widgets/pdf_viewer_scaffold.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_example/utils/jwt_util.dart';
+import 'package:nutrient_example/widgets/pdf_viewer_scaffold.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 /// A minimal example demonstrating AI Assistant with automatic configuration
@@ -29,7 +29,7 @@ class _NutrientAiAssistantExampleState
 
   // Current configuration applied to the PDF viewer
   late AIAssistantConfiguration _currentConfig;
-  var defaultWebToolbarItems = Pspdfkit.defaultWebToolbarItems;
+  var defaultWebToolbarItems = Nutrient.defaultWebToolbarItems;
 
   @override
   void initState() {
@@ -116,8 +116,8 @@ class _NutrientAiAssistantExampleState
                 instant: true,
                 toolbarItems: [
                   // Add AI Assistant button to the toolbar on web
-                  PspdfkitWebToolbarItem(
-                    type: PspdfkitWebToolbarItemType.aiAssistant,
+                  NutrientWebToolbarItem(
+                    type: NutrientWebToolbarItemType.aiAssistant,
                   ),
                   ...defaultWebToolbarItems,
                 ],

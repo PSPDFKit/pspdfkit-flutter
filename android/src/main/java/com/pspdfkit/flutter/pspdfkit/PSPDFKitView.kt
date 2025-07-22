@@ -22,8 +22,8 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetControllerApi
+import com.pspdfkit.flutter.pspdfkit.api.NutrientViewCallbacks
+import com.pspdfkit.flutter.pspdfkit.api.NutrientViewControllerApi
 import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
@@ -58,7 +58,7 @@ internal class PSPDFKitView(
     private var fragmentCallbacks: FlutterPdfUiFragmentCallbacks? = null
     private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
     private val nutrientEventsCallbacks: NutrientEventsCallbacks = NutrientEventsCallbacks(messenger, "events.callbacks.$id")
-    private val widgetCallbacks: PspdfkitWidgetCallbacks = PspdfkitWidgetCallbacks(messenger, "widget.callbacks.$id")
+    private val widgetCallbacks: NutrientViewCallbacks = NutrientViewCallbacks(messenger, "widget.callbacks.$id")
     private val customToolbarCallbacks: CustomToolbarCallbacks = CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
@@ -66,7 +66,7 @@ internal class PSPDFKitView(
 
     init {
         fragmentContainerView?.id = View.generateViewId()
-        methodChannel = MethodChannel(messenger, "com.pspdfkit.widget.$id")
+        methodChannel = MethodChannel(messenger, "com.nutrient.widget.$id")
 
         val configurationAdapter = ConfigurationAdapter(context, configurationMap)
         val password = configurationAdapter.password
@@ -244,7 +244,7 @@ internal class PSPDFKitView(
             fragmentContainerView = null
 
             // Unregister method channel
-            PspdfkitWidgetControllerApi.setUp(messenger, null, id.toString())
+            NutrientViewControllerApi.setUp(messenger, null, id.toString())
 
             Log.d(LOG_TAG, "PSPDFKitView disposed successfully")
         } catch (e: Exception) {
@@ -257,7 +257,7 @@ internal class PSPDFKitView(
         // Set up the method channel for communication with Flutter.
         val flutterEventsHelper = FlutterEventsHelper(nutrientEventsCallbacks)
         pspdfkitViewImpl.setEventDispatcher(flutterEventsHelper)
-        PspdfkitWidgetControllerApi.setUp(messenger, pspdfkitViewImpl, id.toString())
+        NutrientViewControllerApi.setUp(messenger, pspdfkitViewImpl, id.toString())
     }
 
     // Get Fragment Activity from context with improved error handling

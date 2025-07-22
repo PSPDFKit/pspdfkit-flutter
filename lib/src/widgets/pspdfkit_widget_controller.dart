@@ -8,10 +8,12 @@
 ///
 
 import 'package:flutter/painting.dart';
-
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// A controller for a PSPDFKit widget.
+///
+/// @deprecated Use [NutrientViewController] instead.
+@Deprecated('Use NutrientViewController instead')
 abstract class PspdfkitWidgetController {
   /// Sets the value of a form field by specifying its fully qualified field name.
   @Deprecated('Use [PdfDocument.setFormFieldValue] instead.')

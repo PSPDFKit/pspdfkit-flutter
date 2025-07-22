@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
-
-import '../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 ///
 ///  Copyright © 2019-2025 PSPDFKit GmbH. All rights reserved.
@@ -280,13 +279,6 @@ class NoteAnnotationConfiguration extends AnnotationConfiguration {
     map.removeWhere((key, value) => value == null);
     return map.cast<String, Object>();
   }
-}
-
-extension ColorExtension on Color {
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
 }
 
 class LineEnd {

@@ -7,8 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
-export 'pspdfkit_web_annotation_toolbar_item_type.dart';
-export 'pspdfkit_web_toolbar_item.dart';
-export 'pspdfkit_web_toolbar_item_type.dart';
-export 'pspdfkit_web_annotation_toolbar_item.dart';
-export 'pspdfkit_web_annotation_callback_options.dart';
+export 'nutrient_web_annotation_toolbar_item_type.dart';
+export 'nutrient_web_toolbar_item.dart';
+export 'nutrient_web_toolbar_item_type.dart';
+export 'nutrient_web_annotation_toolbar_item.dart';
+export 'nutrient_web_annotation_callback_options.dart';

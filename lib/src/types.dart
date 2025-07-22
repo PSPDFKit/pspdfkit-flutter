@@ -7,14 +7,14 @@
 ///
 
 import 'package:flutter/widgets.dart';
-import '../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Enum representing the scroll direction of PSPDFKit.
 ///
 /// The possible values are:
 /// - `horizontal`: horizontal scroll direction.
 /// - `vertical`: vertical scroll direction.
-enum PspdfkitScrollDirection {
+enum ScrollDirection {
   horizontal,
   vertical,
 }
@@ -32,7 +32,7 @@ enum PspdfkitScrollDirection {
 /// - `scrollContinuousPerPage`: Continuously scroll pages vertically.
 /// - `auto`: Automatically select the best transition mode based on the device and document.
 /// - `disabled`: Disable page transitions.
-enum PspdfkitPageTransition {
+enum PageTransition {
   scrollContinuous,
   scrollPerSpread,
   curl,
@@ -50,7 +50,7 @@ enum PspdfkitPageTransition {
 /// [single] displays one page at a time.
 /// [double] displays two pages side by side.
 /// [automatic] automatically selects the best layout mode based on the document and screen size.
-enum PspdfkitPageLayoutMode {
+enum PageLayoutMode {
   single,
   double,
   automatic,
@@ -62,7 +62,7 @@ enum PspdfkitPageLayoutMode {
 /// - `fit`: The page is scaled to fit the view.
 /// - `fill`: The page is scaled to fill the view.
 /// - `adaptive`: The page is scaled to fit the view, but only if it is smaller than the view. If it is larger, it is scaled to fill the view.
-enum PspdfkitSpreadFitting {
+enum SpreadFitting {
   fit,
   fill,
   adaptive,
@@ -74,7 +74,7 @@ enum PspdfkitSpreadFitting {
 /// [always]: The user interface view mode is always shown.
 /// [automaticNoFirstLastPage]: The user interface view mode is determined automatically, but the first and last page are always shown.
 /// [never]: The user interface view mode is never shown.
-enum PspdfkitUserInterfaceViewMode {
+enum UserInterfaceViewMode {
   automatic,
   always,
   automaticNoFirstLastPage,
@@ -88,7 +88,7 @@ enum PspdfkitUserInterfaceViewMode {
 /// * `sepia`: The sepia appearance mode.
 /// * `night`: The dark appearance mode.
 /// * `allCustomColors`: The appearance mode with all custom colors.
-enum PspdfkitAppearanceMode {
+enum AppearanceMode {
   defaultMode,
   sepia,
   night,
@@ -105,7 +105,7 @@ enum PspdfkitAppearanceMode {
 /// - `scrubberBar`: The thumbnail bar is shown as a scrubber bar.
 /// - `scrollable`: The thumbnail bar is scrollable.
 /// - `floating`: The thumbnail bar is floating over the document.
-enum PspdfkitThumbnailBarMode {
+enum ThumbnailBarMode {
   none,
   defaultStyle,
   pinned,
@@ -114,7 +114,7 @@ enum PspdfkitThumbnailBarMode {
   floating
 }
 
-enum PspdfkitAutoSaveMode {
+enum AutoSaveMode {
   disabled,
   immediate,
   intelligent,
@@ -123,7 +123,7 @@ enum PspdfkitAutoSaveMode {
 /// An enum to represent the placement of the PSPDFKit toolbar.
 ///
 /// The toolbar can be placed at the top or bottom of the screen.
-enum PspdfKitToolbarPlacement {
+enum ToolbarPlacement {
   top,
   bottom,
 }
@@ -133,7 +133,7 @@ enum PspdfKitToolbarPlacement {
 /// [auto] - Zoom mode is automatically determined based on the document's layout.
 /// [fitToWidth] - Zoom mode scales the document to fit the width of the viewport.
 /// [fitToViewPort] - Zoom mode scales the document to fit the viewport.
-enum PspdfkitZoomMode { auto, fitToWidth, fitToViewPort }
+enum ZoomMode { auto, fitToWidth, fitToViewPort }
 
 /// Enum representing the available menu items for the PSPDFKit toolbar.
 ///
@@ -153,7 +153,7 @@ enum PspdfkitZoomMode { auto, fitToWidth, fitToViewPort }
 /// - activityButtonItem
 /// - settingsButtonItem
 /// - readerViewButtonItem
-enum PspdfkitToolbarMenuItems {
+enum ToolbarMenuItems {
   closeButtonItem,
   outlineButtonItem,
   searchButtonItem,
@@ -178,16 +178,10 @@ enum PspdfkitToolbarMenuItems {
 /// [thumbnails] displays the thumbnails sidebar.
 /// [documentOutline] displays the document outline sidebar.
 /// [custom] displays a custom sidebar.
-enum PspdfkitSidebarMode {
-  annotations,
-  bookmarks,
-  thumbnails,
-  documentOutline,
-  custom
-}
+enum SidebarMode { annotations, bookmarks, thumbnails, documentOutline, custom }
 
 /// Defines the available interaction modes for the PSPDFKit Flutter plugin on the web platform.
-enum PspdfkitWebInteractionMode {
+enum NutrientWebInteractionMode {
   textHighlighter,
   ink,
   inkSignature,
@@ -358,22 +352,40 @@ class SignatureCreationConfiguration {
   }
 }
 
+@Deprecated(
+    'Use [NutrientViewCreatedCallback] instead. This will be removed in a future version.')
 typedef PspdfkitWidgetCreatedCallback = void Function(
     PspdfkitWidgetController view);
 
+@Deprecated(
+    'Use [OnDocumentLoadedCallback] instead. This will be removed in a future version.')
 typedef PdfDocumentLoadedCallback = void Function(PdfDocument document);
 
+@Deprecated(
+    'Use [OnDocumentLoadingFailedCallback] instead. This will be removed in a future version.')
 typedef PdfDocumentLoadFailedCallback = void Function(String error);
 
 typedef PageChangedCallback = void Function(int pageIndex);
 
+typedef OnDocumentLoadedCallback = void Function(PdfDocument document);
+
+typedef OnDocumentLoadingFailedCallback = void Function(String error);
+
 typedef PageClickedCallback = void Function(
     String documentId, int pageIndex, PointF? point, dynamic annotation);
 
+@Deprecated(
+    'Use [OnDocumentSavedCallback] instead. This will be removed in a future version.')
 typedef PdfDocumentSavedCallback = void Function(
     String documentId, String? path);
 
+typedef OnDocumentSavedCallback = void Function(
+    String documentId, String? path);
+
 typedef OnCustomToolbarItemTappedCallback = void Function(String identifier);
+
+typedef NutrientViewCreatedCallback = void Function(
+    NutrientViewController controller);
 
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {
@@ -393,42 +405,42 @@ extension WebShowSignatureValidationStatusMode
   }
 }
 
-extension WebPageLayoutMode on PspdfkitPageLayoutMode {
+extension WebPageLayoutMode on PageLayoutMode {
   String? get webName {
     switch (this) {
-      case PspdfkitPageLayoutMode.double:
+      case PageLayoutMode.double:
         return 'DOUBLE';
-      case PspdfkitPageLayoutMode.automatic:
+      case PageLayoutMode.automatic:
         return 'AUTOMATIC';
-      case PspdfkitPageLayoutMode.single:
+      case PageLayoutMode.single:
       default:
         return 'SINGLE';
     }
   }
 }
 
-extension WebPageTransition on PspdfkitPageTransition {
+extension WebPageTransition on PageTransition {
   String? get webName {
     switch (this) {
-      case PspdfkitPageTransition.scrollContinuous:
+      case PageTransition.scrollContinuous:
         return 'CONTINUOUS';
-      case PspdfkitPageTransition.disabled:
+      case PageTransition.disabled:
         return 'DISABLED';
-      case PspdfkitPageTransition.scrollPerSpread:
+      case PageTransition.scrollPerSpread:
       default:
         return 'PER_SPREAD';
     }
   }
 }
 
-extension WebAutoSaveMode on PspdfkitAutoSaveMode {
+extension WebAutoSaveMode on AutoSaveMode {
   String? get webName {
     switch (this) {
-      case PspdfkitAutoSaveMode.disabled:
+      case AutoSaveMode.disabled:
         return 'DISABLED';
-      case PspdfkitAutoSaveMode.intelligent:
+      case AutoSaveMode.intelligent:
         return 'INTELLIGENT';
-      case PspdfkitAutoSaveMode.immediate:
+      case AutoSaveMode.immediate:
         return 'IMMEDIATE';
       default:
         return null;
@@ -436,18 +448,18 @@ extension WebAutoSaveMode on PspdfkitAutoSaveMode {
   }
 }
 
-extension WebSidebarMode on PspdfkitSidebarMode {
+extension WebSidebarMode on SidebarMode {
   String? get webName {
     switch (this) {
-      case PspdfkitSidebarMode.annotations:
+      case SidebarMode.annotations:
         return 'ANNOTATIONS';
-      case PspdfkitSidebarMode.bookmarks:
+      case SidebarMode.bookmarks:
         return 'BOOKMARKS';
-      case PspdfkitSidebarMode.thumbnails:
+      case SidebarMode.thumbnails:
         return 'THUMBNAILS';
-      case PspdfkitSidebarMode.documentOutline:
+      case SidebarMode.documentOutline:
         return 'DOCUMENT_OUTLINE';
-      case PspdfkitSidebarMode.custom:
+      case SidebarMode.custom:
         return 'CUSTOM';
       default:
         return null;
@@ -455,14 +467,14 @@ extension WebSidebarMode on PspdfkitSidebarMode {
   }
 }
 
-extension WebZoomMode on PspdfkitZoomMode {
+extension WebZoomMode on ZoomMode {
   String? get webName {
     switch (this) {
-      case PspdfkitZoomMode.auto:
+      case ZoomMode.auto:
         return 'AUTO';
-      case PspdfkitZoomMode.fitToWidth:
+      case ZoomMode.fitToWidth:
         return 'FIT_TO_WIDTH';
-      case PspdfkitZoomMode.fitToViewPort:
+      case ZoomMode.fitToViewPort:
         return 'FIT_TO_VIEWPORT';
       default:
         return null;
@@ -470,92 +482,92 @@ extension WebZoomMode on PspdfkitZoomMode {
   }
 }
 
-extension WebWebInteractionMode on PspdfkitWebInteractionMode {
+extension WebWebInteractionMode on NutrientWebInteractionMode {
   String? get webName {
     switch (this) {
-      case PspdfkitWebInteractionMode.textHighlighter:
+      case NutrientWebInteractionMode.textHighlighter:
         return 'TEXT_HIGHLIGHTER';
-      case PspdfkitWebInteractionMode.ink:
+      case NutrientWebInteractionMode.ink:
         return 'INK';
-      case PspdfkitWebInteractionMode.inkSignature:
+      case NutrientWebInteractionMode.inkSignature:
         return 'INK_SIGNATURE';
-      case PspdfkitWebInteractionMode.signature:
+      case NutrientWebInteractionMode.signature:
         return 'SIGNATURE';
-      case PspdfkitWebInteractionMode.stampPicker:
+      case NutrientWebInteractionMode.stampPicker:
         return 'STAMP_PICKER';
-      case PspdfkitWebInteractionMode.stampCustom:
+      case NutrientWebInteractionMode.stampCustom:
         return 'STAMP_CUSTOM';
-      case PspdfkitWebInteractionMode.shapeLine:
+      case NutrientWebInteractionMode.shapeLine:
         return 'SHAPE_LINE';
-      case PspdfkitWebInteractionMode.shapeRectangle:
+      case NutrientWebInteractionMode.shapeRectangle:
         return 'SHAPE_RECTANGLE';
-      case PspdfkitWebInteractionMode.shapeEllipse:
+      case NutrientWebInteractionMode.shapeEllipse:
         return 'SHAPE_ELLIPSE';
-      case PspdfkitWebInteractionMode.shapePolygon:
+      case NutrientWebInteractionMode.shapePolygon:
         return 'SHAPE_POLYGON';
-      case PspdfkitWebInteractionMode.shapePolyline:
+      case NutrientWebInteractionMode.shapePolyline:
         return 'SHAPE_POLYLINE';
-      case PspdfkitWebInteractionMode.inkEraser:
+      case NutrientWebInteractionMode.inkEraser:
         return 'INK_ERASER';
-      case PspdfkitWebInteractionMode.note:
+      case NutrientWebInteractionMode.note:
         return 'NOTE';
-      case PspdfkitWebInteractionMode.commentMarker:
+      case NutrientWebInteractionMode.commentMarker:
         return 'COMMENT_MARKER';
-      case PspdfkitWebInteractionMode.text:
+      case NutrientWebInteractionMode.text:
         return 'TEXT';
-      case PspdfkitWebInteractionMode.callout:
+      case NutrientWebInteractionMode.callout:
         return 'CALLOUT';
-      case PspdfkitWebInteractionMode.pan:
+      case NutrientWebInteractionMode.pan:
         return 'PAN';
-      case PspdfkitWebInteractionMode.search:
+      case NutrientWebInteractionMode.search:
         return 'SEARCH';
-      case PspdfkitWebInteractionMode.documentEditor:
+      case NutrientWebInteractionMode.documentEditor:
         return 'DOCUMENT_EDITOR';
-      case PspdfkitWebInteractionMode.marqueeZoom:
+      case NutrientWebInteractionMode.marqueeZoom:
         return 'MARQUEE_ZOOM';
-      case PspdfkitWebInteractionMode.redactTextHighlighter:
+      case NutrientWebInteractionMode.redactTextHighlighter:
         return 'REDACT_TEXT_HIGHLIGHTER';
-      case PspdfkitWebInteractionMode.redactShapeRectangle:
+      case NutrientWebInteractionMode.redactShapeRectangle:
         return 'REDACT_SHAPE_RECTANGLE';
-      case PspdfkitWebInteractionMode.documentCrop:
+      case NutrientWebInteractionMode.documentCrop:
         return 'DOCUMENT_CROP';
-      case PspdfkitWebInteractionMode.buttonWidget:
+      case NutrientWebInteractionMode.buttonWidget:
         return 'BUTTON_WIDGET';
-      case PspdfkitWebInteractionMode.textWidget:
+      case NutrientWebInteractionMode.textWidget:
         return 'TEXT_WIDGET';
-      case PspdfkitWebInteractionMode.radioButtonWidget:
+      case NutrientWebInteractionMode.radioButtonWidget:
         return 'RADIO_BUTTON_WIDGET';
-      case PspdfkitWebInteractionMode.checkboxWidget:
+      case NutrientWebInteractionMode.checkboxWidget:
         return 'CHECKBOX_WIDGET';
-      case PspdfkitWebInteractionMode.comboBoxWidget:
+      case NutrientWebInteractionMode.comboBoxWidget:
         return 'COMBO_BOX_WIDGET';
-      case PspdfkitWebInteractionMode.listBoxWidget:
+      case NutrientWebInteractionMode.listBoxWidget:
         return 'LIST_BOX_WIDGET';
-      case PspdfkitWebInteractionMode.signatureWidget:
+      case NutrientWebInteractionMode.signatureWidget:
         return 'SIGNATURE_WIDGET';
-      case PspdfkitWebInteractionMode.dateWidget:
+      case NutrientWebInteractionMode.dateWidget:
         return 'DATE_WIDGET';
-      case PspdfkitWebInteractionMode.formCreator:
+      case NutrientWebInteractionMode.formCreator:
         return 'FORM_CREATOR';
-      case PspdfkitWebInteractionMode.link:
+      case NutrientWebInteractionMode.link:
         return 'LINK';
-      case PspdfkitWebInteractionMode.distance:
+      case NutrientWebInteractionMode.distance:
         return 'DISTANCE';
-      case PspdfkitWebInteractionMode.perimeter:
+      case NutrientWebInteractionMode.perimeter:
         return 'PERIMETER';
-      case PspdfkitWebInteractionMode.rectangleArea:
+      case NutrientWebInteractionMode.rectangleArea:
         return 'RECTANGLE_AREA';
-      case PspdfkitWebInteractionMode.ellipseArea:
+      case NutrientWebInteractionMode.ellipseArea:
         return 'ELLIPSE_AREA';
-      case PspdfkitWebInteractionMode.polygonArea:
+      case NutrientWebInteractionMode.polygonArea:
         return 'POLYGON_AREA';
-      case PspdfkitWebInteractionMode.contentEditor:
+      case NutrientWebInteractionMode.contentEditor:
         return 'CONTENT_EDITOR';
-      case PspdfkitWebInteractionMode.multiAnnotationsSelection:
+      case NutrientWebInteractionMode.multiAnnotationsSelection:
         return 'MULTI_ANNOTATIONS_SELECTION';
-      case PspdfkitWebInteractionMode.measurement:
+      case NutrientWebInteractionMode.measurement:
         return 'MEASUREMENT';
-      case PspdfkitWebInteractionMode.measurementSettings:
+      case NutrientWebInteractionMode.measurementSettings:
         return 'MEASUREMENT_SETTINGS';
       default:
         return null;
@@ -563,14 +575,14 @@ extension WebWebInteractionMode on PspdfkitWebInteractionMode {
   }
 }
 
-extension WebAppearanceMode on PspdfkitAppearanceMode {
+extension WebAppearanceMode on AppearanceMode {
   String? get webName {
     switch (this) {
-      case PspdfkitAppearanceMode.night:
+      case AppearanceMode.night:
         return 'DARK';
-      case PspdfkitAppearanceMode.defaultMode:
-      case PspdfkitAppearanceMode.sepia:
-      case PspdfkitAppearanceMode.allCustomColors:
+      case AppearanceMode.defaultMode:
+      case AppearanceMode.sepia:
+      case AppearanceMode.allCustomColors:
         return 'LIGHT';
       default:
         return null;
@@ -579,13 +591,13 @@ extension WebAppearanceMode on PspdfkitAppearanceMode {
 
   String? get name {
     switch (this) {
-      case PspdfkitAppearanceMode.night:
+      case AppearanceMode.night:
         return 'night';
-      case PspdfkitAppearanceMode.defaultMode:
+      case AppearanceMode.defaultMode:
         return 'default';
-      case PspdfkitAppearanceMode.sepia:
+      case AppearanceMode.sepia:
         return 'sepia';
-      case PspdfkitAppearanceMode.allCustomColors:
+      case AppearanceMode.allCustomColors:
         return 'allCustomColors';
       default:
         return null;
@@ -593,12 +605,12 @@ extension WebAppearanceMode on PspdfkitAppearanceMode {
   }
 }
 
-extension WebToolbarPlacement on PspdfKitToolbarPlacement {
+extension WebToolbarPlacement on ToolbarPlacement {
   String? get webName {
     switch (this) {
-      case PspdfKitToolbarPlacement.top:
+      case ToolbarPlacement.top:
         return 'TOP';
-      case PspdfKitToolbarPlacement.bottom:
+      case ToolbarPlacement.bottom:
         return 'BOTTOM';
       default:
         return null;

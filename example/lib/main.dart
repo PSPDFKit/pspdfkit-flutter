@@ -10,28 +10,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit_example/examples.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_example/examples.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'example_list_view.dart';
 
-const String _pspdfkitFlutterPluginTitle =
+const String _nutrientFlutterPluginTitle =
     'Nutrient Flutter Plugin example app';
-const String _pspdfkitWidgetExamples = 'Nutrient Widget Examples';
-const String _pspdfkitGlobalPluginExamples = 'Nutrient Modal View Examples';
-const String _pspdfkitFor = 'Nutrient ';
+const String _nutrientWidgetExamples = 'Nutrient Widget Examples';
+const String _nutrientGlobalPluginExamples = 'Nutrient Modal View Examples';
+const String _nutrientFor = 'Nutrient ';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // To set the license key platforms, use:
-  // Pspdfkit.initialize(
+  // Nutrient.initialize(
   // androidLicenseKey: "YOUR_FLUTTER_ANDROID_LICENSE_KEY_GOES_HERE",
   // iosLicenseKey: "YOUR_FLUTTER_IOS_LICENSE_KEY_GOES_HERE",
   // webLicenseKey: "YOUR_FLUTTER_WEB_LICENSE_KEY_GOES_HERE");
   //
-  Pspdfkit.initialize();
-  if (!kIsWeb) Pspdfkit.enableAnalytics(true);
-
-  Pspdfkit.analyticsEventsListener = (eventName, attributes) {
+  Nutrient.initialize();
+  if (!kIsWeb) Nutrient.enableAnalytics(true);
+  Nutrient.analyticsEventsListener = (eventName, attributes) {
     if (kDebugMode) {
       print('Analytics event: $eventName with attributes: $attributes');
     }
@@ -82,7 +81,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   String frameworkVersion() {
-    return '$_pspdfkitFor $_frameworkVersion\n';
+    return '$_nutrientFor $_frameworkVersion\n';
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -90,7 +89,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     String? frameworkVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      frameworkVersion = await Pspdfkit.frameworkVersion;
+      frameworkVersion = await Nutrient.frameworkVersion;
     } on PlatformException {
       frameworkVersion = 'Failed to get platform version. ';
     }
@@ -103,26 +102,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _frameworkVersion = frameworkVersion ?? '';
     });
 
-    Pspdfkit.flutterPdfActivityOnPause =
+    Nutrient.flutterPdfActivityOnPause =
         () => flutterPdfActivityOnPauseHandler();
-    Pspdfkit.pdfViewControllerWillDismiss =
+    Nutrient.pdfViewControllerWillDismiss =
         () => pdfViewControllerWillDismissHandler();
-    Pspdfkit.pdfViewControllerDidDismiss =
+    Nutrient.pdfViewControllerDidDismiss =
         () => pdfViewControllerDidDismissHandler();
-    Pspdfkit.flutterPdfFragmentAdded = () => flutterPdfFragmentAdded();
-    Pspdfkit.pspdfkitDocumentLoaded =
-        (documentId) => pspdfkitDocumentLoaded(documentId);
+    Nutrient.flutterPdfFragmentAdded = () => flutterPdfFragmentAdded();
+    Nutrient.onDocumentLoaded = (documentId) => onDocumentLoaded(documentId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text(_pspdfkitFlutterPluginTitle)),
+        appBar: AppBar(title: const Text(_nutrientFlutterPluginTitle)),
         body: ExampleListView(frameworkVersion(), [
           Container(
               color: Colors.grey[200],
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Text(_pspdfkitWidgetExamples,
+              child: Text(_nutrientWidgetExamples,
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge
@@ -134,7 +132,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             Container(
                 color: Colors.grey[200],
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-                child: Text(_pspdfkitGlobalPluginExamples,
+                child: Text(_nutrientGlobalPluginExamples,
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
@@ -167,9 +165,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  void pspdfkitDocumentLoaded(String? documentId) {
+  void onDocumentLoaded(String? documentId) {
     if (kDebugMode) {
-      print('pspdfkitDocumentLoaded: $documentId');
+      print('onDocumentLoaded: $documentId');
     }
   }
 }

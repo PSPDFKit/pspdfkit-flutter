@@ -1,11 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/widgets/pspdfkit_flutter_widget_controller_impl.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/widgets/nutrient_view_controller_native.dart';
 
 // We need to use a custom mock implementation since we're not using the mockito annotations
-class MockWidgetControllerApi implements PspdfkitWidgetControllerApi {
+class MockWidgetControllerApi implements NutrientViewControllerApi {
   @override
   Future<void> addEventListener(NutrientEvent event) {
     return Future.value();
@@ -18,18 +18,18 @@ class MockWidgetControllerApi implements PspdfkitWidgetControllerApi {
 }
 
 void main() {
-  late PspdfkitFlutterWidgetControllerImpl controller;
+  late NutrientViewControllerNative controller;
   late MockWidgetControllerApi mockApi;
 
   setUp(() {
     mockApi = MockWidgetControllerApi();
-    controller = PspdfkitFlutterWidgetControllerImpl(
+    controller = NutrientViewControllerNative(
       mockApi,
-      onPdfDocumentLoaded: null,
-      onPdfDocumentLoadFailed: null,
-      onPdfPageChanged: null,
-      onPdfDocumentSaved: null,
-      onPageClicked: null,
+      onDocumentLoadedListener: null,
+      onDocumentLoadingFailedListener: null,
+      onPageChangedListener: null,
+      onDocumentSavedListener: null,
+      onPageClickedListener: null,
     );
   });
 

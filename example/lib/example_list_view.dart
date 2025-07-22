@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_example/models/papsdkit_example_item.dart';
+import 'package:nutrient_example/models/nutrient_example_item.dart';
 
 class ExampleListView extends StatelessWidget {
   final String frameworkVersion;
@@ -36,7 +36,7 @@ class ExampleListView extends StatelessWidget {
                               .textTheme
                               .titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold)));
-                } else if (item is PspdfkitExampleItem) {
+                } else if (item is NutrientExampleItem) {
                   return ListTile(
                       contentPadding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
                       visualDensity: VisualDensity.standard,

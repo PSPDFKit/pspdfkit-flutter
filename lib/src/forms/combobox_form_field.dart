@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 class ComboBoxFormField extends PdfFormField {
   final List<String> defaultValues;

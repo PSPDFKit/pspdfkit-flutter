@@ -10,7 +10,7 @@
 #include <Foundation/Foundation.h>
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
-#import "pspdfkit_flutter-Swift.h"
+#import "nutrient_flutter-Swift.h"
 
 @import PSPDFKit;
 @import PSPDFKitUI;
@@ -36,8 +36,8 @@
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     
     if ((self = [super init])) {
-        _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.pspdfkit.widget.%lld", viewId] binaryMessenger:messenger];
-        _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.pspdfkit.global" binaryMessenger:messenger];
+        _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.nutrient.widget.%lld", viewId] binaryMessenger:messenger];
+        _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:messenger];
         _binaryMessenger = messenger;
         _navigationController = [PSPDFNavigationController new];
         _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;

@@ -25,7 +25,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func getPageInfo(pageIndex: Int64, completion: @escaping (Result<PageInfo, any Error>) -> Void) {
         let info = self.document?.pageInfoForPage(at: PageIndex(pageIndex))
         if (info == nil){
-            completion(.failure(PspdfkitApiError(code: "Error while getting page info.", message: "Page info is nil", details: "")))
+            completion(.failure(NutrientApiError(code: "Error while getting page info.", message: "Page info is nil", details: "")))
             return
         }
         let pageInfo: PageInfo =  PageInfo(pageIndex: pageIndex, height: info!.size.height, width: info!.size.width, rotation: Int64(info!.savedRotation.rawValue), label: document?.pageLabelForPage(at: PageIndex(pageIndex), substituteWithPlainLabel:false) ?? "")
@@ -36,7 +36,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         do {
             let filePath = self.document?.fileURL?.path
             if ((filePath) == nil){
-                completion(.failure(PspdfkitApiError(code: "Error while exporting document.", message: "Filed path is null", details: "")))
+                completion(.failure(NutrientApiError(code: "Error while exporting document.", message: "Filed path is null", details: "")))
             }
             
             let data = try Data(contentsOf: URL(fileURLWithPath: filePath!))
@@ -44,7 +44,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
             
             completion(.success(flutterStandardTypedData))
         } catch let error {
-            completion(.failure(PspdfkitApiError(code: "Error while exporting document.", message: error.localizedDescription, details: "")))
+            completion(.failure(NutrientApiError(code: "Error while exporting document.", message: error.localizedDescription, details: "")))
         }
     }
     
@@ -52,14 +52,14 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         do {
             guard let document else {
                 let errorMessage = "Error while getting form field value for fields"
-                completion(.failure(PspdfkitApiError(code: "", message: errorMessage, details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: errorMessage, details: nil)))
                 return
             }
             let value = try PspdfkitFlutterHelper.getFormFields(for: document)
             completion(.success(value))
         } catch let error {
             let errorMessage = "Error while getting form field value for fields \(error.localizedDescription)"
-            completion(.failure(PspdfkitApiError(code: "", message: errorMessage, details: nil)))
+            completion(.failure(NutrientApiError(code: "", message: errorMessage, details: nil)))
         }
     }
     
@@ -67,7 +67,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         do {
             guard let document else {
                 let errorMessage = "Error while getting form field value for fields"
-                completion(.failure(PspdfkitApiError(code: "", message: errorMessage, details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: errorMessage, details: nil)))
                 return
             }
 
@@ -76,20 +76,20 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
 
             if formField == nil {
                 let errorMessage = "Error while getting form field value for fields"
-                completion(.failure(PspdfkitApiError(code: "", message: errorMessage, details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: errorMessage, details: nil)))
             }
 
             completion(.success(formField!))
         } catch let error {
             let errorMessage = "Error while getting form field value for fields \(error.localizedDescription)"
-            completion(.failure(PspdfkitApiError(code: "", message: errorMessage, details: nil)))
+            completion(.failure(NutrientApiError(code: "", message: errorMessage, details: nil)))
         }
     }
     
     func setFormFieldValue(value: String, fullyQualifiedName: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while setting form field value for field name: \(fullyQualifiedName)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while setting form field value for field name: \(fullyQualifiedName)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -103,7 +103,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func getFormFieldValue(fullyQualifiedName: String, completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             guard let document else {
-                completion(.failure(PspdfkitApiError(code: "", message: "Error while getting form field value for field name: \(fullyQualifiedName)", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "Error while getting form field value for field name: \(fullyQualifiedName)", details: nil)))
                 return
             }
             let vale = try PspdfkitFlutterHelper.getFormFieldValue(forFieldWithFullyQualifiedName: fullyQualifiedName, for: document)
@@ -116,7 +116,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func applyInstantJson(annotationsJson: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while applying instant json for annotations: \(annotationsJson)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while applying instant json for annotations: \(annotationsJson)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -131,7 +131,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func exportInstantJson(completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while exporting instant json", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while exporting instant json", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -145,7 +145,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func addAnnotation(jsonAnnotation: String, attachment: Any?, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while adding annotation: \(jsonAnnotation)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while adding annotation: \(jsonAnnotation)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -160,7 +160,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func removeAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while removing annotation: \(jsonAnnotation)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while removing annotation: \(jsonAnnotation)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -174,7 +174,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while getting annotations for page: \(pageIndex)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while getting annotations for page: \(pageIndex)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -189,7 +189,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func updateAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while updating annotation: \(jsonAnnotation)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while updating annotation: \(jsonAnnotation)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -203,7 +203,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func getAllUnsavedAnnotations(completion: @escaping (Result<Any, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while getting all unsaved annotations", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while getting all unsaved annotations", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -218,7 +218,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func importXfdf(xfdfString: String, completion: @escaping (Result<Bool, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while importing xfdf: \(xfdfString)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while importing xfdf: \(xfdfString)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -232,7 +232,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     func exportXfdf(xfdfPath: String, completion: @escaping (Result<Bool, any Error>) -> Void) {
         do {
             if document == nil {
-                let error = PspdfkitApiError(code: "", message: "Error while exporting xfdf: \(xfdfPath)", details: nil)
+                let error = NutrientApiError(code: "", message: "Error while exporting xfdf: \(xfdfPath)", details: nil)
                 completion(.failure(error))
                 return
             }
@@ -249,7 +249,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
             if case .success = Result {
                 completion(.success(true))
             } else {
-                let error = PspdfkitApiError(code: "", message: "Failed to save PDF document.", details:   nil )
+                let error = NutrientApiError(code: "", message: "Failed to save PDF document.", details:   nil )
                 completion(.failure(error))
             }
         }
@@ -259,7 +259,7 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         if let pageCount = document?.pageCount {
                completion(.success(Int64(pageCount)))
            } else {
-               let error = PspdfkitApiError(code: "", message: "Failed to get page count.", details:   nil )
+               let error = NutrientApiError(code: "", message: "Failed to get page count.", details:   nil )
                completion(.failure(error))
            }
     }

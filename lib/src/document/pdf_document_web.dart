@@ -8,17 +8,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:pspdfkit_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 
-import '../../pspdfkit.dart';
 import '../annotations/annotation_utils.dart';
-import '../web/pspdfkit_web_instance.dart';
+import '../web/nutrient_web_instance.dart';
 
 class PdfDocumentWeb extends PdfDocument with AnnotationJsonConverter {
-  final PspdfkitWebInstance _instance;
+  final NutrientWebInstance _instance;
 
   PdfDocumentWeb(
-      {required super.documentId, required PspdfkitWebInstance instance})
+      {required super.documentId, required NutrientWebInstance instance})
       : _instance = instance;
 
   @override

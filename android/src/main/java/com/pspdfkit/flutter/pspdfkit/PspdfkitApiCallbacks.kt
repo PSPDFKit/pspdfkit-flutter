@@ -8,14 +8,15 @@
  */
 package com.pspdfkit.flutter.pspdfkit
 
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitFlutterApiCallbacks
+import com.pspdfkit.flutter.pspdfkit.api.NutrientApiCallbacks
+
 
 /**
  * Callbacks for the PspdfkitApi. This class is responsible for notifying the Flutter side about document loading events.
  * A separate class is used because the callback methods are not supported by Java.
  * @param pspdfkitFlutterApiCallbacks The callback to notify the Flutter side about document loading events.
  */
-class PspdfkitApiCallbacks(private val pspdfkitFlutterApiCallbacks: PspdfkitFlutterApiCallbacks) {
+class PspdfkitApiCallbacks(private val pspdfkitFlutterApiCallbacks: NutrientApiCallbacks) {
 
     fun onDocumentLoaded(documentId: String) {
         pspdfkitFlutterApiCallbacks.onDocumentLoaded(documentId) {}

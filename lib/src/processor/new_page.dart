@@ -1,5 +1,5 @@
 import 'package:flutter/rendering.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 ///
 ///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.

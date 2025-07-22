@@ -10,7 +10,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit_flutter.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 import 'utils/file_utils.dart';
 import 'widgets/pdf_viewer_scaffold.dart';
@@ -18,17 +18,15 @@ import 'widgets/annotation_flags_panel.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 
-class NutrientAnnotationFlagsExample extends StatefulWidget {
-  const NutrientAnnotationFlagsExample({Key? key}) : super(key: key);
+class AnnotationFlagsExample extends StatefulWidget {
+  const AnnotationFlagsExample({Key? key}) : super(key: key);
 
   @override
-  State<NutrientAnnotationFlagsExample> createState() =>
-      _NutrientAnnotationFlagsExampleState();
+  State<AnnotationFlagsExample> createState() => _AnnotationFlagsExampleState();
 }
 
-class _NutrientAnnotationFlagsExampleState
-    extends State<NutrientAnnotationFlagsExample> {
-  PspdfkitWidgetController? widgetController;
+class _AnnotationFlagsExampleState extends State<AnnotationFlagsExample> {
+  NutrientViewController? widgetController;
   PdfDocument? document;
   String? documentPath;
   late bool documentLoaded = false;
@@ -65,7 +63,7 @@ class _NutrientAnnotationFlagsExampleState
     }
   }
 
-  void _setWidgetController(PspdfkitWidgetController controller) {
+  void _setWidgetController(NutrientViewController controller) {
     setState(() {
       widgetController = controller;
     });
@@ -220,7 +218,7 @@ class _NutrientAnnotationFlagsExampleState
       appBar: AppBar(
         title: const Text('Annotation Flags Example'),
       ),
-      onPspdfkitWidgetCreated: _setWidgetController,
+      onNutrientWidgetCreated: _setWidgetController,
       onPdfDocumentLoaded: (doc) {
         setState(() {
           document = doc;

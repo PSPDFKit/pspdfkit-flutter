@@ -1,10 +1,10 @@
-name: pspdfkit_flutter
+name: nutrient_flutter
 description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful Nutrient PDF SDK.
-version: 4.4.1
-homepage: https://pspdfkit.com/
+version: 5.0.0
+homepage: https://nutrient.io/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
-issue_tracker: https://support.pspdfkit.com/hc/en-us/requests/new
-documentation: https://pspdfkit.com/guides/flutter/
+issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
+documentation: https://nutrient.io/guides/flutter/
 environment:
   sdk: '>=2.17.0 <4.0.0'
   flutter: '>=3.27.0'
@@ -27,13 +27,11 @@ flutter:
       android:
         package: com.pspdfkit.flutter.pspdfkit
         pluginClass: PspdfkitPlugin
-        fileName: src/pspdfkit_flutter_method_channel.dart
       ios:
         pluginClass: PspdfkitPlugin
-        fileName: src/pspdfkit_flutter_method_channel.dart
       web:
-        pluginClass: PspdfkitFlutterWeb
-        fileName: src/pspdfkit_flutter_web.dart
+        pluginClass: NutrientFlutterWeb
+        fileName: src/nutrient_flutter_web.dart
 
 dev_dependencies:
   flutter_lints: ^2.0.1

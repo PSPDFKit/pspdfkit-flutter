@@ -11,16 +11,17 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import '../document/pdf_document_native.dart';
 
+@Deprecated('Use NutrientViewController instead')
 class PspdfkitFlutterWidgetControllerImpl
     implements
         PspdfkitWidgetController,
-        PspdfkitWidgetCallbacks,
+        NutrientViewCallbacks,
         NutrientEventsCallbacks,
         CustomToolbarCallbacks {
-  final PspdfkitWidgetControllerApi _pspdfkitWidgetControllerApi;
+  final NutrientViewControllerApi _pspdfkitWidgetControllerApi;
   final PdfDocumentLoadedCallback? onPdfDocumentLoaded;
   final PdfDocumentLoadFailedCallback? onPdfDocumentLoadFailed;
   final PageChangedCallback? onPdfPageChanged;

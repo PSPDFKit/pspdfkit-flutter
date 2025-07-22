@@ -1,6 +1,6 @@
-# PSPDFKit Flutter Example
+# Nutrient Flutter Example
 
-This is a brief example of how to use the PSPDFKit with Flutter.
+This is a brief example of how to use the Nutrient SDK with Flutter.
 
 ## Requirements
 
@@ -17,8 +17,7 @@ This is a brief example of how to use the PSPDFKit with Flutter.
 2. Clone the repository `git clone https://github.com/PSPDFKit/pspdfkit-flutter.git`
 3. cd `pspdfkit-flutter/example`
 4. Run `flutter emulators --launch <EMULATOR_ID>` to launch the desired emulator. Optionally, you can repeat this step to launch multiple emulators.
-5. The app is ready to start! Run `flutter run -d all` and the PSPDFKit Flutter example will be deployed on all your devices connected, both iOS and Android.
-
+5. The app is ready to start! Run `flutter run -d all` and the Nutrient Flutter example will be deployed on all your devices connected, thats is iOS, Android and web.
 
 [install-flutter]: https://flutter.dev/docs/get-started/install
 [android studio]: https://developer.android.com/studio

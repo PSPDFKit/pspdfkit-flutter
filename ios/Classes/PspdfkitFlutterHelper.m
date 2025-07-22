@@ -10,7 +10,7 @@
 #include <objc/NSObjCRuntime.h>
 #include <Foundation/Foundation.h>
 #import "PspdfkitFlutterConverter.h"
-#import "pspdfkit_flutter-Swift.h"
+#import "nutrient_flutter-Swift.h"
 
 #warning "This file is deprecated. Use PspddfkitHelper.swift instead."
 

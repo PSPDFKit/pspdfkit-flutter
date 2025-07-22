@@ -1,5 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'dart:io' show Platform;
 
 /// Example demonstrating how to add custom toolbar items to Nutrient Flutter.
@@ -27,7 +29,7 @@ class CustomToolbarExample extends StatefulWidget {
 }
 
 class _CustomToolbarExampleState extends State<CustomToolbarExample> {
-  late PspdfkitWidgetController _controller;
+  late NutrientViewController _controller;
   String _lastTappedItem = "None";
 
   @override
@@ -38,7 +40,7 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
       body: Column(
         children: [
           Expanded(
-            child: PspdfkitWidget(
+            child: NutrientView(
               documentPath: widget.documentPath,
               configuration: PdfConfiguration(
                   androidShowOutlineAction: false,
@@ -115,7 +117,7 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
                 }
               },
               // Store controller reference when created
-              onPspdfkitWidgetCreated: (PspdfkitWidgetController controller) {
+              onViewCreated: (controller) {
                 _controller = controller;
               },
             ),

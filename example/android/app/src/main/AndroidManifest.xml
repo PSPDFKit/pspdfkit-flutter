@@ -18,7 +18,7 @@
     <application
         android:name="androidx.multidex.MultiDexApplication"
         android:icon="@mipmap/ic_launcher"
-        android:label="pspdfkit_example"
+        android:label="nutrient_example"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
 

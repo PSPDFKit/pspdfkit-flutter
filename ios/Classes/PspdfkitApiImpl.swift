@@ -10,11 +10,15 @@ import Foundation
 import PSPDFKit
 
 @objc(PspdfkitApiImpl)
-public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, InstantClientDelegate {
+public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, InstantClientDelegate {
     
+    // MARK: - Constants
+    private static let messageChannelSuffix = "nutrient"
+    
+    // MARK: - Properties
     private var pdfViewController: PDFViewController? = nil;
     private var messenger: FlutterBinaryMessenger? = nil;
-    private var pspdfkitApiCallbacks: PspdfkitFlutterApiCallbacks? = nil;
+    private var pspdfkitApiCallbacks: NutrientApiCallbacks? = nil;
     private var flutterAnalyticsClient: FlutterAnalyticsClient? = nil;
     
     func getFrameworkVersion(completion: @escaping (Result<String?, any Error>) -> Void) {
@@ -123,7 +127,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func setFormFieldValue(value: String, fullyQualifiedName: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -137,7 +141,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func getFormFieldValue(fullyQualifiedName: String, completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -151,7 +155,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func applyInstantJson(annotationsJson: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             let success = try PspdfkitFlutterHelper.applyInstantJson(annotationsJson: annotationsJson, document: document)
@@ -166,7 +170,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func exportInstantJson(completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -181,7 +185,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func addAnnotation(annotation: String, attachment: String?, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -196,7 +200,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func removeAnnotation(annotation jsonAnnotation: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -211,7 +215,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             let annotations = try PspdfkitFlutterHelper.getAnnotations(forPageIndex: PageIndex(Int(pageIndex)), andType: type, for: document)
@@ -225,7 +229,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func getAllUnsavedAnnotations(completion: @escaping (Result<Any?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -240,7 +244,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func updateAnnotation(annotation jsonAnnotation: String, completion: @escaping (Result<Void, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -263,7 +267,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func importXfdf(xfdfString: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -278,7 +282,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     func exportXfdf(xfdfPath: String, completion: @escaping (Result<Bool?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
-                completion(.failure(PspdfkitApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
+                completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             
@@ -299,7 +303,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
             if case .success = Result {
                 completion(.success(true))
             } else {
-                let error = PspdfkitApiError(code: "", message: "Failed to save PDF document.", details:   nil )
+                let error = NutrientApiError(code: "", message: "Failed to save PDF document.", details:   nil )
                 completion(.failure(error))
             }
         }
@@ -559,28 +563,28 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     }
     
     func checkAndroidWriteExternalStoragePermission(completion: @escaping (Result<Bool?, any Error>) -> Void) {
-        completion(.failure(PspdfkitApiError(code: "", message: "Not implements", details: nil)))
+        completion(.failure(NutrientApiError(code: "", message: "Not implements", details: nil)))
     }
     
     func requestAndroidWriteExternalStoragePermission(completion: @escaping (Result<AndroidPermissionStatus, any Error>) -> Void) {
-        completion(.failure(PspdfkitApiError(code: "", message: "Not implements", details: nil)))
+        completion(.failure(NutrientApiError(code: "", message: "Not implements", details: nil)))
     }
     
     func openAndroidSettings(completion: @escaping (Result<Void, any Error>) -> Void) {
-        completion(.failure(PspdfkitApiError(code: "", message: "Not implements", details: nil)))
+        completion(.failure(NutrientApiError(code: "", message: "Not implements", details: nil)))
     }
     
     // Setup pigeon message channel.
     @objc public func register( binaryMessenger: FlutterBinaryMessenger){
         messenger = binaryMessenger
-        PspdfkitApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix: "pspdfkit")
-        pspdfkitApiCallbacks = PspdfkitFlutterApiCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "pspdfkit")
+        NutrientApiSetup.setUp(binaryMessenger: binaryMessenger, api: self, messageChannelSuffix: PspdfkitApiImpl.messageChannelSuffix)
+        pspdfkitApiCallbacks = NutrientApiCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: PspdfkitApiImpl.messageChannelSuffix)
     }
     
     // Unregister pigeon message channel.
     @objc public func unRegister(){
         if messenger != nil {
-            PspdfkitApiSetup.setUp(binaryMessenger: messenger!, api: nil)
+            NutrientApiSetup.setUp(binaryMessenger: messenger!, api: nil)
         }
         pspdfkitApiCallbacks = nil
         
@@ -591,7 +595,7 @@ public class PspdfkitApiImpl: NSObject, PspdfkitApi, PDFViewControllerDelegate, 
     
     private func setupAnalyticsClient(){
         if let messenger {
-            flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: messenger, messageChannelSuffix: "pspdfkit"))
+            flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: messenger, messageChannelSuffix: PspdfkitApiImpl.messageChannelSuffix))
             PSPDFKit.SDK.shared.analytics.add(flutterAnalyticsClient!)
         }
     }

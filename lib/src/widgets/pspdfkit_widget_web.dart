@@ -6,6 +6,8 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 ///
+// ignore_for_file: deprecated_member_use_from_same_package
+
 library pspdfkit_widget_web;
 
 import 'dart:async';
@@ -13,14 +15,14 @@ import 'dart:html' as html;
 import 'dart:ui_web' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
-import 'package:pspdfkit_flutter/src/web/pspdfkit_web_instance.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 import '../document/pdf_document_web.dart';
-import '../web/pspdfkit_web.dart';
+import '../web/nutrient_web.dart';
+import '../web/nutrient_web_instance.dart';
 import 'pspdfkit_widget_controller_web.dart';
 
+@Deprecated('Use NutrientView instead')
 class PspdfkitWidget extends StatefulWidget {
-  
   final String documentPath;
   final dynamic configuration;
   final PspdfkitWidgetCreatedCallback? onPspdfkitWidgetCreated;
@@ -57,7 +59,7 @@ class PspdfkitWidget extends StatefulWidget {
 class _PspdfkitWidgetState extends State<PspdfkitWidget> {
   late PspdfkitWidgetControllerWeb controller;
   bool _isInitialized = false;
-  PspdfkitWebInstance? _webInstance;
+  NutrientWebInstance? _webInstance;
   final Map<String, Function> _eventListeners = {};
 
   @override
@@ -131,7 +133,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       if (!mounted) return;
       try {
         final value =
-            await PSPDFKitWeb.load(widget.documentPath, id, configuration);
+            await NutrientWeb.load(widget.documentPath, id, configuration);
         if (!mounted) return;
         _addDefaultEventListeners(value);
         controller = PspdfkitWidgetControllerWeb(value);
@@ -166,7 +168,7 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
     }
   }
 
-  void _addDefaultEventListeners(PspdfkitWebInstance webInstance) {
+  void _addDefaultEventListeners(NutrientWebInstance webInstance) {
     _webInstance = webInstance;
 
     // Page change event listener

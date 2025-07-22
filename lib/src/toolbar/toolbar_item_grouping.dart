@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:pspdfkit_flutter/src/toolbar/annotation_toolbar_items.dart';
+import 'package:nutrient_flutter/src/toolbar/annotation_toolbar_items.dart';
 
 class AnnotationToolsGroup {
   final List<AnnotationToolbarItem> items;

@@ -8,17 +8,17 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('getFormFields', (WidgetTester tester) async {
-    // Setup the PSPDFKit widget
+    // Setup the NutrientView widget
     await tester
-        .pumpWidget(PspdfkitWidget(
-      documentPath: 'assets/pspdfkit_example_document.pdf',
-      onPdfDocumentLoaded: (document) async {
+        .pumpWidget(NutrientView(
+      documentPath: 'assets/nutrient_example_document.pdf',
+      onDocumentLoaded: (document) async {
         // Get the form fields
         final List<PdfFormField> formFields = await document.getFormFields();
         // Assert that the form fields are not empty
@@ -32,10 +32,10 @@ void main() {
   });
 
   testWidgets('validate form field properties', (WidgetTester tester) async {
-    // Setup the PSPDFKit widget
-    await tester.pumpWidget(PspdfkitWidget(
-      documentPath: 'assets/pspdfkit_example_document.pdf',
-      onPdfDocumentLoaded: (document) async {
+    // Setup the NutrientView widget
+    await tester.pumpWidget(NutrientView(
+      documentPath: 'assets/nutrient_example_document.pdf',
+      onDocumentLoaded: (document) async {
         await document.setFormFieldValue(
             'Updated Form Field Value', 'Name_Last');
 

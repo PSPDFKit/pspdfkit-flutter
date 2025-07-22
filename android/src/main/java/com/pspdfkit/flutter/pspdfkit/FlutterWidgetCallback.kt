@@ -14,12 +14,11 @@ import android.view.MotionEvent
 import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
-import com.pspdfkit.flutter.pspdfkit.api.PspdfkitWidgetCallbacks
+import com.pspdfkit.flutter.pspdfkit.api.NutrientViewCallbacks
 import com.pspdfkit.listeners.DocumentListener
 
-
 class FlutterWidgetCallback(
-    private var pspdfkitWidgetCallbacks: PspdfkitWidgetCallbacks? = null
+    private var pspdfkitWidgetCallbacks: NutrientViewCallbacks? = null
 ) : DocumentListener {
 
     override fun onDocumentLoaded(document: PdfDocument) {

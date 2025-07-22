@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:pspdfkit_flutter/src/forms/form_field.dart';
+import 'package:nutrient_flutter/src/forms/form_field.dart';
 
 class CheckBoxFormField extends PdfFormField {
   final bool? isChecked;

@@ -8,7 +8,7 @@
 ///
 
 import 'package:flutter/material.dart' hide BorderStyle, Action;
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Extension methods for annotation classes providing [copyWith] functionality
 extension AnnotationExtensions on Annotation {

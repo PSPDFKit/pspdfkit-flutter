@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
-class NutrientWebEventListenersExample extends StatefulWidget {
+class WebEventListenersExample extends StatefulWidget {
   final String documentPath;
-  const NutrientWebEventListenersExample(
-      {super.key, required this.documentPath});
+  const WebEventListenersExample({super.key, required this.documentPath});
 
   @override
-  State<NutrientWebEventListenersExample> createState() =>
-      _NutrientWebEventListenersExampleState();
+  State<WebEventListenersExample> createState() =>
+      _WebEventListenersExampleState();
 }
 
-class _NutrientWebEventListenersExampleState
-    extends State<NutrientWebEventListenersExample> {
+class _WebEventListenersExampleState extends State<WebEventListenersExample> {
   final List<String> eventLogs = [];
   var selectedText = '';
 
@@ -27,9 +25,9 @@ class _NutrientWebEventListenersExampleState
           Expanded(
             child: Stack(
               children: [
-                PspdfkitWidget(
+                NutrientView(
                     documentPath: widget.documentPath,
-                    onPspdfkitWidgetCreated: (controller) {
+                    onViewCreated: (controller) {
                       _setupEventListeners(controller);
                     }),
                 Positioned(
@@ -85,7 +83,7 @@ class _NutrientWebEventListenersExampleState
     );
   }
 
-  void _setupEventListeners(PspdfkitWidgetController controller) {
+  void _setupEventListeners(NutrientViewController controller) {
     controller.addWebEventListener(NutrientWebEvent.pagePress, (event) {
       _logEvent('Event triggered - Page pressed: $event');
     });

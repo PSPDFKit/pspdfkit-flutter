@@ -7,27 +7,29 @@
 ///  This notice may not be removed from this file.
 ///
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:pspdfkit_flutter/pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 import 'widgets/pdf_viewer_scaffold.dart';
 
 /// Example demonstrating how to use annotation creation mode
-class NutrientAnnotationCreationModeExampleWidget extends StatefulWidget {
+class AnnotationCreationModeExampleWidget extends StatefulWidget {
   final String documentPath;
 
-  const NutrientAnnotationCreationModeExampleWidget(
+  const AnnotationCreationModeExampleWidget(
       {Key? key, required this.documentPath})
       : super(key: key);
 
   @override
-  State<NutrientAnnotationCreationModeExampleWidget> createState() =>
-      _NutrientAnnotationCreationModeExampleWidgetState();
+  State<AnnotationCreationModeExampleWidget> createState() =>
+      _AnnotationCreationModeExampleWidgetState();
 }
 
-class _NutrientAnnotationCreationModeExampleWidgetState
-    extends State<NutrientAnnotationCreationModeExampleWidget> {
-  PspdfkitWidgetController? _controller;
+class _AnnotationCreationModeExampleWidgetState
+    extends State<AnnotationCreationModeExampleWidget> {
+  NutrientViewController? _controller;
   AnnotationTool? _currentTool;
 
   @override
@@ -37,7 +39,7 @@ class _NutrientAnnotationCreationModeExampleWidgetState
       configuration: PdfConfiguration(
         enableAnnotationEditing: true,
       ),
-      onPspdfkitWidgetCreated: (controller) {
+      onNutrientWidgetCreated: (controller) {
         setState(() {
           _controller = controller;
         });

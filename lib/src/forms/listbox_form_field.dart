@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import '../../pspdfkit.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 class ListBoxFormField extends PdfFormField {
   final List<String> defaultValues;
