@@ -85,20 +85,32 @@ platform :ios, '16.0'
 
 ### Web Setup
 
-The Nutrient Web SDK files are distributed as an archive that needs to be extracted manually:
+You can include the Nutrient Web SDK using either CDN or local installation:
+
+#### Option 1: CDN (Recommended)
+
+Add the following script to your `web/index.html` file:
+
+```html
+<script src="https://cdn.cloud.pspdfkit.com/pspdfkit-web@1.1.0/nutrient-viewer.js"></script>
+```
+
+**Note:** Replace `1.1.0` with the latest version of Nutrient Web SDK. Check the [latest releases][web changelog] for the current version.
+
+#### Option 2: Local Installation
 
 1. [Download Nutrient Web SDK][download web sdk]. The download will start immediately and save a `.tar.gz` archive like `PSPDFKit-Web-binary-<version>.tar.gz` to your computer.
 
 2. Once downloaded, extract the archive and copy the **entire** contents of its `dist` folder to your project's `web/assets` folder.
 
 3. Verify your `assets` folder contains:
-   - `pspdfkit.js` file
-   - `pspdfkit-lib` directory with library assets
+   - `nutrient-viewer.js` file
+   - `nutrient-viewer-lib` directory with library assets
 
 4. Add the Nutrient library to your `web/index.html`:
 
 ```html
-<script src="assets/pspdfkit.js"></script>
+<script src="assets/nutrient-viewer.js"></script>
 ```
 
 Note: Your server must have the `Content-Type: application/wasm` MIME type configured for WebAssembly files.
@@ -106,6 +118,7 @@ Note: Your server must have the `Content-Type: application/wasm` MIME type confi
 ## Sample Document Setup
 
 1. Create a `PDFs` directory in your project root:
+
 ```bash
 mkdir PDFs
 ```
@@ -113,6 +126,7 @@ mkdir PDFs
 2. Download our [sample PDF document][sample document] and save it as `Document.pdf` in the `PDFs` directory.
 
 3. Add the assets directory to your `pubspec.yaml`:
+
 ```yaml
 flutter:
   assets:
@@ -135,7 +149,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize the Nutrient SDK with your license key
-  await Pspdfkit.initialize(
+  await Nutrient.initialize(
     androidLicenseKey: 'YOUR_ANDROID_LICENSE_KEY',
     iosLicenseKey: 'YOUR_IOS_LICENSE_KEY',
     webLicenseKey: 'YOUR_WEB_LICENSE_KEY',
@@ -157,7 +171,7 @@ class MyApp extends StatelessWidget {
 
     final bytes = await DefaultAssetBundle.of(context).load(assetPath);
     final list = bytes.buffer.asUint8List();
-    final tempDir = await Pspdfkit.getTemporaryDirectory();
+    final tempDir = await Nutrient.getTemporaryDirectory();
     final tempDocumentPath = '${tempDir.path}/$assetPath';
     final file = File(tempDocumentPath);
 
@@ -173,8 +187,8 @@ class MyApp extends StatelessWidget {
           future: extractAsset(context, documentPath),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              /// PspdfkitWidget is a widget that displays a PDF document.
-              return PspdfkitWidget(
+              /// NutrientView is a widget that displays a PDF document.
+              return NutrientView(
                 documentPath: snapshot.data!,
               );
             } else if (snapshot.hasError) {
@@ -208,7 +222,7 @@ Visit our [Support Center][support] for help with the SDK.
 
 ## License
 
-This project is licensed under the Nutrient Commercial License. See [LICENSE](LICENSE) for details.
+This project is licensed under the Nutrient Commercial License. See [LICENSE][license file] for details.
 
 [documentation]: https://www.nutrient.io/guides/flutter/
 [example project]: https://github.com/PSPDFKit/pspdfkit-flutter
@@ -216,6 +230,7 @@ This project is licensed under the Nutrient Commercial License. See [LICENSE](LI
 [customization]: https://www.nutrient.io/guides/flutter/customize/
 [migration guide]: https://nutrient.io/guides/flutter/upgrade/
 [support]: https://support.nutrient.io
-[license]: https://github.com/PSPDFKit/pspdfkit-flutter/blob/main/LICENSE
 [download web sdk]: https://my.nutrient.io/download/web/latest
 [sample document]: https://www.nutrient.io/downloads/pspdfkit-web-demo.pdf
+[web changelog]: https://www.nutrient.io/changelog/web/
+[license file]: LICENSE

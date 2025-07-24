@@ -5,7 +5,7 @@
 #
 Pod::Spec.new do |s|
   s.name                  = "nutrient_flutter"
-  s.version               = "5.0.0"
+  s.version               = "5.0.1"
   s.homepage              = "https://nutrient.io"
   s.documentation_url     = "https://nutrient.io/guides/flutter"
   s.license               = { type: "Commercial", file: "../LICENSE" }
@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   s.dependency("Instant", "14.10.0")
   s.swift_version         = "5.0"
   s.platform              = :ios, "16.0"
-  s.version               = "5.0.0"
+  s.version               = "5.0.1"
   s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES", "SWIFT_INSTALL_OBJC_HEADER" => "NO" }
 end

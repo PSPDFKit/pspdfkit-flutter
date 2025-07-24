@@ -1,3 +1,7 @@
+## 5.0.1 - 24 Jul 2025
+
+- Update README.md files to include the latest rebranding changes for Nutrient Flutter SDK. (J#HYB-842)
+
 ## 5.0.0 - 22 Jul 2025
 
 - Rebrands the PSPDFKit Flutter SDK to Nutrient Flutter SDK. Now available as [`nutrient_flutter`](https://pub.dev/packages/nutrient_flutter) on pub.dev.(J#HG-682)
