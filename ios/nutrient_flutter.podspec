@@ -18,8 +18,8 @@ Pod::Spec.new do |s|
   s.source_files          = "Classes/**/*.{h,m,swift}"
   s.public_header_files   = "Classes/**/*.h"
   s.dependency("Flutter")
-  s.dependency("PSPDFKit", "14.10.0")
-  s.dependency("Instant", "14.10.0")
+  s.dependency("PSPDFKit")
+  s.dependency("Instant")
   s.swift_version         = "5.0"
   s.platform              = :ios, "16.0"
   s.version               = "5.0.1"
