@@ -18,6 +18,7 @@ export 'src/widgets/nutrient_view.dart'
 // All other exports.
 export 'src/pdf_configuration.dart';
 export 'src/web/nutrient_web_configuration.dart';
+export 'src/web/office_conversion_settings.dart';
 export 'src/types.dart';
 export 'src/web/models/models.dart';
 export 'src/configuration_options.dart';
@@ -32,6 +33,7 @@ export 'src/api/nutrient_api.g.dart';
 
 export 'src/annotation_preset_configurations.dart';
 export 'src/annotations/annotations.dart';
+export 'src/annotations/annotation_menu_configuration.dart';
 export 'src/web/models/nutrient_web_events.dart';
 export 'src/nutrient.dart';
 

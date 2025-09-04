@@ -38,7 +38,7 @@ if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
 
 ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
 if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '10.4.1'
+    ext.pspdfkitVersion = '10.5.0'
 }
 
 ext.pspdfkitMavenModuleName = 'nutrient'
@@ -56,4 +56,4 @@ ext.androidCompileSdkVersion = 35
 ext.androidMinSdkVersion = 21
 ext.androidTargetSdkVersion = 35
 ext.androidGradlePluginVersion = '8.9.2'
-ext.kotlinVersion = "1.9.20"
+ext.kotlinVersion = "2.1.20"

@@ -59,6 +59,18 @@ class ToolbarCustomization extends StatelessWidget {
                                 AnnotationToolbarItem.underline
                               ]),
                         ],
+                        // Configure annotation contextual menu on iOS and Android
+                        annotationMenuConfiguration:
+                            const AnnotationMenuConfiguration(
+                          // Remove the delete action from default menu
+                          itemsToRemove: [AnnotationMenuAction.delete],
+                          // Show style picker for color selection
+                          showStylePicker: true,
+                          // Group markup items together
+                          groupMarkupItems: true,
+                          // Limit to 5 visible items before creating overflow menu
+                          maxVisibleItems: 5,
+                        ),
                         webConfiguration: PdfWebConfiguration(
                             toolbarItems: [
                               ...defaultWebToolbarItems?.reversed ?? [],

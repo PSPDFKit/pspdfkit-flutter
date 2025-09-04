@@ -6,6 +6,13 @@ import 'dart:io' show Platform;
 
 /// Example demonstrating how to add custom toolbar items to Nutrient Flutter.
 ///
+/// This example shows two key use cases:
+/// 1. Standard custom toolbar items with custom icons
+/// 2. Hiding the default annotation button and providing custom annotation controls
+///
+/// For a dedicated example focused solely on hiding the annotation button
+/// with a custom annotation UI, see HiddenAnnotationButtonExample.
+///
 /// IMPORTANT: Custom icons must be added to the Android project:
 /// 1. Add your icon files to the Android project in:
 ///    android/app/src/main/res/drawable/ directory
@@ -43,23 +50,47 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
             child: NutrientView(
               documentPath: widget.documentPath,
               configuration: PdfConfiguration(
-                  androidShowOutlineAction: false,
-                  androidShowThumbnailGridAction: false,
-                  androidShowSearchAction: false),
+                // Standard toolbar hiding options
+                androidShowOutlineAction: false,
+                androidShowThumbnailGridAction: false,
+                androidShowSearchAction: false,
+                // NEW: Hide the default annotation creation button
+                // This allows you to provide custom annotation controls
+                androidShowAnnotationCreationAction: false,
+                // Keep annotation editing functionality enabled
+                enableAnnotationEditing: true,
+              ),
               // Define custom toolbar items
               customToolbarItems: [
+                // === CUSTOM ANNOTATION CONTROLS ===
+                // Since we hid the default annotation button, provide custom annotation tools
+
                 // EXAMPLE 1: Highlight tool with custom icon
-                // The highlight_icon.xml file has been added to the drawable resources
                 CustomToolbarItem(
                   identifier: 'custom_highlight',
                   title: 'Highlight',
                   iconName: Platform.isIOS ? 'highlighter' : 'highlight_icon',
-                  iconColor: Colors.red, // Yellow color
+                  iconColor: Colors.yellow,
                   position: ToolbarPosition.primary,
                 ),
 
-                // EXAMPLE 2: Share functionality with custom icon
-                // The share_icon.xml file has been added to the drawable resources
+                // EXAMPLE 2: Note annotation tool
+                CustomToolbarItem(
+                  identifier: 'custom_note',
+                  title: 'Add Note',
+                  iconName: Platform.isIOS ? 'note.text' : 'note_icon',
+                  iconColor: Colors.blue,
+                  position: ToolbarPosition.primary,
+                ),
+
+                // EXAMPLE 3: Freehand drawing tool
+                CustomToolbarItem(
+                  identifier: 'custom_pen',
+                  title: 'Draw',
+                  iconName: Platform.isIOS ? 'pencil' : 'pen_icon',
+                  iconColor: Colors.black,
+                  position: ToolbarPosition.primary,
+                ),
                 CustomToolbarItem(
                   identifier: 'custom_share',
                   title: 'Share PDF',
@@ -67,8 +98,7 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
                       Platform.isIOS ? 'square.and.arrow.up' : 'share_icon',
                 ),
 
-                // EXAMPLE 3: Back navigation with custom icon
-                // The back_icon.xml file has been added to the drawable resources
+                // EXAMPLE 5: Back navigation with custom icon
                 CustomToolbarItem(
                   identifier: 'custom_back',
                   title: 'Back',
@@ -85,9 +115,18 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
 
                 // Handle different toolbar items
                 switch (identifier) {
+                  // These replace the default annotation creation button functionality
                   case 'custom_highlight':
                     _controller
                         .enterAnnotationCreationMode(AnnotationTool.highlight);
+                    break;
+                  case 'custom_note':
+                    _controller
+                        .enterAnnotationCreationMode(AnnotationTool.note);
+                    break;
+                  case 'custom_pen':
+                    _controller
+                        .enterAnnotationCreationMode(AnnotationTool.inkPen);
                     break;
                   case 'custom_share':
                     _showShareOptions();
@@ -127,9 +166,20 @@ class _CustomToolbarExampleState extends State<CustomToolbarExample> {
             padding: const EdgeInsets.all(8.0),
             color: Colors.grey[200],
             width: double.infinity,
-            child: Text(
-              'Last tapped toolbar item: $_lastTappedItem',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Last tapped toolbar item: $_lastTappedItem',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '💡 Default annotation button is hidden - using custom annotation controls instead',
+                  style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                ),
+              ],
             ),
           ),
         ],

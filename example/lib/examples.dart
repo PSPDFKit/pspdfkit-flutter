@@ -17,6 +17,7 @@ import 'package:nutrient_example/models/nutrient_example_item.dart';
 import 'package:nutrient_example/nutrient_ai_assistant_example.dart';
 import 'package:nutrient_example/nutrient_web_event_listeners.dart';
 import 'package:nutrient_example/toolbar_customization.dart';
+import 'annotation_menu_example.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 import 'custom_toolbar_example.dart';
@@ -33,6 +34,7 @@ import 'package:nutrient_example/measurement_tools.dart';
 import 'package:nutrient_example/pdf_generation_example.dart';
 import 'package:nutrient_example/save_as_example.dart';
 import 'package:nutrient_example/nutrient_annotation_flags.dart';
+import 'package:nutrient_example/office_to_pdf_example.dart';
 
 import 'basic_example.dart';
 import 'form_example.dart';
@@ -143,6 +145,15 @@ List<NutrientExampleItem> examples(BuildContext context) => [
           onTap: () => annotationProcessingExample(context),
         ),
       NutrientExampleItem(
+        title: 'Annotation Menu - Remove & Disable',
+        description:
+            'Shows how to remove and disable items in the annotation contextual menu.',
+        onTap: () async {
+          await extractAsset(context, _documentPath).then((value) =>
+              goTo(AnnotationMenuExample(documentPath: value.path), context));
+        },
+      ),
+      NutrientExampleItem(
         title: 'Import Instant Document JSON',
         description:
             'Shows how to programmatically import Instant Document JSON using a custom Widget.',
@@ -231,7 +242,14 @@ List<NutrientExampleItem> examples(BuildContext context) => [
           onTap: () async {
             await extractAsset(context, _documentPath).then((value) => goTo(
                 NutrientAiAssistantExample(documentPath: value.path), context));
-          })
+          }),
+      if (kIsWeb)
+        NutrientExampleItem(
+          title: 'Office Document Conversion',
+          description:
+              'Convert Excel, Word, and PowerPoint documents to PDF format.',
+          onTap: () => goTo(const OfficeToPdfExample(), context),
+        )
     ];
 
 List<NutrientExampleItem> globalExamples(BuildContext context) => [

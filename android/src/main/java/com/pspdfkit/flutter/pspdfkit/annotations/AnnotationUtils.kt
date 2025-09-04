@@ -109,13 +109,21 @@ object AnnotationUtils {
             FlutterAnnotationTool.MEASUREMENT_PERIMETER -> AnnotationToolWithVariant(AndroidAnnotationTool.MEASUREMENT_PERIMETER)
             FlutterAnnotationTool.MEASUREMENT_DISTANCE -> AnnotationToolWithVariant(AndroidAnnotationTool.MEASUREMENT_DISTANCE)
             
-            // Some Flutter tools don't have direct Android equivalents
+            // Image stamp tool - can be mapped to existing stamp functionality
+            FlutterAnnotationTool.STAMP_IMAGE -> AnnotationToolWithVariant(AndroidAnnotationTool.STAMP)
+            
+            // The following Flutter tools don't have corresponding Android AnnotationTool equivalents:
+            // - CARET: Exists as AnnotationType but no dedicated creation tool
+            // - RICH_MEDIA: Exists as AnnotationType but no dedicated creation tool  
+            // - SCREEN: Exists as AnnotationType but no dedicated creation tool
+            // - FILE: Exists as AnnotationType but no dedicated creation tool
+            // - WIDGET: Exists as AnnotationType but no dedicated creation tool
+            // - LINK: Link annotations are typically created differently in Android
             FlutterAnnotationTool.CARET,
             FlutterAnnotationTool.RICH_MEDIA,
             FlutterAnnotationTool.SCREEN,
             FlutterAnnotationTool.FILE,
             FlutterAnnotationTool.WIDGET,
-            FlutterAnnotationTool.STAMP_IMAGE,
             FlutterAnnotationTool.LINK,
             null -> null
         }

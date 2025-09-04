@@ -59,6 +59,8 @@ const String androidShowThumbnailGridAction = 'androidShowThumbnailGridAction';
 const String enableAnnotationEditing = 'enableAnnotationEditing';
 const String androidShowAnnotationListAction =
     'androidShowAnnotationListAction';
+const String androidShowAnnotationCreationAction =
+    'androidShowAnnotationCreationAction';
 
 // Instant options
 const String enableInstantComments = 'enableInstantComments';

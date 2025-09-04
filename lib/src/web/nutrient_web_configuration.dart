@@ -205,6 +205,24 @@ class PdfWebConfiguration {
   /// Main toolbar items. If not set, the default toolbar items will be used.
   final List<NutrientWebToolbarItem>? toolbarItems;
 
+  /// Office conversion settings for documents like .docx, .xlsx, .pptx.
+  ///
+  /// These settings control how Office documents are converted to PDF for viewing.
+  /// Currently supports configuration for spreadsheet dimensions:
+  /// - `spreadsheetMaximumContentHeightPerSheet`: Maximum height in millimeters per sheet
+  /// - `spreadsheetMaximumContentWidthPerSheet`: Maximum width in millimeters per sheet
+  ///
+  /// Example:
+  /// ```dart
+  /// PdfWebConfiguration(
+  ///   officeConversionSettings: OfficeConversionSettings(
+  ///     spreadsheetMaximumContentHeightPerSheet: 500,
+  ///     spreadsheetMaximumContentWidthPerSheet: 300,
+  ///   ),
+  /// )
+  /// ```
+  final OfficeConversionSettings? officeConversionSettings;
+
   /// Annotation toolbar items callback. If not set, the default annotation toolbar items will be used.
   final NutrientWebAnnotationToolbarItemsCallback? annotationToolbarItems;
 
@@ -274,7 +292,8 @@ class PdfWebConfiguration {
       this.disableForms,
       this.disableTextSelection,
       this.toolbarItems,
-      this.annotationToolbarItems});
+      this.annotationToolbarItems,
+      this.officeConversionSettings});
 
   Map<String, dynamic> toMap() {
     return {
@@ -336,7 +355,8 @@ class PdfWebConfiguration {
       'disableTextSelection': disableTextSelection,
       'toolbarItems': toolbarItems,
       'annotationToolbarItems': annotationToolbarItems,
-      'authPayload': authPayload
+      'authPayload': authPayload,
+      ...?officeConversionSettings?.toMap()
     }..removeWhere((key, value) => value == null);
   }
 }

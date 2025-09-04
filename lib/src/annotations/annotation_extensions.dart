@@ -75,6 +75,26 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.link:
         return 'link';
 
+      // Widget annotation tools
+      case AnnotationTool.widget:
+        return 'widget';
+      case AnnotationTool.file:
+        return 'file';
+
+      // Other annotation tools
+      case AnnotationTool.caret:
+        return 'caret';
+      case AnnotationTool.redaction:
+        return 'redaction';
+      case AnnotationTool.sound:
+        return 'sound';
+      case AnnotationTool.richMedia:
+        return 'richMedia';
+      case AnnotationTool.screen:
+        return 'screen';
+      case AnnotationTool.cloudy:
+        return 'cloudy';
+
       // Measurement tools
       case AnnotationTool.measurementDistance:
         return 'measurementDistance';
@@ -149,6 +169,26 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'INK_ERASER';
       case AnnotationTool.link:
         return 'LINK';
+
+      // Widget annotation tools
+      case AnnotationTool.widget:
+        return 'FORM_CREATOR';
+      case AnnotationTool.file:
+        return 'DOCUMENT_EDITOR';
+
+      // Other annotation tools
+      case AnnotationTool.caret:
+        return 'COMMENT_MARKER';
+      case AnnotationTool.redaction:
+        return 'REDACT_TEXT_HIGHLIGHTER';
+      case AnnotationTool.sound:
+        return 'NOTE'; // Sound annotations use note interaction mode
+      case AnnotationTool.richMedia:
+        return 'NOTE'; // Rich media annotations use note interaction mode
+      case AnnotationTool.screen:
+        return 'NOTE'; // Screen annotations use note interaction mode
+      case AnnotationTool.cloudy:
+        return 'SHAPE_RECTANGLE'; // Cloudy is a border style, not a separate interaction mode
 
       // Measurement tools
       case AnnotationTool.measurementDistance:

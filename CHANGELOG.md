@@ -1,3 +1,15 @@
+## 5.1.0 - 04 Sep 2025
+
+- Adds the `androidShowAnnotationCreationAction` configuration option to hide the default annotation creation button while keeping annotation editing functionality enabled on Android. (J#HYB-864)
+- Adds `OfficeConversionSettings` for configuring Office document conversion parameters in Nutrient Flutter Web, including spreadsheet dimension controls. (J#HYB-861)
+- Adds annotation contextual menu customization support with `AnnotationMenuConfiguration`. (J#HYB-683)
+- Improves event listeners handling for better performance and reliability. (J#HYB-868)
+- Updates to Nutrient iOS SDK 14.12.0 with the latest features and fixes.
+- Updates to Nutrient Android SDK 10.5.0 with the latest features and fixes.
+- Updates Kotlin version to 2.1.20 for compatibility with Nutrient Android SDK 10.6.0.
+- Fixes an iOS issue where the signature dialog would immediately dismiss when entering annotation creation mode programmatically. (J#HYB-859)
+- Fixes an Android race condition when calling `getPageInfo` immediately after `onDocumentLoaded` on a cold start. (J#HYB-870)
+
 ## 5.0.1 - 24 Jul 2025
 
 - Update README.md files to include the latest rebranding changes for Nutrient Flutter SDK. (J#HYB-842)

@@ -387,6 +387,9 @@ typedef OnCustomToolbarItemTappedCallback = void Function(String identifier);
 typedef NutrientViewCreatedCallback = void Function(
     NutrientViewController controller);
 
+typedef OnBuildAnnotationMenuCallback = AnnotationMenuConfigurationData?
+    Function(String documentId, Object annotation);
+
 extension WebShowSignatureValidationStatusMode
     on ShowSignatureValidationStatusMode {
   String? get webName {

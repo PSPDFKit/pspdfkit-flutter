@@ -207,6 +207,48 @@ enum NutrientEvent {
   textSelectionChanged,
 }
 
+/// Enumeration of default annotation menu actions that can be removed or disabled.
+///
+/// **Platform Support:**
+/// - All actions can be removed or disabled on both iOS and Android
+/// - Some system actions (copy/paste) may be harder to remove on iOS due to system restrictions
+enum AnnotationMenuAction {
+  /// Delete action - removes the annotation
+  /// - iOS: Part of UIMenu system actions
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_delete
+  delete,
+
+  /// Copy action - copies the annotation
+  /// - iOS: System copy action (may be harder to remove)
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_copy
+  copy,
+
+  /// Cut action - cuts the annotation to clipboard
+  /// - iOS: System cut action
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_cut
+  cut,
+
+  /// Color action - opens annotation color picker/inspector
+  /// - iOS: Style picker in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_picker
+  color,
+
+  /// Note action - opens annotation note editor
+  /// - iOS: Note action in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_annotation_note
+  note,
+
+  /// Undo action - undoes the last action
+  /// - iOS: Undo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_undo
+  undo,
+
+  /// Redo action - redoes the previously undone action
+  /// - iOS: Redo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_redo
+  redo,
+}
+
 class PdfRect {
   PdfRect({
     required this.x,
@@ -491,6 +533,108 @@ class PointF {
   }
 }
 
+/// Configuration data for annotation contextual menu
+///
+/// This class defines how annotation menus should be configured
+/// when displayed to users. It supports removing actions, disabling actions,
+/// and controlling visual presentation options.
+///
+/// **Usage Patterns**:
+/// - **Static Configuration**: Set once via [NutrientViewController.setAnnotationMenuConfiguration]
+///
+/// **Platform Compatibility**:
+/// - [itemsToRemove]: Supported on Android, iOS, and Web
+/// - [itemsToDisable]: Supported on Android, iOS, and Web
+/// - [showStylePicker]: Supported on Android and iOS
+/// - [groupMarkupItems]: iOS only (ignored on other platforms)
+/// - [maxVisibleItems]: Platform-dependent behavior
+class AnnotationMenuConfigurationData {
+  AnnotationMenuConfigurationData({
+    required this.itemsToRemove,
+    required this.itemsToDisable,
+    required this.showStylePicker,
+    required this.groupMarkupItems,
+    this.maxVisibleItems,
+  });
+
+  /// List of default annotation menu actions to remove completely from the menu.
+  ///
+  /// These actions will not appear in the contextual menu at all.
+  /// Use this when you want to completely hide certain functionality.
+  ///
+  /// **Example**: Remove delete action for read-only annotations
+  /// ```dart
+  /// itemsToRemove: [AnnotationMenuAction.delete]
+  /// ```
+  List<AnnotationMenuAction> itemsToRemove;
+
+  /// List of default annotation menu actions to disable (show as grayed out).
+  ///
+  /// These actions will appear in the menu but will be non-interactive.
+  /// Use this when you want to show functionality exists but is temporarily unavailable.
+  ///
+  /// **Example**: Disable copy action for certain annotation types
+  /// ```dart
+  /// itemsToDisable: [AnnotationMenuAction.copy]
+  /// ```
+  List<AnnotationMenuAction> itemsToDisable;
+
+  /// Whether to show the platform's default style picker in the annotation menu.
+  ///
+  /// When true, users can access color, thickness, and other style options
+  /// directly from the annotation menu.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Shows style picker as part of UIMenu
+  /// - **Android**: Shows annotation inspector/style picker
+  /// - **Web**: Shows color picker and basic style options
+  bool showStylePicker;
+
+  /// Whether to group markup annotation actions together in the menu.
+  ///
+  /// When true, related markup actions (highlight, underline, etc.) are
+  /// visually grouped in the menu for better organization.
+  ///
+  /// **Platform Support**: iOS only (ignored on Android and Web)
+  bool groupMarkupItems;
+
+  /// Maximum number of actions to show directly in the menu before creating overflow.
+  ///
+  /// When the number of available actions exceeds this limit, the platform
+  /// may create a submenu or overflow menu to accommodate additional actions.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Respects platform UI guidelines for menu length
+  /// - **Android**: Limited by toolbar space and screen size
+  /// - **Web**: Creates scrollable or paginated menu as needed
+  ///
+  /// **Note**: If null, the platform default behavior is used.
+  int? maxVisibleItems;
+
+  Object encode() {
+    return <Object?>[
+      itemsToRemove,
+      itemsToDisable,
+      showStylePicker,
+      groupMarkupItems,
+      maxVisibleItems,
+    ];
+  }
+
+  static AnnotationMenuConfigurationData decode(Object result) {
+    result as List<Object?>;
+    return AnnotationMenuConfigurationData(
+      itemsToRemove:
+          (result[0] as List<Object?>?)!.cast<AnnotationMenuAction>(),
+      itemsToDisable:
+          (result[1] as List<Object?>?)!.cast<AnnotationMenuAction>(),
+      showStylePicker: result[2]! as bool,
+      groupMarkupItems: result[3]! as bool,
+      maxVisibleItems: result[4] as int?,
+    );
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -525,23 +669,29 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NutrientEvent) {
       buffer.putUint8(137);
       writeValue(buffer, value.index);
-    } else if (value is PdfRect) {
+    } else if (value is AnnotationMenuAction) {
       buffer.putUint8(138);
-      writeValue(buffer, value.encode());
-    } else if (value is PageInfo) {
+      writeValue(buffer, value.index);
+    } else if (value is PdfRect) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is DocumentSaveOptions) {
+    } else if (value is PageInfo) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    } else if (value is PdfFormOption) {
+    } else if (value is DocumentSaveOptions) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    } else if (value is FormFieldData) {
+    } else if (value is PdfFormOption) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    } else if (value is PointF) {
+    } else if (value is FormFieldData) {
       buffer.putUint8(143);
+      writeValue(buffer, value.encode());
+    } else if (value is PointF) {
+      buffer.putUint8(144);
+      writeValue(buffer, value.encode());
+    } else if (value is AnnotationMenuConfigurationData) {
+      buffer.putUint8(145);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -579,17 +729,22 @@ class _PigeonCodec extends StandardMessageCodec {
         final int? value = readValue(buffer) as int?;
         return value == null ? null : NutrientEvent.values[value];
       case 138:
-        return PdfRect.decode(readValue(buffer)!);
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : AnnotationMenuAction.values[value];
       case 139:
-        return PageInfo.decode(readValue(buffer)!);
+        return PdfRect.decode(readValue(buffer)!);
       case 140:
-        return DocumentSaveOptions.decode(readValue(buffer)!);
+        return PageInfo.decode(readValue(buffer)!);
       case 141:
-        return PdfFormOption.decode(readValue(buffer)!);
+        return DocumentSaveOptions.decode(readValue(buffer)!);
       case 142:
-        return FormFieldData.decode(readValue(buffer)!);
+        return PdfFormOption.decode(readValue(buffer)!);
       case 143:
+        return FormFieldData.decode(readValue(buffer)!);
+      case 144:
         return PointF.decode(readValue(buffer)!);
+      case 145:
+        return AnnotationMenuConfigurationData.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1469,6 +1624,38 @@ class NutrientApi {
       );
     } else {
       return;
+    }
+  }
+
+  /// Sets the annotation menu configuration for the global presenter.
+  /// This configuration applies to all annotation menus in presented documents.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  Future<bool?> setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configuration]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?);
     }
   }
 }
@@ -2480,6 +2667,38 @@ class NutrientViewControllerApi {
       return (pigeonVar_replyList[0] as bool?);
     }
   }
+
+  /// Sets the annotation menu configuration for the current view controller.
+  /// This configuration applies only to annotation menus in the current document view.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  Future<bool?> setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configuration]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?);
+    }
+  }
 }
 
 class PdfDocumentApi {
@@ -3147,7 +3366,7 @@ abstract class NutrientViewCallbacks {
           assert(arg_pageIndex != null,
               'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageClick was null, expected non-null int.');
           final PointF? arg_point = (args[2] as PointF?);
-          final Object? arg_annotation = args[3];
+          final Object? arg_annotation = (args[3] as Object?);
           try {
             api.onPageClick(
                 arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
@@ -3223,7 +3442,7 @@ abstract class NutrientEventsCallbacks {
           final NutrientEvent? arg_event = (args[0] as NutrientEvent?);
           assert(arg_event != null,
               'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientEventsCallbacks.onEvent was null, expected non-null NutrientEvent.');
-          final Object? arg_data = args[1];
+          final Object? arg_data = (args[1] as Object?);
           try {
             api.onEvent(arg_event!, arg_data);
             return wrapResponse(empty: true);

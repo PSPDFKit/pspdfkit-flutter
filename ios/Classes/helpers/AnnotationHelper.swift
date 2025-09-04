@@ -106,9 +106,21 @@ class AnnotationHelper {
             return AnnotationToolWithVariant(annotationTool: .polyLine, variant: PSPDFKit.Annotation.Variant.perimeterMeasurement)
         case AnnotationTool.measurementDistance:
             return AnnotationToolWithVariant(annotationTool: .line, variant: PSPDFKit.Annotation.Variant.distanceMeasurement)
-        // Some Flutter tools don't have direct iOS equivalents
-        case AnnotationTool.caret, AnnotationTool.richMedia, AnnotationTool.screen,AnnotationTool.file, AnnotationTool.widget, AnnotationTool.stampImage,AnnotationTool.link:
-            return nil
+        // Additional supported tools
+        case AnnotationTool.caret:
+            return AnnotationToolWithVariant(annotationTool: .caret)
+        case AnnotationTool.richMedia:
+            return AnnotationToolWithVariant(annotationTool: .richMedia)
+        case AnnotationTool.screen:
+            return AnnotationToolWithVariant(annotationTool: .screen)
+        case AnnotationTool.file:
+            return AnnotationToolWithVariant(annotationTool: .file)
+        case AnnotationTool.widget:
+            return AnnotationToolWithVariant(annotationTool: .widget)
+        case AnnotationTool.stampImage:
+            return AnnotationToolWithVariant(annotationTool: .stamp)
+        case AnnotationTool.link:
+            return AnnotationToolWithVariant(annotationTool: .link)
         }
     }
 

@@ -137,6 +137,11 @@ class PdfConfiguration {
   /// Defaults to true.
   final bool? androidShowAnnotationListAction;
 
+  /// Sets whether to show the annotation creation action in the Android toolbar.
+  /// Defaults to true. When set to false, hides the main annotation button while
+  /// keeping annotation editing functionality enabled.
+  final bool? androidShowAnnotationCreationAction;
+
   /// Sets whether to enable instant comments. Defaults to true. This feature
   /// requires a Instant Synchronization license.
   final bool? enableInstantComments;
@@ -186,6 +191,9 @@ class PdfConfiguration {
 
   final bool? androidEnableAiAssistant;
 
+  /// Configuration for annotation contextual menu customization.
+  final AnnotationMenuConfiguration? annotationMenuConfiguration;
+
   PdfConfiguration({
     this.scrollDirection,
     this.pageTransition,
@@ -216,6 +224,7 @@ class PdfConfiguration {
     this.androidShowPrintAction,
     this.androidShowDocumentInfoView,
     this.androidShowAnnotationListAction,
+    this.androidShowAnnotationCreationAction,
     this.androidDarkThemeResource,
     this.androidDefaultThemeResource,
     this.iOSLeftBarButtonItems,
@@ -240,6 +249,7 @@ class PdfConfiguration {
     this.signatureCreationConfiguration,
     this.aiAssistantConfiguration,
     this.androidEnableAiAssistant,
+    this.annotationMenuConfiguration,
   });
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
@@ -283,6 +293,8 @@ class PdfConfiguration {
       'androidShowThumbnailGridAction': androidShowThumbnailGridAction,
       'enableAnnotationEditing': enableAnnotationEditing,
       'androidShowAnnotationListAction': androidShowAnnotationListAction,
+      'androidShowAnnotationCreationAction':
+          androidShowAnnotationCreationAction,
       'enableInstantComments': enableInstantComments,
       'enableMeasurementTools': enableMeasurementTools,
       'enableMeasurementToolSnapping': measurementSnappingEnabled,
@@ -297,6 +309,7 @@ class PdfConfiguration {
       'signatureCreationConfiguration': signatureCreationConfiguration?.toMap(),
       'aiAssistant': aiAssistantConfiguration?.toMap(),
       'enableAiAssistant': androidEnableAiAssistant,
+      'annotationMenuConfiguration': annotationMenuConfiguration?.toMap(),
     }..removeWhere((key, value) => value == null);
   }
 

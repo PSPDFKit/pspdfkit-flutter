@@ -61,6 +61,48 @@ class _AnnotationCreationModeExampleWidgetState
   }
 
   Widget _buildToolbar() {
+    // Top 20 essential annotation tools that work well across all platforms
+    final toolButtons = <Widget>[
+      // Drawing tools (3)
+      _buildToolButton(AnnotationTool.inkPen, 'Pen', Icons.brush),
+      _buildToolButton(
+          AnnotationTool.inkHighlighter, 'Highlighter', Icons.highlight),
+      _buildToolButton(AnnotationTool.eraser, 'Eraser', Icons.auto_fix_normal),
+
+      // Text markup tools (4)
+      _buildToolButton(
+          AnnotationTool.highlight, 'Highlight', Icons.format_color_fill),
+      _buildToolButton(
+          AnnotationTool.underline, 'Underline', Icons.format_underlined),
+      _buildToolButton(
+          AnnotationTool.strikeOut, 'Strike Out', Icons.format_strikethrough),
+      _buildToolButton(AnnotationTool.squiggly, 'Squiggly', Icons.waves),
+
+      // Text annotation tools (3)
+      _buildToolButton(AnnotationTool.freeText, 'Text', Icons.text_fields),
+      _buildToolButton(AnnotationTool.note, 'Note', Icons.note_add),
+      _buildToolButton(
+          AnnotationTool.freeTextCallOut, 'Callout', Icons.chat_bubble_outline),
+
+      // Shape tools (4)
+      _buildToolButton(AnnotationTool.square, 'Square', Icons.crop_square),
+      _buildToolButton(AnnotationTool.circle, 'Circle', Icons.circle_outlined),
+      _buildToolButton(AnnotationTool.line, 'Line', Icons.show_chart),
+      _buildToolButton(AnnotationTool.arrow, 'Arrow', Icons.arrow_forward),
+
+      // Media & interactive tools (3)
+      _buildToolButton(AnnotationTool.stamp, 'Stamp', Icons.approval),
+      _buildToolButton(AnnotationTool.image, 'Image', Icons.image),
+      _buildToolButton(AnnotationTool.signature, 'Signature', Icons.draw),
+
+      // Advanced tools (3)
+      _buildToolButton(
+          AnnotationTool.polygon, 'Polygon', Icons.pentagon_outlined),
+      _buildToolButton(AnnotationTool.polyline, 'Polyline', Icons.polyline),
+      _buildToolButton(
+          AnnotationTool.measurementDistance, 'Measure', Icons.straighten),
+    ];
+
     return Container(
       color: Colors.grey[200],
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -68,25 +110,7 @@ class _AnnotationCreationModeExampleWidgetState
         scrollDirection: Axis.horizontal,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildToolButton(AnnotationTool.inkPen, 'Ink Pen', Icons.brush),
-            _buildToolButton(
-                AnnotationTool.inkHighlighter, 'Highlighter', Icons.highlight),
-            _buildToolButton(
-                AnnotationTool.inkMagic, 'Magic Ink', Icons.auto_fix_high),
-            _buildToolButton(
-                AnnotationTool.freeText, 'Free Text', Icons.text_fields),
-            _buildToolButton(
-                AnnotationTool.square, 'Square', Icons.crop_square),
-            _buildToolButton(
-                AnnotationTool.circle, 'Circle', Icons.circle_outlined),
-            _buildToolButton(AnnotationTool.line, 'Line', Icons.show_chart),
-            _buildToolButton(
-                AnnotationTool.arrow, 'Arrow', Icons.arrow_forward),
-            _buildToolButton(AnnotationTool.signature, 'Signature', Icons.draw),
-            _buildToolButton(
-                AnnotationTool.eraser, 'Eraser', Icons.auto_fix_normal),
-          ],
+          children: toolButtons,
         ),
       ),
     );

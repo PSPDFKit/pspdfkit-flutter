@@ -20,13 +20,13 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientViewCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientViewControllerApi
 import com.pspdfkit.flutter.pspdfkit.events.FlutterEventsHelper
 import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterMenuGroupingRule
-import com.pspdfkit.flutter.pspdfkit.toolbar.FlutterViewModeController
 import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.signatures.storage.DatabaseSignatureStorage
@@ -50,16 +50,20 @@ internal class PSPDFKitView(
     documentPath: String? = null,
     configurationMap: HashMap<String, Any>? = null,
     customToolbarItems: List<Map<String, Any>>? = null,
-    ) : PlatformView {
+) : PlatformView {
 
     private var fragmentContainerView: FragmentContainerView? = FragmentContainerView(context)
     private val methodChannel: MethodChannel
     private lateinit var pdfUiFragment: PdfUiFragment
     private var fragmentCallbacks: FlutterPdfUiFragmentCallbacks? = null
     private val pspdfkitViewImpl: PspdfkitViewImpl = PspdfkitViewImpl()
-    private val nutrientEventsCallbacks: NutrientEventsCallbacks = NutrientEventsCallbacks(messenger, "events.callbacks.$id")
-    private val widgetCallbacks: NutrientViewCallbacks = NutrientViewCallbacks(messenger, "widget.callbacks.$id")
-    private val customToolbarCallbacks: CustomToolbarCallbacks = CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
+    private val nutrientEventsCallbacks: NutrientEventsCallbacks =
+        NutrientEventsCallbacks(messenger, "events.callbacks.$id")
+    private val widgetCallbacks: NutrientViewCallbacks =
+        NutrientViewCallbacks(messenger, "widget.callbacks.$id")
+    private val customToolbarCallbacks: CustomToolbarCallbacks =
+        CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
+    private var annotationMenuHandler: AnnotationMenuHandler? = null
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
     private var aiAssistant: AiAssistant? = null
@@ -71,10 +75,24 @@ internal class PSPDFKitView(
         val configurationAdapter = ConfigurationAdapter(context, configurationMap)
         val password = configurationAdapter.password
         val pdfConfiguration = configurationAdapter.build()
-        val toolbarGroupingItems: List<Any>? = configurationMap?.get("toolbarItemGrouping") as List<Any>?
+        val toolbarGroupingItems: List<Any>? =
+            configurationMap?.get("toolbarItemGrouping") as List<Any>?
         val measurementValueConfigurations =
             configurationMap?.get("measurementValueConfigurations") as List<Map<String, Any>>?
         val aiAssistantConfigurationMap = configurationMap?.get("aiAssistant") as Map<String, Any>?
+        val annotationMenuConfiguration = configurationAdapter.getAnnotationMenuConfiguration()
+
+        // Initialize annotation menu handler if configuration is provided
+        if (annotationMenuConfiguration != null) {
+            annotationMenuHandler = AnnotationMenuHandler(
+                context,
+                annotationMenuConfiguration
+            )
+            Log.d(
+                LOG_TAG,
+                "Initialized annotation menu handler"
+            )
+        }
 
         try {
             //noinspection pspdfkit-experimental
@@ -112,11 +130,16 @@ internal class PSPDFKitView(
             }
             setupAiAssistant(context, aiAssistantConfigurationMap)
 
-            fragmentCallbacks = FlutterPdfUiFragmentCallbacks(methodChannel, measurementValueConfigurations,
-                messenger,FlutterWidgetCallback(widgetCallbacks),aiAssistant)
+            fragmentCallbacks = FlutterPdfUiFragmentCallbacks(
+                methodChannel, measurementValueConfigurations,
+                messenger, FlutterWidgetCallback(widgetCallbacks), aiAssistant
+            )
 
             fragmentCallbacks?.let { callbacks ->
-                getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(callbacks, true)
+                getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(
+                    callbacks,
+                    true
+                )
             }
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error initializing PdfUiFragment", e)
@@ -126,42 +149,82 @@ internal class PSPDFKitView(
             ).configuration(pdfConfiguration).build()
         }
 
-        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(object : FragmentManager.FragmentLifecycleCallbacks() {
-            override fun onFragmentAttached(
-                fm: FragmentManager,
-                f: Fragment,
-                context: Context
-            ) {
-                if (f.tag?.contains("Nutrient.Fragment") == true) {
-                    if (toolbarGroupingItems != null) {
-                        val groupingRule = FlutterMenuGroupingRule(context, toolbarGroupingItems)
-                        val flutterViewModeController = FlutterViewModeController(groupingRule)
-                       pdfUiFragment.setOnContextualToolbarLifecycleListener(flutterViewModeController)
+        getFragmentActivity(context).supportFragmentManager.registerFragmentLifecycleCallbacks(
+            object : FragmentManager.FragmentLifecycleCallbacks() {
+                override fun onFragmentAttached(
+                    fm: FragmentManager,
+                    f: Fragment,
+                    context: Context
+                ) {
+                    if (f.tag?.contains("Nutrient.Fragment") == true && pdfUiFragment is FlutterPdfUiFragment) {
+                        // Set up toolbar grouping rule if available
+                        if (toolbarGroupingItems != null) {
+                            val groupingRule =
+                                FlutterMenuGroupingRule(context, toolbarGroupingItems)
+                            val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                            flutterFragment?.setToolbarGroupingRule(groupingRule)
+                        }
+
+                        // Always set FlutterPdfUiFragment as the contextual toolbar listener
+                        // It can handle both toolbar grouping and annotation menu customization
+                        val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                        flutterFragment?.let { fragment ->
+                            fragment.setOnContextualToolbarLifecycleListener(fragment)
+                        }
                     }
 
                     // Process custom toolbar items
                     if (customToolbarItems?.isNotEmpty() == true && f is PdfFragment) {
-                        (pdfUiFragment as FlutterPdfUiFragment).setCustomToolbarItems(
+                        val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                        flutterFragment?.setCustomToolbarItems(
                             customToolbarItems,
                             customToolbarCallbacks
                         )
                     }
 
-                    // Create method call handler to handle Flutter method calls
-                    methodCallHandler =
-                        pdfUiFragment.pdfFragment?.let { PSPDFKitWidgetMethodCallHandler(it) }
+                    // Set up annotation menu handler if configured
+                    if (annotationMenuHandler != null && f is PdfFragment) {
+                        val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                        flutterFragment?.setAnnotationMenuHandler(annotationMenuHandler!!)
+                    }
 
-                    // Set up method channel for communication with Flutter
-                    methodCallHandler?.let { handler ->
-                        methodChannel.setMethodCallHandler(handler)
+                    // Set up annotation creation button visibility configuration
+                    val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                    flutterFragment?.setHideAnnotationCreationButton(configurationAdapter.shouldHideAnnotationCreationButton())
+                    
+                    // Dynamic annotation menu callbacks have been removed
+                    // The annotation menu is now configured statically via annotationMenuHandler
+
+                    // Create method call handler to handle Flutter method calls
+                    // Wait for pdfFragment to be available before setting up the handler
+                    try {
+                        val pdfFragment = pdfUiFragment.pdfFragment
+                        if (pdfFragment != null) {
+                            methodCallHandler = PSPDFKitWidgetMethodCallHandler(pdfFragment)
+                            
+                            // Set up method channel for communication with Flutter
+                            methodCallHandler?.let { handler ->
+                                methodChannel.setMethodCallHandler(handler)
+                            }
+                        } else {
+                            Log.w(LOG_TAG, "PdfFragment not yet available, method call handler will be set up later")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(LOG_TAG, "Error setting up method call handler", e)
                     }
 
                     if (configurationMap?.contains("signatureSavingStrategy") == true) {
-                        pdfUiFragment.pdfFragment?.let { configureSignatureStorage(it) }
+                        try {
+                            pdfUiFragment.pdfFragment?.let { configureSignatureStorage(it) }
+                        } catch (e: Exception) {
+                            Log.e(LOG_TAG, "Error configuring signature storage", e)
+                        }
                     }
+
                 }
-            }
-        }, true)
+            },
+            true
+        )
 
         fragmentContainerView?.let {
             it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
@@ -214,7 +277,8 @@ internal class PSPDFKitView(
                 try {
                     val fragmentActivity = getFragmentActivity(context)
                     if (!fragmentActivity.isFinishing && !fragmentActivity.isDestroyed
-                        && fragmentActivity.supportFragmentManager.isDestroyed.not()) {
+                        && fragmentActivity.supportFragmentManager.isDestroyed.not()
+                    ) {
                         fragmentActivity.supportFragmentManager.commit {
                             pdfUiFragment.let { if (it.isAdded) remove(it) }
                             setReorderingAllowed(true)
@@ -233,7 +297,9 @@ internal class PSPDFKitView(
             // Unregister callbacks and listeners
             fragmentCallbacks?.let {
                 try {
-                    getFragmentActivity(context).supportFragmentManager.unregisterFragmentLifecycleCallbacks(it)
+                    getFragmentActivity(context).supportFragmentManager.unregisterFragmentLifecycleCallbacks(
+                        it
+                    )
                 } catch (e: Exception) {
                     Log.e(LOG_TAG, "Error unregistering fragment lifecycle callbacks", e)
                 }
@@ -255,7 +321,8 @@ internal class PSPDFKitView(
     override fun onFlutterViewAttached(flutterView: View) {
         super.onFlutterViewAttached(flutterView)
         // Set up the method channel for communication with Flutter.
-        val flutterEventsHelper = FlutterEventsHelper(nutrientEventsCallbacks)
+        val flutterEventsHelper =
+            FlutterEventsHelper(nutrientEventsCallbacks, annotationMenuHandler)
         pspdfkitViewImpl.setEventDispatcher(flutterEventsHelper)
         NutrientViewControllerApi.setUp(messenger, pspdfkitViewImpl, id.toString())
     }
@@ -266,7 +333,10 @@ internal class PSPDFKitView(
             is FragmentActivity -> {
                 // Verify the activity is in a valid state for fragment operations
                 if (context.isDestroyed || context.isFinishing) {
-                    Log.w(LOG_TAG, "Activity is finishing or destroyed, may cause issues with fragment operations")
+                    Log.w(
+                        LOG_TAG,
+                        "Activity is finishing or destroyed, may cause issues with fragment operations"
+                    )
                 }
                 context
             }
@@ -293,18 +363,18 @@ internal class PSPDFKitView(
         }
     }
 
-    private fun configureSignatureStorage(pdfFragment: PdfFragment){
+    private fun configureSignatureStorage(pdfFragment: PdfFragment) {
         // See guides: https://www.nutrient.io/guides/android/signatures/signature-storage/
         // Set the signature storage for the PdfFragment.
         // Set up signature storage if a signature saving strategy is configured
-            try {
-                val storage: SignatureStorage = DatabaseSignatureStorage
-                    .withName(context,"nutrient_flutter_signature_storage")
-                pdfFragment.signatureStorage = storage
-            } catch (e: Exception) {
-                // Log any errors but don't crash the app
-                Log.e("FlutterPdfActivity", "Error setting up signature storage: " + e.message)
-            }
+        try {
+            val storage: SignatureStorage = DatabaseSignatureStorage
+                .withName(context, "nutrient_flutter_signature_storage")
+            pdfFragment.signatureStorage = storage
+        } catch (e: Exception) {
+            // Log any errors but don't crash the app
+            Log.e("FlutterPdfActivity", "Error setting up signature storage: " + e.message)
+        }
     }
 
     private fun setupAiAssistant(
@@ -320,11 +390,11 @@ internal class PSPDFKitView(
         if (serverUrl != null && jwt != null) {
             val aiAssistantConfiguration = AiAssistantConfiguration(
                 serverUrl = serverUrl,
-                jwt = jwt ,
-                sessionId = sessionId?: "",
+                jwt = jwt,
+                sessionId = sessionId ?: "",
                 userId = userId ?: ""
             )
-            aiAssistant = standaloneAiAssistant(context, aiAssistantConfiguration)
+             aiAssistant = standaloneAiAssistant(context, aiAssistantConfiguration)
         } else {
             Log.e(LOG_TAG, "Invalid AI Assistant configuration")
         }

@@ -122,12 +122,22 @@
         }
 
         if (_pdfViewController.configuration.userInterfaceViewMode == PSPDFUserInterfaceViewModeNever) {
-            // In this mode PDFViewController doesn’t hide the navigation bar on its own to avoid getting stuck.
+            // In this mode PDFViewController doesn't hide the navigation bar on its own to avoid getting stuck.
             _navigationController.navigationBarHidden = YES;
         }
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
 
         __weak id weakSelf = self;
+        
+        // Handle annotation menu configuration if present (shared for both branches)
+        NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
+        if (configurationDictionary && (id)configurationDictionary != NSNull.null && configurationDictionary[@"annotationMenuConfiguration"]) {
+            // Pass the raw dictionary to the Swift implementation to handle parsing
+            NSDictionary *annotationMenuDict = configurationDictionary[@"annotationMenuConfiguration"];
+            if ([annotationMenuDict isKindOfClass:[NSDictionary class]]) {
+                [_platformViewImpl setAnnotationMenuConfigurationFromDictionary:annotationMenuDict];
+            }
+        }
         
         [_platformViewImpl setViewControllerWithController:_pdfViewController];
         
@@ -184,6 +194,7 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
 }
+
 
 # pragma mark - PSPDFViewControllerDelegate
 

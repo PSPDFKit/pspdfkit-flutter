@@ -28,16 +28,32 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
+import com.pspdfkit.flutter.pspdfkit.GlobalAnnotationMenuConfiguration
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.R
+import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
+import com.pspdfkit.ui.toolbar.AnnotationEditingToolbar
+import com.pspdfkit.ui.toolbar.ContextualToolbar
+import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
+import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule
 
-class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
+class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
+    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener {
 
     // Maps identifier strings to menu item IDs to track custom toolbar items
     private val customToolbarItemIds = HashMap<String, Int>()
     private var customToolbarCallbacks: CustomToolbarCallbacks? = null
     private var customToolbarItems: List<Map<String, Any>>? = null
+
+    // Annotation menu handler for custom contextual menus
+    private var annotationMenuHandler: AnnotationMenuHandler? = null
+
+    // Toolbar grouping rule for annotation creation toolbar
+    private var toolbarGroupingRule: MenuItemGroupingRule? = null
+
+    // Configuration for hiding annotation creation button
+    private var hideAnnotationCreationButton: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +83,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
      */
     override fun onDocumentLoaded(document: PdfDocument) {
         super.onDocumentLoaded(document)
-        // Notify the Flutter PSPDFKit plugin that the document has been loaded.
+        // Notify the Nutrient Flutter plugin that the document has been loaded.
         EventDispatcher.getInstance().notifyDocumentLoaded(document)
     }
 
@@ -97,6 +113,58 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
 
         // Add the new items
         this.customToolbarItems = items
+    }
+
+    /**
+     * Sets the annotation menu handler for customizing contextual annotation menus.
+     * Note: The actual menu customization is now handled through annotation selection events
+     * in FlutterEventsHelper, not through contextual toolbar lifecycle events.
+     *
+     * @param handler The annotation menu handler to use for customization
+     */
+    fun setAnnotationMenuHandler(handler: AnnotationMenuHandler) {
+        this.annotationMenuHandler = handler
+        Log.d("FlutterPdfUiFragment", "Annotation menu handler configured")
+    }
+
+
+
+    /**
+     * Gets the effective annotation menu handler to use, falling back to global configuration
+     * if no widget-specific handler is set.
+     *
+     * @return The annotation menu handler to use, or null if none available
+     */
+    private fun getEffectiveAnnotationMenuHandler(): AnnotationMenuHandler? {
+        return annotationMenuHandler ?: let {
+            // Fall back to global configuration if no widget-specific handler is set
+            if (GlobalAnnotationMenuConfiguration.hasConfiguration()) {
+                AnnotationMenuHandler.fromGlobalConfiguration(requireContext())
+            } else {
+                null
+            }
+        }
+    }
+
+    /**
+     * Sets the toolbar grouping rule for annotation creation toolbar.
+     *
+     * @param rule The menu item grouping rule.
+     */
+    fun setToolbarGroupingRule(rule: MenuItemGroupingRule) {
+        this.toolbarGroupingRule = rule
+        Log.d("FlutterPdfUiFragment", "Toolbar grouping rule configured")
+    }
+
+    /**
+     * Sets whether to hide the annotation creation button from the main toolbar.
+     *
+     * @param hide True to hide the annotation creation button, false to show it.
+     */
+    fun setHideAnnotationCreationButton(hide: Boolean) {
+        this.hideAnnotationCreationButton = hide
+        // Invalidate options menu to trigger onPrepareOptionsMenu
+        activity?.invalidateOptionsMenu()
     }
 
     // Store titles for custom toolbar items
@@ -157,7 +225,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
             // Load drawable if available
             if (iconName != null) {
                 val fragmentContext = activity.applicationContext ?: continue
-                val drawable = extractDrawableFromName(fragmentContext,iconName, iconColorHex)
+                val drawable = extractDrawableFromName(fragmentContext, iconName, iconColorHex)
                 customToolbarItemDrawables[identifier] = drawable
             }
         }
@@ -192,7 +260,11 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
         }
     }
 
-    private fun extractDrawableFromName(fragmentContext: Context,iconName: String?, iconColorHex:String? ): Drawable? {
+    private fun extractDrawableFromName(
+        fragmentContext: Context,
+        iconName: String?,
+        iconColorHex: String?
+    ): Drawable? {
 
         var drawable: Drawable? = null
 
@@ -261,6 +333,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        // Check custom toolbar items
         val matchingIdentifier =
             customToolbarItemIds.entries.find { it.value == menuItem.itemId }?.key
         if (matchingIdentifier != null) {
@@ -270,6 +343,30 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
             return true
         }
         return false
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        // Hide annotation creation button if configured
+        if (hideAnnotationCreationButton) {
+            hideAnnotationCreationButtonFromMenu(menu)
+        }
+    }
+
+    private fun hideAnnotationCreationButtonFromMenu(menu: Menu) {
+        // First try the options menu approach
+        try {
+            val resourceId = R.id.pspdf__menu_option_edit_annotations
+            if (resourceId != 0) {
+                val menuItem = menu.findItem(resourceId)
+                if (menuItem != null) {
+                    menuItem.isVisible = false
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FlutterPdfUiFragment", "Error hiding annotation button from menu", e)
+        }
     }
 
     // Map to track which toolbar items are Android back buttons
@@ -284,6 +381,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
     private fun isAndroidBackButton(identifier: String): Boolean {
         return androidBackButtons[identifier] == true
     }
+
     /**
      * Sets the Android back button in the toolbar with the specified identifier and icon.
      *
@@ -299,5 +397,54 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider {
                 // Handle the back button action here
             }
         }
+    }
+
+
+    // Contextual toolbar lifecycle methods for annotation menu customization
+
+    override fun onPrepareContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
+        // Handle annotation creation toolbar grouping (existing functionality)
+        if (contextualToolbar is AnnotationCreationToolbar && toolbarGroupingRule != null) {
+            contextualToolbar.setMenuItemGroupingRule(toolbarGroupingRule)
+            Log.d(
+                "FlutterPdfUiFragment",
+                "Applied toolbar grouping rule to annotation creation toolbar"
+            )
+        }
+
+        // For annotation editing toolbar, use only static configuration from GlobalAnnotationMenuConfiguration
+        if (contextualToolbar is AnnotationEditingToolbar) {
+            val selectedAnnotations = pdfFragment?.selectedAnnotations
+            if (!selectedAnnotations.isNullOrEmpty()) {
+                val selectedAnnotation = selectedAnnotations.first()
+                Log.d(
+                    "FlutterPdfUiFragment",
+                    "Preparing toolbar for annotation: ${selectedAnnotation.type.name}, UUID: ${selectedAnnotation.uuid}"
+                )
+                
+                // Use only static configuration from GlobalAnnotationMenuConfiguration
+                getEffectiveAnnotationMenuHandler()?.let { handler ->
+                    handler.onAnnotationSelected(
+                        selectedAnnotation,
+                        selectedAnnotations.size > 1
+                    )
+                    handler.onPrepareContextualToolbar(contextualToolbar)
+                    Log.d("FlutterPdfUiFragment", "Applied static annotation menu configuration to toolbar")
+                }
+                return
+            }
+        }
+
+        // Handle annotation editing toolbar customization (fallback)
+        getEffectiveAnnotationMenuHandler()?.onPrepareContextualToolbar(contextualToolbar)
+    }
+
+    override fun onDisplayContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
+        // No special handling needed for display
+    }
+
+    override fun onRemoveContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
+        // Clear selected annotation when toolbar is removed
+        getEffectiveAnnotationMenuHandler()?.clearSelectedAnnotation()
     }
 }

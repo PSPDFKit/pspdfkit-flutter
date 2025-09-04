@@ -85,7 +85,15 @@ class FlutterPdfUiFragmentCallbacks(
             }
         }
 
-        // Send event through method channel
+        // Set up document API for Flutter access FIRST - before sending callbacks
+        try {
+            flutterPdfDocument = FlutterPdfDocument(document)
+            PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
+        }
+
+        // Now send Flutter callbacks - Pigeon channels are ready
         try {
             val eventData = mapOf("documentId" to document.uid)
             methodChannel.invokeMethod("onDocumentLoaded", eventData)
@@ -100,28 +108,19 @@ class FlutterPdfUiFragmentCallbacks(
             Log.e(LOG_TAG, "Error sending onDocumentLoaded via widget callbacks", e)
         }
 
-        // Set up document API for Flutter access
-        try {
-            flutterPdfDocument = FlutterPdfDocument(document)
-            PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
-        } catch (e: Exception) {
-            Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
-        }
-
         // Additional direct channel sending
         try {
             EventDispatcher.getInstance().notifyDocumentLoaded(document)
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error sending direct event notification", e)
         }
-
-        aiAssistant?.let {
-            try {
-                document.setAiAssistant(it)
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, "Error setting AiAssistant on loaded document", e)
-            }
-        }
+         aiAssistant?.let {
+             try {
+                 document.setAiAssistant(it)
+             } catch (e: Exception) {
+                 Log.e(LOG_TAG, "Error setting AiAssistant on loaded document", e)
+             }
+         }
     }
 
     override fun onPageChanged(document: PdfDocument, pageIndex: Int) {

@@ -593,6 +593,17 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
         }
     }
     
+    func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void) {
+        NSLog("PspdfkitApiImpl: setAnnotationMenuConfiguration called")
+        
+        // Store the configuration globally for presentation-based PDFs (using PspdfkitApiImpl)
+        // Use updateConfiguration to ensure immediate effect
+        AnnotationMenuHelper.updateConfiguration(configuration: configuration)
+        
+        NSLog("PspdfkitApiImpl: Annotation menu configuration updated successfully")
+        completion(.success(true))
+    }
+    
     private func setupAnalyticsClient(){
         if let messenger {
             flutterAnalyticsClient = FlutterAnalyticsClient(analyticsEventsCallback: AnalyticsEventsCallback(binaryMessenger: messenger, messageChannelSuffix: PspdfkitApiImpl.messageChannelSuffix))

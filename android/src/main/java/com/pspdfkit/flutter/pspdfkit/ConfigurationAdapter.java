@@ -92,6 +92,7 @@ class ConfigurationAdapter {
     // Annotation, Forms and Bookmark Options
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
     private static final String SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
+    private static final String SHOW_ANNOTATION_CREATION_ACTION = "showAnnotationCreationAction";
 
     private static final String SIGNATURE_SAVING_STRATEGY = "signatureSavingStrategy";
 
@@ -216,12 +217,16 @@ class ConfigurationAdapter {
     @NonNull
     private final PdfActivityConfiguration.Builder configuration;
     @Nullable
+    private final HashMap<String, Object> configurationMap;
+    @Nullable
     private String password = null;
     private boolean enableInstantComments = false;
+    private boolean hideAnnotationCreationButton = false;
 
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
         this.configuration = new PdfActivityConfiguration.Builder(context);
+        this.configurationMap = configurationMap;
         if (configurationMap != null && !configurationMap.isEmpty()) {
             String key = null;
 
@@ -288,6 +293,10 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, SHOW_ANNOTATION_LIST_ACTION, Boolean.class);
             if (key != null) {
                 configureShowAnnotationListAction((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, SHOW_ANNOTATION_CREATION_ACTION, Boolean.class);
+            if (key != null) {
+                configureShowAnnotationCreationAction((Boolean) configurationMap.get(key));
             }
             key = getKeyOfType(configurationMap, SHOW_PAGE_NUMBER_OVERLAY, Boolean.class);
             if (key != null) {
@@ -646,7 +655,9 @@ class ConfigurationAdapter {
     }
 
     private void configureImmersiveMode(boolean immersiveMode) {
-        configuration.useImmersiveMode(immersiveMode);
+        // useImmersiveMode() method removed in SDK 10.6.0 - immersive mode is now default (true)
+        // If developers need to disable it, they should set it to false in PdfActivityConfiguration
+        // configuration.useImmersiveMode(immersiveMode);
     }
 
     private void configureShowThumbnailBar(@NonNull String showThumbnailBar) {
@@ -680,6 +691,19 @@ class ConfigurationAdapter {
 
     private void configureShowAnnotationListAction(boolean showAnnotationListAction) {
         configuration.annotationListEnabled(showAnnotationListAction);
+    }
+
+    private void configureShowAnnotationCreationAction(boolean showAnnotationCreationAction) {
+        // Store the configuration to pass to the fragment
+        this.hideAnnotationCreationButton = !showAnnotationCreationAction;
+        
+        // Try to configure annotation editing at the PSPDFKit level
+        // Note: We keep annotation editing enabled but hide the button
+        if (!showAnnotationCreationAction) {
+            // We could potentially disable specific annotation tools here
+            // but we want to keep the editing functionality, just hide the main button
+            Log.d("ConfigurationAdapter", "Configured to hide annotation creation button");
+        }
     }
 
     private void configureShowPageLabels(boolean showPageLabels) {
@@ -935,7 +959,72 @@ class ConfigurationAdapter {
         throw new IllegalArgumentException("Undefined dart type conversion for " + clazz.getName());
     }
 
+    /**
+     * Extracts annotation menu configuration from the configuration map.
+     * 
+     * @return The annotation menu configuration data, or null if not configured
+     */
     @Nullable
+    public com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData getAnnotationMenuConfiguration() {
+        if (configurationMap == null) {
+            return null;
+        }
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Object> annotationMenuConfig = (Map<String, Object>) configurationMap.get("annotationMenuConfiguration");
+        
+        if (annotationMenuConfig == null) {
+            return null;
+        }
+        
+        try {
+            // Extract items to remove (now using enum indices)
+            @SuppressWarnings("unchecked")
+            List<Number> itemsToRemoveIndices = (List<Number>) annotationMenuConfig.get("itemsToRemove");
+            List<com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction> itemsToRemove = new ArrayList<>();
+            if (itemsToRemoveIndices != null) {
+                for (Number index : itemsToRemoveIndices) {
+                    com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction action = 
+                        com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction.values()[index.intValue()];
+                    itemsToRemove.add(action);
+                }
+            }
+            
+            // Extract items to disable (now using enum indices)
+            @SuppressWarnings("unchecked")
+            List<Number> itemsToDisableIndices = (List<Number>) annotationMenuConfig.get("itemsToDisable");
+            List<com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction> itemsToDisable = new ArrayList<>();
+            if (itemsToDisableIndices != null) {
+                for (Number index : itemsToDisableIndices) {
+                    com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction action = 
+                        com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction.values()[index.intValue()];
+                    itemsToDisable.add(action);
+                }
+            }
+            
+            // Extract other configuration options
+            Boolean showStylePicker = (Boolean) annotationMenuConfig.get("showStylePicker");
+            Boolean groupMarkupItems = (Boolean) annotationMenuConfig.get("groupMarkupItems");
+            Number maxVisibleItems = (Number) annotationMenuConfig.get("maxVisibleItems");
+            
+            return new com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData(
+                itemsToRemove,
+                itemsToDisable,
+                showStylePicker != null ? showStylePicker : true,
+                groupMarkupItems != null ? groupMarkupItems : false,
+                maxVisibleItems != null ? maxVisibleItems.longValue() : null
+            );
+            
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error parsing annotation menu configuration", e);
+            return null;
+        }
+    }
+
+    boolean shouldHideAnnotationCreationButton() {
+        return hideAnnotationCreationButton;
+    }
+
     String getPassword() {
         return password;
     }

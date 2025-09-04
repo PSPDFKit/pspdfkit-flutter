@@ -38,6 +38,14 @@ abstract class NutrientViewController {
     Map<AnnotationTool, AnnotationConfiguration> configurations,
   );
 
+  /// Sets the annotation menu configuration dynamically.
+  /// This allows you to update the annotation contextual menu configuration at runtime.
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  Future<bool?> setAnnotationMenuConfiguration(
+    AnnotationMenuConfiguration configuration,
+  );
+
   /// Adds an event listener for the given event.
   /// @param event. The event to listen for.
   Future<void> addEventListener(
@@ -75,18 +83,10 @@ abstract class NutrientViewController {
   /// Returns a [Future] that completes with the zoom scale of the given page.
   Future<double> getZoomScale(int pageIndex);
 
-  /// Enters annotation creation mode.
-  ///
-  /// If [annotationTool] is provided, that specific tool will be activated.
-  /// If no tool is provided, the default annotation tool will be used.
-  ///
-  /// Returns a [Future] that completes with a boolean indicating whether
-  /// entering annotation creation mode was successful.
+  /// Enters annotation creation mode for the specified annotation tool.
+  /// If no tool is specified, defaults to [AnnotationTool.inkPen].
   Future<bool?> enterAnnotationCreationMode([AnnotationTool? annotationTool]);
 
-  /// Exits annotation creation mode.
-  ///
-  /// Returns a [Future] that completes with a boolean indicating whether
-  /// exiting annotation creation mode was successful.
+  /// Exits annotation creation mode and returns to normal viewer interaction.
   Future<bool?> exitAnnotationCreationMode();
 }

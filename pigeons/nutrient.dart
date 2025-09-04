@@ -417,6 +417,15 @@ abstract class NutrientApi {
 
   /// Configure Nutrient Analytics events.
   void enableAnalyticsEvents(bool enable);
+
+  /// Sets the annotation menu configuration for the global presenter.
+  /// This configuration applies to all annotation menus in presented documents.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  @async
+  bool? setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration);
 }
 
 @FlutterApi()
@@ -566,6 +575,15 @@ abstract class NutrientViewControllerApi {
   /// exiting annotation creation mode was successful.
   @async
   bool? exitAnnotationCreationMode();
+
+  /// Sets the annotation menu configuration for the current view controller.
+  /// This configuration applies only to annotation menus in the current document view.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  @async
+  bool? setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration);
 }
 
 @HostApi()
@@ -714,4 +732,125 @@ abstract class AnalyticsEventsCallback {
 abstract class CustomToolbarCallbacks {
   /// Called when a custom toolbar item is tapped
   void onCustomToolbarItemTapped(String identifier);
+}
+
+/// Enumeration of default annotation menu actions that can be removed or disabled.
+///
+/// **Platform Support:**
+/// - All actions can be removed or disabled on both iOS and Android
+/// - Some system actions (copy/paste) may be harder to remove on iOS due to system restrictions
+enum AnnotationMenuAction {
+  /// Delete action - removes the annotation
+  /// - iOS: Part of UIMenu system actions
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_delete
+  delete,
+
+  /// Copy action - copies the annotation
+  /// - iOS: System copy action (may be harder to remove)
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_copy
+  copy,
+
+  /// Cut action - cuts the annotation to clipboard
+  /// - iOS: System cut action
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_cut
+  cut,
+
+  /// Color action - opens annotation color picker/inspector
+  /// - iOS: Style picker in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_picker
+  color,
+
+  /// Note action - opens annotation note editor
+  /// - iOS: Note action in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_annotation_note
+  note,
+
+  /// Undo action - undoes the last action
+  /// - iOS: Undo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_undo
+  undo,
+
+  /// Redo action - redoes the previously undone action
+  /// - iOS: Redo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_redo
+  redo,
+}
+
+/// Configuration data for annotation contextual menu
+///
+/// This class defines how annotation menus should be configured
+/// when displayed to users. It supports removing actions, disabling actions,
+/// and controlling visual presentation options.
+///
+/// **Usage Patterns**:
+/// - **Static Configuration**: Set once via [NutrientViewController.setAnnotationMenuConfiguration]
+///
+/// **Platform Compatibility**:
+/// - [itemsToRemove]: Supported on Android, iOS, and Web
+/// - [itemsToDisable]: Supported on Android, iOS, and Web
+/// - [showStylePicker]: Supported on Android and iOS
+/// - [groupMarkupItems]: iOS only (ignored on other platforms)
+/// - [maxVisibleItems]: Platform-dependent behavior
+class AnnotationMenuConfigurationData {
+  /// List of default annotation menu actions to remove completely from the menu.
+  ///
+  /// These actions will not appear in the contextual menu at all.
+  /// Use this when you want to completely hide certain functionality.
+  ///
+  /// **Example**: Remove delete action for read-only annotations
+  /// ```dart
+  /// itemsToRemove: [AnnotationMenuAction.delete]
+  /// ```
+  final List<AnnotationMenuAction> itemsToRemove;
+
+  /// List of default annotation menu actions to disable (show as grayed out).
+  ///
+  /// These actions will appear in the menu but will be non-interactive.
+  /// Use this when you want to show functionality exists but is temporarily unavailable.
+  ///
+  /// **Example**: Disable copy action for certain annotation types
+  /// ```dart
+  /// itemsToDisable: [AnnotationMenuAction.copy]
+  /// ```
+  final List<AnnotationMenuAction> itemsToDisable;
+
+  /// Whether to show the platform's default style picker in the annotation menu.
+  ///
+  /// When true, users can access color, thickness, and other style options
+  /// directly from the annotation menu.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Shows style picker as part of UIMenu
+  /// - **Android**: Shows annotation inspector/style picker
+  /// - **Web**: Shows color picker and basic style options
+  final bool showStylePicker;
+
+  /// Whether to group markup annotation actions together in the menu.
+  ///
+  /// When true, related markup actions (highlight, underline, etc.) are
+  /// visually grouped in the menu for better organization.
+  ///
+  /// **Platform Support**: iOS only (ignored on Android and Web)
+  final bool groupMarkupItems;
+
+  /// Maximum number of actions to show directly in the menu before creating overflow.
+  ///
+  /// When the number of available actions exceeds this limit, the platform
+  /// may create a submenu or overflow menu to accommodate additional actions.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Respects platform UI guidelines for menu length
+  /// - **Android**: Limited by toolbar space and screen size
+  /// - **Web**: Creates scrollable or paginated menu as needed
+  ///
+  /// **Note**: If null, the platform default behavior is used.
+  final int? maxVisibleItems;
+
+  AnnotationMenuConfigurationData({
+    required this.itemsToRemove,
+    required this.itemsToDisable,
+    required this.showStylePicker,
+    required this.groupMarkupItems,
+    this.maxVisibleItems,
+  });
 }

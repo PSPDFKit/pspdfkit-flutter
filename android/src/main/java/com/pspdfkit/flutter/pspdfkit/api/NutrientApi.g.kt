@@ -269,6 +269,64 @@ enum class NutrientEvent(val raw: Int) {
   }
 }
 
+/**
+ * Enumeration of default annotation menu actions that can be removed or disabled.
+ *
+ * **Platform Support:**
+ * - All actions can be removed or disabled on both iOS and Android
+ * - Some system actions (copy/paste) may be harder to remove on iOS due to system restrictions
+ */
+enum class AnnotationMenuAction(val raw: Int) {
+  /**
+   * Delete action - removes the annotation
+   * - iOS: Part of UIMenu system actions
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_delete
+   */
+  DELETE(0),
+  /**
+   * Copy action - copies the annotation
+   * - iOS: System copy action (may be harder to remove)
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_copy
+   */
+  COPY(1),
+  /**
+   * Cut action - cuts the annotation to clipboard
+   * - iOS: System cut action
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_cut
+   */
+  CUT(2),
+  /**
+   * Color action - opens annotation color picker/inspector
+   * - iOS: Style picker in UIMenu
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_picker
+   */
+  COLOR(3),
+  /**
+   * Note action - opens annotation note editor
+   * - iOS: Note action in UIMenu
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_annotation_note
+   */
+  NOTE(4),
+  /**
+   * Undo action - undoes the last action
+   * - iOS: Undo in UIMenu
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_undo
+   */
+  UNDO(5),
+  /**
+   * Redo action - redoes the previously undone action
+   * - iOS: Redo in UIMenu
+   * - Android: R.id.pspdf__annotation_editing_toolbar_item_redo
+   */
+  REDO(6);
+
+  companion object {
+    fun ofRaw(raw: Int): AnnotationMenuAction? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PdfRect (
   val x: Double,
@@ -478,6 +536,108 @@ data class PointF (
     )
   }
 }
+
+/**
+ * Configuration data for annotation contextual menu
+ *
+ * This class defines how annotation menus should be configured
+ * when displayed to users. It supports removing actions, disabling actions,
+ * and controlling visual presentation options.
+ *
+ * **Usage Patterns**:
+ * - **Static Configuration**: Set once via [NutrientViewController.setAnnotationMenuConfiguration]
+ *
+ * **Platform Compatibility**:
+ * - [itemsToRemove]: Supported on Android, iOS, and Web
+ * - [itemsToDisable]: Supported on Android, iOS, and Web
+ * - [showStylePicker]: Supported on Android and iOS
+ * - [groupMarkupItems]: iOS only (ignored on other platforms)
+ * - [maxVisibleItems]: Platform-dependent behavior
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AnnotationMenuConfigurationData (
+  /**
+   * List of default annotation menu actions to remove completely from the menu.
+   *
+   * These actions will not appear in the contextual menu at all.
+   * Use this when you want to completely hide certain functionality.
+   *
+   * **Example**: Remove delete action for read-only annotations
+   * ```dart
+   * itemsToRemove: [AnnotationMenuAction.delete]
+   * ```
+   */
+  val itemsToRemove: List<AnnotationMenuAction>,
+  /**
+   * List of default annotation menu actions to disable (show as grayed out).
+   *
+   * These actions will appear in the menu but will be non-interactive.
+   * Use this when you want to show functionality exists but is temporarily unavailable.
+   *
+   * **Example**: Disable copy action for certain annotation types
+   * ```dart
+   * itemsToDisable: [AnnotationMenuAction.copy]
+   * ```
+   */
+  val itemsToDisable: List<AnnotationMenuAction>,
+  /**
+   * Whether to show the platform's default style picker in the annotation menu.
+   *
+   * When true, users can access color, thickness, and other style options
+   * directly from the annotation menu.
+   *
+   * **Platform Behavior**:
+   * - **iOS**: Shows style picker as part of UIMenu
+   * - **Android**: Shows annotation inspector/style picker
+   * - **Web**: Shows color picker and basic style options
+   */
+  val showStylePicker: Boolean,
+  /**
+   * Whether to group markup annotation actions together in the menu.
+   *
+   * When true, related markup actions (highlight, underline, etc.) are
+   * visually grouped in the menu for better organization.
+   *
+   * **Platform Support**: iOS only (ignored on Android and Web)
+   */
+  val groupMarkupItems: Boolean,
+  /**
+   * Maximum number of actions to show directly in the menu before creating overflow.
+   *
+   * When the number of available actions exceeds this limit, the platform
+   * may create a submenu or overflow menu to accommodate additional actions.
+   *
+   * **Platform Behavior**:
+   * - **iOS**: Respects platform UI guidelines for menu length
+   * - **Android**: Limited by toolbar space and screen size
+   * - **Web**: Creates scrollable or paginated menu as needed
+   *
+   * **Note**: If null, the platform default behavior is used.
+   */
+  val maxVisibleItems: Long? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AnnotationMenuConfigurationData {
+      val itemsToRemove = pigeonVar_list[0] as List<AnnotationMenuAction>
+      val itemsToDisable = pigeonVar_list[1] as List<AnnotationMenuAction>
+      val showStylePicker = pigeonVar_list[2] as Boolean
+      val groupMarkupItems = pigeonVar_list[3] as Boolean
+      val maxVisibleItems = pigeonVar_list[4] as Long?
+      return AnnotationMenuConfigurationData(itemsToRemove, itemsToDisable, showStylePicker, groupMarkupItems, maxVisibleItems)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      itemsToRemove,
+      itemsToDisable,
+      showStylePicker,
+      groupMarkupItems,
+      maxVisibleItems,
+    )
+  }
+}
 private open class NutrientApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -527,33 +687,43 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
         }
       }
       138.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PdfRect.fromList(it)
+        return (readValue(buffer) as Long?)?.let {
+          AnnotationMenuAction.ofRaw(it.toInt())
         }
       }
       139.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PageInfo.fromList(it)
+          PdfRect.fromList(it)
         }
       }
       140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          DocumentSaveOptions.fromList(it)
+          PageInfo.fromList(it)
         }
       }
       141.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PdfFormOption.fromList(it)
+          DocumentSaveOptions.fromList(it)
         }
       }
       142.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          FormFieldData.fromList(it)
+          PdfFormOption.fromList(it)
         }
       }
       143.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          FormFieldData.fromList(it)
+        }
+      }
+      144.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           PointF.fromList(it)
+        }
+      }
+      145.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          AnnotationMenuConfigurationData.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -597,28 +767,36 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
         stream.write(137)
         writeValue(stream, value.raw)
       }
-      is PdfRect -> {
+      is AnnotationMenuAction -> {
         stream.write(138)
-        writeValue(stream, value.toList())
+        writeValue(stream, value.raw)
       }
-      is PageInfo -> {
+      is PdfRect -> {
         stream.write(139)
         writeValue(stream, value.toList())
       }
-      is DocumentSaveOptions -> {
+      is PageInfo -> {
         stream.write(140)
         writeValue(stream, value.toList())
       }
-      is PdfFormOption -> {
+      is DocumentSaveOptions -> {
         stream.write(141)
         writeValue(stream, value.toList())
       }
-      is FormFieldData -> {
+      is PdfFormOption -> {
         stream.write(142)
         writeValue(stream, value.toList())
       }
-      is PointF -> {
+      is FormFieldData -> {
         stream.write(143)
+        writeValue(stream, value.toList())
+      }
+      is PointF -> {
+        stream.write(144)
+        writeValue(stream, value.toList())
+      }
+      is AnnotationMenuConfigurationData -> {
+        stream.write(145)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -679,6 +857,14 @@ interface NutrientApi {
   fun generatePdfFromHtmlUri(htmlUri: String, outPutFile: String, options: Map<String, Any>?, callback: (Result<String?>) -> Unit)
   /** Configure Nutrient Analytics events. */
   fun enableAnalyticsEvents(enable: Boolean)
+  /**
+   * Sets the annotation menu configuration for the global presenter.
+   * This configuration applies to all annotation menus in presented documents.
+   *
+   * @param configuration The annotation menu configuration to apply.
+   * @return True if the configuration was set successfully, false otherwise.
+   */
+  fun setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, callback: (Result<Boolean?>) -> Unit)
 
   companion object {
     /** The codec used by NutrientApi. */
@@ -1317,6 +1503,26 @@ interface NutrientApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationMenuConfiguration$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val configurationArg = args[0] as AnnotationMenuConfigurationData
+            api.setAnnotationMenuConfiguration(configurationArg) { result: Result<Boolean?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -1635,6 +1841,14 @@ interface NutrientViewControllerApi {
    * exiting annotation creation mode was successful.
    */
   fun exitAnnotationCreationMode(callback: (Result<Boolean?>) -> Unit)
+  /**
+   * Sets the annotation menu configuration for the current view controller.
+   * This configuration applies only to annotation menus in the current document view.
+   *
+   * @param configuration The annotation menu configuration to apply.
+   * @return True if the configuration was set successfully, false otherwise.
+   */
+  fun setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, callback: (Result<Boolean?>) -> Unit)
 
   companion object {
     /** The codec used by NutrientViewControllerApi. */
@@ -2027,6 +2241,26 @@ interface NutrientViewControllerApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.exitAnnotationCreationMode{ result: Result<Boolean?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationMenuConfiguration$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val configurationArg = args[0] as AnnotationMenuConfigurationData
+            api.setAnnotationMenuConfiguration(configurationArg) { result: Result<Boolean?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

@@ -29,6 +29,9 @@ class NutrientViewControllerWeb extends NutrientViewController
   // Key: NutrientWebEvent, Value: Map<Original Dart Callback, Wrapped JS Callback>
   final Map<NutrientWebEvent, Map<Function, Function>> _webEventListeners = {};
 
+  // Map to track legacy NutrientEvent listeners (for backward compatibility)
+  final Map<NutrientEvent, Function> _legacyEventListeners = {};
+
   @override
   Future<bool?> importXfdf(String xfdfPath) async {
     await pspdfkitInstance.importXfdf(xfdfPath);
@@ -51,15 +54,47 @@ class NutrientViewControllerWeb extends NutrientViewController
   }
 
   @override
+  Future<bool?> setAnnotationMenuConfiguration(
+    AnnotationMenuConfiguration configuration,
+  ) {
+    // Web implementation: annotation menu configuration is handled differently on web
+    // This would need to be implemented using the web-specific API
+    // For now, we'll return true to indicate the API is available
+    if (kDebugMode) {
+      print(
+          'setAnnotationMenuConfiguration called on web - not yet implemented');
+    }
+    return Future.value(true);
+  }
+
+  @override
   Future<bool?> setAnnotationConfigurations(
       Map<AnnotationTool, AnnotationConfiguration> configurations) async {
     throw UnimplementedError('This method is not supported on the web!');
   }
 
   void dispose() {
-    // Remove all listeners before unloading?
-    // It might be safer to let users remove listeners explicitly.
-    _webEventListeners.clear(); // Clear listener map on dispose
+    // Remove all web event listeners before unloading
+    final eventsCopy =
+        Map<NutrientWebEvent, Map<Function, Function>>.from(_webEventListeners);
+    for (final eventEntry in eventsCopy.entries) {
+      final event = eventEntry.key;
+      final callbacksCopy = Map<Function, Function>.from(eventEntry.value);
+      for (final callbackEntry in callbacksCopy.entries) {
+        final originalCallback = callbackEntry.key as Function(dynamic);
+        removeWebEventListener(event, originalCallback);
+      }
+    }
+    _webEventListeners.clear();
+
+    // Remove all legacy event listeners
+    final legacyEventsCopy =
+        Map<NutrientEvent, Function>.from(_legacyEventListeners);
+    for (final eventEntry in legacyEventsCopy.entries) {
+      removeEventListener(eventEntry.key);
+    }
+    _legacyEventListeners.clear();
+
     NutrientWeb.unload(pspdfkitInstance.jsObject);
   }
 
@@ -67,23 +102,32 @@ class NutrientViewControllerWeb extends NutrientViewController
   Future<void> addEventListener(
       NutrientEvent event, Function(dynamic) callback) async {
     // Note: This uses the older NutrientEvent enum.
-    // The underlying instance call is the same, so use the common processor.
-    pspdfkitInstance.addEventListener(event.webName,
-        allowInterop((dynamic data) {
+    // Store the wrapped function for later removal
+    final wrappedCallback = allowInterop((dynamic data) {
       _processAndInvokeCallback(data, callback, event);
-    }));
+    });
+
+    _legacyEventListeners[event] = wrappedCallback;
+    pspdfkitInstance.addEventListener(event.webName, wrappedCallback);
   }
 
   @override
   Future<void> removeEventListener(NutrientEvent event) async {
-    // We don't have a mechanism to remove listeners added via the old
-    // addEventListener method as we didn't store the wrapped callbacks for it.
-    // Ideally, users should migrate to addWebEventListener/removeWebEventListener.
-    if (kDebugMode) {
-      print(
-          'Warning: removeEventListener for NutrientEvent ($event) is not supported on web. Use addWebEventListener/removeWebEventListener.');
+    final wrappedCallback = _legacyEventListeners[event];
+    if (wrappedCallback != null) {
+      try {
+        pspdfkitInstance.removeEventListener(event.webName, wrappedCallback);
+        _legacyEventListeners.remove(event);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error removing legacy event listener for $event: $e');
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print('Warning: No legacy event listener found for $event');
+      }
     }
-    // No-op on web for listeners added via the old method.
   }
 
   @override

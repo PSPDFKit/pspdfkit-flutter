@@ -9,6 +9,7 @@
 package com.pspdfkit.flutter.pspdfkit
 
 import android.graphics.RectF
+import android.util.Log
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.document.processor.PdfProcessor
@@ -62,13 +63,56 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     fun setEventDispatcher(eventDispatcher: FlutterEventsHelper) {
         this.eventDispatcher = eventDispatcher
     }
+    
+    /**
+     * Check if this view implementation has been properly disposed
+     * 
+     * @return true if disposed, false if still active
+     */
+    fun isDisposed(): Boolean {
+        return pdfUiFragment == null && eventDispatcher == null
+    }
+    
+    /**
+     * Get the count of registered event listeners for debugging purposes
+     * 
+     * @return the number of registered listeners, or -1 if eventDispatcher is null
+     */
+    fun getEventListenerCount(): Int {
+        return eventDispatcher?.getRegisteredListenersCount() ?: -1
+    }
 
     /**
      * Disposes the controller and releases all resources.
+     * Performs comprehensive cleanup to prevent memory leaks.
      */
     fun dispose() {
-        pdfUiFragment = null
-        disposable?.dispose()
+        try {
+            // Clean up event listeners first, before nullifying pdfUiFragment
+            eventDispatcher?.removeAllEventListeners(pdfUiFragment)
+            
+            // Dispose of any ongoing operations
+            disposable?.dispose()
+            disposable = null
+            
+            // Clear references to prevent memory leaks
+            eventDispatcher = null
+            pdfUiFragment = null
+        } catch (e: Exception) {
+            // Log the error but don't throw - we want dispose to always complete
+            android.util.Log.w("PspdfkitViewImpl", "Error during dispose", e)
+            
+            // Ensure critical cleanup still happens even if there's an error
+            try {
+                disposable?.dispose()
+            } catch (disposableError: Exception) {
+                android.util.Log.w("PspdfkitViewImpl", "Error disposing disposable", disposableError)
+            }
+            
+            disposable = null
+            eventDispatcher = null
+            pdfUiFragment = null
+        }
     }
 
     override fun setFormFieldValue(
@@ -397,10 +441,10 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         // Get the annotation type and processing mode.
         val annotationType = annotationTypeFromString(
-            type.name.toLowerCase(Locale.getDefault())
+            type.name.lowercase()
         )
         val annotationProcessingMode =
-            processModeFromString(processingMode.name.toLowerCase(Locale.getDefault()))
+            processModeFromString(processingMode.name.lowercase())
         val outputPath = File(destinationPath)
 
         if (outputPath.parentFile?.exists() != true && outputPath.parentFile?.mkdirs() != true) {
@@ -634,10 +678,8 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     }
 
     override fun removeEventListener(event: NutrientEvent) {
-        val fragment = pdfUiFragment
-        if (fragment != null && eventDispatcher != null) {
-            eventDispatcher?.removeEventListener(fragment, event)
-        }
+        // Use defensive null-safe removal
+        eventDispatcher?.removeEventListener(pdfUiFragment, event)
     }
 
     override fun enterAnnotationCreationMode(
@@ -723,6 +765,47 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                 Result.failure(
                     NutrientApiError(
                         "Error exiting annotation creation mode",
+                        e.message ?: "Unknown error"
+                    )
+                )
+            )
+        }
+    }
+
+    override fun setAnnotationMenuConfiguration(
+        configuration: com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        try {
+            val pdfFragment = pdfUiFragment as? FlutterPdfUiFragment
+            if (pdfFragment == null) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error setting annotation menu configuration",
+                            "PDF fragment is null or not a FlutterPdfUiFragment"
+                        )
+                    )
+                )
+                return
+            }
+
+            // Create a new annotation menu handler with the updated configuration
+            val handler = com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler(
+                pdfFragment.requireContext(),
+                configuration
+            )
+            
+            // Update the fragment's annotation menu handler
+            // This will be used by the fragment's onPrepareContextualToolbar method
+            pdfFragment.setAnnotationMenuHandler(handler)
+
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(
+                Result.failure(
+                    NutrientApiError(
+                        "Error setting annotation menu configuration",
                         e.message ?: "Unknown error"
                     )
                 )

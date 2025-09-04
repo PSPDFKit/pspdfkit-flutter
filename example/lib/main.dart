@@ -35,7 +35,7 @@ void main() {
       print('Analytics event: $eventName with attributes: $attributes');
     }
   };
-  runApp(const MyApp());
+  runApp(const SafeArea(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

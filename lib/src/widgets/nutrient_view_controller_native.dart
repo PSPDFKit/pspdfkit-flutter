@@ -86,6 +86,23 @@ class NutrientViewControllerNative
   }
 
   @override
+  Future<bool?> setAnnotationMenuConfiguration(
+    AnnotationMenuConfiguration configuration,
+  ) {
+    // Convert AnnotationMenuConfiguration to AnnotationMenuConfigurationData for Pigeon API
+    final configData = AnnotationMenuConfigurationData(
+      itemsToRemove: configuration.itemsToRemove.toList(),
+      itemsToDisable: configuration.itemsToDisable.toList(),
+      showStylePicker: configuration.showStylePicker,
+      groupMarkupItems: configuration.groupMarkupItems,
+      maxVisibleItems: configuration.maxVisibleItems,
+    );
+
+    return _pspdfkitWidgetControllerApi
+        .setAnnotationMenuConfiguration(configData);
+  }
+
+  @override
   Future<bool?> setAnnotationConfigurations(
       Map<AnnotationTool, AnnotationConfiguration> configurations) {
     var config = configurations.map((key, value) {

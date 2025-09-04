@@ -28,6 +28,7 @@ import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.exceptions.NutrientException
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
 import com.pspdfkit.flutter.pspdfkit.annotations.FlutterAnnotationPresetConfiguration
+import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData
 import com.pspdfkit.flutter.pspdfkit.api.AndroidPermissionStatus
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApi
@@ -874,6 +875,20 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         intent.addCategory(Intent.CATEGORY_DEFAULT)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         activity.startActivity(intent)
+    }
+
+    override fun setAnnotationMenuConfiguration(
+        configuration: AnnotationMenuConfigurationData,
+        callback: (Result<Boolean?>) -> Unit
+    ) {
+        try {
+            // Store the configuration globally for use with PspdfkitPluginMethodCallHandler (deprecated)
+            GlobalAnnotationMenuConfiguration.setConfiguration(configuration)
+            
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(Result.failure(NutrientApiError("Error setting annotation menu configuration", e.message)))
+        }
     }
 
     private val instantActivity: FlutterInstantPdfActivity

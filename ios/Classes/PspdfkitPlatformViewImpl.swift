@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UIKit
 import PSPDFKit
 
 @objc(PspdfkitPlatformViewImpl)
@@ -19,7 +20,9 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
     private var viewId: String? = nil;
     private var eventsHelper: FlutterEventsHelper? = nil;
     private var customToolbarItems: [[String: Any]] = [];
+    private var annotationMenuConfiguration: AnnotationMenuConfigurationData? = nil;
     private var lastReportedPageIndex: Int? = nil;
+    
     
     @objc public func setViewController(controller: PDFViewController){
         self.pdfViewController = controller
@@ -28,6 +31,9 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
         // Set the host view for the annotation toolbar controller
         controller.annotationToolbarController?.updateHostView(nil, container: nil, viewController: controller)
         CustomToolbarHelper.setupCustomToolbarItems(for: pdfViewController!, customToolbarItems:customToolbarItems, callbacks: customToolbarCallbacks)
+        
+        // Setup annotation menu helper with configuration
+        AnnotationMenuHelper.setupAnnotationMenu(configuration: annotationMenuConfiguration)
     }
     
     public func pdfViewController(_ pdfController: PDFViewController, didChange document: Document?) {
@@ -42,11 +48,17 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
     }
     
     public func pdfViewController(_ pdfController: PDFViewController, didSelect annotations: [Annotation], on pageView: PDFPageView) {
+        // Update annotation menu helper with selected annotations
+        AnnotationMenuHelper.updateSelectedAnnotations(annotations)
+        
         // Call the event helper to notify the listeners.
         eventsHelper?.annotationSelected(annotations: annotations)
     }
     
     public func pdfViewController(_ pdfController: PDFViewController, didDeselect annotations: [Annotation], on pageView: PDFPageView) {
+        // Clear selected annotations in menu helper
+        AnnotationMenuHelper.updateSelectedAnnotations([])
+        
         // Call the event helper to notify the listeners.
         eventsHelper?.annotationDeselected(annotations: annotations)
     }
@@ -360,10 +372,6 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
                         pdfViewController.annotationStateManager.toggleState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
                         completion(.success(true))
                     }
-                    
-                    pdfViewController.annotationStateManager.toggleState(toolWithVariant.annotationTool, variant: toolWithVariant.variant)
-                    // Ensure the annotation toolbar is visible
-                    completion(.success(true))
                 } else {
                     // Default to ink pen if the tool is not supported
                     let defaultTool = AnnotationToolWithVariant(annotationTool: .ink, variant: nil)
@@ -407,6 +415,34 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
         }
     }
     
+    // MARK: - Annotation Menu Delegate Methods
+    
+    
+    /// Provides custom contextual menu for annotations (iOS 13+)
+    @available(iOS 13.0, *)
+    public func pdfViewController(_ pdfController: PDFViewController, menuForAnnotations annotations: [Annotation], onPageView pageView: PDFPageView, appearance: EditMenuAppearance, suggestedMenu: UIMenu) -> UIMenu {
+        
+        // If no annotations are selected, return the suggested menu
+        guard !annotations.isEmpty, let firstAnnotation = annotations.first else {
+            return suggestedMenu
+        }
+        
+        // Apply static configuration if available
+        
+        if let configuration = self.annotationMenuConfiguration {
+            AnnotationMenuHelper.updateConfiguration(configuration: configuration)
+            AnnotationMenuHelper.updateSelectedAnnotations(annotations)
+            
+            // Create custom menu with the static configuration
+            if let customMenu = AnnotationMenuHelper.createContextualMenu(for: firstAnnotation, defaultActions: suggestedMenu.children) {
+                return customMenu
+            }
+        }
+        
+        // Return the default suggested menu if no custom menu is configured
+        return suggestedMenu
+    }
+    
     public func pdfViewController(_ pdfController: PDFViewController, shouldShow controller: UIViewController, options: [String: Any]? = nil, animated: Bool) -> Bool {
         let stampController = PSPDFChildViewControllerForClass(controller, StampViewController.self) as? StampViewController
         // Check if custom default stamps are configured and disable date stamps only if they are
@@ -429,6 +465,78 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
           }
     }
     
+    /// Updates the annotation menu configuration (Pigeon API method)
+    /// - Parameters:
+    ///   - configuration: The new annotation menu configuration
+    ///   - completion: Completion callback with success/failure result
+    func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void) {
+        do {
+            NSLog("PspdfkitPlatformViewImpl: setAnnotationMenuConfiguration called")
+            
+            // Update the stored configuration - this will be applied when the menu is actually shown
+            self.annotationMenuConfiguration = configuration
+            
+            // Immediately update the annotation menu helper with the new configuration
+            // This ensures that any currently visible menus or immediate menu requests use the new config
+            AnnotationMenuHelper.updateConfiguration(configuration: configuration)
+            
+            NSLog("PspdfkitPlatformViewImpl: Annotation menu configuration updated successfully")
+            
+            // Return success
+            completion(.success(true))
+        } catch {
+            NSLog("PspdfkitPlatformViewImpl: Error updating annotation menu configuration: \(error)")
+            completion(.failure(error))
+        }
+    }
+
+    /// Updates the annotation menu configuration (internal method)
+    /// - Parameter configuration: The new annotation menu configuration
+    func setAnnotationMenuConfiguration(_ configuration: AnnotationMenuConfigurationData?) {
+        self.annotationMenuConfiguration = configuration
+        
+        // Update the annotation menu helper
+        AnnotationMenuHelper.setupAnnotationMenu(configuration: configuration)
+    }
+    
+    /// Updates the annotation menu configuration from a dictionary (called from Objective-C)
+    /// - Parameter dictionary: The dictionary containing annotation menu configuration
+    @objc public func setAnnotationMenuConfigurationFromDictionary(_ dictionary: [String: Any]) {
+        do {
+            // Convert dictionary to AnnotationMenuConfigurationData
+            let configuration = try parseAnnotationMenuConfiguration(from: dictionary)
+            setAnnotationMenuConfiguration(configuration)
+        } catch {
+            print("Warning: Failed to parse annotation menu configuration: \(error)")
+        }
+    }
+    
+    /// Parses annotation menu configuration from a dictionary
+    private func parseAnnotationMenuConfiguration(from dictionary: [String: Any]) throws -> AnnotationMenuConfigurationData {
+        let itemsToRemoveArray = dictionary["itemsToRemove"] as? [Int] ?? []
+        let itemsToDisableArray = dictionary["itemsToDisable"] as? [Int] ?? []
+        let showStylePicker = dictionary["showStylePicker"] as? Bool ?? true
+        let groupMarkupItems = dictionary["groupMarkupItems"] as? Bool ?? false
+        let maxVisibleItems = dictionary["maxVisibleItems"] as? Int64
+        
+        // Convert enum indices to AnnotationMenuAction
+        let itemsToRemove: [AnnotationMenuAction] = itemsToRemoveArray.compactMap { index in
+            return AnnotationMenuAction(rawValue: index)
+        }
+        
+        let itemsToDisable: [AnnotationMenuAction] = itemsToDisableArray.compactMap { index in
+            return AnnotationMenuAction(rawValue: index)
+        }
+        
+        return AnnotationMenuConfigurationData(
+            itemsToRemove: itemsToRemove,
+            itemsToDisable: itemsToDisable,
+            showStylePicker: showStylePicker,
+            groupMarkupItems: groupMarkupItems,
+            maxVisibleItems: maxVisibleItems
+        )
+    }
+    
     @objc public func register( binaryMessenger: FlutterBinaryMessenger, viewId: String, customToolbarItems: [[String: Any]]){
         self.viewId = viewId
         pspdfkitWidgetCallbacks = NutrientViewCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "widget.callbacks.\(viewId)")
@@ -442,16 +550,29 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
         
         customToolbarCallbacks = CustomToolbarCallbacks(binaryMessenger: binaryMessenger, messageChannelSuffix: "customToolbar.callbacks.\(viewId)")
         self.customToolbarItems = customToolbarItems
+        
     }
     
     @objc public func unRegister(binaryMessenger: FlutterBinaryMessenger){
         NotificationCenter.default.removeObserver(self)
         pspdfkitWidgetCallbacks = nil
         customToolbarCallbacks = nil
+        annotationMenuConfiguration = nil
         lastReportedPageIndex = nil
-        NutrientViewControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: nil, messageChannelSuffix: viewId ?? "")
-        if eventsHelper != nil {
-            eventsHelper = nil
+        
+        // Clean up annotation menu helper
+        AnnotationMenuHelper.cleanup()
+        
+        // Perform comprehensive cleanup of events helper
+        if let eventsHelper = eventsHelper {
+            eventsHelper.cleanupAllListeners()
         }
+        eventsHelper = nil
+        
+        // Clean up PDF view controller delegate
+        pdfViewController?.delegate = nil
+        pdfViewController = nil
+        
+        NutrientViewControllerApiSetup.setUp(binaryMessenger: binaryMessenger, api: nil, messageChannelSuffix: viewId ?? "")
     }
 }

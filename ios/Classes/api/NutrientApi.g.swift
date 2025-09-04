@@ -234,6 +234,42 @@ enum NutrientEvent: Int {
   case textSelectionChanged = 8
 }
 
+/// Enumeration of default annotation menu actions that can be removed or disabled.
+///
+/// **Platform Support:**
+/// - All actions can be removed or disabled on both iOS and Android
+/// - Some system actions (copy/paste) may be harder to remove on iOS due to system restrictions
+enum AnnotationMenuAction: Int {
+  /// Delete action - removes the annotation
+  /// - iOS: Part of UIMenu system actions
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_delete
+  case delete = 0
+  /// Copy action - copies the annotation
+  /// - iOS: System copy action (may be harder to remove)
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_copy
+  case copy = 1
+  /// Cut action - cuts the annotation to clipboard
+  /// - iOS: System cut action
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_cut
+  case cut = 2
+  /// Color action - opens annotation color picker/inspector
+  /// - iOS: Style picker in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_picker
+  case color = 3
+  /// Note action - opens annotation note editor
+  /// - iOS: Note action in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_annotation_note
+  case note = 4
+  /// Undo action - undoes the last action
+  /// - iOS: Undo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_undo
+  case undo = 5
+  /// Redo action - redoes the previously undone action
+  /// - iOS: Redo in UIMenu
+  /// - Android: R.id.pspdf__annotation_editing_toolbar_item_redo
+  case redo = 6
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PdfRect {
   var x: Double
@@ -484,6 +520,102 @@ struct PointF {
   }
 }
 
+/// Configuration data for annotation contextual menu
+///
+/// This class defines how annotation menus should be configured
+/// when displayed to users. It supports removing actions, disabling actions,
+/// and controlling visual presentation options.
+///
+/// **Usage Patterns**:
+/// - **Static Configuration**: Set once via [NutrientViewController.setAnnotationMenuConfiguration]
+///
+/// **Platform Compatibility**:
+/// - [itemsToRemove]: Supported on Android, iOS, and Web
+/// - [itemsToDisable]: Supported on Android, iOS, and Web
+/// - [showStylePicker]: Supported on Android and iOS
+/// - [groupMarkupItems]: iOS only (ignored on other platforms)
+/// - [maxVisibleItems]: Platform-dependent behavior
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct AnnotationMenuConfigurationData {
+  /// List of default annotation menu actions to remove completely from the menu.
+  ///
+  /// These actions will not appear in the contextual menu at all.
+  /// Use this when you want to completely hide certain functionality.
+  ///
+  /// **Example**: Remove delete action for read-only annotations
+  /// ```dart
+  /// itemsToRemove: [AnnotationMenuAction.delete]
+  /// ```
+  var itemsToRemove: [AnnotationMenuAction]
+  /// List of default annotation menu actions to disable (show as grayed out).
+  ///
+  /// These actions will appear in the menu but will be non-interactive.
+  /// Use this when you want to show functionality exists but is temporarily unavailable.
+  ///
+  /// **Example**: Disable copy action for certain annotation types
+  /// ```dart
+  /// itemsToDisable: [AnnotationMenuAction.copy]
+  /// ```
+  var itemsToDisable: [AnnotationMenuAction]
+  /// Whether to show the platform's default style picker in the annotation menu.
+  ///
+  /// When true, users can access color, thickness, and other style options
+  /// directly from the annotation menu.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Shows style picker as part of UIMenu
+  /// - **Android**: Shows annotation inspector/style picker
+  /// - **Web**: Shows color picker and basic style options
+  var showStylePicker: Bool
+  /// Whether to group markup annotation actions together in the menu.
+  ///
+  /// When true, related markup actions (highlight, underline, etc.) are
+  /// visually grouped in the menu for better organization.
+  ///
+  /// **Platform Support**: iOS only (ignored on Android and Web)
+  var groupMarkupItems: Bool
+  /// Maximum number of actions to show directly in the menu before creating overflow.
+  ///
+  /// When the number of available actions exceeds this limit, the platform
+  /// may create a submenu or overflow menu to accommodate additional actions.
+  ///
+  /// **Platform Behavior**:
+  /// - **iOS**: Respects platform UI guidelines for menu length
+  /// - **Android**: Limited by toolbar space and screen size
+  /// - **Web**: Creates scrollable or paginated menu as needed
+  ///
+  /// **Note**: If null, the platform default behavior is used.
+  var maxVisibleItems: Int64? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> AnnotationMenuConfigurationData? {
+    let itemsToRemove = pigeonVar_list[0] as! [AnnotationMenuAction]
+    let itemsToDisable = pigeonVar_list[1] as! [AnnotationMenuAction]
+    let showStylePicker = pigeonVar_list[2] as! Bool
+    let groupMarkupItems = pigeonVar_list[3] as! Bool
+    let maxVisibleItems: Int64? = nilOrValue(pigeonVar_list[4])
+
+    return AnnotationMenuConfigurationData(
+      itemsToRemove: itemsToRemove,
+      itemsToDisable: itemsToDisable,
+      showStylePicker: showStylePicker,
+      groupMarkupItems: groupMarkupItems,
+      maxVisibleItems: maxVisibleItems
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      itemsToRemove,
+      itemsToDisable,
+      showStylePicker,
+      groupMarkupItems,
+      maxVisibleItems,
+    ]
+  }
+}
+
 private class NutrientApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -542,17 +674,25 @@ private class NutrientApiPigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 138:
-      return PdfRect.fromList(self.readValue() as! [Any?])
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return AnnotationMenuAction(rawValue: enumResultAsInt)
+      }
+      return nil
     case 139:
-      return PageInfo.fromList(self.readValue() as! [Any?])
+      return PdfRect.fromList(self.readValue() as! [Any?])
     case 140:
-      return DocumentSaveOptions.fromList(self.readValue() as! [Any?])
+      return PageInfo.fromList(self.readValue() as! [Any?])
     case 141:
-      return PdfFormOption.fromList(self.readValue() as! [Any?])
+      return DocumentSaveOptions.fromList(self.readValue() as! [Any?])
     case 142:
-      return FormFieldData.fromList(self.readValue() as! [Any?])
+      return PdfFormOption.fromList(self.readValue() as! [Any?])
     case 143:
+      return FormFieldData.fromList(self.readValue() as! [Any?])
+    case 144:
       return PointF.fromList(self.readValue() as! [Any?])
+    case 145:
+      return AnnotationMenuConfigurationData.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -588,23 +728,29 @@ private class NutrientApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NutrientEvent {
       super.writeByte(137)
       super.writeValue(value.rawValue)
-    } else if let value = value as? PdfRect {
+    } else if let value = value as? AnnotationMenuAction {
       super.writeByte(138)
-      super.writeValue(value.toList())
-    } else if let value = value as? PageInfo {
+      super.writeValue(value.rawValue)
+    } else if let value = value as? PdfRect {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? DocumentSaveOptions {
+    } else if let value = value as? PageInfo {
       super.writeByte(140)
       super.writeValue(value.toList())
-    } else if let value = value as? PdfFormOption {
+    } else if let value = value as? DocumentSaveOptions {
       super.writeByte(141)
       super.writeValue(value.toList())
-    } else if let value = value as? FormFieldData {
+    } else if let value = value as? PdfFormOption {
       super.writeByte(142)
       super.writeValue(value.toList())
-    } else if let value = value as? PointF {
+    } else if let value = value as? FormFieldData {
       super.writeByte(143)
+      super.writeValue(value.toList())
+    } else if let value = value as? PointF {
+      super.writeByte(144)
+      super.writeValue(value.toList())
+    } else if let value = value as? AnnotationMenuConfigurationData {
+      super.writeByte(145)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -673,6 +819,12 @@ protocol NutrientApi {
   func generatePdfFromHtmlUri(htmlUri: String, outPutFile: String, options: [String: Any]?, completion: @escaping (Result<String?, Error>) -> Void)
   /// Configure Nutrient Analytics events.
   func enableAnalyticsEvents(enable: Bool) throws
+  /// Sets the annotation menu configuration for the global presenter.
+  /// This configuration applies to all annotation menus in presented documents.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1228,6 +1380,28 @@ class NutrientApiSetup {
     } else {
       enableAnalyticsEventsChannel.setMessageHandler(nil)
     }
+    /// Sets the annotation menu configuration for the global presenter.
+    /// This configuration applies to all annotation menus in presented documents.
+    ///
+    /// @param configuration The annotation menu configuration to apply.
+    /// @return True if the configuration was set successfully, false otherwise.
+    let setAnnotationMenuConfigurationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationMenuConfiguration\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setAnnotationMenuConfigurationChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let configurationArg = args[0] as! AnnotationMenuConfigurationData
+        api.setAnnotationMenuConfiguration(configuration: configurationArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setAnnotationMenuConfigurationChannel.setMessageHandler(nil)
+    }
   }
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
@@ -1560,6 +1734,12 @@ protocol NutrientViewControllerApi {
   /// Returns a [Future] that completes with a boolean indicating whether
   /// exiting annotation creation mode was successful.
   func exitAnnotationCreationMode(completion: @escaping (Result<Bool?, Error>) -> Void)
+  /// Sets the annotation menu configuration for the current view controller.
+  /// This configuration applies only to annotation menus in the current document view.
+  ///
+  /// @param configuration The annotation menu configuration to apply.
+  /// @return True if the configuration was set successfully, false otherwise.
+  func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -1944,6 +2124,28 @@ class NutrientViewControllerApiSetup {
       }
     } else {
       exitAnnotationCreationModeChannel.setMessageHandler(nil)
+    }
+    /// Sets the annotation menu configuration for the current view controller.
+    /// This configuration applies only to annotation menus in the current document view.
+    ///
+    /// @param configuration The annotation menu configuration to apply.
+    /// @return True if the configuration was set successfully, false otherwise.
+    let setAnnotationMenuConfigurationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationMenuConfiguration\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setAnnotationMenuConfigurationChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let configurationArg = args[0] as! AnnotationMenuConfigurationData
+        api.setAnnotationMenuConfiguration(configuration: configurationArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setAnnotationMenuConfigurationChannel.setMessageHandler(nil)
     }
   }
 }

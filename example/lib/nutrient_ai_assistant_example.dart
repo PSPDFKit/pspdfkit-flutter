@@ -19,7 +19,7 @@ class _NutrientAiAssistantExampleState
   final _uuid = const Uuid();
 
   // Configuration values
-  final String _serverUrl = 'http://192.168.100.109:4000';
+  final String _serverUrl = '<your-server-url>';
   String _jwt = '';
   String _sessionId = 'random-session';
   final String _userId = 'random-user';
