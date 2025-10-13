@@ -1,0 +1,582 @@
+///  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+///
+///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+///  This notice may not be removed from this file.
+
+import 'package:flutter/material.dart';
+import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'widgets/annotation_property_editor.dart';
+
+/// Example demonstrating the Annotation Properties API.
+///
+/// This example shows how to:
+/// - Get annotation properties without losing attachment data
+/// - Update properties safely using the new API
+/// - Use annotation selection events
+/// - Handle custom data and flags
+///
+/// The key improvement over the deprecated updateAnnotation method is that
+/// this API preserves attachment data for FileAnnotation and ImageAnnotation.
+class NutrientAnnotationPropertiesExample extends StatefulWidget {
+  final String documentPath;
+
+  const NutrientAnnotationPropertiesExample({
+    Key? key,
+    required this.documentPath,
+  }) : super(key: key);
+
+  @override
+  State<NutrientAnnotationPropertiesExample> createState() =>
+      _NutrientAnnotationPropertiesExampleState();
+}
+
+class _NutrientAnnotationPropertiesExampleState
+    extends State<NutrientAnnotationPropertiesExample> {
+  PdfDocument? _document;
+  NutrientViewController? _controller;
+  Annotation? _selectedAnnotation;
+  AnnotationProperties? _selectedProperties;
+  bool _isPropertyEditorVisible = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              // PDF Viewer - Expands to fill available space
+              Expanded(
+                child: NutrientView(
+                  documentPath: widget.documentPath,
+                  onViewCreated: _onNutrientViewCreated,
+                  onDocumentLoaded: _onDocumentLoaded,
+                  configuration: PdfConfiguration(
+                    startPage: 18, // Start on page with annotations
+                  ),
+                ),
+              ),
+              // Property Editor Panel - Shows at bottom when annotation is selected
+              if (_isPropertyEditorVisible &&
+                  _selectedAnnotation != null &&
+                  _selectedProperties != null)
+                _buildPropertyEditorPanel(),
+            ],
+          ),
+          // Instructional message when no annotation is selected
+          if (_selectedAnnotation == null && _document != null)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.blue.shade50,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.touch_app, color: Colors.blue.shade700),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Tap any annotation to customize its properties',
+                          style: TextStyle(
+                            color: Colors.blue.shade900,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      floatingActionButton:
+          _selectedAnnotation != null && !_isPropertyEditorVisible
+              ? FloatingActionButton.extended(
+                  onPressed: () {
+                    setState(() {
+                      _isPropertyEditorVisible = true;
+                    });
+                  },
+                  label: const Text('Edit Properties'),
+                  icon: const Icon(Icons.edit),
+                )
+              : null,
+    );
+  }
+
+  Widget _buildPropertyEditorPanel() {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final panelHeight = screenHeight * 0.5; // 50% of screen height
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: panelHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Handle bar and header
+          GestureDetector(
+            onVerticalDragEnd: (details) {
+              // Allow swipe down to close
+              if (details.primaryVelocity != null &&
+                  details.primaryVelocity! > 100) {
+                setState(() {
+                  _isPropertyEditorVisible = false;
+                });
+              }
+            },
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Annotation Properties',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            setState(() {
+                              _isPropertyEditorVisible = false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          // Content
+          Expanded(
+            child: SingleChildScrollView(
+              child: AnnotationPropertyEditor(
+                annotation: _selectedAnnotation!,
+                properties: _selectedProperties!,
+                onColorChanged: (color) async {
+                  await _updateColor(color);
+                  if (mounted) {
+                    setState(() {});
+                  }
+                },
+                onOpacityChanged: (opacity) async {
+                  await _updateOpacity(opacity);
+                  if (mounted) {
+                    setState(() {});
+                  }
+                },
+                onLineWidthChanged: (lineWidth) async {
+                  await _updateLineWidth(lineWidth);
+                  if (mounted) {
+                    setState(() {});
+                  }
+                },
+                onFlagToggled: (flag) async {
+                  await _toggleFlag(flag);
+                  if (mounted) {
+                    setState(() {});
+                  }
+                },
+                onAddCustomData: () {
+                  setState(() {
+                    _isPropertyEditorVisible = false;
+                  });
+                  _addCustomData();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================
+  // ANNOTATION EVENT HANDLERS
+  // ===========================
+
+  // ===========================
+  // API DEMONSTRATION METHODS
+  // ===========================
+
+  /// Demonstrates updating annotation color
+  Future<void> _updateColor(Color color) async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    try {
+      // API: Update color while preserving attachments
+      final updated = properties.withColor(color);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+        _showMessage('Color updated');
+      }
+    } catch (e) {
+      _showError('Failed to update color: $e');
+    }
+  }
+
+  /// Demonstrates updating annotation opacity
+  Future<void> _updateOpacity(double opacity) async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    try {
+      // API: Update opacity while preserving attachments
+      final updated = properties.withOpacity(opacity);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+      }
+    } catch (e) {
+      _showError('Failed to update opacity: $e');
+    }
+  }
+
+  /// Demonstrates updating line width
+  Future<void> _updateLineWidth(double lineWidth) async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    try {
+      // API: Update line width for applicable annotations
+      final updated = properties.withLineWidth(lineWidth);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+      }
+    } catch (e) {
+      _showError('Failed to update line width: $e');
+    }
+  }
+
+  /// Demonstrates toggling annotation flags
+  Future<void> _toggleFlag(AnnotationFlag flag) async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    try {
+      final currentFlags = properties.flagsSet ?? {};
+      final newFlags = Set<AnnotationFlag>.from(currentFlags);
+
+      if (newFlags.contains(flag)) {
+        newFlags.remove(flag);
+      } else {
+        newFlags.add(flag);
+      }
+
+      // API: Update flags while preserving attachments
+      final updated = properties.withFlags(newFlags);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+        _showMessage('Flags updated');
+      }
+    } catch (e) {
+      _showError('Failed to update flags: $e');
+    }
+  }
+
+  /// Demonstrates adding custom data to annotations
+  Future<void> _addCustomData() async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    final result = await _showCustomDataDialog();
+    if (result == null) return;
+
+    try {
+      // Merge with existing custom data
+      final existingData = properties.customData ?? {};
+      final updatedData = {
+        ...existingData,
+        ...result,
+        'lastModified': DateTime.now().toIso8601String(),
+      };
+
+      // API: Update custom data while preserving attachments
+      final updated = properties.withCustomData(updatedData);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+        _showMessage('Custom data added');
+      }
+    } catch (e) {
+      _showError('Failed to add custom data: $e');
+    }
+  }
+
+  // ===========================
+  // UI HELPER METHODS
+  // ===========================
+
+  /// Handles annotation selection from events
+  Future<void> _handleAnnotationSelection(dynamic annotationData) async {
+    final document = _document;
+    if (document == null) return;
+
+    try {
+      // If annotationData is already an Annotation object, use it directly
+      if (annotationData is Annotation) {
+        final annotationId = annotationData.id ?? annotationData.name ?? '';
+
+        if (annotationId.isNotEmpty) {
+          final properties = await document.getAnnotationProperties(
+            annotationData.pageIndex,
+            annotationId,
+          );
+
+          if (properties != null) {
+            setState(() {
+              _selectedAnnotation = annotationData;
+              _selectedProperties = properties;
+              _isPropertyEditorVisible = true;
+            });
+          }
+        }
+        return;
+      }
+
+      // If it's a Map, extract page index and ID, then fetch full annotation
+      final Map<String, dynamic> annotationMap;
+      if (annotationData is Map) {
+        annotationMap = Map<String, dynamic>.from(annotationData);
+      } else {
+        // Try to parse as Annotation
+        final annotation = Annotation.fromJson(annotationData);
+        final annotationId = annotation.id ?? annotation.name ?? '';
+
+        if (annotationId.isNotEmpty) {
+          final properties = await document.getAnnotationProperties(
+            annotation.pageIndex,
+            annotationId,
+          );
+
+          if (properties != null) {
+            setState(() {
+              _selectedAnnotation = annotation;
+              _selectedProperties = properties;
+              _isPropertyEditorVisible = true;
+            });
+          }
+        }
+        return;
+      }
+
+      // Extract page index and ID from the map
+      final int? pageIndex = annotationMap['pageIndex'] as int?;
+      final String? annotationId =
+          (annotationMap['id'] ?? annotationMap['name']) as String?;
+
+      if (pageIndex != null && annotationId != null) {
+        // Get all annotations on the page to find the selected one
+        final annotations =
+            await document.getAnnotations(pageIndex, AnnotationType.all);
+
+        // Find the annotation with matching ID
+        Annotation? matchingAnnotation;
+        for (final annotation in annotations) {
+          if (annotation.id == annotationId ||
+              annotation.name == annotationId) {
+            matchingAnnotation = annotation;
+            break;
+          }
+        }
+
+        if (matchingAnnotation != null) {
+          // Get properties
+          final properties = await document.getAnnotationProperties(
+            pageIndex,
+            annotationId,
+          );
+
+          if (properties != null) {
+            setState(() {
+              _selectedAnnotation = matchingAnnotation;
+              _selectedProperties = properties;
+              _isPropertyEditorVisible = true;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      _showError('Failed to select annotation: $e');
+    }
+  }
+
+  void _onNutrientViewCreated(NutrientViewController controller) {
+    setState(() {
+      _controller = controller;
+    });
+
+    // Listen for annotation selection events
+    _controller?.addEventListener(NutrientEvent.annotationsSelected,
+        (event) async {
+      try {
+        // Get the selected annotation from the event
+        // The event contains an 'annotation' field with the annotation object
+        final dynamic annotationData = event?['annotation'];
+
+        if (annotationData == null) {
+          // Sometimes the event might have 'annotations' (plural) instead
+          final annotations = event?['annotations'] as List?;
+          if (annotations != null && annotations.isNotEmpty) {
+            await _handleAnnotationSelection(annotations.first);
+          }
+          return;
+        }
+
+        await _handleAnnotationSelection(annotationData);
+      } catch (e) {
+        _showError('Failed to handle annotation selection: $e');
+      }
+    });
+
+    // Listen for annotation deselection events
+    _controller?.addEventListener(NutrientEvent.annotationsDeselected, (event) {
+      setState(() {
+        _selectedAnnotation = null;
+        _selectedProperties = null;
+      });
+    });
+  }
+
+  Future<void> _onDocumentLoaded(PdfDocument document) async {
+    setState(() {
+      _document = document;
+    });
+
+    _showMessage('Tap any annotation to edit its properties');
+  }
+
+  Future<Map<String, String>?> _showCustomDataDialog() async {
+    final keyController = TextEditingController();
+    final valueController = TextEditingController();
+
+    return showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Custom Data'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: keyController,
+              decoration: const InputDecoration(
+                labelText: 'Key',
+                hintText: 'e.g., department',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: valueController,
+              decoration: const InputDecoration(
+                labelText: 'Value',
+                hintText: 'e.g., engineering',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (keyController.text.isNotEmpty &&
+                  valueController.text.isNotEmpty) {
+                Navigator.of(context).pop({
+                  keyController.text: valueController.text,
+                });
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+}

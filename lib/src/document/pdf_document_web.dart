@@ -10,16 +10,26 @@ import 'dart:typed_data';
 
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter/src/document/annotation_manager_web.dart';
 
 import '../annotations/annotation_utils.dart';
 import '../web/nutrient_web_instance.dart';
 
 class PdfDocumentWeb extends PdfDocument with AnnotationJsonConverter {
   final NutrientWebInstance _instance;
+  AnnotationManagerWeb? _annotationManagerInstance;
 
   PdfDocumentWeb(
       {required super.documentId, required NutrientWebInstance instance})
       : _instance = instance;
+
+  AnnotationManagerWeb get _annotationManager {
+    if (_annotationManagerInstance == null) {
+      _annotationManagerInstance = AnnotationManagerWeb(documentId: documentId);
+      _annotationManagerInstance!.setWebInstance(_instance);
+    }
+    return _annotationManagerInstance!;
+  }
 
   @override
   Future<PageInfo> getPageInfo(int pageIndex) {
@@ -150,5 +160,28 @@ class PdfDocumentWeb extends PdfDocument with AnnotationJsonConverter {
   @override
   Future<int> getPageCount() {
     return _instance.getPageCount();
+  }
+
+  // ============================
+  // Annotation Management Methods
+  // ============================
+
+  @override
+  Future<AnnotationProperties?> getAnnotationProperties(
+    int pageIndex,
+    String annotationId,
+  ) async {
+    return _annotationManager.getAnnotationProperties(pageIndex, annotationId);
+  }
+
+  @override
+  Future<bool> saveAnnotationProperties(AnnotationProperties properties) async {
+    return _annotationManager.saveAnnotationProperties(properties);
+  }
+
+  @override
+  Future<List<Annotation>> searchAnnotations(String query,
+      [int? pageIndex]) async {
+    return _annotationManager.searchAnnotations(query, pageIndex);
   }
 }

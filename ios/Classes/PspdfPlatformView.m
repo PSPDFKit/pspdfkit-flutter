@@ -23,7 +23,9 @@
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
 @property (nonatomic) FlutterPdfDocument *flutterPdfDocument;
+@property (nonatomic) AnnotationManagerImpl *annotationManager;
 @property (nonatomic) NSObject<FlutterBinaryMessenger> *binaryMessenger;
+@property (nonatomic) PSPDFPageIndex initialPageIndex; // Store the initial page index from configuration
 @property PspdfkitPlatformViewImpl *platformViewImpl;
 @end
 
@@ -83,7 +85,8 @@
             
             _pdfViewController = [[PSPDFViewController alloc] initWithDocument:document configuration:configuration];
             _pdfViewController.appearanceModeManager.appearanceMode = [PspdfkitFlutterConverter appearanceMode:configurationDictionary];
-            _pdfViewController.pageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
+            // Store the initial page index from the configuration to set it later
+            _initialPageIndex = [PspdfkitFlutterConverter pageIndex:configurationDictionary];
             _pdfViewController.delegate = self;
             
             [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(documentDidFinishRendering) name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification object:nil];
@@ -151,9 +154,15 @@
 
 - (void)documentDidFinishRendering {
     // Remove observer after the initial notification
-    [NSNotificationCenter.defaultCenter removeObserver:self 
+    [NSNotificationCenter.defaultCenter removeObserver:self
                                                   name:PSPDFDocumentViewControllerDidConfigureSpreadViewNotification
                                                 object:nil];
+
+    // Set the initial page index after the document has fully rendered
+    if (_initialPageIndex > 0) {
+        _pdfViewController.pageIndex = _initialPageIndex;
+    }
+
     NSString *documentId = self.pdfViewController.document.UID;
     if (documentId != nil) {
         NSDictionary *arguments = @{
@@ -161,6 +170,10 @@
         };
         _flutterPdfDocument = [[FlutterPdfDocument alloc] initWithViewController:self.pdfViewController];
         [_flutterPdfDocument registerWithBinaryMessenger:_binaryMessenger];
+
+        // Create and register AnnotationManager for this document
+        _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+
         [_platformViewImpl onDocumentLoadedWithDocumentId:documentId];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
     }
@@ -181,6 +194,15 @@
 - (void)cleanup {
     [self.flutterPdfDocument unRegisterWithBinaryMessenger:_binaryMessenger];
     self.flutterPdfDocument = nil;
+
+    // Cleanup AnnotationManager
+    if (self.annotationManager != nil) {
+        [self.annotationManager unregisterWithBinaryMessenger:_binaryMessenger];
+        // TODO: Fix Objective-C bridging for unregisterDocument method
+        // [AnnotationManagerImpl unregisterDocumentWithId:self.pdfViewController.document.UID];
+        self.annotationManager = nil;
+    }
+
     [self.platformViewImpl unRegisterWithBinaryMessenger:_binaryMessenger];
     self.platformViewImpl = nil;
     self.pdfViewController.document = nil;

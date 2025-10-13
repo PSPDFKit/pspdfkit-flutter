@@ -9,7 +9,6 @@
 
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
@@ -160,13 +159,29 @@ class _AnnotationFlagsPanelState extends State<AnnotationFlagsPanel> {
     }
 
     try {
-      // Create an updated annotation with the selected flags
-      final updatedAnnotation = _createUpdatedAnnotation();
-      if (updatedAnnotation != null) {
-        // Use replaceAnnotation instead of addAnnotation to ensure proper update
-        await widget.document?.updateAnnotation(updatedAnnotation);
+      // Get the annotation manager for the document
 
-        if (widget.onAnnotationUpdated != null) {
+      // Convert selected flags to list of strings
+      final flagStrings = _selectedFlags.map((flag) => flag.name).toList();
+
+      // Create annotation properties with only the flags we want to update
+      final properties = AnnotationProperties(
+        annotationId: widget.selectedAnnotation!.id ??
+            widget.selectedAnnotation!.name ??
+            '',
+        pageIndex: widget.selectedAnnotation!.pageIndex,
+        flags: flagStrings,
+      );
+
+      // Update the annotation properties
+      final success =
+          await widget.document!.saveAnnotationProperties(properties);
+
+      if (success) {
+        // Create an updated annotation object for the callbacks
+        final updatedAnnotation = _createUpdatedAnnotation();
+
+        if (updatedAnnotation != null && widget.onAnnotationUpdated != null) {
           widget.onAnnotationUpdated!(updatedAnnotation);
         }
 
@@ -197,11 +212,11 @@ class _AnnotationFlagsPanelState extends State<AnnotationFlagsPanel> {
             duration: Duration(seconds: 2),
           ),
         );
+      } else {
+        throw Exception('Failed to update annotation flags');
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error updating annotation flags: $e');
-      }
+      // Error updating annotation flags
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error updating annotation flags: $e'),

@@ -1,3 +1,12 @@
+## 5.2.0 - 13 Oct 2025
+
+- Introduces `AnnotationProperties` class to manage and update annotation properties such as color, opacity, line width, flags, and custom data. (J#HYB-879)
+- Updates Android SDK configuration (minSdk 24, compileSdk/targetSdk 36) to support Nutrient Android SDK 10.7.0.
+- Updates iOS deployment target to 16 to support Nutrient iOS SDK 14.12.0.
+- Updates AI Assistant implementation to use new `createAiAssistant` API with `AiAssistantProvider` interface support. (J#HYB-886)
+- Fixes issue where getPageInfo throws an error if not page labels are set on Android. (J#HYB-882)
+- Fixes issue where updating annotation flags results into unexpected behavior. (J#HYB-880,J#HYB-879)
+
 ## 5.1.0 - 04 Sep 2025
 
 - Adds the `androidShowAnnotationCreationAction` configuration option to hide the default annotation creation button while keeping annotation editing functionality enabled on Android. (J#HYB-864)

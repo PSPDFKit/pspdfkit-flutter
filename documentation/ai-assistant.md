@@ -29,7 +29,9 @@ final pdfConfig = PdfConfiguration(
 );
 ```
 
-3. Add AI Assistant to your platform-specific UI:
+3. **Android Implementation Note**: As of Nutrient Android SDK 10.6+, AI Assistant requires the Activity to implement the `AiAssistantProvider` interface. The Nutrient Flutter SDK handles this automatically through `FlutterAppCompatActivity`, which internally accesses the AI Assistant instance created from your Flutter configuration. No additional Android-specific code is required in your MainActivity.
+
+4. Add AI Assistant to your platform-specific UI:
 
    - **iOS**: Add `'aiAssistantButtonItem'` to `iOSLeftBarButtonItems` or `iOSRightBarButtonItems`
    - **Android**: Set `androidEnableAiAssistant: true`

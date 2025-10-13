@@ -26,6 +26,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
@@ -38,12 +39,18 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
+
+import com.pspdfkit.flutter.pspdfkit.PSPDFKitView;
+
 import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.embedding.engine.plugins.util.GeneratedPluginRegister;
 import io.flutter.plugin.platform.PlatformPlugin;
+import io.nutrient.domain.ai.AiAssistant;
+import io.nutrient.domain.ai.AiAssistantProvider;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +66,7 @@ import java.util.List;
 // are duplicated for readability purposes. Be sure to replicate any change in this class in
 // FlutterActivity, too.
 public class FlutterAppCompatActivity extends AppCompatActivity
-        implements FlutterEngineProvider, FlutterEngineConfigurator {
+        implements FlutterEngineProvider, FlutterEngineConfigurator, AiAssistantProvider {
     private static final String TAG = "FlutterAppCompatActivity";
 
     // FlutterFragment management.
@@ -85,6 +92,17 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     @NonNull
     public static NewEngineIntentBuilder withNewEngine() {
         return new NewEngineIntentBuilder(FlutterAppCompatActivity.class);
+    }
+
+    @Nullable
+    @Override
+    public AiAssistant getAiAssistant() {
+        return PSPDFKitView.Companion.getAiAssistant();
+    }
+
+    @Override
+    public void navigateTo(@NonNull List<? extends RectF> list, int i, int i1) {
+
     }
 
     /**

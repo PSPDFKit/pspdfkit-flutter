@@ -37,8 +37,21 @@ import java.nio.charset.StandardCharsets
 import java.util.EnumSet
 
 class FlutterPdfDocument(
-    private val pdfDocument: PdfDocument
+    val pdfDocument: PdfDocument
 ) : PdfDocumentApi {
+
+    companion object {
+        // Registry to track document instances by their IDs
+        val documentInstances = mutableMapOf<String, FlutterPdfDocument>()
+
+        fun registerDocument(documentId: String, document: FlutterPdfDocument) {
+            documentInstances[documentId] = document
+        }
+
+        fun unregisterDocument(documentId: String) {
+            documentInstances.remove(documentId)
+        }
+    }
 
     private var disposable: Disposable? = null
     private val documentPermissionsMap = mapOf(
@@ -66,7 +79,7 @@ class FlutterPdfDocument(
     override fun getPageInfo(pageIndex: Long, callback: (Result<PageInfo>) -> Unit) {
         val width = pdfDocument.getPageSize(pageIndex.toInt()).width
         val height = pdfDocument.getPageSize(pageIndex.toInt()).height
-        val label = pdfDocument.getPageLabel(pageIndex.toInt(), false)
+        val label = pdfDocument.getPageLabel(pageIndex.toInt(), true)
         val rotation = pdfDocument.getPageRotation(pageIndex.toInt())
         val pageInfo =
             PageInfo(pageIndex, height.toDouble(), width.toDouble(), rotation.toLong(), label)

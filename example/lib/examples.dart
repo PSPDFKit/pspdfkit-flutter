@@ -44,6 +44,7 @@ import 'manual_save_example.dart';
 import 'annotation_processing_example.dart';
 import 'password_example.dart';
 import 'nutrient_annotation_creation_mode_example.dart';
+import 'nutrient_annotation_properties_example.dart';
 
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _measurementsDocs = 'PDFs/Measurements.pdf';
@@ -116,6 +117,15 @@ List<NutrientExampleItem> examples(BuildContext context) => [
         title: 'Annotation Flags Example',
         description: 'Shows how to click an annotation and modify its flags.',
         onTap: () => annotationFlagsExample(context),
+      ),
+      NutrientExampleItem(
+        title: 'Annotation Properties API',
+        description: 'Safe annotation property updates preserving attachments.',
+        onTap: () async {
+          await extractAsset(context, _documentPath).then((value) => goTo(
+              NutrientAnnotationPropertiesExample(documentPath: value.path),
+              context));
+        },
       ),
       if (!kIsWeb)
         NutrientExampleItem(

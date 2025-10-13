@@ -633,6 +633,14 @@ abstract class PdfDocumentApi {
 
   /// Updates the given annotation in the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+  ///
+  /// @deprecated Use setAnnotationProperties() or specific property setters instead.
+  /// This method has a critical bug that causes data loss for annotations with attachments.
+  /// It will be removed in version 7.0.0.
+  ///
+  /// Migration:
+  /// - For single property updates: Use specific setters like setAnnotationColor()
+  /// - For multiple property updates: Use setAnnotationProperties()
   @async
   bool? updateAnnotation(String jsonAnnotation);
 
@@ -853,4 +861,200 @@ class AnnotationMenuConfigurationData {
     required this.groupMarkupItems,
     this.maxVisibleItems,
   });
+}
+
+/// Data class for annotation properties that provides type-safe access
+/// to annotation attributes while preserving attachments and custom data.
+///
+/// This class is used with the AnnotationManager API to safely update
+/// annotation properties without losing data during the update process.
+///
+/// **Usage Pattern**:
+/// ```dart
+/// // Get current properties
+/// final properties = await annotationManager.getAnnotationProperties(pageIndex, annotationId);
+///
+/// // Create modified version
+/// final updated = properties?.withColor(Colors.red).withOpacity(0.7);
+///
+/// // Save changes
+/// if (updated != null) {
+///   await annotationManager.saveAnnotationProperties(updated);
+/// }
+/// ```
+///
+/// **Data Preservation**: Unlike the deprecated `updateAnnotation` method,
+/// this approach preserves attachments, custom data, and other properties
+/// that are not being explicitly modified.
+class AnnotationProperties {
+  /// Unique identifier for the annotation
+  final String annotationId;
+
+  /// Zero-based page index where the annotation is located
+  final int pageIndex;
+
+  /// Stroke color as ARGB integer (e.g., 0xFFFF0000 for red)
+  final int? strokeColor;
+
+  /// Fill color as ARGB integer (e.g., 0xFF0000FF for blue)
+  final int? fillColor;
+
+  /// Opacity value between 0.0 (transparent) and 1.0 (opaque)
+  final double? opacity;
+
+  /// Line width for stroke-based annotations (in points)
+  final double? lineWidth;
+
+  /// List of annotation flags (e.g., ['readOnly', 'print'])
+  final List<String>? flags;
+
+  /// Custom data associated with the annotation
+  /// This preserves any application-specific metadata
+  final Map<String, Object?>? customData;
+
+  /// Text content of the annotation (for text-based annotations)
+  final String? contents;
+
+  /// Subject/title of the annotation
+  final String? subject;
+
+  /// Creator/author of the annotation
+  final String? creator;
+
+  /// Bounding box as [x, y, width, height] in PDF coordinates
+  final List<double>? bbox;
+
+  /// Note text associated with the annotation
+  final String? note;
+
+  // Type-specific properties
+
+  /// Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
+  /// Each line is an array of points, each point is [x, y, pressure]
+  final List<List<List<double>>>? inkLines;
+
+  /// Font name for text annotations
+  final String? fontName;
+
+  /// Font size for text annotations (in points)
+  final double? fontSize;
+
+  /// Icon name for note annotations (e.g., 'Comment', 'Key', 'Note')
+  final String? iconName;
+
+  AnnotationProperties({
+    required this.annotationId,
+    required this.pageIndex,
+    this.strokeColor,
+    this.fillColor,
+    this.opacity,
+    this.lineWidth,
+    this.flags,
+    this.customData,
+    this.contents,
+    this.subject,
+    this.creator,
+    this.bbox,
+    this.note,
+    this.inkLines,
+    this.fontName,
+    this.fontSize,
+    this.iconName,
+  });
+}
+
+/// Manages annotations for a PDF document with proper data preservation.
+///
+/// This API replaces the deprecated annotation methods in PdfDocumentApi
+/// and provides a safe way to update annotations without losing attachments
+/// or custom data.
+///
+/// **Channel Management**: Each document instance creates its own AnnotationManager
+/// with a unique channel ID prefixed by the document ID (e.g., "doc123_annotation_manager").
+/// This allows multiple documents to have independent annotation managers.
+///
+/// **Key Features**:
+/// - Preserves attachments when updating annotation properties
+/// - Maintains custom data during updates
+/// - Only updates properties that are explicitly set (non-null)
+/// - Provides batch update capabilities
+/// - Supports search and filtering operations
+@HostApi()
+abstract class AnnotationManagerApi {
+  /// Initialize the annotation manager for a specific document.
+  /// This should be called once when creating the manager instance.
+  ///
+  /// @param documentId The unique identifier of the document
+  void initialize(String documentId);
+
+  /// Get the current properties of an annotation.
+  /// Returns null if the annotation doesn't exist.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return Current annotation properties or null if not found
+  @async
+  AnnotationProperties? getAnnotationProperties(
+      int pageIndex, String annotationId);
+
+  /// Save modified annotation properties.
+  /// Only non-null properties in modifiedProperties will be updated.
+  /// All other properties (including attachments and custom data) are preserved.
+  ///
+  /// @param modifiedProperties Properties to update (only non-null values are applied)
+  /// @return true if successfully saved, false otherwise
+  @async
+  bool saveAnnotationProperties(AnnotationProperties modifiedProperties);
+
+  /// Get all annotations on a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
+  /// @return List of annotations as JSON-compatible maps
+  @async
+  Object getAnnotations(int pageIndex, String annotationType);
+
+  /// Add a new annotation to the document.
+  ///
+  /// @param jsonAnnotation JSON representation of the annotation
+  /// @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
+  /// @return Unique identifier of the created annotation
+  @async
+  String addAnnotation(String jsonAnnotation, String? jsonAttachment);
+
+  /// Remove an annotation from the document.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return true if successfully removed, false otherwise
+  @async
+  bool removeAnnotation(int pageIndex, String annotationId);
+
+  /// Search for annotations containing specific text.
+  ///
+  /// @param query Search term
+  /// @param pageIndex Optional page index to limit search scope
+  /// @return List of matching annotations
+  @async
+  Object searchAnnotations(String query, int? pageIndex);
+
+  /// Export annotations as XFDF format.
+  ///
+  /// @param pageIndex Optional page index to export specific page annotations
+  /// @return XFDF string representation
+  @async
+  String exportXFDF(int? pageIndex);
+
+  /// Import annotations from XFDF format.
+  ///
+  /// @param xfdfString XFDF string to import
+  /// @return true if successfully imported, false otherwise
+  @async
+  bool importXFDF(String xfdfString);
+
+  /// Get all annotations that have unsaved changes.
+  ///
+  /// @return List of annotations with pending changes
+  @async
+  Object getUnsavedAnnotations();
 }

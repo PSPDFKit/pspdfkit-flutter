@@ -638,6 +638,121 @@ data class AnnotationMenuConfigurationData (
     )
   }
 }
+
+/**
+ * Data class for annotation properties that provides type-safe access
+ * to annotation attributes while preserving attachments and custom data.
+ *
+ * This class is used with the AnnotationManager API to safely update
+ * annotation properties without losing data during the update process.
+ *
+ * **Usage Pattern**:
+ * ```dart
+ * // Get current properties
+ * final properties = await annotationManager.getAnnotationProperties(pageIndex, annotationId);
+ *
+ * // Create modified version
+ * final updated = properties?.withColor(Colors.red).withOpacity(0.7);
+ *
+ * // Save changes
+ * if (updated != null) {
+ *   await annotationManager.saveAnnotationProperties(updated);
+ * }
+ * ```
+ *
+ * **Data Preservation**: Unlike the deprecated `updateAnnotation` method,
+ * this approach preserves attachments, custom data, and other properties
+ * that are not being explicitly modified.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class AnnotationProperties (
+  /** Unique identifier for the annotation */
+  val annotationId: String,
+  /** Zero-based page index where the annotation is located */
+  val pageIndex: Long,
+  /** Stroke color as ARGB integer (e.g., 0xFFFF0000 for red) */
+  val strokeColor: Long? = null,
+  /** Fill color as ARGB integer (e.g., 0xFF0000FF for blue) */
+  val fillColor: Long? = null,
+  /** Opacity value between 0.0 (transparent) and 1.0 (opaque) */
+  val opacity: Double? = null,
+  /** Line width for stroke-based annotations (in points) */
+  val lineWidth: Double? = null,
+  /** List of annotation flags (e.g., ['readOnly', 'print']) */
+  val flags: List<String>? = null,
+  /**
+   * Custom data associated with the annotation
+   * This preserves any application-specific metadata
+   */
+  val customData: Map<String, Any?>? = null,
+  /** Text content of the annotation (for text-based annotations) */
+  val contents: String? = null,
+  /** Subject/title of the annotation */
+  val subject: String? = null,
+  /** Creator/author of the annotation */
+  val creator: String? = null,
+  /** Bounding box as [x, y, width, height] in PDF coordinates */
+  val bbox: List<Double>? = null,
+  /** Note text associated with the annotation */
+  val note: String? = null,
+  /**
+   * Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
+   * Each line is an array of points, each point is [x, y, pressure]
+   */
+  val inkLines: List<List<List<Double>>>? = null,
+  /** Font name for text annotations */
+  val fontName: String? = null,
+  /** Font size for text annotations (in points) */
+  val fontSize: Double? = null,
+  /** Icon name for note annotations (e.g., 'Comment', 'Key', 'Note') */
+  val iconName: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): AnnotationProperties {
+      val annotationId = pigeonVar_list[0] as String
+      val pageIndex = pigeonVar_list[1] as Long
+      val strokeColor = pigeonVar_list[2] as Long?
+      val fillColor = pigeonVar_list[3] as Long?
+      val opacity = pigeonVar_list[4] as Double?
+      val lineWidth = pigeonVar_list[5] as Double?
+      val flags = pigeonVar_list[6] as List<String>?
+      val customData = pigeonVar_list[7] as Map<String, Any?>?
+      val contents = pigeonVar_list[8] as String?
+      val subject = pigeonVar_list[9] as String?
+      val creator = pigeonVar_list[10] as String?
+      val bbox = pigeonVar_list[11] as List<Double>?
+      val note = pigeonVar_list[12] as String?
+      val inkLines = pigeonVar_list[13] as List<List<List<Double>>>?
+      val fontName = pigeonVar_list[14] as String?
+      val fontSize = pigeonVar_list[15] as Double?
+      val iconName = pigeonVar_list[16] as String?
+      return AnnotationProperties(annotationId, pageIndex, strokeColor, fillColor, opacity, lineWidth, flags, customData, contents, subject, creator, bbox, note, inkLines, fontName, fontSize, iconName)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      annotationId,
+      pageIndex,
+      strokeColor,
+      fillColor,
+      opacity,
+      lineWidth,
+      flags,
+      customData,
+      contents,
+      subject,
+      creator,
+      bbox,
+      note,
+      inkLines,
+      fontName,
+      fontSize,
+      iconName,
+    )
+  }
+}
 private open class NutrientApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -726,6 +841,11 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
           AnnotationMenuConfigurationData.fromList(it)
         }
       }
+      146.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          AnnotationProperties.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -797,6 +917,10 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
       }
       is AnnotationMenuConfigurationData -> {
         stream.write(145)
+        writeValue(stream, value.toList())
+      }
+      is AnnotationProperties -> {
+        stream.write(146)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -2309,6 +2433,14 @@ interface PdfDocumentApi {
   /**
    * Updates the given annotation in the presented document.
    * `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+   *
+   * @deprecated Use setAnnotationProperties() or specific property setters instead.
+   * This method has a critical bug that causes data loss for annotations with attachments.
+   * It will be removed in version 7.0.0.
+   *
+   * Migration:
+   * - For single property updates: Use specific setters like setAnnotationColor()
+   * - For multiple property updates: Use setAnnotationProperties()
    */
   fun updateAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit)
   /**
@@ -2854,6 +2986,318 @@ class CustomToolbarCallbacks(private val binaryMessenger: BinaryMessenger, priva
       } else {
         callback(Result.failure(createConnectionError(channelName)))
       } 
+    }
+  }
+}
+/**
+ * Manages annotations for a PDF document with proper data preservation.
+ *
+ * This API replaces the deprecated annotation methods in PdfDocumentApi
+ * and provides a safe way to update annotations without losing attachments
+ * or custom data.
+ *
+ * **Channel Management**: Each document instance creates its own AnnotationManager
+ * with a unique channel ID prefixed by the document ID (e.g., "doc123_annotation_manager").
+ * This allows multiple documents to have independent annotation managers.
+ *
+ * **Key Features**:
+ * - Preserves attachments when updating annotation properties
+ * - Maintains custom data during updates
+ * - Only updates properties that are explicitly set (non-null)
+ * - Provides batch update capabilities
+ * - Supports search and filtering operations
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface AnnotationManagerApi {
+  /**
+   * Initialize the annotation manager for a specific document.
+   * This should be called once when creating the manager instance.
+   *
+   * @param documentId The unique identifier of the document
+   */
+  fun initialize(documentId: String)
+  /**
+   * Get the current properties of an annotation.
+   * Returns null if the annotation doesn't exist.
+   *
+   * @param pageIndex Zero-based page index
+   * @param annotationId Unique identifier of the annotation
+   * @return Current annotation properties or null if not found
+   */
+  fun getAnnotationProperties(pageIndex: Long, annotationId: String, callback: (Result<AnnotationProperties?>) -> Unit)
+  /**
+   * Save modified annotation properties.
+   * Only non-null properties in modifiedProperties will be updated.
+   * All other properties (including attachments and custom data) are preserved.
+   *
+   * @param modifiedProperties Properties to update (only non-null values are applied)
+   * @return true if successfully saved, false otherwise
+   */
+  fun saveAnnotationProperties(modifiedProperties: AnnotationProperties, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Get all annotations on a specific page.
+   *
+   * @param pageIndex Zero-based page index
+   * @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
+   * @return List of annotations as JSON-compatible maps
+   */
+  fun getAnnotations(pageIndex: Long, annotationType: String, callback: (Result<Any>) -> Unit)
+  /**
+   * Add a new annotation to the document.
+   *
+   * @param jsonAnnotation JSON representation of the annotation
+   * @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
+   * @return Unique identifier of the created annotation
+   */
+  fun addAnnotation(jsonAnnotation: String, jsonAttachment: String?, callback: (Result<String>) -> Unit)
+  /**
+   * Remove an annotation from the document.
+   *
+   * @param pageIndex Zero-based page index
+   * @param annotationId Unique identifier of the annotation
+   * @return true if successfully removed, false otherwise
+   */
+  fun removeAnnotation(pageIndex: Long, annotationId: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Search for annotations containing specific text.
+   *
+   * @param query Search term
+   * @param pageIndex Optional page index to limit search scope
+   * @return List of matching annotations
+   */
+  fun searchAnnotations(query: String, pageIndex: Long?, callback: (Result<Any>) -> Unit)
+  /**
+   * Export annotations as XFDF format.
+   *
+   * @param pageIndex Optional page index to export specific page annotations
+   * @return XFDF string representation
+   */
+  fun exportXFDF(pageIndex: Long?, callback: (Result<String>) -> Unit)
+  /**
+   * Import annotations from XFDF format.
+   *
+   * @param xfdfString XFDF string to import
+   * @return true if successfully imported, false otherwise
+   */
+  fun importXFDF(xfdfString: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Get all annotations that have unsaved changes.
+   *
+   * @return List of annotations with pending changes
+   */
+  fun getUnsavedAnnotations(callback: (Result<Any>) -> Unit)
+
+  companion object {
+    /** The codec used by AnnotationManagerApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      NutrientApiPigeonCodec()
+    }
+    /** Sets up an instance of `AnnotationManagerApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: AnnotationManagerApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.initialize$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val documentIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.initialize(documentIdArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationProperties$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val annotationIdArg = args[1] as String
+            api.getAnnotationProperties(pageIndexArg, annotationIdArg) { result: Result<AnnotationProperties?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.saveAnnotationProperties$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val modifiedPropertiesArg = args[0] as AnnotationProperties
+            api.saveAnnotationProperties(modifiedPropertiesArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val annotationTypeArg = args[1] as String
+            api.getAnnotations(pageIndexArg, annotationTypeArg) { result: Result<Any> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.addAnnotation$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val jsonAnnotationArg = args[0] as String
+            val jsonAttachmentArg = args[1] as String?
+            api.addAnnotation(jsonAnnotationArg, jsonAttachmentArg) { result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.removeAnnotation$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val annotationIdArg = args[1] as String
+            api.removeAnnotation(pageIndexArg, annotationIdArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val queryArg = args[0] as String
+            val pageIndexArg = args[1] as Long?
+            api.searchAnnotations(queryArg, pageIndexArg) { result: Result<Any> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.exportXFDF$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long?
+            api.exportXFDF(pageIndexArg) { result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.importXFDF$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val xfdfStringArg = args[0] as String
+            api.importXFDF(xfdfStringArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getUnsavedAnnotations{ result: Result<Any> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }

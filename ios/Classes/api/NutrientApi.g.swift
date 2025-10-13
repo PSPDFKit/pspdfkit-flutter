@@ -616,6 +616,133 @@ struct AnnotationMenuConfigurationData {
   }
 }
 
+/// Data class for annotation properties that provides type-safe access
+/// to annotation attributes while preserving attachments and custom data.
+///
+/// This class is used with the AnnotationManager API to safely update
+/// annotation properties without losing data during the update process.
+///
+/// **Usage Pattern**:
+/// ```dart
+/// // Get current properties
+/// final properties = await annotationManager.getAnnotationProperties(pageIndex, annotationId);
+///
+/// // Create modified version
+/// final updated = properties?.withColor(Colors.red).withOpacity(0.7);
+///
+/// // Save changes
+/// if (updated != null) {
+///   await annotationManager.saveAnnotationProperties(updated);
+/// }
+/// ```
+///
+/// **Data Preservation**: Unlike the deprecated `updateAnnotation` method,
+/// this approach preserves attachments, custom data, and other properties
+/// that are not being explicitly modified.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct AnnotationProperties {
+  /// Unique identifier for the annotation
+  var annotationId: String
+  /// Zero-based page index where the annotation is located
+  var pageIndex: Int64
+  /// Stroke color as ARGB integer (e.g., 0xFFFF0000 for red)
+  var strokeColor: Int64? = nil
+  /// Fill color as ARGB integer (e.g., 0xFF0000FF for blue)
+  var fillColor: Int64? = nil
+  /// Opacity value between 0.0 (transparent) and 1.0 (opaque)
+  var opacity: Double? = nil
+  /// Line width for stroke-based annotations (in points)
+  var lineWidth: Double? = nil
+  /// List of annotation flags (e.g., ['readOnly', 'print'])
+  var flags: [String]? = nil
+  /// Custom data associated with the annotation
+  /// This preserves any application-specific metadata
+  var customData: [String: Any?]? = nil
+  /// Text content of the annotation (for text-based annotations)
+  var contents: String? = nil
+  /// Subject/title of the annotation
+  var subject: String? = nil
+  /// Creator/author of the annotation
+  var creator: String? = nil
+  /// Bounding box as [x, y, width, height] in PDF coordinates
+  var bbox: [Double]? = nil
+  /// Note text associated with the annotation
+  var note: String? = nil
+  /// Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
+  /// Each line is an array of points, each point is [x, y, pressure]
+  var inkLines: [[[Double]]]? = nil
+  /// Font name for text annotations
+  var fontName: String? = nil
+  /// Font size for text annotations (in points)
+  var fontSize: Double? = nil
+  /// Icon name for note annotations (e.g., 'Comment', 'Key', 'Note')
+  var iconName: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> AnnotationProperties? {
+    let annotationId = pigeonVar_list[0] as! String
+    let pageIndex = pigeonVar_list[1] as! Int64
+    let strokeColor: Int64? = nilOrValue(pigeonVar_list[2])
+    let fillColor: Int64? = nilOrValue(pigeonVar_list[3])
+    let opacity: Double? = nilOrValue(pigeonVar_list[4])
+    let lineWidth: Double? = nilOrValue(pigeonVar_list[5])
+    let flags: [String]? = nilOrValue(pigeonVar_list[6])
+    let customData: [String: Any?]? = nilOrValue(pigeonVar_list[7])
+    let contents: String? = nilOrValue(pigeonVar_list[8])
+    let subject: String? = nilOrValue(pigeonVar_list[9])
+    let creator: String? = nilOrValue(pigeonVar_list[10])
+    let bbox: [Double]? = nilOrValue(pigeonVar_list[11])
+    let note: String? = nilOrValue(pigeonVar_list[12])
+    let inkLines: [[[Double]]]? = nilOrValue(pigeonVar_list[13])
+    let fontName: String? = nilOrValue(pigeonVar_list[14])
+    let fontSize: Double? = nilOrValue(pigeonVar_list[15])
+    let iconName: String? = nilOrValue(pigeonVar_list[16])
+
+    return AnnotationProperties(
+      annotationId: annotationId,
+      pageIndex: pageIndex,
+      strokeColor: strokeColor,
+      fillColor: fillColor,
+      opacity: opacity,
+      lineWidth: lineWidth,
+      flags: flags,
+      customData: customData,
+      contents: contents,
+      subject: subject,
+      creator: creator,
+      bbox: bbox,
+      note: note,
+      inkLines: inkLines,
+      fontName: fontName,
+      fontSize: fontSize,
+      iconName: iconName
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      annotationId,
+      pageIndex,
+      strokeColor,
+      fillColor,
+      opacity,
+      lineWidth,
+      flags,
+      customData,
+      contents,
+      subject,
+      creator,
+      bbox,
+      note,
+      inkLines,
+      fontName,
+      fontSize,
+      iconName,
+    ]
+  }
+}
+
 private class NutrientApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -693,6 +820,8 @@ private class NutrientApiPigeonCodecReader: FlutterStandardReader {
       return PointF.fromList(self.readValue() as! [Any?])
     case 145:
       return AnnotationMenuConfigurationData.fromList(self.readValue() as! [Any?])
+    case 146:
+      return AnnotationProperties.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -751,6 +880,9 @@ private class NutrientApiPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? AnnotationMenuConfigurationData {
       super.writeByte(145)
+      super.writeValue(value.toList())
+    } else if let value = value as? AnnotationProperties {
+      super.writeByte(146)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -2174,6 +2306,14 @@ protocol PdfDocumentApi {
   func addAnnotation(jsonAnnotation: String, attachment: Any?, completion: @escaping (Result<Bool?, Error>) -> Void)
   /// Updates the given annotation in the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+  ///
+  /// @deprecated Use setAnnotationProperties() or specific property setters instead.
+  /// This method has a critical bug that causes data loss for annotations with attachments.
+  /// It will be removed in version 7.0.0.
+  ///
+  /// Migration:
+  /// - For single property updates: Use specific setters like setAnnotationColor()
+  /// - For multiple property updates: Use setAnnotationProperties()
   func updateAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, Error>) -> Void)
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
@@ -2364,6 +2504,14 @@ class PdfDocumentApiSetup {
     }
     /// Updates the given annotation in the presented document.
     /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+    ///
+    /// @deprecated Use setAnnotationProperties() or specific property setters instead.
+    /// This method has a critical bug that causes data loss for annotations with attachments.
+    /// It will be removed in version 7.0.0.
+    ///
+    /// Migration:
+    /// - For single property updates: Use specific setters like setAnnotationColor()
+    /// - For multiple property updates: Use setAnnotationProperties()
     let updateAnnotationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.updateAnnotation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       updateAnnotationChannel.setMessageHandler { message, reply in
@@ -2718,6 +2866,310 @@ class CustomToolbarCallbacks: CustomToolbarCallbacksProtocol {
       } else {
         completion(.success(()))
       }
+    }
+  }
+}
+/// Manages annotations for a PDF document with proper data preservation.
+///
+/// This API replaces the deprecated annotation methods in PdfDocumentApi
+/// and provides a safe way to update annotations without losing attachments
+/// or custom data.
+///
+/// **Channel Management**: Each document instance creates its own AnnotationManager
+/// with a unique channel ID prefixed by the document ID (e.g., "doc123_annotation_manager").
+/// This allows multiple documents to have independent annotation managers.
+///
+/// **Key Features**:
+/// - Preserves attachments when updating annotation properties
+/// - Maintains custom data during updates
+/// - Only updates properties that are explicitly set (non-null)
+/// - Provides batch update capabilities
+/// - Supports search and filtering operations
+///
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol AnnotationManagerApi {
+  /// Initialize the annotation manager for a specific document.
+  /// This should be called once when creating the manager instance.
+  ///
+  /// @param documentId The unique identifier of the document
+  func initialize(documentId: String) throws
+  /// Get the current properties of an annotation.
+  /// Returns null if the annotation doesn't exist.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return Current annotation properties or null if not found
+  func getAnnotationProperties(pageIndex: Int64, annotationId: String, completion: @escaping (Result<AnnotationProperties?, Error>) -> Void)
+  /// Save modified annotation properties.
+  /// Only non-null properties in modifiedProperties will be updated.
+  /// All other properties (including attachments and custom data) are preserved.
+  ///
+  /// @param modifiedProperties Properties to update (only non-null values are applied)
+  /// @return true if successfully saved, false otherwise
+  func saveAnnotationProperties(modifiedProperties: AnnotationProperties, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Get all annotations on a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
+  /// @return List of annotations as JSON-compatible maps
+  func getAnnotations(pageIndex: Int64, annotationType: String, completion: @escaping (Result<Any, Error>) -> Void)
+  /// Add a new annotation to the document.
+  ///
+  /// @param jsonAnnotation JSON representation of the annotation
+  /// @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
+  /// @return Unique identifier of the created annotation
+  func addAnnotation(jsonAnnotation: String, jsonAttachment: String?, completion: @escaping (Result<String, Error>) -> Void)
+  /// Remove an annotation from the document.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return true if successfully removed, false otherwise
+  func removeAnnotation(pageIndex: Int64, annotationId: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Search for annotations containing specific text.
+  ///
+  /// @param query Search term
+  /// @param pageIndex Optional page index to limit search scope
+  /// @return List of matching annotations
+  func searchAnnotations(query: String, pageIndex: Int64?, completion: @escaping (Result<Any, Error>) -> Void)
+  /// Export annotations as XFDF format.
+  ///
+  /// @param pageIndex Optional page index to export specific page annotations
+  /// @return XFDF string representation
+  func exportXFDF(pageIndex: Int64?, completion: @escaping (Result<String, Error>) -> Void)
+  /// Import annotations from XFDF format.
+  ///
+  /// @param xfdfString XFDF string to import
+  /// @return true if successfully imported, false otherwise
+  func importXFDF(xfdfString: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Get all annotations that have unsaved changes.
+  ///
+  /// @return List of annotations with pending changes
+  func getUnsavedAnnotations(completion: @escaping (Result<Any, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class AnnotationManagerApiSetup {
+  static var codec: FlutterStandardMessageCodec { NutrientApiPigeonCodec.shared }
+  /// Sets up an instance of `AnnotationManagerApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: AnnotationManagerApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    /// Initialize the annotation manager for a specific document.
+    /// This should be called once when creating the manager instance.
+    ///
+    /// @param documentId The unique identifier of the document
+    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.initialize\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      initializeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let documentIdArg = args[0] as! String
+        do {
+          try api.initialize(documentId: documentIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      initializeChannel.setMessageHandler(nil)
+    }
+    /// Get the current properties of an annotation.
+    /// Returns null if the annotation doesn't exist.
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @param annotationId Unique identifier of the annotation
+    /// @return Current annotation properties or null if not found
+    let getAnnotationPropertiesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationProperties\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAnnotationPropertiesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let annotationIdArg = args[1] as! String
+        api.getAnnotationProperties(pageIndex: pageIndexArg, annotationId: annotationIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAnnotationPropertiesChannel.setMessageHandler(nil)
+    }
+    /// Save modified annotation properties.
+    /// Only non-null properties in modifiedProperties will be updated.
+    /// All other properties (including attachments and custom data) are preserved.
+    ///
+    /// @param modifiedProperties Properties to update (only non-null values are applied)
+    /// @return true if successfully saved, false otherwise
+    let saveAnnotationPropertiesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.saveAnnotationProperties\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      saveAnnotationPropertiesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let modifiedPropertiesArg = args[0] as! AnnotationProperties
+        api.saveAnnotationProperties(modifiedProperties: modifiedPropertiesArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      saveAnnotationPropertiesChannel.setMessageHandler(nil)
+    }
+    /// Get all annotations on a specific page.
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
+    /// @return List of annotations as JSON-compatible maps
+    let getAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAnnotationsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let annotationTypeArg = args[1] as! String
+        api.getAnnotations(pageIndex: pageIndexArg, annotationType: annotationTypeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getAnnotationsChannel.setMessageHandler(nil)
+    }
+    /// Add a new annotation to the document.
+    ///
+    /// @param jsonAnnotation JSON representation of the annotation
+    /// @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
+    /// @return Unique identifier of the created annotation
+    let addAnnotationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.addAnnotation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addAnnotationChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let jsonAnnotationArg = args[0] as! String
+        let jsonAttachmentArg: String? = nilOrValue(args[1])
+        api.addAnnotation(jsonAnnotation: jsonAnnotationArg, jsonAttachment: jsonAttachmentArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addAnnotationChannel.setMessageHandler(nil)
+    }
+    /// Remove an annotation from the document.
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @param annotationId Unique identifier of the annotation
+    /// @return true if successfully removed, false otherwise
+    let removeAnnotationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.removeAnnotation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      removeAnnotationChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let annotationIdArg = args[1] as! String
+        api.removeAnnotation(pageIndex: pageIndexArg, annotationId: annotationIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      removeAnnotationChannel.setMessageHandler(nil)
+    }
+    /// Search for annotations containing specific text.
+    ///
+    /// @param query Search term
+    /// @param pageIndex Optional page index to limit search scope
+    /// @return List of matching annotations
+    let searchAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      searchAnnotationsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let queryArg = args[0] as! String
+        let pageIndexArg: Int64? = nilOrValue(args[1])
+        api.searchAnnotations(query: queryArg, pageIndex: pageIndexArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      searchAnnotationsChannel.setMessageHandler(nil)
+    }
+    /// Export annotations as XFDF format.
+    ///
+    /// @param pageIndex Optional page index to export specific page annotations
+    /// @return XFDF string representation
+    let exportXFDFChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.exportXFDF\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      exportXFDFChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg: Int64? = nilOrValue(args[0])
+        api.exportXFDF(pageIndex: pageIndexArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      exportXFDFChannel.setMessageHandler(nil)
+    }
+    /// Import annotations from XFDF format.
+    ///
+    /// @param xfdfString XFDF string to import
+    /// @return true if successfully imported, false otherwise
+    let importXFDFChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.importXFDF\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      importXFDFChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let xfdfStringArg = args[0] as! String
+        api.importXFDF(xfdfString: xfdfStringArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      importXFDFChannel.setMessageHandler(nil)
+    }
+    /// Get all annotations that have unsaved changes.
+    ///
+    /// @return List of annotations with pending changes
+    let getUnsavedAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getUnsavedAnnotationsChannel.setMessageHandler { _, reply in
+        api.getUnsavedAnnotations { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getUnsavedAnnotationsChannel.setMessageHandler(nil)
     }
   }
 }

@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import com.pspdfkit.ai.createAiAssistant
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
@@ -39,9 +40,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
-import io.nutrient.data.models.AiAssistantConfiguration
 import io.nutrient.domain.ai.AiAssistant
-import io.nutrient.domain.ai.standaloneAiAssistant
+
 
 internal class PSPDFKitView(
     val context: Context,
@@ -66,7 +66,6 @@ internal class PSPDFKitView(
     private var annotationMenuHandler: AnnotationMenuHandler? = null
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
-    private var aiAssistant: AiAssistant? = null
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -128,11 +127,14 @@ internal class PSPDFKitView(
                         .build()
                 }
             }
-            setupAiAssistant(context, aiAssistantConfigurationMap)
+
+            aiAssistantConfigurationMap?.let {
+                setupAiAssistant(context, it)
+            }
 
             fragmentCallbacks = FlutterPdfUiFragmentCallbacks(
                 methodChannel, measurementValueConfigurations,
-                messenger, FlutterWidgetCallback(widgetCallbacks), aiAssistant
+                messenger, FlutterWidgetCallback(widgetCallbacks)
             )
 
             fragmentCallbacks?.let { callbacks ->
@@ -308,6 +310,7 @@ internal class PSPDFKitView(
             // Null out references
             fragmentCallbacks = null
             fragmentContainerView = null
+            aiAssistant = null
 
             // Unregister method channel
             NutrientViewControllerApi.setUp(messenger, null, id.toString())
@@ -386,22 +389,28 @@ internal class PSPDFKitView(
         val jwt = configuration?.get("jwt") as String?
         val sessionId = configuration?.get("sessionId") as String?
         val userId = configuration?.get("userId") as String?
-
-        if (serverUrl != null && jwt != null) {
-            val aiAssistantConfiguration = AiAssistantConfiguration(
-                serverUrl = serverUrl,
-                jwt = jwt,
-                sessionId = sessionId ?: "",
-                userId = userId ?: ""
-            )
-             aiAssistant = standaloneAiAssistant(context, aiAssistantConfiguration)
+        
+        if (serverUrl != null && jwt != null && sessionId != null) {
+            try {
+                // Create AI Assistant with new 10.6+ API and store in companion object
+                aiAssistant = createAiAssistant(
+                    context = context,
+                    documentsDescriptors = emptyList(),
+                    ipAddress = serverUrl,
+                    sessionId = sessionId,
+                    jwtToken = { _ -> jwt }
+                )
+            } catch (e: Exception) {
+                Log.e(LOG_TAG, "Error creating AI Assistant", e)
+            }
         } else {
-            Log.e(LOG_TAG, "Invalid AI Assistant configuration")
+            Log.e(LOG_TAG, "Invalid AI Assistant configuration - serverUrl, jwt, and sessionId are required")
         }
     }
 
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
+        var  aiAssistant: AiAssistant? = null
     }
 }
 

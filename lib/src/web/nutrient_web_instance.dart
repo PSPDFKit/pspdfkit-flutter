@@ -68,12 +68,155 @@ class NutrientWebInstance {
   /// `PSPDFKit.Annotations.toSerializableObject` in PSPDFKit for Web.
   ///
   /// Throws an error if the operation fails.
+  ///
+  /// @deprecated Use [updateAnnotationProperties] instead for safer updates
+  /// that preserve attachment data and other properties.
+  @Deprecated(
+      'Use updateAnnotationProperties instead - this method may lose attachment data')
   Future<void> updateAnnotation(Map<String, dynamic> jsonAnnotation) async {
     try {
       await removeAnnotation(jsonAnnotation)
           .then((value) => addAnnotation(jsonAnnotation));
     } catch (e) {
       throw Exception('Failed to update annotation: $e');
+    }
+  }
+
+  /// Updates specific properties of an annotation while preserving all other data.
+  ///
+  /// This method safely updates only the specified properties in [updatedProperties]
+  /// while maintaining all other annotation data including attachments, custom data,
+  /// and properties not included in the update.
+  ///
+  /// The [updatedProperties] map should contain the annotation's id and pageIndex
+  /// along with any properties to update.
+  ///
+  /// Returns a [Future] that completes when the update is successful.
+  /// Throws an error if the operation fails.
+  Future<void> updateAnnotationProperties(
+      Map<String, dynamic> updatedProperties) async {
+    try {
+      // Get the annotation id and page index
+      final annotationId = updatedProperties['id'] ?? updatedProperties['name'];
+      final pageIndex = updatedProperties['pageIndex'];
+
+      if (annotationId == null || pageIndex == null) {
+        throw ArgumentError('Annotation id and pageIndex are required');
+      }
+
+      // Get the existing annotation first
+      var annotations = await _getRawAnnotations(pageIndex);
+      JsObject? existingAnnotation;
+
+      if (annotations != null && annotations['size'] != null) {
+        for (var i = 0; i < annotations['size']; i++) {
+          var annotation = annotations.callMethod('get', [i]);
+          var annotationJson = webAnnotationToJSON(annotation);
+          if (annotationJson['id'] == annotationId ||
+              annotationJson['name'] == annotationId) {
+            existingAnnotation = annotation;
+            break;
+          }
+        }
+      }
+
+      if (existingAnnotation == null) {
+        throw Exception('Annotation not found with id: $annotationId');
+      }
+
+      // Create an updated annotation by merging properties
+      // The Nutrient Web SDK uses Immutable.js, so we need to chain set() calls
+      // for each property we want to update
+      var updatedAnnotation = existingAnnotation;
+
+      // Update each property individually
+      updatedProperties.forEach((key, value) {
+        // Skip id and pageIndex as they shouldn't be changed
+        if (key != 'id' && key != 'pageIndex' && key != 'name') {
+          // Map property names to Web SDK expected names
+          var webKey = key;
+          if (key == 'lineWidth') {
+            // The Web SDK uses 'strokeWidth' for line width
+            webKey = 'strokeWidth';
+          } else if (key == 'contents') {
+            // The Web SDK uses 'text' for contents
+            webKey = 'text';
+          } else if (key == 'creator') {
+            // The Web SDK uses 'creatorName' for creator
+            webKey = 'creatorName';
+          }
+
+          // Handle color properties specially - they need to be PSPDFKit.Color instances
+          if ((webKey == 'strokeColor' || webKey == 'fillColor') &&
+              value is Map) {
+            // Create a PSPDFKit.Color instance
+            var colorClass = context['PSPDFKit']['Color'];
+            value = JsObject(colorClass, [
+              JsObject.jsify({
+                'r': value['r'] ?? 0,
+                'g': value['g'] ?? 0,
+                'b': value['b'] ?? 0,
+                'a': value['a'] ?? 255,
+              })
+            ]);
+          }
+
+          // Handle flags specially - convert to appropriate format
+          if (key == 'flags' && value is List) {
+            // The Web SDK expects flags as individual boolean properties
+            // Map Flutter flag names to Web SDK property names
+            final flagsList = List<String>.from(value);
+
+            // Define all possible flags and their Web SDK property names
+            final flagMappings = {
+              'readOnly': 'readOnly',
+              'locked': 'locked',
+              'hidden': 'hidden',
+              'invisible': 'invisible',
+              'print': 'noPrint', // Note: inverted logic
+              'noView': 'noView',
+              'noZoom': 'noZoom',
+              'noRotate': 'noRotate',
+              'toggleNoView': 'toggleNoView',
+              'lockedContents': 'lockedContents',
+            };
+
+            // Set or unset each flag based on whether it's in the list
+            flagMappings.forEach((flutterFlag, webFlag) {
+              if (flagsList.contains(flutterFlag)) {
+                // Special handling for 'print' flag which has inverted logic
+                if (flutterFlag == 'print') {
+                  updatedAnnotation =
+                      updatedAnnotation.callMethod('set', [webFlag, false]);
+                } else {
+                  updatedAnnotation =
+                      updatedAnnotation.callMethod('set', [webFlag, true]);
+                }
+              } else {
+                // Flag is not in the list, so it should be unset
+                // Special handling for 'print' flag which has inverted logic
+                if (flutterFlag == 'print') {
+                  updatedAnnotation =
+                      updatedAnnotation.callMethod('set', [webFlag, true]);
+                } else {
+                  updatedAnnotation =
+                      updatedAnnotation.callMethod('set', [webFlag, false]);
+                }
+              }
+            });
+          } else if (key != 'flags') {
+            // For non-flag properties, use the mapped key
+            updatedAnnotation =
+                updatedAnnotation.callMethod('set', [webKey, value]);
+          }
+        }
+      });
+
+      // Apply the update using the instance's update method
+      await promiseToFuture(
+          _nutrientInstance.callMethod('update', [updatedAnnotation]));
+    } catch (e) {
+      throw Exception('Failed to update annotation properties: $e');
     }
   }
 
@@ -86,18 +229,22 @@ class NutrientWebInstance {
     var annotations = await _getRawAnnotations(pageIndex);
     var annotationJSON = <dynamic>[];
 
-    for (var i = 0; i < annotations['size']; i++) {
-      var annotation = annotations.callMethod('get', [i]);
+    // Check if annotations has a 'size' property (Immutable.js List)
+    if (annotations != null && annotations['size'] != null) {
+      for (var i = 0; i < annotations['size']; i++) {
+        var annotation = annotations.callMethod('get', [i]);
 
-      var ann = webAnnotationToJSON(annotation);
+        var ann = webAnnotationToJSON(annotation);
 
-      if (annotationType != null) {
-        if (ann['type'] == annotationType || annotationType == 'pspdfkit/all') {
+        if (annotationType != null) {
+          if (ann['type'] == annotationType ||
+              annotationType == 'pspdfkit/all') {
+            annotationJSON.add(ann);
+            continue;
+          }
+        } else {
           annotationJSON.add(ann);
-          continue;
         }
-      } else {
-        annotationJSON.add(ann);
       }
     }
     return annotationJSON;

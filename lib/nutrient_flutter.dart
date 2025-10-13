@@ -28,6 +28,10 @@ export 'src/widgets/pspdfkit_widget_controller.dart';
 export 'src/measurements/measurements.dart';
 export 'src/processor/processor.dart';
 export 'src/document/pdf_document.dart';
+// Deprecated: AnnotationManager is no longer exposed as a user-facing API.
+// Use annotation management methods directly on PdfDocument instead.
+export 'src/document/annotation_manager.dart';
+export 'src/document/annotation_properties_extensions.dart';
 export 'src/forms/forms.dart';
 export 'src/api/nutrient_api.g.dart';
 

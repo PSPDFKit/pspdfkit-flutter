@@ -46,6 +46,25 @@ abstract class PdfDocument {
   Future<void> addAnnotations(List<Annotation> annotations);
 
   /// Updates the given annotation model in the presented document.
+  ///
+  /// **DEPRECATED:** This method has a critical bug that causes data loss for annotations
+  /// with attachments (FileAnnotation, ImageAnnotation) and customData. It uses a
+  /// remove-then-add approach internally which loses all attachment data.
+  ///
+  /// Use the new annotation management methods instead:
+  /// ```dart
+  /// final properties = await document.getAnnotationProperties(pageIndex, annotationId);
+  /// if (properties != null) {
+  ///   final updated = properties.withColor(Colors.red);
+  ///   await document.saveAnnotationProperties(updated);
+  /// }
+  /// ```
+  ///
+  /// This method will be removed in version 7.0.0.
+  @Deprecated(
+      'Use getAnnotationProperties/saveAnnotationProperties for safe property updates. '
+      'This method causes data loss for annotations with attachments. '
+      'Will be removed in version 7.0.0')
   Future<void> updateAnnotation(Annotation annotation);
 
   /// Adds an annotation to the presented document.
@@ -100,4 +119,42 @@ abstract class PdfDocument {
   /// Get number of pages in the document.
   /// Returns the number of pages in the document.
   Future<int> getPageCount();
+
+  // ============================
+  // Annotation Management Methods
+  // ============================
+  // These methods provide safe annotation operations without data loss
+  // for annotations with attachments or custom data.
+
+  /// Gets annotation properties for modification.
+  /// Returns null if the annotation doesn't exist.
+  ///
+  /// The returned [AnnotationProperties] can be modified using
+  /// extension methods like `withColor()`, `withOpacity()`, etc.
+  ///
+  /// Example:
+  /// ```dart
+  /// final properties = await document.getAnnotationProperties(pageIndex, annotationId);
+  /// if (properties != null) {
+  ///   final updated = properties.withColor(Colors.red).withOpacity(0.7);
+  ///   await document.saveAnnotationProperties(updated);
+  /// }
+  /// ```
+  Future<AnnotationProperties?> getAnnotationProperties(
+    int pageIndex,
+    String annotationId,
+  );
+
+  /// Saves modified annotation properties.
+  /// Only non-null properties in [properties] will be updated.
+  /// All other properties (including attachments and custom data) are preserved.
+  ///
+  /// Returns true if successfully saved, false otherwise.
+  Future<bool> saveAnnotationProperties(AnnotationProperties properties);
+
+  /// Searches for annotations containing specific text.
+  ///
+  /// [query] is the search term.
+  /// [pageIndex] optionally limits the search to a specific page.
+  Future<List<Annotation>> searchAnnotations(String query, [int? pageIndex]);
 }

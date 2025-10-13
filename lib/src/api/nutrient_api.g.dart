@@ -635,6 +635,150 @@ class AnnotationMenuConfigurationData {
   }
 }
 
+/// Data class for annotation properties that provides type-safe access
+/// to annotation attributes while preserving attachments and custom data.
+///
+/// This class is used with the AnnotationManager API to safely update
+/// annotation properties without losing data during the update process.
+///
+/// **Usage Pattern**:
+/// ```dart
+/// // Get current properties
+/// final properties = await annotationManager.getAnnotationProperties(pageIndex, annotationId);
+///
+/// // Create modified version
+/// final updated = properties?.withColor(Colors.red).withOpacity(0.7);
+///
+/// // Save changes
+/// if (updated != null) {
+///   await annotationManager.saveAnnotationProperties(updated);
+/// }
+/// ```
+///
+/// **Data Preservation**: Unlike the deprecated `updateAnnotation` method,
+/// this approach preserves attachments, custom data, and other properties
+/// that are not being explicitly modified.
+class AnnotationProperties {
+  AnnotationProperties({
+    required this.annotationId,
+    required this.pageIndex,
+    this.strokeColor,
+    this.fillColor,
+    this.opacity,
+    this.lineWidth,
+    this.flags,
+    this.customData,
+    this.contents,
+    this.subject,
+    this.creator,
+    this.bbox,
+    this.note,
+    this.inkLines,
+    this.fontName,
+    this.fontSize,
+    this.iconName,
+  });
+
+  /// Unique identifier for the annotation
+  String annotationId;
+
+  /// Zero-based page index where the annotation is located
+  int pageIndex;
+
+  /// Stroke color as ARGB integer (e.g., 0xFFFF0000 for red)
+  int? strokeColor;
+
+  /// Fill color as ARGB integer (e.g., 0xFF0000FF for blue)
+  int? fillColor;
+
+  /// Opacity value between 0.0 (transparent) and 1.0 (opaque)
+  double? opacity;
+
+  /// Line width for stroke-based annotations (in points)
+  double? lineWidth;
+
+  /// List of annotation flags (e.g., ['readOnly', 'print'])
+  List<String>? flags;
+
+  /// Custom data associated with the annotation
+  /// This preserves any application-specific metadata
+  Map<String, Object?>? customData;
+
+  /// Text content of the annotation (for text-based annotations)
+  String? contents;
+
+  /// Subject/title of the annotation
+  String? subject;
+
+  /// Creator/author of the annotation
+  String? creator;
+
+  /// Bounding box as [x, y, width, height] in PDF coordinates
+  List<double>? bbox;
+
+  /// Note text associated with the annotation
+  String? note;
+
+  /// Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
+  /// Each line is an array of points, each point is [x, y, pressure]
+  List<List<List<double>>>? inkLines;
+
+  /// Font name for text annotations
+  String? fontName;
+
+  /// Font size for text annotations (in points)
+  double? fontSize;
+
+  /// Icon name for note annotations (e.g., 'Comment', 'Key', 'Note')
+  String? iconName;
+
+  Object encode() {
+    return <Object?>[
+      annotationId,
+      pageIndex,
+      strokeColor,
+      fillColor,
+      opacity,
+      lineWidth,
+      flags,
+      customData,
+      contents,
+      subject,
+      creator,
+      bbox,
+      note,
+      inkLines,
+      fontName,
+      fontSize,
+      iconName,
+    ];
+  }
+
+  static AnnotationProperties decode(Object result) {
+    result as List<Object?>;
+    return AnnotationProperties(
+      annotationId: result[0]! as String,
+      pageIndex: result[1]! as int,
+      strokeColor: result[2] as int?,
+      fillColor: result[3] as int?,
+      opacity: result[4] as double?,
+      lineWidth: result[5] as double?,
+      flags: (result[6] as List<Object?>?)?.cast<String>(),
+      customData:
+          (result[7] as Map<Object?, Object?>?)?.cast<String, Object?>(),
+      contents: result[8] as String?,
+      subject: result[9] as String?,
+      creator: result[10] as String?,
+      bbox: (result[11] as List<Object?>?)?.cast<double>(),
+      note: result[12] as String?,
+      inkLines: (result[13] as List<Object?>?)?.cast<List<List<double>>>(),
+      fontName: result[14] as String?,
+      fontSize: result[15] as double?,
+      iconName: result[16] as String?,
+    );
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -693,6 +837,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is AnnotationMenuConfigurationData) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
+    } else if (value is AnnotationProperties) {
+      buffer.putUint8(146);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -745,6 +892,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PointF.decode(readValue(buffer)!);
       case 145:
         return AnnotationMenuConfigurationData.decode(readValue(buffer)!);
+      case 146:
+        return AnnotationProperties.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -2985,6 +3134,14 @@ class PdfDocumentApi {
 
   /// Updates the given annotation in the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
+  ///
+  /// @deprecated Use setAnnotationProperties() or specific property setters instead.
+  /// This method has a critical bug that causes data loss for annotations with attachments.
+  /// It will be removed in version 7.0.0.
+  ///
+  /// Migration:
+  /// - For single property updates: Use specific setters like setAnnotationColor()
+  /// - For multiple property updates: Use setAnnotationProperties()
   Future<bool?> updateAnnotation(String jsonAnnotation) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.updateAnnotation$pigeonVar_messageChannelSuffix';
@@ -3546,6 +3703,387 @@ abstract class CustomToolbarCallbacks {
           }
         });
       }
+    }
+  }
+}
+
+/// Manages annotations for a PDF document with proper data preservation.
+///
+/// This API replaces the deprecated annotation methods in PdfDocumentApi
+/// and provides a safe way to update annotations without losing attachments
+/// or custom data.
+///
+/// **Channel Management**: Each document instance creates its own AnnotationManager
+/// with a unique channel ID prefixed by the document ID (e.g., "doc123_annotation_manager").
+/// This allows multiple documents to have independent annotation managers.
+///
+/// **Key Features**:
+/// - Preserves attachments when updating annotation properties
+/// - Maintains custom data during updates
+/// - Only updates properties that are explicitly set (non-null)
+/// - Provides batch update capabilities
+/// - Supports search and filtering operations
+class AnnotationManagerApi {
+  /// Constructor for [AnnotationManagerApi].  The [binaryMessenger] named argument is
+  /// available for dependency injection.  If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AnnotationManagerApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+      : pigeonVar_binaryMessenger = binaryMessenger,
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  /// Initialize the annotation manager for a specific document.
+  /// This should be called once when creating the manager instance.
+  ///
+  /// @param documentId The unique identifier of the document
+  Future<void> initialize(String documentId) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.initialize$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[documentId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  /// Get the current properties of an annotation.
+  /// Returns null if the annotation doesn't exist.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return Current annotation properties or null if not found
+  Future<AnnotationProperties?> getAnnotationProperties(
+      int pageIndex, String annotationId) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationProperties$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return (pigeonVar_replyList[0] as AnnotationProperties?);
+    }
+  }
+
+  /// Save modified annotation properties.
+  /// Only non-null properties in modifiedProperties will be updated.
+  /// All other properties (including attachments and custom data) are preserved.
+  ///
+  /// @param modifiedProperties Properties to update (only non-null values are applied)
+  /// @return true if successfully saved, false otherwise
+  Future<bool> saveAnnotationProperties(
+      AnnotationProperties modifiedProperties) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.saveAnnotationProperties$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[modifiedProperties]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?)!;
+    }
+  }
+
+  /// Get all annotations on a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
+  /// @return List of annotations as JSON-compatible maps
+  Future<Object> getAnnotations(int pageIndex, String annotationType) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationType]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return pigeonVar_replyList[0]!;
+    }
+  }
+
+  /// Add a new annotation to the document.
+  ///
+  /// @param jsonAnnotation JSON representation of the annotation
+  /// @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
+  /// @return Unique identifier of the created annotation
+  Future<String> addAnnotation(
+      String jsonAnnotation, String? jsonAttachment) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[jsonAnnotation, jsonAttachment]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as String?)!;
+    }
+  }
+
+  /// Remove an annotation from the document.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId Unique identifier of the annotation
+  /// @return true if successfully removed, false otherwise
+  Future<bool> removeAnnotation(int pageIndex, String annotationId) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?)!;
+    }
+  }
+
+  /// Search for annotations containing specific text.
+  ///
+  /// @param query Search term
+  /// @param pageIndex Optional page index to limit search scope
+  /// @return List of matching annotations
+  Future<Object> searchAnnotations(String query, int? pageIndex) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[query, pageIndex]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return pigeonVar_replyList[0]!;
+    }
+  }
+
+  /// Export annotations as XFDF format.
+  ///
+  /// @param pageIndex Optional page index to export specific page annotations
+  /// @return XFDF string representation
+  Future<String> exportXFDF(int? pageIndex) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.exportXFDF$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as String?)!;
+    }
+  }
+
+  /// Import annotations from XFDF format.
+  ///
+  /// @param xfdfString XFDF string to import
+  /// @return true if successfully imported, false otherwise
+  Future<bool> importXFDF(String xfdfString) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.importXFDF$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfString]);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as bool?)!;
+    }
+  }
+
+  /// Get all annotations that have unsaved changes.
+  ///
+  /// @return List of annotations with pending changes
+  Future<Object> getUnsavedAnnotations() async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final List<Object?>? pigeonVar_replyList =
+        await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return pigeonVar_replyList[0]!;
     }
   }
 }

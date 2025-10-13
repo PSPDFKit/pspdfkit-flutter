@@ -11,12 +11,20 @@ import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/annotations/annotation_utils.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter/src/document/annotation_manager_native.dart';
 
 class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   late final PdfDocumentApi _api;
+  AnnotationManagerNative? _annotationManagerInstance;
 
   PdfDocumentNative({required super.documentId, required PdfDocumentApi api}) {
     _api = api;
+  }
+
+  AnnotationManagerNative get _annotationManager {
+    _annotationManagerInstance ??=
+        AnnotationManagerNative(documentId: documentId);
+    return _annotationManagerInstance!;
   }
 
   @override
@@ -204,5 +212,28 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   @override
   Future<int> getPageCount() {
     return _api.getPageCount();
+  }
+
+  // ============================
+  // Annotation Management Methods
+  // ============================
+
+  @override
+  Future<AnnotationProperties?> getAnnotationProperties(
+    int pageIndex,
+    String annotationId,
+  ) async {
+    return _annotationManager.getAnnotationProperties(pageIndex, annotationId);
+  }
+
+  @override
+  Future<bool> saveAnnotationProperties(AnnotationProperties properties) async {
+    return _annotationManager.saveAnnotationProperties(properties);
+  }
+
+  @override
+  Future<List<Annotation>> searchAnnotations(String query,
+      [int? pageIndex]) async {
+    return _annotationManager.searchAnnotations(query, pageIndex);
   }
 }

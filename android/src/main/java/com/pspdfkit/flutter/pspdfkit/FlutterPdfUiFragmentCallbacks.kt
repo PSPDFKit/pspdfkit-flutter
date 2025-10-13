@@ -25,7 +25,9 @@ import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.PdfDocumentApi
+import com.pspdfkit.flutter.pspdfkit.api.AnnotationManagerApi
 import com.pspdfkit.flutter.pspdfkit.document.FlutterPdfDocument
+import com.pspdfkit.flutter.pspdfkit.document.AnnotationManagerImpl
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.ui.PdfFragment
@@ -49,7 +51,6 @@ class FlutterPdfUiFragmentCallbacks(
     private val measurementConfigurations: List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger,
     private val flutterWidgetCallback: FlutterWidgetCallback,
-    private val aiAssistant: AiAssistant?
 
 ) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener {
 
@@ -88,7 +89,16 @@ class FlutterPdfUiFragmentCallbacks(
         // Set up document API for Flutter access FIRST - before sending callbacks
         try {
             flutterPdfDocument = FlutterPdfDocument(document)
+
+            // Register document instance for AnnotationManager access
+            FlutterPdfDocument.registerDocument(document.uid, flutterPdfDocument!!)
+
+            // Set up PdfDocumentApi
             PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, document.uid)
+
+            // Set up AnnotationManagerApi with documentId_annotation_manager as channel suffix
+            val annotationManager = AnnotationManagerImpl(document)
+            AnnotationManagerApi.setUp(binaryMessenger, annotationManager, "${document.uid}_annotation_manager")
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
         }
@@ -114,13 +124,6 @@ class FlutterPdfUiFragmentCallbacks(
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error sending direct event notification", e)
         }
-         aiAssistant?.let {
-             try {
-                 document.setAiAssistant(it)
-             } catch (e: Exception) {
-                 Log.e(LOG_TAG, "Error setting AiAssistant on loaded document", e)
-             }
-         }
     }
 
     override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
@@ -164,6 +167,12 @@ class FlutterPdfUiFragmentCallbacks(
             }
             if (pdfFragment == f) {
                 pdfFragment?.removeDocumentListener(this)
+
+                // Cleanup document registration
+                flutterPdfDocument?.let { doc ->
+                    FlutterPdfDocument.unregisterDocument(doc.pdfDocument.uid)
+                }
+
                 pdfFragment = null
                 flutterPdfDocument = null
             }
