@@ -32,6 +32,9 @@ class BasicExample extends StatelessWidget {
                     : null,
                 child: NutrientView(
                   documentPath: documentPath,
+                  configuration: PdfConfiguration(
+                    androidFormEditingEnabled: false,
+                  ),
                 ))));
   }
 }

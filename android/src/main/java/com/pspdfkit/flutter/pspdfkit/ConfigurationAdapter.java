@@ -82,6 +82,7 @@ class ConfigurationAdapter {
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
     private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
     private static final String ENABLE_CONTENT_EDITOR = "enableContentEditor";
+    private static final String FORM_EDITING_ENABLED = "formEditingEnabled";
     private static final String DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String DEFAULT_THEME_RESOURCE = "defaultThemeResource";
 
@@ -357,6 +358,10 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, ENABLE_CONTENT_EDITOR, Boolean.class);
             if (key != null) {
                 configureEnableContentEditor((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, FORM_EDITING_ENABLED, Boolean.class);
+            if (key != null) {
+                configureFormEditingEnabled((Boolean) configurationMap.get(key));
             }
             key = getKeyOfType(configurationMap, SHOW_THUMBNAIL_BAR, String.class);
             if (key != null) {
@@ -757,6 +762,10 @@ class ConfigurationAdapter {
 
     private void configureEnableContentEditor(boolean enableContentEditor) {
         configuration.contentEditingEnabled(enableContentEditor);
+    }
+
+    private void configureFormEditingEnabled(boolean formEditingEnabled) {
+        configuration.formEditingEnabled(formEditingEnabled);
     }
 
     private void configureDocumentInfoView(boolean enableDocumentInfoView) {

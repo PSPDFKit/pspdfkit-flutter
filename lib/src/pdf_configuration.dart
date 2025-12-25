@@ -93,6 +93,10 @@ class PdfConfiguration {
   /// This feature requires a content editor license.
   final bool? androidContentEditorEnabled;
 
+  /// Sets whether to enable form editing. Defaults to true.
+  /// When set to false, all form fields become read-only and cannot be modified.
+  final bool? androidFormEditingEnabled;
+
   /// Sets whether to show the share action in the Android toolbar. Defaults
   /// to true.
   final bool? androidShowShareAction;
@@ -220,6 +224,7 @@ class PdfConfiguration {
     this.androidShowBookmarksAction,
     this.androidEnableDocumentEditor,
     this.androidContentEditorEnabled,
+    this.androidFormEditingEnabled,
     this.androidShowShareAction,
     this.androidShowPrintAction,
     this.androidShowDocumentInfoView,
@@ -281,6 +286,7 @@ class PdfConfiguration {
       'androidShowBookmarksAction': androidShowBookmarksAction,
       'androidEnableDocumentEditor': androidEnableDocumentEditor,
       'androidEnableContentEditor': androidContentEditorEnabled,
+      'androidFormEditingEnabled': androidFormEditingEnabled,
       'androidShowShareAction': androidShowShareAction,
       'androidShowPrintAction': androidShowPrintAction,
       'androidShowDocumentInfoView': androidShowDocumentInfoView,
