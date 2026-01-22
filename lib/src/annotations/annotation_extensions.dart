@@ -106,10 +106,6 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'measurementAreaEllipse';
       case AnnotationTool.measurementAreaPolygon:
         return 'measurementAreaPolygon';
-
-      // Default fallback
-      default:
-        return 'pan';
     }
   }
 
@@ -201,10 +197,6 @@ extension AnnotationToolWebExtension on AnnotationTool {
         return 'ELLIPSE_AREA';
       case AnnotationTool.measurementAreaPolygon:
         return 'POLYGON_AREA';
-
-      // Default fallback
-      default:
-        return 'PAN';
     }
   }
 }

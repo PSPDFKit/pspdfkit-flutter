@@ -1,4 +1,4 @@
-// Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+// Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 //
 // THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 // AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -496,6 +496,29 @@ struct FormFieldData {
   }
 }
 
+/// Options for opening a document without a viewer (headless mode).
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct HeadlessDocumentOpenOptions {
+  /// Password for encrypted documents.
+  var password: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> HeadlessDocumentOpenOptions? {
+    let password: String? = nilOrValue(pigeonVar_list[0])
+
+    return HeadlessDocumentOpenOptions(
+      password: password
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      password
+    ]
+  }
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct PointF {
   var x: Double
@@ -640,6 +663,10 @@ struct AnnotationMenuConfigurationData {
 /// this approach preserves attachments, custom data, and other properties
 /// that are not being explicitly modified.
 ///
+/// **Note on inkLines, customData, bbox, and flags**: These fields are serialized as JSON
+/// strings internally to avoid Pigeon's CastList type casting issues. Use the
+/// extension methods for typed access (e.g., `inkLines`, `customData`, `boundingBox`, `flagsSet`).
+///
 /// Generated class from Pigeon that represents data sent in messages.
 struct AnnotationProperties {
   /// Unique identifier for the annotation
@@ -654,24 +681,29 @@ struct AnnotationProperties {
   var opacity: Double? = nil
   /// Line width for stroke-based annotations (in points)
   var lineWidth: Double? = nil
-  /// List of annotation flags (e.g., ['readOnly', 'print'])
-  var flags: [String]? = nil
-  /// Custom data associated with the annotation
-  /// This preserves any application-specific metadata
-  var customData: [String: Any?]? = nil
+  /// Annotation flags as a JSON string array (e.g., '["readOnly", "print"]').
+  /// Use the `flagsSet` getter from the extension for typed access as Set<AnnotationFlag>.
+  var flagsJson: String? = nil
+  /// Custom data associated with the annotation as a JSON string.
+  /// Use the `customData` getter from the extension for typed access.
+  /// This preserves any application-specific metadata.
+  var customDataJson: String? = nil
   /// Text content of the annotation (for text-based annotations)
   var contents: String? = nil
   /// Subject/title of the annotation
   var subject: String? = nil
   /// Creator/author of the annotation
   var creator: String? = nil
-  /// Bounding box as [x, y, width, height] in PDF coordinates
-  var bbox: [Double]? = nil
+  /// Bounding box as a JSON string array [x, y, width, height] in PDF coordinates.
+  /// Use the `boundingBox` getter from the extension for typed access as Rect.
+  var bboxJson: String? = nil
   /// Note text associated with the annotation
   var note: String? = nil
-  /// Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
-  /// Each line is an array of points, each point is [x, y, pressure]
-  var inkLines: [[[Double]]]? = nil
+  /// Ink lines for ink annotations as a JSON string.
+  /// Use the `inkLines` getter from the extension for typed access.
+  /// Format: [[[x, y, pressure], ...], ...]
+  /// Each line is an array of points, each point is [x, y, pressure].
+  var inkLinesJson: String? = nil
   /// Font name for text annotations
   var fontName: String? = nil
   /// Font size for text annotations (in points)
@@ -688,14 +720,14 @@ struct AnnotationProperties {
     let fillColor: Int64? = nilOrValue(pigeonVar_list[3])
     let opacity: Double? = nilOrValue(pigeonVar_list[4])
     let lineWidth: Double? = nilOrValue(pigeonVar_list[5])
-    let flags: [String]? = nilOrValue(pigeonVar_list[6])
-    let customData: [String: Any?]? = nilOrValue(pigeonVar_list[7])
+    let flagsJson: String? = nilOrValue(pigeonVar_list[6])
+    let customDataJson: String? = nilOrValue(pigeonVar_list[7])
     let contents: String? = nilOrValue(pigeonVar_list[8])
     let subject: String? = nilOrValue(pigeonVar_list[9])
     let creator: String? = nilOrValue(pigeonVar_list[10])
-    let bbox: [Double]? = nilOrValue(pigeonVar_list[11])
+    let bboxJson: String? = nilOrValue(pigeonVar_list[11])
     let note: String? = nilOrValue(pigeonVar_list[12])
-    let inkLines: [[[Double]]]? = nilOrValue(pigeonVar_list[13])
+    let inkLinesJson: String? = nilOrValue(pigeonVar_list[13])
     let fontName: String? = nilOrValue(pigeonVar_list[14])
     let fontSize: Double? = nilOrValue(pigeonVar_list[15])
     let iconName: String? = nilOrValue(pigeonVar_list[16])
@@ -707,14 +739,14 @@ struct AnnotationProperties {
       fillColor: fillColor,
       opacity: opacity,
       lineWidth: lineWidth,
-      flags: flags,
-      customData: customData,
+      flagsJson: flagsJson,
+      customDataJson: customDataJson,
       contents: contents,
       subject: subject,
       creator: creator,
-      bbox: bbox,
+      bboxJson: bboxJson,
       note: note,
-      inkLines: inkLines,
+      inkLinesJson: inkLinesJson,
       fontName: fontName,
       fontSize: fontSize,
       iconName: iconName
@@ -728,17 +760,74 @@ struct AnnotationProperties {
       fillColor,
       opacity,
       lineWidth,
-      flags,
-      customData,
+      flagsJson,
+      customDataJson,
       contents,
       subject,
       creator,
-      bbox,
+      bboxJson,
       note,
-      inkLines,
+      inkLinesJson,
       fontName,
       fontSize,
       iconName,
+    ]
+  }
+}
+
+/// Represents a bookmark in a PDF document.
+///
+/// Bookmarks are user-created markers that allow quick navigation
+/// to specific pages or actions in a document. They are different from
+/// PDF outlines (table of contents).
+///
+/// This follows the Instant JSON bookmark specification:
+/// - `type` is always "pspdfkit/bookmark"
+/// - `action` defines what happens when the bookmark is activated
+/// - `name` provides a display label
+///
+/// Example usage:
+/// ```dart
+/// // Create a bookmark for page 5
+/// final bookmark = Bookmark.forPage(pageIndex: 5, name: 'Chapter 2');
+/// await document.addBookmark(bookmark);
+///
+/// // Get all bookmarks
+/// final bookmarks = await document.getBookmarks();
+/// ```
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct Bookmark {
+  /// The PDF bookmark ID used to store the bookmark in the PDF.
+  /// This is assigned by the system when the bookmark is persisted.
+  /// May be null for newly created bookmarks.
+  var pdfBookmarkId: String? = nil
+  /// Display name of the bookmark shown in the UI.
+  /// If not provided, a default name based on the page number may be used.
+  var name: String? = nil
+  /// The action JSON string defining what happens when the bookmark is activated.
+  /// Typically a GoToAction that navigates to a specific page.
+  /// Format: {"type": "goTo", "pageIndex": 0, "destinationType": "fitPage"}
+  var actionJson: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> Bookmark? {
+    let pdfBookmarkId: String? = nilOrValue(pigeonVar_list[0])
+    let name: String? = nilOrValue(pigeonVar_list[1])
+    let actionJson: String? = nilOrValue(pigeonVar_list[2])
+
+    return Bookmark(
+      pdfBookmarkId: pdfBookmarkId,
+      name: name,
+      actionJson: actionJson
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      pdfBookmarkId,
+      name,
+      actionJson,
     ]
   }
 }
@@ -817,11 +906,15 @@ private class NutrientApiPigeonCodecReader: FlutterStandardReader {
     case 143:
       return FormFieldData.fromList(self.readValue() as! [Any?])
     case 144:
-      return PointF.fromList(self.readValue() as! [Any?])
+      return HeadlessDocumentOpenOptions.fromList(self.readValue() as! [Any?])
     case 145:
-      return AnnotationMenuConfigurationData.fromList(self.readValue() as! [Any?])
+      return PointF.fromList(self.readValue() as! [Any?])
     case 146:
+      return AnnotationMenuConfigurationData.fromList(self.readValue() as! [Any?])
+    case 147:
       return AnnotationProperties.fromList(self.readValue() as! [Any?])
+    case 148:
+      return Bookmark.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -875,14 +968,20 @@ private class NutrientApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? FormFieldData {
       super.writeByte(143)
       super.writeValue(value.toList())
-    } else if let value = value as? PointF {
+    } else if let value = value as? HeadlessDocumentOpenOptions {
       super.writeByte(144)
       super.writeValue(value.toList())
-    } else if let value = value as? AnnotationMenuConfigurationData {
+    } else if let value = value as? PointF {
       super.writeByte(145)
       super.writeValue(value.toList())
-    } else if let value = value as? AnnotationProperties {
+    } else if let value = value as? AnnotationMenuConfigurationData {
       super.writeByte(146)
+      super.writeValue(value.toList())
+    } else if let value = value as? AnnotationProperties {
+      super.writeByte(147)
+      super.writeValue(value.toList())
+    } else if let value = value as? Bookmark {
+      super.writeByte(148)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -920,8 +1019,14 @@ protocol NutrientApi {
   func exportInstantJson(completion: @escaping (Result<String?, Error>) -> Void)
   func addAnnotation(annotation: String, attachment: String?, completion: @escaping (Result<Bool?, Error>) -> Void)
   func removeAnnotation(annotation: String, completion: @escaping (Result<Bool?, Error>) -> Void)
-  func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any?, Error>) -> Void)
-  func getAllUnsavedAnnotations(completion: @escaping (Result<Any?, Error>) -> Void)
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAnnotationsJson(pageIndex: Int64, type: String, completion: @escaping (Result<String?, Error>) -> Void)
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAllUnsavedAnnotationsJson(completion: @escaping (Result<String?, Error>) -> Void)
   func updateAnnotation(annotation: String, completion: @escaping (Result<Void, Error>) -> Void)
   func processAnnotations(type: AnnotationType, processingMode: AnnotationProcessingMode, destinationPath: String, completion: @escaping (Result<Bool?, Error>) -> Void)
   func importXfdf(xfdfString: String, completion: @escaping (Result<Bool?, Error>) -> Void)
@@ -1155,13 +1260,16 @@ class NutrientApiSetup {
     } else {
       removeAnnotationChannel.setMessageHandler(nil)
     }
-    let getAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+    /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAnnotationsChannel.setMessageHandler { message, reply in
+      getAnnotationsJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let pageIndexArg = args[0] as! Int64
         let typeArg = args[1] as! String
-        api.getAnnotations(pageIndex: pageIndexArg, type: typeArg) { result in
+        api.getAnnotationsJson(pageIndex: pageIndexArg, type: typeArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -1171,12 +1279,15 @@ class NutrientApiSetup {
         }
       }
     } else {
-      getAnnotationsChannel.setMessageHandler(nil)
+      getAnnotationsJsonChannel.setMessageHandler(nil)
     }
-    let getAllUnsavedAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing all unsaved annotations in the presented document.
+    /// The JSON string can be decoded to the appropriate type on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAllUnsavedAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAllUnsavedAnnotationsChannel.setMessageHandler { _, reply in
-        api.getAllUnsavedAnnotations { result in
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler { _, reply in
+        api.getAllUnsavedAnnotationsJson { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -1186,7 +1297,7 @@ class NutrientApiSetup {
         }
       }
     } else {
-      getAllUnsavedAnnotationsChannel.setMessageHandler(nil)
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler(nil)
     }
     let updateAnnotationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientApi.updateAnnotation\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
@@ -1819,10 +1930,14 @@ protocol NutrientViewControllerApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   func removeAnnotation(annotation: String, completion: @escaping (Result<Bool?, Error>) -> Void)
-  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
-  func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any, Error>) -> Void)
-  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-  func getAllUnsavedAnnotations(completion: @escaping (Result<Any, Error>) -> Void)
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAnnotationsJson(pageIndex: Int64, type: String, completion: @escaping (Result<String, Error>) -> Void)
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAllUnsavedAnnotationsJson(completion: @escaping (Result<String, Error>) -> Void)
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
   func processAnnotations(type: AnnotationType, processingMode: AnnotationProcessingMode, destinationPath: String, completion: @escaping (Result<Bool, Error>) -> Void)
@@ -1990,14 +2105,16 @@ class NutrientViewControllerApiSetup {
     } else {
       removeAnnotationChannel.setMessageHandler(nil)
     }
-    /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
-    let getAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+    /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAnnotationsChannel.setMessageHandler { message, reply in
+      getAnnotationsJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let pageIndexArg = args[0] as! Int64
         let typeArg = args[1] as! String
-        api.getAnnotations(pageIndex: pageIndexArg, type: typeArg) { result in
+        api.getAnnotationsJson(pageIndex: pageIndexArg, type: typeArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2007,13 +2124,15 @@ class NutrientViewControllerApiSetup {
         }
       }
     } else {
-      getAnnotationsChannel.setMessageHandler(nil)
+      getAnnotationsJsonChannel.setMessageHandler(nil)
     }
-    /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-    let getAllUnsavedAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing all unsaved annotations in the presented document.
+    /// The JSON string can be decoded to the appropriate type on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAllUnsavedAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAllUnsavedAnnotationsChannel.setMessageHandler { _, reply in
-        api.getAllUnsavedAnnotations { result in
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler { _, reply in
+        api.getAllUnsavedAnnotationsJson { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2023,7 +2142,7 @@ class NutrientViewControllerApiSetup {
         }
       }
     } else {
-      getAllUnsavedAnnotationsChannel.setMessageHandler(nil)
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler(nil)
     }
     /// Processes annotations of the given type with the provided processing
     /// mode and stores the PDF at the given destination path.
@@ -2290,9 +2409,16 @@ protocol PdfDocumentApi {
   /// options:[DocumentSaveOptions] The options to use when exporting the document.
   /// Returns a [Uint8List] containing the exported PDF data.
   func exportPdf(options: DocumentSaveOptions?, completion: @escaping (Result<FlutterStandardTypedData, Error>) -> Void)
-  func getFormField(fieldName: String, completion: @escaping (Result<[String: Any?], Error>) -> Void)
-  /// Returns a list of all form fields in the document.
-  func getFormFields(completion: @escaping (Result<[[String: Any?]], Error>) -> Void)
+  /// Returns the form field with the given name as a JSON string.
+  /// The JSON string contains the form field data that can be decoded
+  /// to a Map<String, dynamic> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types.
+  func getFormFieldJson(fieldName: String, completion: @escaping (Result<String, Error>) -> Void)
+  /// Returns a list of all form fields in the document as a JSON string.
+  /// The JSON string contains an array of form field objects that can be
+  /// decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types.
+  func getFormFieldsJson(completion: @escaping (Result<String, Error>) -> Void)
   /// Sets the value of a form field by specifying its fully qualified field name.
   func setFormFieldValue(value: String, fullyQualifiedName: String, completion: @escaping (Result<Bool?, Error>) -> Void)
   /// Gets the form field value by specifying its fully qualified name.
@@ -2318,10 +2444,17 @@ protocol PdfDocumentApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   func removeAnnotation(jsonAnnotation: String, completion: @escaping (Result<Bool?, Error>) -> Void)
-  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
-  func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any, Error>) -> Void)
-  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-  func getAllUnsavedAnnotations(completion: @escaping (Result<Any, Error>) -> Void)
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  ///
+  /// For annotations with attachments (image, stamp, file), the response includes an `attachment` object
+  /// containing `binary` (base64-encoded) and `contentType` fields, enabling complete annotation copying.
+  func getAnnotationsJson(pageIndex: Int64, type: String, completion: @escaping (Result<String, Error>) -> Void)
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAllUnsavedAnnotationsJson(completion: @escaping (Result<String, Error>) -> Void)
   /// Imports annotations from the XFDF file at the given path.
   func importXfdf(xfdfString: String, completion: @escaping (Result<Bool, Error>) -> Void)
   /// Exports annotations to the XFDF file at the given path.
@@ -2331,6 +2464,172 @@ protocol PdfDocumentApi {
   func save(outputPath: String?, options: DocumentSaveOptions?, completion: @escaping (Result<Bool, Error>) -> Void)
   /// Get the total number of pages in the document.
   func getPageCount(completion: @escaping (Result<Int64, Error>) -> Void)
+  /// Processes annotations of the given type with the provided processing
+  /// mode and stores the PDF at the given destination path.
+  ///
+  /// This method works for both viewer-bound and headless documents.
+  ///
+  /// @param type The type of annotations to process (e.g., all, ink, highlight)
+  /// @param processingMode The processing mode (flatten, embed, remove, print)
+  /// @param destinationPath The path where the processed PDF should be saved
+  /// @return true if processing succeeded, false otherwise
+  func processAnnotations(type: AnnotationType, processingMode: AnnotationProcessingMode, destinationPath: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Closes the document and releases all native resources.
+  ///
+  /// This must be called when a headless document is no longer needed
+  /// to free memory and file handles. For viewer-bound documents,
+  /// this is handled automatically by the view lifecycle.
+  ///
+  /// @return true if the document was closed successfully
+  func closeDocument(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **iOS only.** Checks if the document has any dirty (unsaved) annotations.
+  ///
+  /// Maps directly to `document.hasDirtyAnnotations` in PSPDFKit iOS SDK.
+  /// Returns true if any annotations have been added, modified, or deleted
+  /// since the document was loaded or last saved.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` instead
+  /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+  ///
+  /// @return true if there are dirty annotations
+  /// @throws On Android/Web
+  func iOSHasDirtyAnnotations(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **iOS only.** Gets the dirty state of a specific annotation.
+  ///
+  /// Maps directly to `annotation.isDirty` property in PSPDFKit iOS SDK.
+  /// An annotation is dirty if it has been modified since the document
+  /// was loaded or last saved.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available (no annotation-level isDirty)
+  /// - Web: ❌ Not available
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId The annotation's unique identifier
+  /// @return true if the annotation is dirty
+  /// @throws On Android/Web, or if annotation not found
+  func iOSGetAnnotationIsDirty(pageIndex: Int64, annotationId: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **iOS only.** Sets the dirty state of a specific annotation.
+  ///
+  /// Maps directly to setting `annotation.isDirty` property in PSPDFKit iOS SDK.
+  /// This can be used to manually mark an annotation as needing save,
+  /// or to clear its dirty state.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available
+  /// - Web: ❌ Not available
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId The annotation's unique identifier
+  /// @param isDirty The dirty state to set
+  /// @return true if successfully set
+  /// @throws On Android/Web, or if annotation not found
+  func iOSSetAnnotationIsDirty(pageIndex: Int64, annotationId: String, isDirty: Bool, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **iOS only.** Clears the needs-save flag on all annotation providers.
+  ///
+  /// Maps directly to `containerProvider.clearNeedsSaveFlag()` in PSPDFKit iOS SDK.
+  /// This resets the modification tracking without saving to disk.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available (was removed from SDK)
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if successfully cleared
+  /// @throws On Android/Web
+  func iOSClearNeedsSaveFlag(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Checks if the annotation provider has unsaved changes.
+  ///
+  /// Maps directly to `annotationProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+  ///
+  /// @return true if there are unsaved annotation changes
+  /// @throws On iOS/Web
+  func androidHasUnsavedAnnotationChanges(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Checks if the form provider has unsaved changes.
+  ///
+  /// Maps directly to `formProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available at provider level
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if there are unsaved form field changes
+  /// @throws On iOS/Web
+  func androidHasUnsavedFormChanges(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Checks if the bookmark provider has unsaved changes.
+  ///
+  /// Maps directly to `bookmarkProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available at provider level
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if there are unsaved bookmark changes
+  /// @throws On iOS/Web
+  func androidHasUnsavedBookmarkChanges(completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Gets the dirty state of a specific bookmark.
+  ///
+  /// Maps directly to `bookmark.isDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+  /// @return true if the bookmark is dirty
+  /// @throws On iOS/Web, or if bookmark not found
+  func androidGetBookmarkIsDirty(bookmarkId: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Clears the dirty state of a specific bookmark.
+  ///
+  /// Maps directly to `bookmark.clearDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+  /// @return true if successfully cleared
+  /// @throws On iOS/Web, or if bookmark not found
+  func androidClearBookmarkDirtyState(bookmarkId: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Android only.** Gets the dirty state of a form field.
+  ///
+  /// Maps directly to `formField.isDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available (use formField.dirty property differently)
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param fullyQualifiedName The form field's fully qualified name
+  /// @return true if the form field is dirty
+  /// @throws On iOS/Web, or if form field not found
+  func androidGetFormFieldIsDirty(fullyQualifiedName: String, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// **Web only.** Checks if the instance has unsaved changes.
+  ///
+  /// Maps directly to `instance.hasUnsavedChanges()` in Nutrient Web SDK.
+  /// This is a combined check that includes annotations, forms, and other changes.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+  /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` etc. instead
+  /// - Web: ✅ Supported
+  ///
+  /// @return true if there are unsaved changes
+  /// @throws On iOS/Android
+  func webHasUnsavedChanges(completion: @escaping (Result<Bool, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2378,12 +2677,16 @@ class PdfDocumentApiSetup {
     } else {
       exportPdfChannel.setMessageHandler(nil)
     }
-    let getFormFieldChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormField\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns the form field with the given name as a JSON string.
+    /// The JSON string contains the form field data that can be decoded
+    /// to a Map<String, dynamic> on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types.
+    let getFormFieldJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getFormFieldChannel.setMessageHandler { message, reply in
+      getFormFieldJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let fieldNameArg = args[0] as! String
-        api.getFormField(fieldName: fieldNameArg) { result in
+        api.getFormFieldJson(fieldName: fieldNameArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2393,13 +2696,16 @@ class PdfDocumentApiSetup {
         }
       }
     } else {
-      getFormFieldChannel.setMessageHandler(nil)
+      getFormFieldJsonChannel.setMessageHandler(nil)
     }
-    /// Returns a list of all form fields in the document.
-    let getFormFieldsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFields\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a list of all form fields in the document as a JSON string.
+    /// The JSON string contains an array of form field objects that can be
+    /// decoded to List<Map<String, dynamic>> on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types.
+    let getFormFieldsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getFormFieldsChannel.setMessageHandler { _, reply in
-        api.getFormFields { result in
+      getFormFieldsJsonChannel.setMessageHandler { _, reply in
+        api.getFormFieldsJson { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2409,7 +2715,7 @@ class PdfDocumentApiSetup {
         }
       }
     } else {
-      getFormFieldsChannel.setMessageHandler(nil)
+      getFormFieldsJsonChannel.setMessageHandler(nil)
     }
     /// Sets the value of a form field by specifying its fully qualified field name.
     let setFormFieldValueChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.setFormFieldValue\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
@@ -2548,14 +2854,19 @@ class PdfDocumentApiSetup {
     } else {
       removeAnnotationChannel.setMessageHandler(nil)
     }
-    /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
-    let getAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+    /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    ///
+    /// For annotations with attachments (image, stamp, file), the response includes an `attachment` object
+    /// containing `binary` (base64-encoded) and `contentType` fields, enabling complete annotation copying.
+    let getAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAnnotationsChannel.setMessageHandler { message, reply in
+      getAnnotationsJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let pageIndexArg = args[0] as! Int64
         let typeArg = args[1] as! String
-        api.getAnnotations(pageIndex: pageIndexArg, type: typeArg) { result in
+        api.getAnnotationsJson(pageIndex: pageIndexArg, type: typeArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2565,13 +2876,15 @@ class PdfDocumentApiSetup {
         }
       }
     } else {
-      getAnnotationsChannel.setMessageHandler(nil)
+      getAnnotationsJsonChannel.setMessageHandler(nil)
     }
-    /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-    let getAllUnsavedAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// Returns a JSON string containing all unsaved annotations in the presented document.
+    /// The JSON string can be decoded to the appropriate type on the Dart side.
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAllUnsavedAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAllUnsavedAnnotationsChannel.setMessageHandler { _, reply in
-        api.getAllUnsavedAnnotations { result in
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler { _, reply in
+        api.getAllUnsavedAnnotationsJson { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -2581,7 +2894,7 @@ class PdfDocumentApiSetup {
         }
       }
     } else {
-      getAllUnsavedAnnotationsChannel.setMessageHandler(nil)
+      getAllUnsavedAnnotationsJsonChannel.setMessageHandler(nil)
     }
     /// Imports annotations from the XFDF file at the given path.
     let importXfdfChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.importXfdf\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
@@ -2654,6 +2967,446 @@ class PdfDocumentApiSetup {
       }
     } else {
       getPageCountChannel.setMessageHandler(nil)
+    }
+    /// Processes annotations of the given type with the provided processing
+    /// mode and stores the PDF at the given destination path.
+    ///
+    /// This method works for both viewer-bound and headless documents.
+    ///
+    /// @param type The type of annotations to process (e.g., all, ink, highlight)
+    /// @param processingMode The processing mode (flatten, embed, remove, print)
+    /// @param destinationPath The path where the processed PDF should be saved
+    /// @return true if processing succeeded, false otherwise
+    let processAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.processAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      processAnnotationsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let typeArg = args[0] as! AnnotationType
+        let processingModeArg = args[1] as! AnnotationProcessingMode
+        let destinationPathArg = args[2] as! String
+        api.processAnnotations(type: typeArg, processingMode: processingModeArg, destinationPath: destinationPathArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      processAnnotationsChannel.setMessageHandler(nil)
+    }
+    /// Closes the document and releases all native resources.
+    ///
+    /// This must be called when a headless document is no longer needed
+    /// to free memory and file handles. For viewer-bound documents,
+    /// this is handled automatically by the view lifecycle.
+    ///
+    /// @return true if the document was closed successfully
+    let closeDocumentChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.closeDocument\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      closeDocumentChannel.setMessageHandler { _, reply in
+        api.closeDocument { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      closeDocumentChannel.setMessageHandler(nil)
+    }
+    /// **iOS only.** Checks if the document has any dirty (unsaved) annotations.
+    ///
+    /// Maps directly to `document.hasDirtyAnnotations` in PSPDFKit iOS SDK.
+    /// Returns true if any annotations have been added, modified, or deleted
+    /// since the document was loaded or last saved.
+    ///
+    /// **Platform support:**
+    /// - iOS: ✅ Supported
+    /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` instead
+    /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+    ///
+    /// @return true if there are dirty annotations
+    /// @throws On Android/Web
+    let iOSHasDirtyAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSHasDirtyAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      iOSHasDirtyAnnotationsChannel.setMessageHandler { _, reply in
+        api.iOSHasDirtyAnnotations { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      iOSHasDirtyAnnotationsChannel.setMessageHandler(nil)
+    }
+    /// **iOS only.** Gets the dirty state of a specific annotation.
+    ///
+    /// Maps directly to `annotation.isDirty` property in PSPDFKit iOS SDK.
+    /// An annotation is dirty if it has been modified since the document
+    /// was loaded or last saved.
+    ///
+    /// **Platform support:**
+    /// - iOS: ✅ Supported
+    /// - Android: ❌ Not available (no annotation-level isDirty)
+    /// - Web: ❌ Not available
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @param annotationId The annotation's unique identifier
+    /// @return true if the annotation is dirty
+    /// @throws On Android/Web, or if annotation not found
+    let iOSGetAnnotationIsDirtyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSGetAnnotationIsDirty\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      iOSGetAnnotationIsDirtyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let annotationIdArg = args[1] as! String
+        api.iOSGetAnnotationIsDirty(pageIndex: pageIndexArg, annotationId: annotationIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      iOSGetAnnotationIsDirtyChannel.setMessageHandler(nil)
+    }
+    /// **iOS only.** Sets the dirty state of a specific annotation.
+    ///
+    /// Maps directly to setting `annotation.isDirty` property in PSPDFKit iOS SDK.
+    /// This can be used to manually mark an annotation as needing save,
+    /// or to clear its dirty state.
+    ///
+    /// **Platform support:**
+    /// - iOS: ✅ Supported
+    /// - Android: ❌ Not available
+    /// - Web: ❌ Not available
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @param annotationId The annotation's unique identifier
+    /// @param isDirty The dirty state to set
+    /// @return true if successfully set
+    /// @throws On Android/Web, or if annotation not found
+    let iOSSetAnnotationIsDirtyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSSetAnnotationIsDirty\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      iOSSetAnnotationIsDirtyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let annotationIdArg = args[1] as! String
+        let isDirtyArg = args[2] as! Bool
+        api.iOSSetAnnotationIsDirty(pageIndex: pageIndexArg, annotationId: annotationIdArg, isDirty: isDirtyArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      iOSSetAnnotationIsDirtyChannel.setMessageHandler(nil)
+    }
+    /// **iOS only.** Clears the needs-save flag on all annotation providers.
+    ///
+    /// Maps directly to `containerProvider.clearNeedsSaveFlag()` in PSPDFKit iOS SDK.
+    /// This resets the modification tracking without saving to disk.
+    ///
+    /// **Platform support:**
+    /// - iOS: ✅ Supported
+    /// - Android: ❌ Not available (was removed from SDK)
+    /// - Web: ❌ Not available
+    ///
+    /// @return true if successfully cleared
+    /// @throws On Android/Web
+    let iOSClearNeedsSaveFlagChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSClearNeedsSaveFlag\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      iOSClearNeedsSaveFlagChannel.setMessageHandler { _, reply in
+        api.iOSClearNeedsSaveFlag { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      iOSClearNeedsSaveFlagChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Checks if the annotation provider has unsaved changes.
+    ///
+    /// Maps directly to `annotationProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+    ///
+    /// @return true if there are unsaved annotation changes
+    /// @throws On iOS/Web
+    let androidHasUnsavedAnnotationChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedAnnotationChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidHasUnsavedAnnotationChangesChannel.setMessageHandler { _, reply in
+        api.androidHasUnsavedAnnotationChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidHasUnsavedAnnotationChangesChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Checks if the form provider has unsaved changes.
+    ///
+    /// Maps directly to `formProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Not available at provider level
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Not available
+    ///
+    /// @return true if there are unsaved form field changes
+    /// @throws On iOS/Web
+    let androidHasUnsavedFormChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedFormChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidHasUnsavedFormChangesChannel.setMessageHandler { _, reply in
+        api.androidHasUnsavedFormChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidHasUnsavedFormChangesChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Checks if the bookmark provider has unsaved changes.
+    ///
+    /// Maps directly to `bookmarkProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Not available at provider level
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Not available
+    ///
+    /// @return true if there are unsaved bookmark changes
+    /// @throws On iOS/Web
+    let androidHasUnsavedBookmarkChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedBookmarkChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidHasUnsavedBookmarkChangesChannel.setMessageHandler { _, reply in
+        api.androidHasUnsavedBookmarkChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidHasUnsavedBookmarkChangesChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Gets the dirty state of a specific bookmark.
+    ///
+    /// Maps directly to `bookmark.isDirty()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Not available
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Not available
+    ///
+    /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+    /// @return true if the bookmark is dirty
+    /// @throws On iOS/Web, or if bookmark not found
+    let androidGetBookmarkIsDirtyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetBookmarkIsDirty\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidGetBookmarkIsDirtyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let bookmarkIdArg = args[0] as! String
+        api.androidGetBookmarkIsDirty(bookmarkId: bookmarkIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidGetBookmarkIsDirtyChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Clears the dirty state of a specific bookmark.
+    ///
+    /// Maps directly to `bookmark.clearDirty()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Not available
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Not available
+    ///
+    /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+    /// @return true if successfully cleared
+    /// @throws On iOS/Web, or if bookmark not found
+    let androidClearBookmarkDirtyStateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidClearBookmarkDirtyState\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidClearBookmarkDirtyStateChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let bookmarkIdArg = args[0] as! String
+        api.androidClearBookmarkDirtyState(bookmarkId: bookmarkIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidClearBookmarkDirtyStateChannel.setMessageHandler(nil)
+    }
+    /// **Android only.** Gets the dirty state of a form field.
+    ///
+    /// Maps directly to `formField.isDirty()` in PSPDFKit Android SDK.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Not available (use formField.dirty property differently)
+    /// - Android: ✅ Supported
+    /// - Web: ❌ Not available
+    ///
+    /// @param fullyQualifiedName The form field's fully qualified name
+    /// @return true if the form field is dirty
+    /// @throws On iOS/Web, or if form field not found
+    let androidGetFormFieldIsDirtyChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetFormFieldIsDirty\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      androidGetFormFieldIsDirtyChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let fullyQualifiedNameArg = args[0] as! String
+        api.androidGetFormFieldIsDirty(fullyQualifiedName: fullyQualifiedNameArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      androidGetFormFieldIsDirtyChannel.setMessageHandler(nil)
+    }
+    /// **Web only.** Checks if the instance has unsaved changes.
+    ///
+    /// Maps directly to `instance.hasUnsavedChanges()` in Nutrient Web SDK.
+    /// This is a combined check that includes annotations, forms, and other changes.
+    ///
+    /// **Platform support:**
+    /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+    /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` etc. instead
+    /// - Web: ✅ Supported
+    ///
+    /// @return true if there are unsaved changes
+    /// @throws On iOS/Android
+    let webHasUnsavedChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.webHasUnsavedChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      webHasUnsavedChangesChannel.setMessageHandler { _, reply in
+        api.webHasUnsavedChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      webHasUnsavedChangesChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// API for opening and managing PDF documents without displaying a viewer.
+///
+/// This API enables programmatic access to PDF documents for operations like:
+/// - Reading and modifying annotations
+/// - Processing annotations (flatten, embed, remove)
+/// - Exporting/importing XFDF
+/// - Form field manipulation
+///
+/// Documents opened through this API must be explicitly closed using
+/// [PdfDocumentApi.closeDocument] when no longer needed to free resources.
+///
+/// **Usage Example**:
+/// ```dart
+/// final documentId = await HeadlessDocumentApi.openDocument('/path/to/doc.pdf');
+/// // Use PdfDocumentApi with the documentId for operations
+/// final annotations = await pdfDocumentApi.getAnnotations(0, 'all');
+/// await pdfDocumentApi.processAnnotations(
+///   AnnotationType.all,
+///   AnnotationProcessingMode.flatten,
+///   '/path/to/output.pdf',
+/// );
+/// await pdfDocumentApi.closeDocument();
+/// ```
+///
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol HeadlessDocumentApi {
+  /// Opens a document from the given path without displaying a viewer.
+  ///
+  /// Returns a unique document ID that can be used to interact with the
+  /// document via [PdfDocumentApi]. The document ID is used as a channel
+  /// suffix to create isolated API instances for each document.
+  ///
+  /// @param documentPath Path to the PDF document (file path or content:// URI)
+  /// @param options Optional settings like password for encrypted documents
+  /// @return Unique document ID for use with PdfDocumentApi
+  /// @throws NutrientApiError if the document cannot be opened
+  func openDocument(documentPath: String, options: HeadlessDocumentOpenOptions?, completion: @escaping (Result<String, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class HeadlessDocumentApiSetup {
+  static var codec: FlutterStandardMessageCodec { NutrientApiPigeonCodec.shared }
+  /// Sets up an instance of `HeadlessDocumentApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: HeadlessDocumentApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    /// Opens a document from the given path without displaying a viewer.
+    ///
+    /// Returns a unique document ID that can be used to interact with the
+    /// document via [PdfDocumentApi]. The document ID is used as a channel
+    /// suffix to create isolated API instances for each document.
+    ///
+    /// @param documentPath Path to the PDF document (file path or content:// URI)
+    /// @param options Optional settings like password for encrypted documents
+    /// @return Unique document ID for use with PdfDocumentApi
+    /// @throws NutrientApiError if the document cannot be opened
+    let openDocumentChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.HeadlessDocumentApi.openDocument\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      openDocumentChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let documentPathArg = args[0] as! String
+        let optionsArg: HeadlessDocumentOpenOptions? = nilOrValue(args[1])
+        api.openDocument(documentPath: documentPathArg, options: optionsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      openDocumentChannel.setMessageHandler(nil)
     }
   }
 }
@@ -2911,8 +3664,9 @@ protocol AnnotationManagerApi {
   ///
   /// @param pageIndex Zero-based page index
   /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
-  /// @return List of annotations as JSON-compatible maps
-  func getAnnotations(pageIndex: Int64, annotationType: String, completion: @escaping (Result<Any, Error>) -> Void)
+  /// @return JSON string containing array of annotations
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getAnnotationsJson(pageIndex: Int64, annotationType: String, completion: @escaping (Result<String, Error>) -> Void)
   /// Add a new annotation to the document.
   ///
   /// @param jsonAnnotation JSON representation of the annotation
@@ -2929,8 +3683,9 @@ protocol AnnotationManagerApi {
   ///
   /// @param query Search term
   /// @param pageIndex Optional page index to limit search scope
-  /// @return List of matching annotations
-  func searchAnnotations(query: String, pageIndex: Int64?, completion: @escaping (Result<Any, Error>) -> Void)
+  /// @return JSON string containing array of matching annotations
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func searchAnnotationsJson(query: String, pageIndex: Int64?, completion: @escaping (Result<String, Error>) -> Void)
   /// Export annotations as XFDF format.
   ///
   /// @param pageIndex Optional page index to export specific page annotations
@@ -2943,8 +3698,9 @@ protocol AnnotationManagerApi {
   func importXFDF(xfdfString: String, completion: @escaping (Result<Bool, Error>) -> Void)
   /// Get all annotations that have unsaved changes.
   ///
-  /// @return List of annotations with pending changes
-  func getUnsavedAnnotations(completion: @escaping (Result<Any, Error>) -> Void)
+  /// @return JSON string containing array of annotations with pending changes
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  func getUnsavedAnnotationsJson(completion: @escaping (Result<String, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -3023,14 +3779,15 @@ class AnnotationManagerApiSetup {
     ///
     /// @param pageIndex Zero-based page index
     /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
-    /// @return List of annotations as JSON-compatible maps
-    let getAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// @return JSON string containing array of annotations
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getAnnotationsChannel.setMessageHandler { message, reply in
+      getAnnotationsJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let pageIndexArg = args[0] as! Int64
         let annotationTypeArg = args[1] as! String
-        api.getAnnotations(pageIndex: pageIndexArg, annotationType: annotationTypeArg) { result in
+        api.getAnnotationsJson(pageIndex: pageIndexArg, annotationType: annotationTypeArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -3040,7 +3797,7 @@ class AnnotationManagerApiSetup {
         }
       }
     } else {
-      getAnnotationsChannel.setMessageHandler(nil)
+      getAnnotationsJsonChannel.setMessageHandler(nil)
     }
     /// Add a new annotation to the document.
     ///
@@ -3092,14 +3849,15 @@ class AnnotationManagerApiSetup {
     ///
     /// @param query Search term
     /// @param pageIndex Optional page index to limit search scope
-    /// @return List of matching annotations
-    let searchAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// @return JSON string containing array of matching annotations
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let searchAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      searchAnnotationsChannel.setMessageHandler { message, reply in
+      searchAnnotationsJsonChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let queryArg = args[0] as! String
         let pageIndexArg: Int64? = nilOrValue(args[1])
-        api.searchAnnotations(query: queryArg, pageIndex: pageIndexArg) { result in
+        api.searchAnnotationsJson(query: queryArg, pageIndex: pageIndexArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -3109,7 +3867,7 @@ class AnnotationManagerApiSetup {
         }
       }
     } else {
-      searchAnnotationsChannel.setMessageHandler(nil)
+      searchAnnotationsJsonChannel.setMessageHandler(nil)
     }
     /// Export annotations as XFDF format.
     ///
@@ -3155,11 +3913,12 @@ class AnnotationManagerApiSetup {
     }
     /// Get all annotations that have unsaved changes.
     ///
-    /// @return List of annotations with pending changes
-    let getUnsavedAnnotationsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotations\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    /// @return JSON string containing array of annotations with pending changes
+    /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+    let getUnsavedAnnotationsJsonChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotationsJson\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      getUnsavedAnnotationsChannel.setMessageHandler { _, reply in
-        api.getUnsavedAnnotations { result in
+      getUnsavedAnnotationsJsonChannel.setMessageHandler { _, reply in
+        api.getUnsavedAnnotationsJson { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -3169,7 +3928,202 @@ class AnnotationManagerApiSetup {
         }
       }
     } else {
-      getUnsavedAnnotationsChannel.setMessageHandler(nil)
+      getUnsavedAnnotationsJsonChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// API for managing bookmarks in a PDF document.
+///
+/// This API provides methods to add, remove, update, and retrieve bookmarks.
+/// Bookmarks are user-created navigation markers that persist with the document.
+///
+/// Bookmarks follow the Instant JSON specification format.
+///
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol BookmarkManagerApi {
+  /// Initialize the bookmark manager for a specific document.
+  /// This should be called once when creating the manager instance.
+  ///
+  /// @param documentId The unique identifier of the document
+  func initialize(documentId: String) throws
+  /// Get all bookmarks in the document.
+  ///
+  /// @return List of all bookmarks
+  func getBookmarks(completion: @escaping (Result<[Bookmark], Error>) -> Void)
+  /// Add a new bookmark to the document.
+  ///
+  /// @param bookmark The bookmark to add
+  /// @return The created bookmark with its assigned pdfBookmarkId
+  func addBookmark(bookmark: Bookmark, completion: @escaping (Result<Bookmark, Error>) -> Void)
+  /// Remove a bookmark from the document.
+  ///
+  /// @param bookmark The bookmark to remove (identified by pdfBookmarkId or action)
+  /// @return true if successfully removed, false otherwise
+  func removeBookmark(bookmark: Bookmark, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Update an existing bookmark.
+  ///
+  /// @param bookmark The bookmark with updated values (must have a valid pdfBookmarkId)
+  /// @return true if successfully updated, false otherwise
+  func updateBookmark(bookmark: Bookmark, completion: @escaping (Result<Bool, Error>) -> Void)
+  /// Get bookmarks for a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @return List of bookmarks pointing to the specified page
+  func getBookmarksForPage(pageIndex: Int64, completion: @escaping (Result<[Bookmark], Error>) -> Void)
+  /// Check if a bookmark exists for a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @return true if at least one bookmark exists for the page
+  func hasBookmarkForPage(pageIndex: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class BookmarkManagerApiSetup {
+  static var codec: FlutterStandardMessageCodec { NutrientApiPigeonCodec.shared }
+  /// Sets up an instance of `BookmarkManagerApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: BookmarkManagerApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    /// Initialize the bookmark manager for a specific document.
+    /// This should be called once when creating the manager instance.
+    ///
+    /// @param documentId The unique identifier of the document
+    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.initialize\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      initializeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let documentIdArg = args[0] as! String
+        do {
+          try api.initialize(documentId: documentIdArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      initializeChannel.setMessageHandler(nil)
+    }
+    /// Get all bookmarks in the document.
+    ///
+    /// @return List of all bookmarks
+    let getBookmarksChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarks\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getBookmarksChannel.setMessageHandler { _, reply in
+        api.getBookmarks { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getBookmarksChannel.setMessageHandler(nil)
+    }
+    /// Add a new bookmark to the document.
+    ///
+    /// @param bookmark The bookmark to add
+    /// @return The created bookmark with its assigned pdfBookmarkId
+    let addBookmarkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.addBookmark\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      addBookmarkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let bookmarkArg = args[0] as! Bookmark
+        api.addBookmark(bookmark: bookmarkArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      addBookmarkChannel.setMessageHandler(nil)
+    }
+    /// Remove a bookmark from the document.
+    ///
+    /// @param bookmark The bookmark to remove (identified by pdfBookmarkId or action)
+    /// @return true if successfully removed, false otherwise
+    let removeBookmarkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.removeBookmark\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      removeBookmarkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let bookmarkArg = args[0] as! Bookmark
+        api.removeBookmark(bookmark: bookmarkArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      removeBookmarkChannel.setMessageHandler(nil)
+    }
+    /// Update an existing bookmark.
+    ///
+    /// @param bookmark The bookmark with updated values (must have a valid pdfBookmarkId)
+    /// @return true if successfully updated, false otherwise
+    let updateBookmarkChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.updateBookmark\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      updateBookmarkChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let bookmarkArg = args[0] as! Bookmark
+        api.updateBookmark(bookmark: bookmarkArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      updateBookmarkChannel.setMessageHandler(nil)
+    }
+    /// Get bookmarks for a specific page.
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @return List of bookmarks pointing to the specified page
+    let getBookmarksForPageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarksForPage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getBookmarksForPageChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        api.getBookmarksForPage(pageIndex: pageIndexArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getBookmarksForPageChannel.setMessageHandler(nil)
+    }
+    /// Check if a bookmark exists for a specific page.
+    ///
+    /// @param pageIndex Zero-based page index
+    /// @return true if at least one bookmark exists for the page
+    let hasBookmarkForPageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.hasBookmarkForPage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      hasBookmarkForPageChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        api.hasBookmarkForPage(pageIndex: pageIndexArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      hasBookmarkForPageChannel.setMessageHandler(nil)
     }
   }
 }

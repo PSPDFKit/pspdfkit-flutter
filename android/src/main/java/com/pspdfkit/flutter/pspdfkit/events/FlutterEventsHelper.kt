@@ -279,8 +279,8 @@ class FlutterEventsHelper(
 
             override fun onAnnotationZOrderChanged(
                 pageIndex: Int,
-                annotations: MutableList<Annotation>,
-                annotations2: MutableList<Annotation>
+                oldOrder: List<Annotation>,
+                newOrder: List<Annotation>
             ) {
                 // Not used in current implementation
             }

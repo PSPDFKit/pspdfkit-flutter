@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -8,7 +8,7 @@
  */
 package com.pspdfkit.flutter.pspdfkit
 
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -26,8 +26,10 @@ import com.pspdfkit.document.DocumentSaveOptions
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.PdfDocumentApi
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationManagerApi
+import com.pspdfkit.flutter.pspdfkit.api.BookmarkManagerApi
 import com.pspdfkit.flutter.pspdfkit.document.FlutterPdfDocument
 import com.pspdfkit.flutter.pspdfkit.document.AnnotationManagerImpl
+import com.pspdfkit.flutter.pspdfkit.document.BookmarkManagerImpl
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.ui.PdfFragment
@@ -56,6 +58,7 @@ class FlutterPdfUiFragmentCallbacks(
 
     private var pdfFragment: PdfFragment? = null
     private var flutterPdfDocument: FlutterPdfDocument? = null
+    private var bookmarkManager: BookmarkManagerImpl? = null
 
     override fun onFragmentAttached(
         fm: FragmentManager,
@@ -99,6 +102,11 @@ class FlutterPdfUiFragmentCallbacks(
             // Set up AnnotationManagerApi with documentId_annotation_manager as channel suffix
             val annotationManager = AnnotationManagerImpl(document)
             AnnotationManagerApi.setUp(binaryMessenger, annotationManager, "${document.uid}_annotation_manager")
+
+            // Set up BookmarkManagerApi with documentId_bookmark_manager as channel suffix
+            bookmarkManager = BookmarkManagerImpl()
+            bookmarkManager?.initialize(document.uid)
+            BookmarkManagerApi.setUp(binaryMessenger, bookmarkManager, "${document.uid}_bookmark_manager")
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error setting up FlutterPdfDocument", e)
         }
@@ -172,6 +180,10 @@ class FlutterPdfUiFragmentCallbacks(
                 flutterPdfDocument?.let { doc ->
                     FlutterPdfDocument.unregisterDocument(doc.pdfDocument.uid)
                 }
+
+                // Cleanup bookmark manager to dispose RxJava subscriptions
+                bookmarkManager?.dispose()
+                bookmarkManager = null
 
                 pdfFragment = null
                 flutterPdfDocument = null

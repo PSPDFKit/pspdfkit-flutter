@@ -9,13 +9,16 @@
 
 import 'dart:async';
 import 'dart:convert';
+// ignore: deprecated_member_use
 import 'dart:html';
+// ignore: deprecated_member_use
 import 'dart:js';
 import 'dart:typed_data';
 import 'package:flutter/painting.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/document/document_save_options_extension.dart';
 import 'nutrient_web_utils.dart';
+import 'xhtml_color_utils.dart';
 
 /// This class is used to interact with a
 /// [PSPDFKit.Instance](https://www.nutrient.io/api/web/PSPDFKit.Instance.html) in
@@ -124,93 +127,213 @@ class NutrientWebInstance {
         throw Exception('Annotation not found with id: $annotationId');
       }
 
+      // Get the annotation type to handle type-specific properties
+      final existingAnnotationJson = webAnnotationToJSON(existingAnnotation);
+      final annotationType = existingAnnotationJson['type']?.toString() ?? '';
+      final isTextAnnotation = annotationType == 'pspdfkit/text';
+      final isInkAnnotation = annotationType == 'pspdfkit/ink';
+
+      // Check if this is a rich text annotation (XHTML format)
+      bool isRichText = false;
+      String? existingTextValue;
+      if (isTextAnnotation) {
+        final textProp = existingAnnotationJson['text'];
+        if (textProp is Map) {
+          final format = textProp['format']?.toString();
+          existingTextValue = textProp['value']?.toString();
+          isRichText = format == 'xhtml' && existingTextValue != null;
+        }
+      }
+
       // Create an updated annotation by merging properties
       // The Nutrient Web SDK uses Immutable.js, so we need to chain set() calls
       // for each property we want to update
       var updatedAnnotation = existingAnnotation;
 
-      // Update each property individually
-      updatedProperties.forEach((key, value) {
+      // Update each property individually using a for loop to allow continue
+      for (final entry in updatedProperties.entries) {
+        final key = entry.key;
+        dynamic value = entry.value;
+
         // Skip id and pageIndex as they shouldn't be changed
-        if (key != 'id' && key != 'pageIndex' && key != 'name') {
-          // Map property names to Web SDK expected names
-          var webKey = key;
-          if (key == 'lineWidth') {
-            // The Web SDK uses 'strokeWidth' for line width
+        if (key == 'id' || key == 'pageIndex' || key == 'name') {
+          continue;
+        }
+
+        // Map property names to Web SDK expected names
+        var webKey = key;
+        if (key == 'lineWidth') {
+          // The Web SDK uses 'lineWidth' for ink annotations, but 'strokeWidth' for shape annotations
+          // (line, square, circle, polygon, polyline)
+          if (!isInkAnnotation) {
             webKey = 'strokeWidth';
-          } else if (key == 'contents') {
-            // The Web SDK uses 'text' for contents
-            webKey = 'text';
-          } else if (key == 'creator') {
-            // The Web SDK uses 'creatorName' for creator
-            webKey = 'creatorName';
+          }
+          // For ink annotations, keep 'lineWidth' as is
+        } else if (key == 'contents') {
+          // The Web SDK uses 'text' for contents
+          webKey = 'text';
+        } else if (key == 'creator') {
+          // The Web SDK uses 'creatorName' for creator
+          webKey = 'creatorName';
+        }
+
+        // Handle color properties specially - they need to be PSPDFKit.Color instances
+        if ((webKey == 'strokeColor' || webKey == 'fillColor') &&
+            value is Map) {
+          // Create a PSPDFKit.Color instance
+          var colorClass = context['PSPDFKit']['Color'];
+          var colorValue = JsObject(colorClass, [
+            JsObject.jsify({
+              'r': value['r'] ?? 0,
+              'g': value['g'] ?? 0,
+              'b': value['b'] ?? 0,
+              'a': value['a'] ?? 255,
+            })
+          ]);
+
+          // For TextAnnotation, skip strokeColor here - we handle fontColor and XHTML
+          // color embedding in the dedicated section at the end of this method.
+          // TextAnnotation doesn't have strokeColor - it uses fontColor for text color.
+          if (isTextAnnotation && webKey == 'strokeColor') {
+            continue;
           }
 
-          // Handle color properties specially - they need to be PSPDFKit.Color instances
-          if ((webKey == 'strokeColor' || webKey == 'fillColor') &&
-              value is Map) {
-            // Create a PSPDFKit.Color instance
-            var colorClass = context['PSPDFKit']['Color'];
-            value = JsObject(colorClass, [
-              JsObject.jsify({
-                'r': value['r'] ?? 0,
-                'g': value['g'] ?? 0,
-                'b': value['b'] ?? 0,
-                'a': value['a'] ?? 255,
-              })
-            ]);
-          }
+          value = colorValue;
+        }
 
-          // Handle flags specially - convert to appropriate format
-          if (key == 'flags' && value is List) {
-            // The Web SDK expects flags as individual boolean properties
-            // Map Flutter flag names to Web SDK property names
-            final flagsList = List<String>.from(value);
+        // Handle flags specially - convert to appropriate format
+        if (key == 'flags' && value is List) {
+          // The Web SDK expects flags as individual boolean properties
+          // Map Flutter flag names to Web SDK property names
+          final flagsList = List<String>.from(value);
 
-            // Define all possible flags and their Web SDK property names
-            final flagMappings = {
-              'readOnly': 'readOnly',
-              'locked': 'locked',
-              'hidden': 'hidden',
-              'invisible': 'invisible',
-              'print': 'noPrint', // Note: inverted logic
-              'noView': 'noView',
-              'noZoom': 'noZoom',
-              'noRotate': 'noRotate',
-              'toggleNoView': 'toggleNoView',
-              'lockedContents': 'lockedContents',
-            };
+          // Define all possible flags and their Web SDK property names
+          final flagMappings = {
+            'readOnly': 'readOnly',
+            'locked': 'locked',
+            'hidden': 'hidden',
+            'invisible': 'invisible',
+            'print': 'noPrint', // Note: inverted logic
+            'noView': 'noView',
+            'noZoom': 'noZoom',
+            'noRotate': 'noRotate',
+            'toggleNoView': 'toggleNoView',
+            'lockedContents': 'lockedContents',
+          };
 
-            // Set or unset each flag based on whether it's in the list
-            flagMappings.forEach((flutterFlag, webFlag) {
-              if (flagsList.contains(flutterFlag)) {
-                // Special handling for 'print' flag which has inverted logic
-                if (flutterFlag == 'print') {
-                  updatedAnnotation =
-                      updatedAnnotation.callMethod('set', [webFlag, false]);
-                } else {
-                  updatedAnnotation =
-                      updatedAnnotation.callMethod('set', [webFlag, true]);
-                }
+          // Set or unset each flag based on whether it's in the list
+          flagMappings.forEach((flutterFlag, webFlag) {
+            if (flagsList.contains(flutterFlag)) {
+              // Special handling for 'print' flag which has inverted logic
+              if (flutterFlag == 'print') {
+                updatedAnnotation =
+                    updatedAnnotation.callMethod('set', [webFlag, false]);
               } else {
-                // Flag is not in the list, so it should be unset
-                // Special handling for 'print' flag which has inverted logic
-                if (flutterFlag == 'print') {
-                  updatedAnnotation =
-                      updatedAnnotation.callMethod('set', [webFlag, true]);
-                } else {
-                  updatedAnnotation =
-                      updatedAnnotation.callMethod('set', [webFlag, false]);
-                }
+                updatedAnnotation =
+                    updatedAnnotation.callMethod('set', [webFlag, true]);
               }
-            });
-          } else if (key != 'flags') {
-            // For non-flag properties, use the mapped key
-            updatedAnnotation =
-                updatedAnnotation.callMethod('set', [webKey, value]);
+            } else {
+              // Flag is not in the list, so it should be unset
+              // Special handling for 'print' flag which has inverted logic
+              if (flutterFlag == 'print') {
+                updatedAnnotation =
+                    updatedAnnotation.callMethod('set', [webFlag, true]);
+              } else {
+                updatedAnnotation =
+                    updatedAnnotation.callMethod('set', [webFlag, false]);
+              }
+            }
+          });
+        } else if (key == 'customData' && value is Map) {
+          // Handle customData specially - convert Dart Map to JavaScript object
+          final jsCustomData = JsObject.jsify(value);
+          updatedAnnotation =
+              updatedAnnotation.callMethod('set', [webKey, jsCustomData]);
+        } else if (key != 'flags') {
+          // For non-flag properties, use the mapped key
+          updatedAnnotation =
+              updatedAnnotation.callMethod('set', [webKey, value]);
+        }
+      }
+
+      // For TextAnnotation, we need to:
+      // 1. Update the XHTML content to include the color in span elements (for rich text)
+      // 2. Set fontColor at the END to ensure it persists
+      // The Web SDK's Immutable.js pattern can lose fontColor if set earlier, and
+      // the SDK strips body/xml style attributes, so color must be in span elements.
+      if (isTextAnnotation) {
+        var colorClass = context['PSPDFKit']['Color'];
+        JsObject? fontColorValue;
+        String? hexColorForXhtml;
+
+        if (updatedProperties.containsKey('strokeColor')) {
+          // User is updating the color - use the provided strokeColor value as fontColor
+          final colorMap = updatedProperties['strokeColor'] as Map;
+          fontColorValue = JsObject(colorClass, [
+            JsObject.jsify({
+              'r': colorMap['r'] ?? 0,
+              'g': colorMap['g'] ?? 0,
+              'b': colorMap['b'] ?? 0,
+              'a': colorMap['a'] ?? 255,
+            })
+          ]);
+          hexColorForXhtml = _colorMapToHex(colorMap);
+        } else {
+          // User is not updating the color - preserve the existing fontColor
+          final existingFontColorJson = existingAnnotationJson['fontColor'];
+
+          if (existingFontColorJson != null) {
+            if (existingFontColorJson is String &&
+                existingFontColorJson.startsWith('#')) {
+              // Parse hex color string (e.g., "#440083")
+              final hex = existingFontColorJson.substring(1);
+              final r = int.parse(hex.substring(0, 2), radix: 16);
+              final g = int.parse(hex.substring(2, 4), radix: 16);
+              final b = int.parse(hex.substring(4, 6), radix: 16);
+
+              fontColorValue = JsObject(colorClass, [
+                JsObject.jsify({'r': r, 'g': g, 'b': b, 'a': 255})
+              ]);
+              hexColorForXhtml = existingFontColorJson; // Already in hex format
+            } else if (existingFontColorJson is Map) {
+              // Handle Map format (in case it ever comes as a Map)
+              fontColorValue = JsObject(colorClass, [
+                JsObject.jsify({
+                  'r': existingFontColorJson['r'] ?? 0,
+                  'g': existingFontColorJson['g'] ?? 0,
+                  'b': existingFontColorJson['b'] ?? 0,
+                  'a': existingFontColorJson['a'] ?? 255,
+                })
+              ]);
+              hexColorForXhtml = _colorMapToHex(existingFontColorJson);
+            }
           }
         }
-      });
+
+        // CRITICAL: For rich text annotations, update the XHTML to include color in span elements
+        // The Web SDK strips body/xml style attributes, so the color must be embedded in spans.
+        // We do this regardless of whether the user is changing the color or not, because
+        // the existing XHTML might have color in body style (which gets stripped).
+        if (isRichText &&
+            existingTextValue != null &&
+            hexColorForXhtml != null) {
+          final updatedXhtml =
+              _updateRichTextColor(existingTextValue, hexColorForXhtml);
+
+          final newTextObj = JsObject.jsify({
+            'format': 'xhtml',
+            'value': updatedXhtml,
+          });
+          updatedAnnotation =
+              updatedAnnotation.callMethod('set', ['text', newTextObj]);
+        }
+
+        // CRITICAL: Set fontColor as the LAST operation to ensure it persists
+        if (fontColorValue != null) {
+          updatedAnnotation = updatedAnnotation
+              .callMethod('set', ['fontColor', fontColorValue]);
+        }
+      }
 
       // Apply the update using the instance's update method
       await promiseToFuture(
@@ -498,15 +621,16 @@ class NutrientWebInstance {
       if (toolMode == null) {
         // Reset to default interaction mode (null)
         await promiseToFuture(_nutrientInstance.callMethod('setViewState', [
-          allowInterop((viewState) {
-            return viewState.callMethod('set', ['interactionMode', null]);
+          jsAllowInterop((dynamic viewState) {
+            return (viewState as JsObject)
+                .callMethod('set', ['interactionMode', null]);
           })
         ]));
       } else {
         // Set the interaction mode using ViewState API
         await promiseToFuture(_nutrientInstance.callMethod('setViewState', [
-          allowInterop((viewState) {
-            return viewState.callMethod('set', [
+          jsAllowInterop((dynamic viewState) {
+            return (viewState as JsObject).callMethod('set', [
               'interactionMode',
               context['PSPDFKit']['InteractionMode']
                   [toolMode.toWebInteractionMode()]
@@ -528,7 +652,7 @@ class NutrientWebInstance {
     try {
       _nutrientInstance.callMethod('addEventListener', [
         eventName,
-        allowInterop(([dynamic event, dynamic event2]) {
+        jsAllowInterop2(([dynamic event, dynamic event2]) {
           dynamic processedEvent1;
           dynamic processedEvent2;
 
@@ -725,6 +849,249 @@ class NutrientWebInstance {
     }
   }
 
+  // ============================
+  // Bookmark Methods
+  // ============================
+
+  /// Gets all bookmarks in the document.
+  ///
+  /// Returns a list of [Bookmark] objects representing all bookmarks in the document.
+  Future<List<Bookmark>> getBookmarks() async {
+    try {
+      JsObject bookmarksPromise = _nutrientInstance.callMethod('getBookmarks');
+      JsObject bookmarks = await promiseToFuture(bookmarksPromise);
+
+      List<Bookmark> result = [];
+
+      // bookmarks is an Immutable.List with 'size' property
+      if (bookmarks['size'] != null) {
+        for (var i = 0; i < bookmarks['size']; i++) {
+          var bookmark = bookmarks.callMethod('get', [i]);
+          result.add(_webBookmarkToFlutter(bookmark));
+        }
+      }
+
+      return result;
+    } catch (e) {
+      throw Exception('Failed to get bookmarks: $e');
+    }
+  }
+
+  /// Adds a new bookmark to the document.
+  ///
+  /// The [bookmark] parameter contains the bookmark data to add.
+  /// Returns the created bookmark with its assigned id.
+  Future<Bookmark> addBookmark(Bookmark bookmark) async {
+    try {
+      // Parse the action from actionJson
+      JsObject? action;
+      if (bookmark.actionJson != null) {
+        final actionData = jsonDecode(bookmark.actionJson!);
+        action = _createWebAction(actionData);
+      }
+
+      // Create the web bookmark
+      var bookmarkClass = context['PSPDFKit']['Bookmark'];
+      var webBookmark = JsObject(bookmarkClass, [
+        JsObject.jsify({
+          'name': bookmark.name,
+          if (action != null) 'action': action,
+        })
+      ]);
+
+      // Create the bookmark using instance.create()
+      await promiseToFuture(
+          _nutrientInstance.callMethod('create', [webBookmark]));
+
+      // Get the latest bookmarks to find the created one
+      var bookmarks = await getBookmarks();
+      // Return the last bookmark (most recently created)
+      if (bookmarks.isNotEmpty) {
+        return bookmarks.last;
+      }
+
+      // Fallback: return the input bookmark
+      return bookmark;
+    } catch (e) {
+      throw Exception('Failed to add bookmark: $e');
+    }
+  }
+
+  /// Removes a bookmark from the document.
+  ///
+  /// Returns true if successfully removed, false if the bookmark was not found.
+  Future<bool> removeBookmark(Bookmark bookmark) async {
+    try {
+      // Get all bookmarks and find the one to remove
+      JsObject bookmarksPromise = _nutrientInstance.callMethod('getBookmarks');
+      JsObject bookmarks = await promiseToFuture(bookmarksPromise);
+
+      JsObject? bookmarkToRemove;
+      final targetPageIndex = bookmark.pageIndex;
+
+      if (bookmarks['size'] != null) {
+        for (var i = 0; i < bookmarks['size']; i++) {
+          var webBookmark = bookmarks.callMethod('get', [i]);
+
+          // Match by id, pdfBookmarkId, or page index
+          if (bookmark.pdfBookmarkId != null &&
+              webBookmark['pdfBookmarkId'] == bookmark.pdfBookmarkId) {
+            bookmarkToRemove = webBookmark;
+            break;
+          }
+
+          // Match by name and page
+          if (bookmark.name != null && webBookmark['name'] == bookmark.name) {
+            bookmarkToRemove = webBookmark;
+            break;
+          }
+
+          // Match by page index from action
+          if (targetPageIndex != null) {
+            var action = webBookmark['action'];
+            if (action != null && action['pageIndex'] == targetPageIndex) {
+              bookmarkToRemove = webBookmark;
+              break;
+            }
+          }
+        }
+      }
+
+      if (bookmarkToRemove != null) {
+        await promiseToFuture(
+            _nutrientInstance.callMethod('delete', [bookmarkToRemove]));
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      throw Exception('Failed to remove bookmark: $e');
+    }
+  }
+
+  /// Updates an existing bookmark.
+  ///
+  /// Since the Web SDK uses immutable records, we remove and re-add the bookmark.
+  /// Returns true if successfully updated.
+  Future<bool> updateBookmark(Bookmark bookmark) async {
+    try {
+      // Remove the existing bookmark
+      await removeBookmark(bookmark);
+
+      // Add the updated bookmark
+      await addBookmark(bookmark);
+
+      return true;
+    } catch (e) {
+      throw Exception('Failed to update bookmark: $e');
+    }
+  }
+
+  /// Gets bookmarks for a specific page.
+  ///
+  /// Returns a list of bookmarks that navigate to the specified page.
+  Future<List<Bookmark>> getBookmarksForPage(int pageIndex) async {
+    try {
+      var allBookmarks = await getBookmarks();
+      return allBookmarks
+          .where((bookmark) => bookmark.pageIndex == pageIndex)
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get bookmarks for page: $e');
+    }
+  }
+
+  /// Checks if a bookmark exists for a specific page.
+  ///
+  /// Returns true if at least one bookmark exists for the page.
+  Future<bool> hasBookmarkForPage(int pageIndex) async {
+    try {
+      var bookmarks = await getBookmarksForPage(pageIndex);
+      return bookmarks.isNotEmpty;
+    } catch (e) {
+      throw Exception('Failed to check bookmark for page: $e');
+    }
+  }
+
+  // ============================
+  // Document Dirty State - Web Specific
+  // ============================
+
+  /// Checks if the instance has unsaved changes.
+  ///
+  /// This maps to `instance.hasUnsavedChanges()` in the Web SDK.
+  /// Returns true if there are unsaved changes to the document.
+  Future<bool> hasUnsavedChanges() async {
+    try {
+      var result = _nutrientInstance.callMethod('hasUnsavedChanges');
+      return result as bool;
+    } catch (e) {
+      throw Exception('Failed to check unsaved changes: $e');
+    }
+  }
+
+  /// Converts a Nutrient Web bookmark to a Flutter Bookmark.
+  Bookmark _webBookmarkToFlutter(JsObject webBookmark) {
+    String? actionJson;
+
+    // Convert action to JSON
+    var action = webBookmark['action'];
+    if (action != null) {
+      Map<String, dynamic> actionData = {};
+
+      // Check action type
+      var goToActionClass = context['PSPDFKit']['Actions']['GoToAction'];
+      var uriActionClass = context['PSPDFKit']['Actions']['URIAction'];
+
+      if (goToActionClass != null && _instanceOf(action, goToActionClass)) {
+        actionData = {
+          'type': 'goTo',
+          'pageIndex': action['pageIndex'],
+          'destinationType': 'fitPage',
+        };
+      } else if (uriActionClass != null &&
+          _instanceOf(action, uriActionClass)) {
+        actionData = {
+          'type': 'uri',
+          'uri': action['uri'],
+        };
+      }
+
+      if (actionData.isNotEmpty) {
+        actionJson = jsonEncode(actionData);
+      }
+    }
+
+    return Bookmark(
+      pdfBookmarkId: webBookmark['pdfBookmarkId'],
+      name: webBookmark['name'],
+      actionJson: actionJson,
+    );
+  }
+
+  /// Creates a Web SDK action from action data.
+  JsObject? _createWebAction(Map<String, dynamic> actionData) {
+    final type = actionData['type'];
+
+    if (type == 'goTo') {
+      var goToActionClass = context['PSPDFKit']['Actions']['GoToAction'];
+      return JsObject(goToActionClass, [
+        JsObject.jsify({
+          'pageIndex': actionData['pageIndex'] ?? 0,
+        })
+      ]);
+    } else if (type == 'uri') {
+      var uriActionClass = context['PSPDFKit']['Actions']['URIAction'];
+      return JsObject(uriActionClass, [
+        JsObject.jsify({
+          'uri': actionData['uri'],
+        })
+      ]);
+    }
+
+    return null;
+  }
+
   String _getFormFieldType(JsObject field) {
     JsObject textClass = context['PSPDFKit']['FormFields']['TextFormField'];
     JsObject signatureClass =
@@ -829,4 +1196,14 @@ class NutrientWebInstance {
 
     return result;
   }
+
+  /// Converts a color map (with r, g, b, a properties) to a hex color string.
+  /// Returns a string in the format "#RRGGBB".
+  String _colorMapToHex(Map colorMap) =>
+      XhtmlColorUtils.colorMapToHex(colorMap);
+
+  /// Updates the color styles in rich text XHTML content.
+  /// Delegates to [XhtmlColorUtils.updateRichTextColor] for testability.
+  String _updateRichTextColor(String xhtml, String hexColor) =>
+      XhtmlColorUtils.updateRichTextColor(xhtml, hexColor);
 }

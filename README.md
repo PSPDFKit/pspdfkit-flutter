@@ -215,6 +215,8 @@ class MyApp extends StatelessWidget {
 - [Release Notes][release notes]
 - [Customization][customization]
 - [Migration Guide][migration guide]
+- [Headless Document API](documentation/headless-document-api-guide.md) - Open documents without a viewer for batch processing
+- [Dirty State Tracking](documentation/dirty-state-tracking-guide.md) - Track unsaved changes across platforms
 
 ## Support
 

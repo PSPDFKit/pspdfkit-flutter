@@ -14,12 +14,11 @@ abstract class Annotation {
   final String? subject;
   final bool hidden;
   final int v;
-  // Leaving is mutable for now until we have a better solution to this.
-  String? updatedAt;
-  int pageIndex;
-  double opacity;
-  Map<String, dynamic>? customData;
-  List<AnnotationFlag>? flags;
+  final String? updatedAt;
+  final int pageIndex;
+  final double opacity;
+  final Map<String, dynamic>? customData;
+  final List<AnnotationFlag>? flags;
 
   Annotation({
     this.id,
@@ -200,7 +199,7 @@ class InkAnnotation extends Annotation {
   factory InkAnnotation.fromJson(Map<String, dynamic> json) {
     return InkAnnotation(
       id: json['id'] as String?,
-      lines: InkLines.fromJson(json['lines'].cast<String, dynamic>()),
+      lines: InkLines.fromJson(Map<String, dynamic>.from(json['lines'] as Map)),
       lineWidth: Annotation._toDouble(json['lineWidth']),
       isDrawnNaturally: json['isDrawnNaturally'] as bool? ?? false,
       isSignature: json['isSignature'] as bool?,
@@ -366,7 +365,7 @@ class NoteAnnotation extends Annotation {
   factory NoteAnnotation.fromJson(Map<String, dynamic> json) {
     return NoteAnnotation(
       id: json['id'] as String?,
-      text: TextContent.fromJson(json['text'].cast<String, dynamic>()),
+      text: TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
       icon: NoteIcon.values.firstWhere(
         (e) => e.toString().split('.').last == json['icon'],
         orElse: () => NoteIcon.note,
@@ -802,7 +801,7 @@ class LineAnnotation extends ShapeAnnotation {
       startPoint: Annotation._toDoubleList(json['startPoint'] as List<dynamic>),
       endPoint: Annotation._toDoubleList(json['endPoint'] as List<dynamic>),
       lineCaps: json['lineCaps'] != null
-          ? LineCaps.fromJson(json['lineCaps'].cast<String, dynamic>())
+          ? LineCaps.fromJson(Map<String, dynamic>.from(json['lineCaps'] as Map))
           : null,
       fillColor: Annotation._hexToColor(json['fillColor'] as String?),
       borderStyle: json['borderStyle'] != null
@@ -968,7 +967,7 @@ class FreeTextAnnotation extends Annotation {
       bbox: Annotation._toDoubleList(json['bbox'] as List),
       createdAt: json['createdAt'] as String,
       creatorName: json['creatorName'] as String?,
-      text: TextContent.fromJson(json['text'].cast<String, dynamic>()),
+      text: TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
       backgroundColor:
           Annotation._hexToColor(json['backgroundColor'] as String?),
       fontSize: Annotation._toDouble(json['fontSize']),
@@ -1085,6 +1084,18 @@ class StampAnnotation extends Annotation {
   }) : super(type: AnnotationType.stamp);
 
   factory StampAnnotation.fromJson(Map<String, dynamic> json) {
+    // Handle attachment - can be either a string (existing format) or an object (from native getAnnotations)
+    String? attachmentData;
+    if (json['attachment'] is String) {
+      attachmentData = json['attachment'] as String;
+    } else if (json['attachment'] is Map) {
+      // Extract binary data from the attachment object
+      // Use Map.from to handle platform channel maps (_Map<Object?, Object?>)
+      final attachmentObj =
+          Map<String, dynamic>.from(json['attachment'] as Map);
+      attachmentData = attachmentObj['binary'] as String?;
+    }
+
     return StampAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
@@ -1094,7 +1105,7 @@ class StampAnnotation extends Annotation {
         (e) => e.name == json['stampType'] as String,
         orElse: () => StampType.approved,
       ),
-      attachment: json['attachment'] as String?,
+      attachment: attachmentData,
       rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
       title: json['title'] as String?,
       color: Annotation._hexToColor(json['color'] as String?),
@@ -1170,6 +1181,27 @@ class ImageAnnotation extends Annotation with HasAttachment {
       [Map<String, dynamic>? attachments]) {
     final String imageAttachmentId = json['imageAttachmentId'] as String? ?? '';
 
+    // Parse attachment - first check for inline attachment (from native getAnnotations),
+    // then fall back to attachments map (from Instant JSON)
+    AnnotationAttachment? attachment;
+    if (json['attachment'] != null) {
+      // Use Map.from to handle platform channel maps (_Map<Object?, Object?>)
+      final inlineAttachment =
+          Map<String, dynamic>.from(json['attachment'] as Map);
+      attachment = AnnotationAttachment.fromJson(
+        inlineAttachment['id'] as String,
+        inlineAttachment,
+      );
+    } else if (attachments != null && imageAttachmentId.isNotEmpty) {
+      final attachmentData = attachments[imageAttachmentId];
+      if (attachmentData != null) {
+        attachment = AnnotationAttachment.fromJson(
+          imageAttachmentId,
+          Map<String, dynamic>.from(attachmentData as Map),
+        );
+      }
+    }
+
     return ImageAnnotation(
         id: json['id'] as String?,
         bbox: Annotation._toDoubleList(json['bbox'] as List),
@@ -1196,10 +1228,7 @@ class ImageAnnotation extends Annotation with HasAttachment {
         customData: json['customData'] != null
             ? Map<String, dynamic>.from(json['customData'])
             : null,
-        attachment: attachments != null && imageAttachmentId.isNotEmpty
-            ? AnnotationAttachment.fromJson(
-                imageAttachmentId, attachments[imageAttachmentId])
-            : null);
+        attachment: attachment);
   }
 
   @override
@@ -1314,6 +1343,18 @@ class FileAnnotation extends Annotation {
 
   /// Creates a [FileAnnotation] from a JSON map
   factory FileAnnotation.fromJson(Map<String, dynamic> json) {
+    // Parse inline attachment if present (from native getAnnotations)
+    AnnotationAttachment? attachment;
+    if (json['attachment'] != null) {
+      // Use Map.from to handle platform channel maps (_Map<Object?, Object?>)
+      final inlineAttachment =
+          Map<String, dynamic>.from(json['attachment'] as Map);
+      attachment = AnnotationAttachment.fromJson(
+        inlineAttachment['id'] as String,
+        inlineAttachment,
+      );
+    }
+
     return FileAnnotation(
       id: json['id'] as String?,
       bbox: List<double>.from(json['bbox'] as List),
@@ -1326,7 +1367,8 @@ class FileAnnotation extends Annotation {
             )
           : null,
       embeddedFile: json['embeddedFile'] != null
-          ? EmbeddedFile.fromJson(json['embeddedFile'] as Map<String, dynamic>)
+          ? EmbeddedFile.fromJson(
+              Map<String, dynamic>.from(json['embeddedFile'] as Map))
           : null,
       pageIndex: json['pageIndex'] as int,
       opacity:
@@ -1340,6 +1382,7 @@ class FileAnnotation extends Annotation {
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
+      attachment: attachment,
     );
   }
 
@@ -1824,7 +1867,7 @@ class LinkAnnotation extends Annotation {
   factory LinkAnnotation.fromJson(Map<String, dynamic> json) {
     return LinkAnnotation(
       id: json['id'] as String?,
-      action: Action.fromJson(json['action'].cast<String, dynamic>()),
+      action: Action.fromJson(Map<String, dynamic>.from(json['action'] as Map)),
       note: json['note'] as String?,
       borderStyle: json['borderStyle'] != null
           ? BorderStyle.values.firstWhere(

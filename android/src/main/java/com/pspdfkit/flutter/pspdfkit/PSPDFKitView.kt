@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -197,23 +197,8 @@ internal class PSPDFKitView(
                     // Dynamic annotation menu callbacks have been removed
                     // The annotation menu is now configured statically via annotationMenuHandler
 
-                    // Create method call handler to handle Flutter method calls
-                    // Wait for pdfFragment to be available before setting up the handler
-                    try {
-                        val pdfFragment = pdfUiFragment.pdfFragment
-                        if (pdfFragment != null) {
-                            methodCallHandler = PSPDFKitWidgetMethodCallHandler(pdfFragment)
-                            
-                            // Set up method channel for communication with Flutter
-                            methodCallHandler?.let { handler ->
-                                methodChannel.setMethodCallHandler(handler)
-                            }
-                        } else {
-                            Log.w(LOG_TAG, "PdfFragment not yet available, method call handler will be set up later")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(LOG_TAG, "Error setting up method call handler", e)
-                    }
+                    // Method call handler setup is deferred to onFragmentResumed
+                    // because pdfFragment may not be ready during onFragmentAttached
 
                     if (configurationMap?.contains("signatureSavingStrategy") == true) {
                         try {
@@ -223,6 +208,25 @@ internal class PSPDFKitView(
                         }
                     }
 
+                }
+
+                override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+                    // Set up method call handler when fragment is resumed
+                    // This ensures pdfFragment is fully initialized
+                    if (f.tag?.contains("Nutrient.Fragment") == true && methodCallHandler == null) {
+                        try {
+                            val pdfFragment = pdfUiFragment.pdfFragment
+                            if (pdfFragment != null) {
+                                methodCallHandler = PSPDFKitWidgetMethodCallHandler(pdfFragment)
+                                methodCallHandler?.let { handler ->
+                                    methodChannel.setMethodCallHandler(handler)
+                                }
+                                Log.d(LOG_TAG, "Method call handler set up successfully in onFragmentResumed")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(LOG_TAG, "Error setting up method call handler in onFragmentResumed", e)
+                        }
+                    }
                 }
             },
             true
@@ -392,11 +396,11 @@ internal class PSPDFKitView(
         
         if (serverUrl != null && jwt != null && sessionId != null) {
             try {
-                // Create AI Assistant with new 10.6+ API and store in companion object
+                // Create AI Assistant with new 10.10+ API and store in companion object
                 aiAssistant = createAiAssistant(
                     context = context,
                     documentsDescriptors = emptyList(),
-                    ipAddress = serverUrl,
+                    serverUrl = serverUrl,
                     sessionId = sessionId,
                     jwtToken = { _ -> jwt }
                 )

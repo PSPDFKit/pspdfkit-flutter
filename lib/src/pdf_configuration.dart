@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -121,6 +121,36 @@ class PdfConfiguration {
   /// scrolled. Defaults to false.
   final bool? iOSAllowToolbarTitleChange;
 
+  /// Sets the bookmark indicator mode for iOS. This controls whether a button
+  /// indicating the current bookmark status of the page will be displayed on
+  /// the page itself. Defaults to `off`.
+  ///
+  /// This is only available on iOS. On Android and Web, this setting is ignored.
+  final IOSBookmarkIndicatorMode? iOSBookmarkIndicatorMode;
+
+  /// Enables/disables the bookmark indicator's interaction on iOS. Defaults to `true`.
+  /// If this is enabled, tapping the indicator will bookmark or un-bookmark
+  /// the page it is displayed on.
+  ///
+  /// Use this in conjunction with [iOSBookmarkIndicatorMode] to get the desired behavior.
+  ///
+  /// This is only available on iOS. On Android and Web, this setting is ignored.
+  final bool? iOSBookmarkIndicatorInteractionEnabled;
+
+  /// Sets the file conflict resolution strategy for iOS.
+  ///
+  /// When a PDF file is modified or deleted externally while being viewed in
+  /// the app, the SDK can handle this conflict in different ways. This option
+  /// specifies how to resolve such conflicts.
+  ///
+  /// This option is iOS-only. On Android and Web, this setting is ignored.
+  ///
+  /// Defaults to [IOSFileConflictResolution.defaultBehavior], which shows an
+  /// alert to the user to choose how to resolve the conflict.
+  ///
+  /// See [IOSFileConflictResolution] for available options.
+  final IOSFileConflictResolution? iOSFileConflictResolution;
+
   /// Thumbnail Options
   /// Sets the thumbnail bar mode. Defaults to defaultMode.
   final ThumbnailBarMode? showThumbnailBar;
@@ -230,6 +260,9 @@ class PdfConfiguration {
     this.iOSLeftBarButtonItems,
     this.iOSRightBarButtonItems,
     this.iOSAllowToolbarTitleChange,
+    this.iOSBookmarkIndicatorMode,
+    this.iOSBookmarkIndicatorInteractionEnabled,
+    this.iOSFileConflictResolution,
     this.showThumbnailBar,
     this.androidShowThumbnailGridAction,
     this.enableAnnotationEditing,
@@ -289,6 +322,10 @@ class PdfConfiguration {
       'iOSLeftBarButtonItems': iOSLeftBarButtonItems,
       'iOSRightBarButtonItems': iOSRightBarButtonItems,
       'iOSAllowToolbarTitleChange': iOSAllowToolbarTitleChange,
+      'iOSBookmarkIndicatorMode': iOSBookmarkIndicatorMode?.name,
+      'iOSBookmarkIndicatorInteractionEnabled':
+          iOSBookmarkIndicatorInteractionEnabled,
+      'iOSFileConflictResolution': iOSFileConflictResolution?.name,
       'showThumbnailBar': showThumbnailBar?.name,
       'androidShowThumbnailGridAction': androidShowThumbnailGridAction,
       'enableAnnotationEditing': enableAnnotationEditing,

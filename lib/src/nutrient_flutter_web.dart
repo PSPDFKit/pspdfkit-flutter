@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -17,6 +17,9 @@ import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/nutrient_flutter_platform_interface.dart';
 
 import 'web/nutrient_web.dart';
+
+/// Creates the platform-specific instance for web.
+NutrientFlutterPlatform createPlatformInstance() => NutrientFlutterWeb();
 
 /// A web implementation of the NutrientFlutterPlatform of the NutrientFlutter plugin.
 class NutrientFlutterWeb extends NutrientFlutterPlatform {
@@ -215,5 +218,11 @@ class NutrientFlutterWeb extends NutrientFlutterPlatform {
   @override
   Future<void> setDefaultAuthorName(String authorName) {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<PdfDocument> openDocument(String documentPath, {String? password}) {
+    throw UnimplementedError(
+        'Headless document API is not yet supported on web platform. Use NutrientView instead.');
   }
 }

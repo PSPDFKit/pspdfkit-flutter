@@ -1,4 +1,4 @@
-// Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+// Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 //
 // THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 // AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -516,6 +516,29 @@ data class FormFieldData (
   }
 }
 
+/**
+ * Options for opening a document without a viewer (headless mode).
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class HeadlessDocumentOpenOptions (
+  /** Password for encrypted documents. */
+  val password: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): HeadlessDocumentOpenOptions {
+      val password = pigeonVar_list[0] as String?
+      return HeadlessDocumentOpenOptions(password)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      password,
+    )
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PointF (
   val x: Double,
@@ -664,6 +687,10 @@ data class AnnotationMenuConfigurationData (
  * this approach preserves attachments, custom data, and other properties
  * that are not being explicitly modified.
  *
+ * **Note on inkLines, customData, bbox, and flags**: These fields are serialized as JSON
+ * strings internally to avoid Pigeon's CastList type casting issues. Use the
+ * extension methods for typed access (e.g., `inkLines`, `customData`, `boundingBox`, `flagsSet`).
+ *
  * Generated class from Pigeon that represents data sent in messages.
  */
 data class AnnotationProperties (
@@ -679,28 +706,37 @@ data class AnnotationProperties (
   val opacity: Double? = null,
   /** Line width for stroke-based annotations (in points) */
   val lineWidth: Double? = null,
-  /** List of annotation flags (e.g., ['readOnly', 'print']) */
-  val flags: List<String>? = null,
   /**
-   * Custom data associated with the annotation
-   * This preserves any application-specific metadata
+   * Annotation flags as a JSON string array (e.g., '["readOnly", "print"]').
+   * Use the `flagsSet` getter from the extension for typed access as Set<AnnotationFlag>.
    */
-  val customData: Map<String, Any?>? = null,
+  val flagsJson: String? = null,
+  /**
+   * Custom data associated with the annotation as a JSON string.
+   * Use the `customData` getter from the extension for typed access.
+   * This preserves any application-specific metadata.
+   */
+  val customDataJson: String? = null,
   /** Text content of the annotation (for text-based annotations) */
   val contents: String? = null,
   /** Subject/title of the annotation */
   val subject: String? = null,
   /** Creator/author of the annotation */
   val creator: String? = null,
-  /** Bounding box as [x, y, width, height] in PDF coordinates */
-  val bbox: List<Double>? = null,
+  /**
+   * Bounding box as a JSON string array [x, y, width, height] in PDF coordinates.
+   * Use the `boundingBox` getter from the extension for typed access as Rect.
+   */
+  val bboxJson: String? = null,
   /** Note text associated with the annotation */
   val note: String? = null,
   /**
-   * Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
-   * Each line is an array of points, each point is [x, y, pressure]
+   * Ink lines for ink annotations as a JSON string.
+   * Use the `inkLines` getter from the extension for typed access.
+   * Format: [[[x, y, pressure], ...], ...]
+   * Each line is an array of points, each point is [x, y, pressure].
    */
-  val inkLines: List<List<List<Double>>>? = null,
+  val inkLinesJson: String? = null,
   /** Font name for text annotations */
   val fontName: String? = null,
   /** Font size for text annotations (in points) */
@@ -717,18 +753,18 @@ data class AnnotationProperties (
       val fillColor = pigeonVar_list[3] as Long?
       val opacity = pigeonVar_list[4] as Double?
       val lineWidth = pigeonVar_list[5] as Double?
-      val flags = pigeonVar_list[6] as List<String>?
-      val customData = pigeonVar_list[7] as Map<String, Any?>?
+      val flagsJson = pigeonVar_list[6] as String?
+      val customDataJson = pigeonVar_list[7] as String?
       val contents = pigeonVar_list[8] as String?
       val subject = pigeonVar_list[9] as String?
       val creator = pigeonVar_list[10] as String?
-      val bbox = pigeonVar_list[11] as List<Double>?
+      val bboxJson = pigeonVar_list[11] as String?
       val note = pigeonVar_list[12] as String?
-      val inkLines = pigeonVar_list[13] as List<List<List<Double>>>?
+      val inkLinesJson = pigeonVar_list[13] as String?
       val fontName = pigeonVar_list[14] as String?
       val fontSize = pigeonVar_list[15] as Double?
       val iconName = pigeonVar_list[16] as String?
-      return AnnotationProperties(annotationId, pageIndex, strokeColor, fillColor, opacity, lineWidth, flags, customData, contents, subject, creator, bbox, note, inkLines, fontName, fontSize, iconName)
+      return AnnotationProperties(annotationId, pageIndex, strokeColor, fillColor, opacity, lineWidth, flagsJson, customDataJson, contents, subject, creator, bboxJson, note, inkLinesJson, fontName, fontSize, iconName)
     }
   }
   fun toList(): List<Any?> {
@@ -739,17 +775,78 @@ data class AnnotationProperties (
       fillColor,
       opacity,
       lineWidth,
-      flags,
-      customData,
+      flagsJson,
+      customDataJson,
       contents,
       subject,
       creator,
-      bbox,
+      bboxJson,
       note,
-      inkLines,
+      inkLinesJson,
       fontName,
       fontSize,
       iconName,
+    )
+  }
+}
+
+/**
+ * Represents a bookmark in a PDF document.
+ *
+ * Bookmarks are user-created markers that allow quick navigation
+ * to specific pages or actions in a document. They are different from
+ * PDF outlines (table of contents).
+ *
+ * This follows the Instant JSON bookmark specification:
+ * - `type` is always "pspdfkit/bookmark"
+ * - `action` defines what happens when the bookmark is activated
+ * - `name` provides a display label
+ *
+ * Example usage:
+ * ```dart
+ * // Create a bookmark for page 5
+ * final bookmark = Bookmark.forPage(pageIndex: 5, name: 'Chapter 2');
+ * await document.addBookmark(bookmark);
+ *
+ * // Get all bookmarks
+ * final bookmarks = await document.getBookmarks();
+ * ```
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class Bookmark (
+  /**
+   * The PDF bookmark ID used to store the bookmark in the PDF.
+   * This is assigned by the system when the bookmark is persisted.
+   * May be null for newly created bookmarks.
+   */
+  val pdfBookmarkId: String? = null,
+  /**
+   * Display name of the bookmark shown in the UI.
+   * If not provided, a default name based on the page number may be used.
+   */
+  val name: String? = null,
+  /**
+   * The action JSON string defining what happens when the bookmark is activated.
+   * Typically a GoToAction that navigates to a specific page.
+   * Format: {"type": "goTo", "pageIndex": 0, "destinationType": "fitPage"}
+   */
+  val actionJson: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): Bookmark {
+      val pdfBookmarkId = pigeonVar_list[0] as String?
+      val name = pigeonVar_list[1] as String?
+      val actionJson = pigeonVar_list[2] as String?
+      return Bookmark(pdfBookmarkId, name, actionJson)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      pdfBookmarkId,
+      name,
+      actionJson,
     )
   }
 }
@@ -833,17 +930,27 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
       }
       144.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PointF.fromList(it)
+          HeadlessDocumentOpenOptions.fromList(it)
         }
       }
       145.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          AnnotationMenuConfigurationData.fromList(it)
+          PointF.fromList(it)
         }
       }
       146.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          AnnotationMenuConfigurationData.fromList(it)
+        }
+      }
+      147.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           AnnotationProperties.fromList(it)
+        }
+      }
+      148.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          Bookmark.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -911,16 +1018,24 @@ private open class NutrientApiPigeonCodec : StandardMessageCodec() {
         stream.write(143)
         writeValue(stream, value.toList())
       }
-      is PointF -> {
+      is HeadlessDocumentOpenOptions -> {
         stream.write(144)
         writeValue(stream, value.toList())
       }
-      is AnnotationMenuConfigurationData -> {
+      is PointF -> {
         stream.write(145)
         writeValue(stream, value.toList())
       }
-      is AnnotationProperties -> {
+      is AnnotationMenuConfigurationData -> {
         stream.write(146)
+        writeValue(stream, value.toList())
+      }
+      is AnnotationProperties -> {
+        stream.write(147)
+        writeValue(stream, value.toList())
+      }
+      is Bookmark -> {
+        stream.write(148)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -946,8 +1061,18 @@ interface NutrientApi {
   fun exportInstantJson(callback: (Result<String?>) -> Unit)
   fun addAnnotation(annotation: String, attachment: String?, callback: (Result<Boolean?>) -> Unit)
   fun removeAnnotation(annotation: String, callback: (Result<Boolean?>) -> Unit)
-  fun getAnnotations(pageIndex: Long, type: String, callback: (Result<Any?>) -> Unit)
-  fun getAllUnsavedAnnotations(callback: (Result<Any?>) -> Unit)
+  /**
+   * Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+   * The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   */
+  fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String?>) -> Unit)
+  /**
+   * Returns a JSON string containing all unsaved annotations in the presented document.
+   * The JSON string can be decoded to the appropriate type on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   */
+  fun getAllUnsavedAnnotationsJson(callback: (Result<String?>) -> Unit)
   fun updateAnnotation(annotation: String, callback: (Result<Unit>) -> Unit)
   fun processAnnotations(type: AnnotationType, processingMode: AnnotationProcessingMode, destinationPath: String, callback: (Result<Boolean?>) -> Unit)
   fun importXfdf(xfdfString: String, callback: (Result<Boolean?>) -> Unit)
@@ -1221,13 +1346,13 @@ interface NutrientApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val pageIndexArg = args[0] as Long
             val typeArg = args[1] as String
-            api.getAnnotations(pageIndexArg, typeArg) { result: Result<Any?> ->
+            api.getAnnotationsJson(pageIndexArg, typeArg) { result: Result<String?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -1242,10 +1367,10 @@ interface NutrientApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getAllUnsavedAnnotations{ result: Result<Any?> ->
+            api.getAllUnsavedAnnotationsJson{ result: Result<String?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -1902,10 +2027,18 @@ interface NutrientViewControllerApi {
    * `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
    */
   fun removeAnnotation(annotation: String, callback: (Result<Boolean?>) -> Unit)
-  /** Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`. */
-  fun getAnnotations(pageIndex: Long, type: String, callback: (Result<Any>) -> Unit)
-  /** Returns a list of JSON dictionaries for all the unsaved annotations in the presented document. */
-  fun getAllUnsavedAnnotations(callback: (Result<Any>) -> Unit)
+  /**
+   * Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+   * The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   */
+  fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String>) -> Unit)
+  /**
+   * Returns a JSON string containing all unsaved annotations in the presented document.
+   * The JSON string can be decoded to the appropriate type on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   */
+  fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit)
   /**
    * Processes annotations of the given type with the provided processing
    * mode and stores the PDF at the given destination path.
@@ -2103,13 +2236,13 @@ interface NutrientViewControllerApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val pageIndexArg = args[0] as Long
             val typeArg = args[1] as String
-            api.getAnnotations(pageIndexArg, typeArg) { result: Result<Any> ->
+            api.getAnnotationsJson(pageIndexArg, typeArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2124,10 +2257,10 @@ interface NutrientViewControllerApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getAllUnsavedAnnotations{ result: Result<Any> ->
+            api.getAllUnsavedAnnotationsJson{ result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2414,9 +2547,20 @@ interface PdfDocumentApi {
    * Returns a [Uint8List] containing the exported PDF data.
    */
   fun exportPdf(options: DocumentSaveOptions?, callback: (Result<ByteArray>) -> Unit)
-  fun getFormField(fieldName: String, callback: (Result<Map<String, Any?>>) -> Unit)
-  /** Returns a list of all form fields in the document. */
-  fun getFormFields(callback: (Result<List<Map<String, Any?>>>) -> Unit)
+  /**
+   * Returns the form field with the given name as a JSON string.
+   * The JSON string contains the form field data that can be decoded
+   * to a Map<String, dynamic> on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types.
+   */
+  fun getFormFieldJson(fieldName: String, callback: (Result<String>) -> Unit)
+  /**
+   * Returns a list of all form fields in the document as a JSON string.
+   * The JSON string contains an array of form field objects that can be
+   * decoded to List<Map<String, dynamic>> on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types.
+   */
+  fun getFormFieldsJson(callback: (Result<String>) -> Unit)
   /** Sets the value of a form field by specifying its fully qualified field name. */
   fun setFormFieldValue(value: String, fullyQualifiedName: String, callback: (Result<Boolean?>) -> Unit)
   /** Gets the form field value by specifying its fully qualified name. */
@@ -2448,10 +2592,21 @@ interface PdfDocumentApi {
    * `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
    */
   fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit)
-  /** Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`. */
-  fun getAnnotations(pageIndex: Long, type: String, callback: (Result<Any>) -> Unit)
-  /** Returns a list of JSON dictionaries for all the unsaved annotations in the presented document. */
-  fun getAllUnsavedAnnotations(callback: (Result<Any>) -> Unit)
+  /**
+   * Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+   * The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   *
+   * For annotations with attachments (image, stamp, file), the response includes an `attachment` object
+   * containing `binary` (base64-encoded) and `contentType` fields, enabling complete annotation copying.
+   */
+  fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String>) -> Unit)
+  /**
+   * Returns a JSON string containing all unsaved annotations in the presented document.
+   * The JSON string can be decoded to the appropriate type on the Dart side.
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+   */
+  fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit)
   /** Imports annotations from the XFDF file at the given path. */
   fun importXfdf(xfdfString: String, callback: (Result<Boolean>) -> Unit)
   /** Exports annotations to the XFDF file at the given path. */
@@ -2463,6 +2618,198 @@ interface PdfDocumentApi {
   fun save(outputPath: String?, options: DocumentSaveOptions?, callback: (Result<Boolean>) -> Unit)
   /** Get the total number of pages in the document. */
   fun getPageCount(callback: (Result<Long>) -> Unit)
+  /**
+   * Processes annotations of the given type with the provided processing
+   * mode and stores the PDF at the given destination path.
+   *
+   * This method works for both viewer-bound and headless documents.
+   *
+   * @param type The type of annotations to process (e.g., all, ink, highlight)
+   * @param processingMode The processing mode (flatten, embed, remove, print)
+   * @param destinationPath The path where the processed PDF should be saved
+   * @return true if processing succeeded, false otherwise
+   */
+  fun processAnnotations(type: AnnotationType, processingMode: AnnotationProcessingMode, destinationPath: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Closes the document and releases all native resources.
+   *
+   * This must be called when a headless document is no longer needed
+   * to free memory and file handles. For viewer-bound documents,
+   * this is handled automatically by the view lifecycle.
+   *
+   * @return true if the document was closed successfully
+   */
+  fun closeDocument(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **iOS only.** Checks if the document has any dirty (unsaved) annotations.
+   *
+   * Maps directly to `document.hasDirtyAnnotations` in PSPDFKit iOS SDK.
+   * Returns true if any annotations have been added, modified, or deleted
+   * since the document was loaded or last saved.
+   *
+   * **Platform support:**
+   * - iOS: ✅ Supported
+   * - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` instead
+   * - Web: ❌ Use `webHasUnsavedChanges()` instead
+   *
+   * @return true if there are dirty annotations
+   * @throws On Android/Web
+   */
+  fun iOSHasDirtyAnnotations(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **iOS only.** Gets the dirty state of a specific annotation.
+   *
+   * Maps directly to `annotation.isDirty` property in PSPDFKit iOS SDK.
+   * An annotation is dirty if it has been modified since the document
+   * was loaded or last saved.
+   *
+   * **Platform support:**
+   * - iOS: ✅ Supported
+   * - Android: ❌ Not available (no annotation-level isDirty)
+   * - Web: ❌ Not available
+   *
+   * @param pageIndex Zero-based page index
+   * @param annotationId The annotation's unique identifier
+   * @return true if the annotation is dirty
+   * @throws On Android/Web, or if annotation not found
+   */
+  fun iOSGetAnnotationIsDirty(pageIndex: Long, annotationId: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * **iOS only.** Sets the dirty state of a specific annotation.
+   *
+   * Maps directly to setting `annotation.isDirty` property in PSPDFKit iOS SDK.
+   * This can be used to manually mark an annotation as needing save,
+   * or to clear its dirty state.
+   *
+   * **Platform support:**
+   * - iOS: ✅ Supported
+   * - Android: ❌ Not available
+   * - Web: ❌ Not available
+   *
+   * @param pageIndex Zero-based page index
+   * @param annotationId The annotation's unique identifier
+   * @param isDirty The dirty state to set
+   * @return true if successfully set
+   * @throws On Android/Web, or if annotation not found
+   */
+  fun iOSSetAnnotationIsDirty(pageIndex: Long, annotationId: String, isDirty: Boolean, callback: (Result<Boolean>) -> Unit)
+  /**
+   * **iOS only.** Clears the needs-save flag on all annotation providers.
+   *
+   * Maps directly to `containerProvider.clearNeedsSaveFlag()` in PSPDFKit iOS SDK.
+   * This resets the modification tracking without saving to disk.
+   *
+   * **Platform support:**
+   * - iOS: ✅ Supported
+   * - Android: ❌ Not available (was removed from SDK)
+   * - Web: ❌ Not available
+   *
+   * @return true if successfully cleared
+   * @throws On Android/Web
+   */
+  fun iOSClearNeedsSaveFlag(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Checks if the annotation provider has unsaved changes.
+   *
+   * Maps directly to `annotationProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+   * - Android: ✅ Supported
+   * - Web: ❌ Use `webHasUnsavedChanges()` instead
+   *
+   * @return true if there are unsaved annotation changes
+   * @throws On iOS/Web
+   */
+  fun androidHasUnsavedAnnotationChanges(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Checks if the form provider has unsaved changes.
+   *
+   * Maps directly to `formProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Not available at provider level
+   * - Android: ✅ Supported
+   * - Web: ❌ Not available
+   *
+   * @return true if there are unsaved form field changes
+   * @throws On iOS/Web
+   */
+  fun androidHasUnsavedFormChanges(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Checks if the bookmark provider has unsaved changes.
+   *
+   * Maps directly to `bookmarkProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Not available at provider level
+   * - Android: ✅ Supported
+   * - Web: ❌ Not available
+   *
+   * @return true if there are unsaved bookmark changes
+   * @throws On iOS/Web
+   */
+  fun androidHasUnsavedBookmarkChanges(callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Gets the dirty state of a specific bookmark.
+   *
+   * Maps directly to `bookmark.isDirty()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Not available
+   * - Android: ✅ Supported
+   * - Web: ❌ Not available
+   *
+   * @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+   * @return true if the bookmark is dirty
+   * @throws On iOS/Web, or if bookmark not found
+   */
+  fun androidGetBookmarkIsDirty(bookmarkId: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Clears the dirty state of a specific bookmark.
+   *
+   * Maps directly to `bookmark.clearDirty()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Not available
+   * - Android: ✅ Supported
+   * - Web: ❌ Not available
+   *
+   * @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+   * @return true if successfully cleared
+   * @throws On iOS/Web, or if bookmark not found
+   */
+  fun androidClearBookmarkDirtyState(bookmarkId: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Android only.** Gets the dirty state of a form field.
+   *
+   * Maps directly to `formField.isDirty()` in PSPDFKit Android SDK.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Not available (use formField.dirty property differently)
+   * - Android: ✅ Supported
+   * - Web: ❌ Not available
+   *
+   * @param fullyQualifiedName The form field's fully qualified name
+   * @return true if the form field is dirty
+   * @throws On iOS/Web, or if form field not found
+   */
+  fun androidGetFormFieldIsDirty(fullyQualifiedName: String, callback: (Result<Boolean>) -> Unit)
+  /**
+   * **Web only.** Checks if the instance has unsaved changes.
+   *
+   * Maps directly to `instance.hasUnsavedChanges()` in Nutrient Web SDK.
+   * This is a combined check that includes annotations, forms, and other changes.
+   *
+   * **Platform support:**
+   * - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+   * - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` etc. instead
+   * - Web: ✅ Supported
+   *
+   * @return true if there are unsaved changes
+   * @throws On iOS/Android
+   */
+  fun webHasUnsavedChanges(callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by PdfDocumentApi. */
@@ -2514,12 +2861,12 @@ interface PdfDocumentApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormField$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val fieldNameArg = args[0] as String
-            api.getFormField(fieldNameArg) { result: Result<Map<String, Any?>> ->
+            api.getFormFieldJson(fieldNameArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2534,10 +2881,10 @@ interface PdfDocumentApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFields$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getFormFields{ result: Result<List<Map<String, Any?>>> ->
+            api.getFormFieldsJson{ result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2692,13 +3039,13 @@ interface PdfDocumentApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val pageIndexArg = args[0] as Long
             val typeArg = args[1] as String
-            api.getAnnotations(pageIndexArg, typeArg) { result: Result<Any> ->
+            api.getAnnotationsJson(pageIndexArg, typeArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2713,10 +3060,10 @@ interface PdfDocumentApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getAllUnsavedAnnotations{ result: Result<Any> ->
+            api.getAllUnsavedAnnotationsJson{ result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -2796,6 +3143,332 @@ interface PdfDocumentApi {
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             api.getPageCount{ result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.processAnnotations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val typeArg = args[0] as AnnotationType
+            val processingModeArg = args[1] as AnnotationProcessingMode
+            val destinationPathArg = args[2] as String
+            api.processAnnotations(typeArg, processingModeArg, destinationPathArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.closeDocument$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.closeDocument{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSHasDirtyAnnotations$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.iOSHasDirtyAnnotations{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSGetAnnotationIsDirty$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val annotationIdArg = args[1] as String
+            api.iOSGetAnnotationIsDirty(pageIndexArg, annotationIdArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSSetAnnotationIsDirty$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val annotationIdArg = args[1] as String
+            val isDirtyArg = args[2] as Boolean
+            api.iOSSetAnnotationIsDirty(pageIndexArg, annotationIdArg, isDirtyArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSClearNeedsSaveFlag$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.iOSClearNeedsSaveFlag{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedAnnotationChanges$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.androidHasUnsavedAnnotationChanges{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedFormChanges$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.androidHasUnsavedFormChanges{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedBookmarkChanges$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.androidHasUnsavedBookmarkChanges{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetBookmarkIsDirty$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bookmarkIdArg = args[0] as String
+            api.androidGetBookmarkIsDirty(bookmarkIdArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidClearBookmarkDirtyState$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bookmarkIdArg = args[0] as String
+            api.androidClearBookmarkDirtyState(bookmarkIdArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetFormFieldIsDirty$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val fullyQualifiedNameArg = args[0] as String
+            api.androidGetFormFieldIsDirty(fullyQualifiedNameArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.webHasUnsavedChanges$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.webHasUnsavedChanges{ result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * API for opening and managing PDF documents without displaying a viewer.
+ *
+ * This API enables programmatic access to PDF documents for operations like:
+ * - Reading and modifying annotations
+ * - Processing annotations (flatten, embed, remove)
+ * - Exporting/importing XFDF
+ * - Form field manipulation
+ *
+ * Documents opened through this API must be explicitly closed using
+ * [PdfDocumentApi.closeDocument] when no longer needed to free resources.
+ *
+ * **Usage Example**:
+ * ```dart
+ * final documentId = await HeadlessDocumentApi.openDocument('/path/to/doc.pdf');
+ * // Use PdfDocumentApi with the documentId for operations
+ * final annotations = await pdfDocumentApi.getAnnotations(0, 'all');
+ * await pdfDocumentApi.processAnnotations(
+ *   AnnotationType.all,
+ *   AnnotationProcessingMode.flatten,
+ *   '/path/to/output.pdf',
+ * );
+ * await pdfDocumentApi.closeDocument();
+ * ```
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface HeadlessDocumentApi {
+  /**
+   * Opens a document from the given path without displaying a viewer.
+   *
+   * Returns a unique document ID that can be used to interact with the
+   * document via [PdfDocumentApi]. The document ID is used as a channel
+   * suffix to create isolated API instances for each document.
+   *
+   * @param documentPath Path to the PDF document (file path or content:// URI)
+   * @param options Optional settings like password for encrypted documents
+   * @return Unique document ID for use with PdfDocumentApi
+   * @throws NutrientApiError if the document cannot be opened
+   */
+  fun openDocument(documentPath: String, options: HeadlessDocumentOpenOptions?, callback: (Result<String>) -> Unit)
+
+  companion object {
+    /** The codec used by HeadlessDocumentApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      NutrientApiPigeonCodec()
+    }
+    /** Sets up an instance of `HeadlessDocumentApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: HeadlessDocumentApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.HeadlessDocumentApi.openDocument$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val documentPathArg = args[0] as String
+            val optionsArg = args[1] as HeadlessDocumentOpenOptions?
+            api.openDocument(documentPathArg, optionsArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -3040,9 +3713,10 @@ interface AnnotationManagerApi {
    *
    * @param pageIndex Zero-based page index
    * @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
-   * @return List of annotations as JSON-compatible maps
+   * @return JSON string containing array of annotations
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
    */
-  fun getAnnotations(pageIndex: Long, annotationType: String, callback: (Result<Any>) -> Unit)
+  fun getAnnotationsJson(pageIndex: Long, annotationType: String, callback: (Result<String>) -> Unit)
   /**
    * Add a new annotation to the document.
    *
@@ -3064,9 +3738,10 @@ interface AnnotationManagerApi {
    *
    * @param query Search term
    * @param pageIndex Optional page index to limit search scope
-   * @return List of matching annotations
+   * @return JSON string containing array of matching annotations
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
    */
-  fun searchAnnotations(query: String, pageIndex: Long?, callback: (Result<Any>) -> Unit)
+  fun searchAnnotationsJson(query: String, pageIndex: Long?, callback: (Result<String>) -> Unit)
   /**
    * Export annotations as XFDF format.
    *
@@ -3084,9 +3759,10 @@ interface AnnotationManagerApi {
   /**
    * Get all annotations that have unsaved changes.
    *
-   * @return List of annotations with pending changes
+   * @return JSON string containing array of annotations with pending changes
+   * Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
    */
-  fun getUnsavedAnnotations(callback: (Result<Any>) -> Unit)
+  fun getUnsavedAnnotationsJson(callback: (Result<String>) -> Unit)
 
   companion object {
     /** The codec used by AnnotationManagerApi. */
@@ -3157,13 +3833,13 @@ interface AnnotationManagerApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val pageIndexArg = args[0] as Long
             val annotationTypeArg = args[1] as String
-            api.getAnnotations(pageIndexArg, annotationTypeArg) { result: Result<Any> ->
+            api.getAnnotationsJson(pageIndexArg, annotationTypeArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -3220,13 +3896,13 @@ interface AnnotationManagerApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val queryArg = args[0] as String
             val pageIndexArg = args[1] as Long?
-            api.searchAnnotations(queryArg, pageIndexArg) { result: Result<Any> ->
+            api.searchAnnotationsJson(queryArg, pageIndexArg) { result: Result<String> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -3281,10 +3957,218 @@ interface AnnotationManagerApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotations$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotationsJson$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.getUnsavedAnnotations{ result: Result<Any> ->
+            api.getUnsavedAnnotationsJson{ result: Result<String> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * API for managing bookmarks in a PDF document.
+ *
+ * This API provides methods to add, remove, update, and retrieve bookmarks.
+ * Bookmarks are user-created navigation markers that persist with the document.
+ *
+ * Bookmarks follow the Instant JSON specification format.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface BookmarkManagerApi {
+  /**
+   * Initialize the bookmark manager for a specific document.
+   * This should be called once when creating the manager instance.
+   *
+   * @param documentId The unique identifier of the document
+   */
+  fun initialize(documentId: String)
+  /**
+   * Get all bookmarks in the document.
+   *
+   * @return List of all bookmarks
+   */
+  fun getBookmarks(callback: (Result<List<Bookmark>>) -> Unit)
+  /**
+   * Add a new bookmark to the document.
+   *
+   * @param bookmark The bookmark to add
+   * @return The created bookmark with its assigned pdfBookmarkId
+   */
+  fun addBookmark(bookmark: Bookmark, callback: (Result<Bookmark>) -> Unit)
+  /**
+   * Remove a bookmark from the document.
+   *
+   * @param bookmark The bookmark to remove (identified by pdfBookmarkId or action)
+   * @return true if successfully removed, false otherwise
+   */
+  fun removeBookmark(bookmark: Bookmark, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Update an existing bookmark.
+   *
+   * @param bookmark The bookmark with updated values (must have a valid pdfBookmarkId)
+   * @return true if successfully updated, false otherwise
+   */
+  fun updateBookmark(bookmark: Bookmark, callback: (Result<Boolean>) -> Unit)
+  /**
+   * Get bookmarks for a specific page.
+   *
+   * @param pageIndex Zero-based page index
+   * @return List of bookmarks pointing to the specified page
+   */
+  fun getBookmarksForPage(pageIndex: Long, callback: (Result<List<Bookmark>>) -> Unit)
+  /**
+   * Check if a bookmark exists for a specific page.
+   *
+   * @param pageIndex Zero-based page index
+   * @return true if at least one bookmark exists for the page
+   */
+  fun hasBookmarkForPage(pageIndex: Long, callback: (Result<Boolean>) -> Unit)
+
+  companion object {
+    /** The codec used by BookmarkManagerApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      NutrientApiPigeonCodec()
+    }
+    /** Sets up an instance of `BookmarkManagerApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: BookmarkManagerApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.initialize$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val documentIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              api.initialize(documentIdArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarks$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getBookmarks{ result: Result<List<Bookmark>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.addBookmark$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bookmarkArg = args[0] as Bookmark
+            api.addBookmark(bookmarkArg) { result: Result<Bookmark> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.removeBookmark$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bookmarkArg = args[0] as Bookmark
+            api.removeBookmark(bookmarkArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.updateBookmark$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bookmarkArg = args[0] as Bookmark
+            api.updateBookmark(bookmarkArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarksForPage$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            api.getBookmarksForPage(pageIndexArg) { result: Result<List<Bookmark>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.hasBookmarkForPage$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            api.hasBookmarkForPage(pageIndexArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

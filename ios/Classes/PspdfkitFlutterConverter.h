@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -26,7 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (PSPDFAnnotationType)annotationTypeFromString:(NSString *)typeString;
 + (PSPDFAnnotationChange)annotationChangeFromString:(NSString *)changeString;
 + (NSArray <NSDictionary *> *)instantJSONFromAnnotations:(NSArray <PSPDFAnnotation *> *) annotations;
-+ (PSPDFSignatureSavingStrategy)signatureSavingStrategy:(NSDictionary *)dictionary;
++ (PSPDFSignatureSavingStrategy)signatureSavingStrategy:(NSString *)strategy;
++ (PSPDFPageBookmarkIndicatorMode)bookmarkIndicatorMode:(NSDictionary *)dictionary forKey:(NSString *)key;
++ (NSNumber * _Nullable)fileConflictResolution:(NSString * _Nullable)resolution;
 @end
 
 NS_ASSUME_NONNULL_END

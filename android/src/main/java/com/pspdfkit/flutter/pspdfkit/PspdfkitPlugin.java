@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -22,8 +22,10 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.flutter.pspdfkit.api.AnalyticsEventsCallback;
+import com.pspdfkit.flutter.pspdfkit.api.HeadlessDocumentApi;
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApi;
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApiCallbacks;
+import com.pspdfkit.flutter.pspdfkit.document.HeadlessDocumentApiImpl;
 import com.pspdfkit.flutter.pspdfkit.events.FlutterAnalyticsClient;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
 import com.pspdfkit.listeners.SimpleDocumentListener;
@@ -57,6 +59,8 @@ public class PspdfkitPlugin
 
     private final PspdfkitApiImpl pspdfkitApi = new PspdfkitApiImpl(null);
 
+    @Nullable
+    private HeadlessDocumentApiImpl headlessDocumentApi;
 
     private PspdfkitPluginMethodCallHandler methodCallHandler;
 
@@ -89,6 +93,13 @@ public class PspdfkitPlugin
         AnalyticsEventsCallback callback = new AnalyticsEventsCallback(binding.getBinaryMessenger(), MESSAGE_CHANNEL_SUFFIX);
         pspdfkitApi.setAnalyticsEventClient(new FlutterAnalyticsClient(callback));
         eventDispatcher.setPspdfkitApiCallbacks(new PspdfkitApiCallbacks(pspdfkitFlutterApiCallbacks));
+
+        // Setup the HeadlessDocumentApi - requires application context
+        headlessDocumentApi = new HeadlessDocumentApiImpl(
+                binding.getApplicationContext(),
+                binding.getBinaryMessenger()
+        );
+        HeadlessDocumentApi.Companion.setUp(binding.getBinaryMessenger(), headlessDocumentApi, MESSAGE_CHANNEL_SUFFIX);
     }
 
     /**
@@ -109,6 +120,13 @@ public class PspdfkitPlugin
         }
         NutrientApi.Companion.setUp(binding.getBinaryMessenger(), null, MESSAGE_CHANNEL_SUFFIX);
         pspdfkitApi.dispose();
+
+        // Cleanup HeadlessDocumentApi
+        if (headlessDocumentApi != null) {
+            headlessDocumentApi.dispose();
+            HeadlessDocumentApi.Companion.setUp(binding.getBinaryMessenger(), null, MESSAGE_CHANNEL_SUFFIX);
+            headlessDocumentApi = null;
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -6,6 +6,7 @@
 ///  This notice may not be removed from this file.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/web/nutrient_web_instance.dart';
@@ -41,6 +42,11 @@ class AnnotationManagerWeb extends AnnotationManager {
         for (final annotation in annotations) {
           if (annotation is Map<String, dynamic> &&
               annotation['id'] == annotationId) {
+            // Skip undefined or invalid annotation types
+            final type = annotation['type'];
+            if (type == null || type == '' || type == 'pspdfkit/undefined') {
+              continue;
+            }
             // Convert to AnnotationProperties
             return _convertJsonToAnnotationProperties(annotation);
           }
@@ -86,11 +92,14 @@ class AnnotationManagerWeb extends AnnotationManager {
         updateData['creatorName'] =
             properties.creator; // Web SDK uses 'creatorName'
       }
-      if (properties.customData != null) {
-        updateData['customData'] = properties.customData;
+      // Use extension getters to access decoded JSON fields
+      final customData = properties.customData;
+      if (customData != null) {
+        updateData['customData'] = customData;
       }
-      if (properties.flags != null) {
-        updateData['flags'] = properties.flags;
+      final flags = properties.flags;
+      if (flags != null) {
+        updateData['flags'] = flags;
       }
 
       // Use the new updateAnnotationProperties method
@@ -118,6 +127,11 @@ class AnnotationManagerWeb extends AnnotationManager {
         List<Annotation> result = [];
         for (final annotation in annotations) {
           if (annotation is Map<String, dynamic>) {
+            // Skip undefined or invalid annotation types
+            final type = annotation['type'];
+            if (type == null || type == '' || type == 'pspdfkit/undefined') {
+              continue;
+            }
             try {
               result.add(Annotation.fromJson(annotation));
             } catch (e) {
@@ -212,6 +226,11 @@ class AnnotationManagerWeb extends AnnotationManager {
 
       for (final annotation in allAnnotations) {
         if (annotation is Map<String, dynamic>) {
+          // Skip undefined or invalid annotation types
+          final type = annotation['type'];
+          if (type == null || type == '' || type == 'pspdfkit/undefined') {
+            continue;
+          }
           // Check text content fields
           final contents =
               annotation['contents']?.toString().toLowerCase() ?? '';
@@ -272,6 +291,11 @@ class AnnotationManagerWeb extends AnnotationManager {
           List<Annotation> result = [];
           for (final annotation in annotations) {
             if (annotation is Map<String, dynamic>) {
+              // Skip undefined or invalid annotation types
+              final type = annotation['type'];
+              if (type == null || type == '' || type == 'pspdfkit/undefined') {
+                continue;
+              }
               try {
                 result.add(Annotation.fromJson(annotation));
               } catch (e) {
@@ -292,23 +316,48 @@ class AnnotationManagerWeb extends AnnotationManager {
   /// Convert JSON annotation data to AnnotationProperties.
   AnnotationProperties _convertJsonToAnnotationProperties(
       Map<String, dynamic> json) {
+    // For TextAnnotation (pspdfkit/text), the text color is stored in 'fontColor'
+    // not 'strokeColor'. We need to use fontColor as strokeColor for text annotations.
+    final annotationType = json['type']?.toString() ?? '';
+    final isTextAnnotation = annotationType == 'pspdfkit/text';
+
+    // Use fontColor for text annotations, strokeColor for others
+    int? strokeColor;
+    if (isTextAnnotation && json['fontColor'] != null) {
+      strokeColor = _parseColor(json['fontColor']);
+    } else {
+      strokeColor = _parseColor(json['strokeColor']);
+    }
+
+    // Convert complex types to JSON strings for Pigeon transport
+    final flagsJson = json['flags'] != null
+        ? jsonEncode(_convertWebFlagsToFlutter(json['flags']))
+        : null;
+    final customDataJson = json['customData'] != null
+        ? jsonEncode(json['customData'])
+        : null;
+    final bboxJson = json['bbox'] != null
+        ? jsonEncode(List<double>.from(json['bbox']))
+        : null;
+    final inkLinesJson = json['inkLines'] != null
+        ? jsonEncode(_parseInkLines(json['inkLines']))
+        : null;
+
     return AnnotationProperties(
       annotationId: json['id']?.toString() ?? json['name']?.toString() ?? '',
       pageIndex: json['pageIndex'] ?? 0,
-      strokeColor: _parseColor(json['strokeColor']),
+      strokeColor: strokeColor,
       fillColor: _parseColor(json['fillColor']),
       opacity: json['opacity']?.toDouble(),
       lineWidth: json['lineWidth']?.toDouble(),
-      flags: json['flags'] != null ? List<String>.from(json['flags']) : null,
-      customData: json['customData'] != null
-          ? Map<String, Object?>.from(json['customData'])
-          : null,
+      flagsJson: flagsJson,
+      customDataJson: customDataJson,
       contents: json['contents']?.toString(),
       subject: json['subject']?.toString(),
       creator: json['creator']?.toString(),
-      bbox: json['bbox'] != null ? List<double>.from(json['bbox']) : null,
+      bboxJson: bboxJson,
       note: json['note']?.toString(),
-      inkLines: _parseInkLines(json['inkLines']),
+      inkLinesJson: inkLinesJson,
       fontName: json['fontName']?.toString(),
       fontSize: json['fontSize']?.toDouble(),
       iconName: json['iconName']?.toString(),
@@ -336,11 +385,14 @@ class AnnotationManagerWeb extends AnnotationManager {
     if (properties.lineWidth != null) {
       json['lineWidth'] = properties.lineWidth;
     }
-    if (properties.flags != null) {
-      json['flags'] = properties.flags;
+    // Use extension getters to access decoded JSON fields
+    final flags = properties.flags;
+    if (flags != null) {
+      json['flags'] = flags;
     }
-    if (properties.customData != null) {
-      json['customData'] = properties.customData;
+    final customData = properties.customData;
+    if (customData != null) {
+      json['customData'] = customData;
     }
     if (properties.contents != null) {
       json['contents'] = properties.contents;
@@ -351,14 +403,16 @@ class AnnotationManagerWeb extends AnnotationManager {
     if (properties.creator != null) {
       json['creator'] = properties.creator;
     }
-    if (properties.bbox != null) {
-      json['bbox'] = properties.bbox;
+    final bbox = properties.bbox;
+    if (bbox != null) {
+      json['bbox'] = bbox;
     }
     if (properties.note != null) {
       json['note'] = properties.note;
     }
-    if (properties.inkLines != null) {
-      json['inkLines'] = properties.inkLines;
+    final inkLines = properties.inkLines;
+    if (inkLines != null) {
+      json['inkLines'] = inkLines;
     }
     if (properties.fontName != null) {
       json['fontName'] = properties.fontName;
@@ -382,17 +436,44 @@ class AnnotationManagerWeb extends AnnotationManager {
     } else if (color is String) {
       // Handle hex color strings
       if (color.startsWith('#')) {
-        return int.tryParse(color.substring(1), radix: 16);
+        final hexValue = int.tryParse(color.substring(1), radix: 16);
+        if (hexValue != null) {
+          // If it's a 6-digit hex (RGB), add full alpha
+          if (color.length == 7) {
+            return 0xFF000000 | hexValue;
+          }
+          return hexValue;
+        }
       }
     } else if (color is Map) {
       // Handle color objects with r, g, b, a properties
-      final r = (color['r'] ?? 0) as int;
-      final g = (color['g'] ?? 0) as int;
-      final b = (color['b'] ?? 0) as int;
-      final a = (color['a'] ?? 255) as int;
+      final r = _parseColorComponent(color['r']) ?? 0;
+      final g = _parseColorComponent(color['g']) ?? 0;
+      final b = _parseColorComponent(color['b']) ?? 0;
+      // Web SDK may return alpha as 0-1 float or 0-255 int
+      int a = 255;
+      if (color['a'] != null) {
+        final aValue = color['a'];
+        if (aValue is double) {
+          // Alpha is a float 0-1, convert to 0-255
+          a = (aValue * 255).round().clamp(0, 255);
+        } else if (aValue is int) {
+          // Integer alpha values are always in 0-255 range
+          // (0-1 range uses double/float representation)
+          a = aValue.clamp(0, 255);
+        }
+      }
       return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
+    return null;
+  }
+
+  /// Parse a color component (r, g, or b) which may be int or double.
+  int? _parseColorComponent(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value.clamp(0, 255);
+    if (value is double) return value.round().clamp(0, 255);
     return null;
   }
 
@@ -411,7 +492,7 @@ class AnnotationManagerWeb extends AnnotationManager {
     };
   }
 
-  /// Parse ink lines from JSON format.
+  /// Parse ink lines from web format to typed list.
   List<List<List<double>>>? _parseInkLines(dynamic inkLines) {
     if (inkLines == null) return null;
 
@@ -440,5 +521,46 @@ class AnnotationManagerWeb extends AnnotationManager {
     }
 
     return null;
+  }
+
+  /// Convert Web SDK flag names to Flutter AnnotationFlag names.
+  /// The Web SDK uses inverted naming for some flags (e.g., 'noPrint' vs 'print').
+  List<String> _convertWebFlagsToFlutter(List<dynamic> webFlags) {
+    final flutterFlags = <String>[];
+
+    // Web SDK to Flutter flag name mappings
+    // Note: 'noPrint' in Web SDK means "don't print", which is the opposite of 'print' flag
+    // When 'noPrint' is false, it means the annotation should be printed (i.e., 'print' flag is set)
+    for (final flag in webFlags) {
+      final flagStr = flag.toString();
+      switch (flagStr) {
+        case 'noPrint':
+          // Skip noPrint - we only add 'print' if noPrint is NOT in the list
+          // This is handled separately below
+          break;
+        case 'readOnly':
+        case 'locked':
+        case 'hidden':
+        case 'invisible':
+        case 'noView':
+        case 'noZoom':
+        case 'noRotate':
+        case 'toggleNoView':
+        case 'lockedContents':
+          flutterFlags.add(flagStr);
+          break;
+        default:
+          // Unknown flag, skip it
+          break;
+      }
+    }
+
+    // Handle 'print' flag: if 'noPrint' is NOT in webFlags, add 'print'
+    // Because Web SDK uses inverted logic: noPrint=false means print is enabled
+    if (!webFlags.contains('noPrint')) {
+      flutterFlags.add('print');
+    }
+
+    return flutterFlags;
   }
 }

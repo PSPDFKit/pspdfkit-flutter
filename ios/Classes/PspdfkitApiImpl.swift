@@ -1,5 +1,5 @@
 //
-//  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,17 +9,57 @@
 import Foundation
 import PSPDFKit
 
+/// A custom ConflictResolutionManager subclass that automatically resolves file conflicts
+/// without showing the default alert UI to the user.
+@objc(AutomaticConflictResolutionManager)
+public class AutomaticConflictResolutionManager: ConflictResolutionManager {
+
+    /// The resolution strategy to use when a conflict is detected.
+    @objc public var automaticResolution: FileConflictResolution
+
+    @objc public init(resolution: FileConflictResolution) {
+        self.automaticResolution = resolution
+        super.init()
+    }
+
+    /// Override the notification handler to automatically resolve conflicts without showing UI.
+    @objc public override func handleUnderlyingFileChangedNotification(_ notification: Notification) {
+        // Extract the document and data provider from the notification
+        guard let document = notification.object as? Document,
+              let userInfo = notification.userInfo,
+              let dataProvider = userInfo["PSPDFDocumentUnderlyingDataProvider"] as? CoordinatedFileDataProviding else {
+            return
+        }
+
+        // Automatically resolve the conflict using the configured resolution
+        do {
+            try document.resolveFileConflict(forDataProvider: dataProvider, with: automaticResolution)
+        } catch {
+            // If automatic resolution fails, fall back to the default UI behavior
+            super.handleUnderlyingFileChangedNotification(notification)
+        }
+    }
+}
+
 @objc(PspdfkitApiImpl)
 public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, InstantClientDelegate {
-    
+
     // MARK: - Constants
     private static let messageChannelSuffix = "nutrient"
-    
+
     // MARK: - Properties
     private var pdfViewController: PDFViewController? = nil;
     private var messenger: FlutterBinaryMessenger? = nil;
     private var pspdfkitApiCallbacks: NutrientApiCallbacks? = nil;
     private var flutterAnalyticsClient: FlutterAnalyticsClient? = nil;
+
+    /// The configured file conflict resolution strategy for iOS.
+    /// When set to a non-nil value, conflicts will be resolved automatically using this strategy.
+    /// When nil, the default behavior (showing an alert to the user) is used.
+    private var fileConflictResolution: FileConflictResolution? = nil;
+
+    /// Custom conflict resolution manager for automatic conflict resolution.
+    private var customConflictResolutionManager: AutomaticConflictResolutionManager? = nil;
     
     func getFrameworkVersion(completion: @escaping (Result<String?, any Error>) -> Void) {
         let versionString:String = PSPDFKit.SDK.versionNumber
@@ -212,29 +252,32 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
         }
     }
     
-    func getAnnotations(pageIndex: Int64, type: String, completion: @escaping (Result<Any?, any Error>) -> Void) {
+    func getAnnotationsJson(pageIndex: Int64, type: String, completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
                 completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
             let annotations = try PspdfkitFlutterHelper.getAnnotations(forPageIndex: PageIndex(Int(pageIndex)), andType: type, for: document)
-            completion(.success(annotations as! [[String : Any]]))
+            let jsonData = try JSONSerialization.data(withJSONObject: annotations, options: [])
+            let jsonString = String(data: jsonData, encoding: .utf8) ?? "[]"
+            completion(.success(jsonString))
         } catch {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get annotations: \(error.localizedDescription)"])
             completion(.failure(error))
         }
     }
-    
-    func getAllUnsavedAnnotations(completion: @escaping (Result<Any?, any Error>) -> Void) {
+
+    func getAllUnsavedAnnotationsJson(completion: @escaping (Result<String?, any Error>) -> Void) {
         do {
             guard let document = pdfViewController?.document, document.isValid else {
                 completion(.failure(NutrientApiError(code: "", message: "PDF document not found or is invalid.", details: nil)))
                 return
             }
-            
-            let annotations = try PspdfkitFlutterHelper.getAllUnsavedAnnotations(for: document)
-            completion(.success(annotations as! [[String : Any]]))
+
+            // getAllUnsavedAnnotations already returns a JSON string
+            let jsonString = try PspdfkitFlutterHelper.getAllUnsavedAnnotations(for: document) as? String ?? "{}"
+            completion(.success(jsonString))
         } catch {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get all unsaved annotations: \(error.localizedDescription)"])
             completion(.failure(error))
@@ -523,18 +566,30 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
             pspdfkitApiCallbacks?.onDocumentLoaded(documentId: document.uid){ _ in }
         }
     }
-    
+
     func setupViewController(configurationDictionary: [AnyHashable: Any], completion: @escaping (Result<Bool?, Error>) -> Void) {
         guard let pdfViewController = self.pdfViewController else {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "PDFViewController is not initialized."])
             completion(.failure(error))
             return
         }
-        
+
         pdfViewController.appearanceModeManager.appearanceMode = PspdfkitFlutterConverter.appearanceMode(configurationDictionary)
         pdfViewController.pageIndex = PspdfkitFlutterConverter.pageIndex(configurationDictionary)
         pdfViewController.delegate = self
-        
+
+        // Configure file conflict resolution
+        if let fileConflictResolutionString = configurationDictionary["fileConflictResolution"] as? String,
+           let resolutionNumber = PspdfkitFlutterConverter.fileConflictResolution(fileConflictResolutionString),
+           let resolution = FileConflictResolution(rawValue: resolutionNumber.uintValue) {
+            self.fileConflictResolution = resolution
+            // Create a custom conflict resolution manager for automatic resolution
+            self.customConflictResolutionManager = AutomaticConflictResolutionManager(resolution: resolution)
+        } else {
+            self.fileConflictResolution = nil
+            self.customConflictResolutionManager = nil
+        }
+
         if !configurationDictionary.isEmpty {
             if let leftBarButtonItems = configurationDictionary["leftBarButtonItems"] as? [String] {
                 PspdfkitFlutterHelper.setLeftBarButtonItems(leftBarButtonItems, for: pdfViewController)
@@ -549,7 +604,7 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
                 PspdfkitFlutterHelper.setToolbarTitle(toolbarTitle, for: pdfViewController)
             }
         }
-        
+
         let navigationController = PDFNavigationController(rootViewController: pdfViewController)
         navigationController.modalPresentationStyle = .fullScreen
         if let presentingViewController = UIApplication.shared.delegate?.window??.rootViewController {

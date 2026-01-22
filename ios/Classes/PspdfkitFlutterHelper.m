@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -526,29 +526,82 @@
         return [FlutterError errorWithCode:@"" message:@"PDF document not found or is invalid." details:nil];
     }
 
-    NSString *annotationUUID;
+    NSDictionary *jsonDict = nil;
     if ([jsonAnnotation isKindOfClass:NSString.class]) {
         NSData *jsonData = [jsonAnnotation dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
-        if (jsonDict) { annotationUUID = jsonDict[@"uuid"]; }
+        jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
     } else if ([jsonAnnotation isKindOfClass:NSDictionary.class])  {
-        if (jsonAnnotation) { annotationUUID = jsonAnnotation[@"uuid"]; }
+        jsonDict = jsonAnnotation;
     }
 
-    if (annotationUUID.length <= 0) {
-        return [FlutterError errorWithCode:@"" message:@"Invalid annotation UUID." details:nil];
+    // Get identifiers - name is user-defined, id is Instant JSON identifier
+    NSString *name = jsonDict[@"name"];
+    NSString *instantId = jsonDict[@"id"];
+
+    NSLog(@"[FlutterPdfDocument] removeAnnotation: name='%@', id='%@'", name ?: @"nil", instantId ?: @"nil");
+
+    if (name.length <= 0 && instantId.length <= 0) {
+        return [FlutterError errorWithCode:@"" message:@"Annotation has no identifier (name or id)." details:nil];
     }
 
-    BOOL success = NO;
     NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
-    for (PSPDFAnnotation *annotation in allAnnotations) {
-        // Remove the annotation if the uuids match.
-        if ([annotation.uuid isEqualToString:annotationUUID]) {
-            success = [document removeAnnotations:@[annotation] options:nil];
-            break;
+
+    NSLog(@"[FlutterPdfDocument] Found %lu annotations in document", (unsigned long)allAnnotations.count);
+    for (PSPDFAnnotation *ann in allAnnotations) {
+        NSLog(@"[FlutterPdfDocument]   - Annotation: name='%@', uuid='%@', type=%lu", ann.name ?: @"nil", ann.uuid, (unsigned long)ann.type);
+    }
+
+    PSPDFAnnotation *foundAnnotation = nil;
+
+    // Strategy 1: Try to find by name
+    if (name.length > 0) {
+        for (PSPDFAnnotation *annotation in allAnnotations) {
+            if ([annotation.name isEqualToString:name]) {
+                foundAnnotation = annotation;
+                break;
+            }
+        }
+        NSLog(@"[FlutterPdfDocument] Search by name '%@': %@", name, foundAnnotation ? @"FOUND" : @"NOT FOUND");
+    }
+
+    // Strategy 2: Try to find by uuid
+    if (!foundAnnotation && instantId.length > 0) {
+        for (PSPDFAnnotation *annotation in allAnnotations) {
+            if ([annotation.uuid isEqualToString:instantId]) {
+                foundAnnotation = annotation;
+                break;
+            }
+        }
+        NSLog(@"[FlutterPdfDocument] Search by uuid '%@': %@", instantId, foundAnnotation ? @"FOUND" : @"NOT FOUND");
+
+        // Strategy 3: Try to find by Instant JSON id
+        if (!foundAnnotation) {
+            for (PSPDFAnnotation *annotation in allAnnotations) {
+                NSError *error = nil;
+                NSData *annJsonData = [annotation generateInstantJSONWithError:&error];
+                if (annJsonData && !error) {
+                    NSDictionary *annJson = [NSJSONSerialization JSONObjectWithData:annJsonData options:0 error:nil];
+                    NSString *annId = annJson[@"id"];
+                    NSLog(@"[FlutterPdfDocument]   Comparing Instant JSON id: '%@' == '%@' ? %@", annId, instantId, [annId isEqualToString:instantId] ? @"YES" : @"NO");
+                    if ([annId isEqualToString:instantId]) {
+                        foundAnnotation = annotation;
+                        break;
+                    }
+                } else {
+                    NSLog(@"[FlutterPdfDocument]   Error getting Instant JSON: %@", error.localizedDescription);
+                }
+            }
+            NSLog(@"[FlutterPdfDocument] Search by Instant JSON id: %@", foundAnnotation ? @"FOUND" : @"NOT FOUND");
         }
     }
 
+    if (!foundAnnotation) {
+        NSLog(@"[FlutterPdfDocument] Annotation not found with name='%@' or id='%@'", name ?: @"nil", instantId ?: @"nil");
+        return @(NO);
+    }
+
+    NSLog(@"[FlutterPdfDocument] Removing annotation: type=%lu, name='%@'", (unsigned long)foundAnnotation.type, foundAnnotation.name ?: @"nil");
+    BOOL success = [document removeAnnotations:@[foundAnnotation] options:nil];
     return @(success);
 }
 

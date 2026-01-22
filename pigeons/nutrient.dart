@@ -336,11 +336,17 @@ abstract class NutrientApi {
   @async
   bool? removeAnnotation(String annotation);
 
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object? getAnnotations(int pageIndex, String type);
+  String? getAnnotationsJson(int pageIndex, String type);
 
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object? getAllUnsavedAnnotations();
+  String? getAllUnsavedAnnotationsJson();
 
   @async
   void updateAnnotation(String annotation);
@@ -496,13 +502,17 @@ abstract class NutrientViewControllerApi {
   @async
   bool? removeAnnotation(String annotation);
 
-  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object getAnnotations(int pageIndex, String type);
+  String getAnnotationsJson(int pageIndex, String type);
 
-  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object getAllUnsavedAnnotations();
+  String getAllUnsavedAnnotationsJson();
 
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
@@ -599,13 +609,19 @@ abstract class PdfDocumentApi {
   @async
   Uint8List exportPdf(DocumentSaveOptions? options);
 
-  // Returns the form field with the given name.
+  /// Returns the form field with the given name as a JSON string.
+  /// The JSON string contains the form field data that can be decoded
+  /// to a Map<String, dynamic> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types.
   @async
-  Map<String, Object?> getFormField(String fieldName);
+  String getFormFieldJson(String fieldName);
 
-  /// Returns a list of all form fields in the document.
+  /// Returns a list of all form fields in the document as a JSON string.
+  /// The JSON string contains an array of form field objects that can be
+  /// decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types.
   @async
-  List<Map<String, Object?>> getFormFields();
+  String getFormFieldsJson();
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   @async
@@ -649,13 +665,20 @@ abstract class PdfDocumentApi {
   @async
   bool? removeAnnotation(String jsonAnnotation);
 
-  /// Returns a list of JSON dictionaries for all the annotations of the given `type` on the given `pageIndex`.
+  /// Returns a JSON string containing an array of annotation objects for the given `type` on the given `pageIndex`.
+  /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
+  ///
+  /// For annotations with attachments (image, stamp, file), the response includes an `attachment` object
+  /// containing `binary` (base64-encoded) and `contentType` fields, enabling complete annotation copying.
   @async
-  Object getAnnotations(int pageIndex, String type);
+  String getAnnotationsJson(int pageIndex, String type);
 
-  /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
+  /// Returns a JSON string containing all unsaved annotations in the presented document.
+  /// The JSON string can be decoded to the appropriate type on the Dart side.
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object getAllUnsavedAnnotations();
+  String getAllUnsavedAnnotationsJson();
 
   /// Imports annotations from the XFDF file at the given path.
   @async
@@ -673,6 +696,263 @@ abstract class PdfDocumentApi {
   /// Get the total number of pages in the document.
   @async
   int getPageCount();
+
+  /// Processes annotations of the given type with the provided processing
+  /// mode and stores the PDF at the given destination path.
+  ///
+  /// This method works for both viewer-bound and headless documents.
+  ///
+  /// @param type The type of annotations to process (e.g., all, ink, highlight)
+  /// @param processingMode The processing mode (flatten, embed, remove, print)
+  /// @param destinationPath The path where the processed PDF should be saved
+  /// @return true if processing succeeded, false otherwise
+  @async
+  bool processAnnotations(
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  );
+
+  /// Closes the document and releases all native resources.
+  ///
+  /// This must be called when a headless document is no longer needed
+  /// to free memory and file handles. For viewer-bound documents,
+  /// this is handled automatically by the view lifecycle.
+  ///
+  /// @return true if the document was closed successfully
+  @async
+  bool closeDocument();
+
+  // ==========================================
+  // Document Dirty State - iOS Specific
+  // ==========================================
+
+  /// **iOS only.** Checks if the document has any dirty (unsaved) annotations.
+  ///
+  /// Maps directly to `document.hasDirtyAnnotations` in PSPDFKit iOS SDK.
+  /// Returns true if any annotations have been added, modified, or deleted
+  /// since the document was loaded or last saved.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` instead
+  /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+  ///
+  /// @return true if there are dirty annotations
+  /// @throws On Android/Web
+  @async
+  bool iOSHasDirtyAnnotations();
+
+  /// **iOS only.** Gets the dirty state of a specific annotation.
+  ///
+  /// Maps directly to `annotation.isDirty` property in PSPDFKit iOS SDK.
+  /// An annotation is dirty if it has been modified since the document
+  /// was loaded or last saved.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available (no annotation-level isDirty)
+  /// - Web: ❌ Not available
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId The annotation's unique identifier
+  /// @return true if the annotation is dirty
+  /// @throws On Android/Web, or if annotation not found
+  @async
+  bool iOSGetAnnotationIsDirty(int pageIndex, String annotationId);
+
+  /// **iOS only.** Sets the dirty state of a specific annotation.
+  ///
+  /// Maps directly to setting `annotation.isDirty` property in PSPDFKit iOS SDK.
+  /// This can be used to manually mark an annotation as needing save,
+  /// or to clear its dirty state.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available
+  /// - Web: ❌ Not available
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @param annotationId The annotation's unique identifier
+  /// @param isDirty The dirty state to set
+  /// @return true if successfully set
+  /// @throws On Android/Web, or if annotation not found
+  @async
+  bool iOSSetAnnotationIsDirty(
+      int pageIndex, String annotationId, bool isDirty);
+
+  /// **iOS only.** Clears the needs-save flag on all annotation providers.
+  ///
+  /// Maps directly to `containerProvider.clearNeedsSaveFlag()` in PSPDFKit iOS SDK.
+  /// This resets the modification tracking without saving to disk.
+  ///
+  /// **Platform support:**
+  /// - iOS: ✅ Supported
+  /// - Android: ❌ Not available (was removed from SDK)
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if successfully cleared
+  /// @throws On Android/Web
+  @async
+  bool iOSClearNeedsSaveFlag();
+
+  // ==========================================
+  // Document Dirty State - Android Specific
+  // ==========================================
+
+  /// **Android only.** Checks if the annotation provider has unsaved changes.
+  ///
+  /// Maps directly to `annotationProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Use `webHasUnsavedChanges()` instead
+  ///
+  /// @return true if there are unsaved annotation changes
+  /// @throws On iOS/Web
+  @async
+  bool androidHasUnsavedAnnotationChanges();
+
+  /// **Android only.** Checks if the form provider has unsaved changes.
+  ///
+  /// Maps directly to `formProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available at provider level
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if there are unsaved form field changes
+  /// @throws On iOS/Web
+  @async
+  bool androidHasUnsavedFormChanges();
+
+  /// **Android only.** Checks if the bookmark provider has unsaved changes.
+  ///
+  /// Maps directly to `bookmarkProvider.hasUnsavedChanges()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available at provider level
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @return true if there are unsaved bookmark changes
+  /// @throws On iOS/Web
+  @async
+  bool androidHasUnsavedBookmarkChanges();
+
+  /// **Android only.** Gets the dirty state of a specific bookmark.
+  ///
+  /// Maps directly to `bookmark.isDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+  /// @return true if the bookmark is dirty
+  /// @throws On iOS/Web, or if bookmark not found
+  @async
+  bool androidGetBookmarkIsDirty(String bookmarkId);
+
+  /// **Android only.** Clears the dirty state of a specific bookmark.
+  ///
+  /// Maps directly to `bookmark.clearDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param bookmarkId The bookmark's identifier (pdfBookmarkId or name)
+  /// @return true if successfully cleared
+  /// @throws On iOS/Web, or if bookmark not found
+  @async
+  bool androidClearBookmarkDirtyState(String bookmarkId);
+
+  /// **Android only.** Gets the dirty state of a form field.
+  ///
+  /// Maps directly to `formField.isDirty()` in PSPDFKit Android SDK.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Not available (use formField.dirty property differently)
+  /// - Android: ✅ Supported
+  /// - Web: ❌ Not available
+  ///
+  /// @param fullyQualifiedName The form field's fully qualified name
+  /// @return true if the form field is dirty
+  /// @throws On iOS/Web, or if form field not found
+  @async
+  bool androidGetFormFieldIsDirty(String fullyQualifiedName);
+
+  // ==========================================
+  // Document Dirty State - Web Specific
+  // ==========================================
+
+  /// **Web only.** Checks if the instance has unsaved changes.
+  ///
+  /// Maps directly to `instance.hasUnsavedChanges()` in Nutrient Web SDK.
+  /// This is a combined check that includes annotations, forms, and other changes.
+  ///
+  /// **Platform support:**
+  /// - iOS: ❌ Use `iOSHasDirtyAnnotations()` instead
+  /// - Android: ❌ Use `androidHasUnsavedAnnotationChanges()` etc. instead
+  /// - Web: ✅ Supported
+  ///
+  /// @return true if there are unsaved changes
+  /// @throws On iOS/Android
+  @async
+  bool webHasUnsavedChanges();
+}
+
+/// Options for opening a document without a viewer (headless mode).
+class HeadlessDocumentOpenOptions {
+  /// Password for encrypted documents.
+  final String? password;
+
+  HeadlessDocumentOpenOptions({this.password});
+}
+
+/// API for opening and managing PDF documents without displaying a viewer.
+///
+/// This API enables programmatic access to PDF documents for operations like:
+/// - Reading and modifying annotations
+/// - Processing annotations (flatten, embed, remove)
+/// - Exporting/importing XFDF
+/// - Form field manipulation
+///
+/// Documents opened through this API must be explicitly closed using
+/// [PdfDocumentApi.closeDocument] when no longer needed to free resources.
+///
+/// **Usage Example**:
+/// ```dart
+/// final documentId = await HeadlessDocumentApi.openDocument('/path/to/doc.pdf');
+/// // Use PdfDocumentApi with the documentId for operations
+/// final annotations = await pdfDocumentApi.getAnnotations(0, 'all');
+/// await pdfDocumentApi.processAnnotations(
+///   AnnotationType.all,
+///   AnnotationProcessingMode.flatten,
+///   '/path/to/output.pdf',
+/// );
+/// await pdfDocumentApi.closeDocument();
+/// ```
+@HostApi()
+abstract class HeadlessDocumentApi {
+  /// Opens a document from the given path without displaying a viewer.
+  ///
+  /// Returns a unique document ID that can be used to interact with the
+  /// document via [PdfDocumentApi]. The document ID is used as a channel
+  /// suffix to create isolated API instances for each document.
+  ///
+  /// @param documentPath Path to the PDF document (file path or content:// URI)
+  /// @param options Optional settings like password for encrypted documents
+  /// @return Unique document ID for use with PdfDocumentApi
+  /// @throws NutrientApiError if the document cannot be opened
+  @async
+  String openDocument(
+      String documentPath, HeadlessDocumentOpenOptions? options);
 }
 
 @FlutterApi()
@@ -886,6 +1166,10 @@ class AnnotationMenuConfigurationData {
 /// **Data Preservation**: Unlike the deprecated `updateAnnotation` method,
 /// this approach preserves attachments, custom data, and other properties
 /// that are not being explicitly modified.
+///
+/// **Note on inkLines, customData, bbox, and flags**: These fields are serialized as JSON
+/// strings internally to avoid Pigeon's CastList type casting issues. Use the
+/// extension methods for typed access (e.g., `inkLines`, `customData`, `boundingBox`, `flagsSet`).
 class AnnotationProperties {
   /// Unique identifier for the annotation
   final String annotationId;
@@ -905,12 +1189,14 @@ class AnnotationProperties {
   /// Line width for stroke-based annotations (in points)
   final double? lineWidth;
 
-  /// List of annotation flags (e.g., ['readOnly', 'print'])
-  final List<String>? flags;
+  /// Annotation flags as a JSON string array (e.g., '["readOnly", "print"]').
+  /// Use the `flagsSet` getter from the extension for typed access as Set<AnnotationFlag>.
+  final String? flagsJson;
 
-  /// Custom data associated with the annotation
-  /// This preserves any application-specific metadata
-  final Map<String, Object?>? customData;
+  /// Custom data associated with the annotation as a JSON string.
+  /// Use the `customData` getter from the extension for typed access.
+  /// This preserves any application-specific metadata.
+  final String? customDataJson;
 
   /// Text content of the annotation (for text-based annotations)
   final String? contents;
@@ -921,17 +1207,20 @@ class AnnotationProperties {
   /// Creator/author of the annotation
   final String? creator;
 
-  /// Bounding box as [x, y, width, height] in PDF coordinates
-  final List<double>? bbox;
+  /// Bounding box as a JSON string array [x, y, width, height] in PDF coordinates.
+  /// Use the `boundingBox` getter from the extension for typed access as Rect.
+  final String? bboxJson;
 
   /// Note text associated with the annotation
   final String? note;
 
   // Type-specific properties
 
-  /// Ink lines for ink annotations as [[[x, y, pressure], ...], ...]
-  /// Each line is an array of points, each point is [x, y, pressure]
-  final List<List<List<double>>>? inkLines;
+  /// Ink lines for ink annotations as a JSON string.
+  /// Use the `inkLines` getter from the extension for typed access.
+  /// Format: [[[x, y, pressure], ...], ...]
+  /// Each line is an array of points, each point is [x, y, pressure].
+  final String? inkLinesJson;
 
   /// Font name for text annotations
   final String? fontName;
@@ -949,14 +1238,14 @@ class AnnotationProperties {
     this.fillColor,
     this.opacity,
     this.lineWidth,
-    this.flags,
-    this.customData,
+    this.flagsJson,
+    this.customDataJson,
     this.contents,
     this.subject,
     this.creator,
-    this.bbox,
+    this.bboxJson,
     this.note,
-    this.inkLines,
+    this.inkLinesJson,
     this.fontName,
     this.fontSize,
     this.iconName,
@@ -1010,9 +1299,10 @@ abstract class AnnotationManagerApi {
   ///
   /// @param pageIndex Zero-based page index
   /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
-  /// @return List of annotations as JSON-compatible maps
+  /// @return JSON string containing array of annotations
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object getAnnotations(int pageIndex, String annotationType);
+  String getAnnotationsJson(int pageIndex, String annotationType);
 
   /// Add a new annotation to the document.
   ///
@@ -1034,9 +1324,10 @@ abstract class AnnotationManagerApi {
   ///
   /// @param query Search term
   /// @param pageIndex Optional page index to limit search scope
-  /// @return List of matching annotations
+  /// @return JSON string containing array of matching annotations
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object searchAnnotations(String query, int? pageIndex);
+  String searchAnnotationsJson(String query, int? pageIndex);
 
   /// Export annotations as XFDF format.
   ///
@@ -1054,7 +1345,106 @@ abstract class AnnotationManagerApi {
 
   /// Get all annotations that have unsaved changes.
   ///
-  /// @return List of annotations with pending changes
+  /// @return JSON string containing array of annotations with pending changes
+  /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   @async
-  Object getUnsavedAnnotations();
+  String getUnsavedAnnotationsJson();
+}
+
+/// Represents a bookmark in a PDF document.
+///
+/// Bookmarks are user-created markers that allow quick navigation
+/// to specific pages or actions in a document. They are different from
+/// PDF outlines (table of contents).
+///
+/// This follows the Instant JSON bookmark specification:
+/// - `type` is always "pspdfkit/bookmark"
+/// - `action` defines what happens when the bookmark is activated
+/// - `name` provides a display label
+///
+/// Example usage:
+/// ```dart
+/// // Create a bookmark for page 5
+/// final bookmark = Bookmark.forPage(pageIndex: 5, name: 'Chapter 2');
+/// await document.addBookmark(bookmark);
+///
+/// // Get all bookmarks
+/// final bookmarks = await document.getBookmarks();
+/// ```
+class Bookmark {
+  /// The PDF bookmark ID used to store the bookmark in the PDF.
+  /// This is assigned by the system when the bookmark is persisted.
+  /// May be null for newly created bookmarks.
+  final String? pdfBookmarkId;
+
+  /// Display name of the bookmark shown in the UI.
+  /// If not provided, a default name based on the page number may be used.
+  final String? name;
+
+  /// The action JSON string defining what happens when the bookmark is activated.
+  /// Typically a GoToAction that navigates to a specific page.
+  /// Format: {"type": "goTo", "pageIndex": 0, "destinationType": "fitPage"}
+  final String? actionJson;
+
+  Bookmark({
+    this.pdfBookmarkId,
+    this.name,
+    this.actionJson,
+  });
+}
+
+/// API for managing bookmarks in a PDF document.
+///
+/// This API provides methods to add, remove, update, and retrieve bookmarks.
+/// Bookmarks are user-created navigation markers that persist with the document.
+///
+/// Bookmarks follow the Instant JSON specification format.
+@HostApi()
+abstract class BookmarkManagerApi {
+  /// Initialize the bookmark manager for a specific document.
+  /// This should be called once when creating the manager instance.
+  ///
+  /// @param documentId The unique identifier of the document
+  void initialize(String documentId);
+
+  /// Get all bookmarks in the document.
+  ///
+  /// @return List of all bookmarks
+  @async
+  List<Bookmark> getBookmarks();
+
+  /// Add a new bookmark to the document.
+  ///
+  /// @param bookmark The bookmark to add
+  /// @return The created bookmark with its assigned pdfBookmarkId
+  @async
+  Bookmark addBookmark(Bookmark bookmark);
+
+  /// Remove a bookmark from the document.
+  ///
+  /// @param bookmark The bookmark to remove (identified by pdfBookmarkId or action)
+  /// @return true if successfully removed, false otherwise
+  @async
+  bool removeBookmark(Bookmark bookmark);
+
+  /// Update an existing bookmark.
+  ///
+  /// @param bookmark The bookmark with updated values (must have a valid pdfBookmarkId)
+  /// @return true if successfully updated, false otherwise
+  @async
+  bool updateBookmark(Bookmark bookmark);
+
+  /// Get bookmarks for a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @return List of bookmarks pointing to the specified page
+  @async
+  List<Bookmark> getBookmarksForPage(int pageIndex);
+
+  /// Check if a bookmark exists for a specific page.
+  ///
+  /// @param pageIndex Zero-based page index
+  /// @return true if at least one bookmark exists for the page
+  @async
+  bool hasBookmarkForPage(int pageIndex);
 }

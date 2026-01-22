@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -78,6 +78,7 @@ const val DEFAULT_BORDER_STYLE = "borderStyle"
 const val AUDION_SAMPLING_RATE = "audioSamplingRate"
 const val AUDIO_RECORDING_TIME_LIMIT = "audioRecordingTimeLimit"
 const val AVAILABLE_STAMP_ITEMS = "availableStampItems"
+const val CUSTOM_STAMP_ITEMS = "customStampItems"
 const val DEFAULT_ICON_NAME = "defaultIconName"
 const val AVAILABLE_ICON_NAMES = "availableIconNames"
 const val DEFAULT_LINE_END = "lineEndStyle"
@@ -689,12 +690,23 @@ class AnnotationConfigurationAdaptor {
 
             while (iterator.hasNext()) {
                 when (val key = iterator.next()) {
+                    CUSTOM_STAMP_ITEMS -> (configuration[key] as List<*>?)?.let { customItems ->
+                        val availableStampItems = extractCustomStampPickerItems(customItems, context)
+                        if (availableStampItems.isNotEmpty()) {
+                            builder.setAvailableStampPickerItems(availableStampItems)
+                        }
+                    }
+
                     AVAILABLE_STAMP_ITEMS -> (configuration[key] as List<*>?)?.let { stampItems ->
-                        val availableStampItems =  extractStampPickerItems(
-                            stampItems.map { it as String }, context
-                        )
-                        if (availableStampItems.isNotEmpty())
-                        builder.setAvailableStampPickerItems(availableStampItems)
+                        // Only use this if customStampItems is not provided
+                        if (configuration[CUSTOM_STAMP_ITEMS] == null) {
+                            val availableStampItems = extractStampPickerItems(
+                                stampItems.map { it as String }, context
+                            )
+                            if (availableStampItems.isNotEmpty()) {
+                                builder.setAvailableStampPickerItems(availableStampItems)
+                            }
+                        }
                     }
 
                     Z_INDEX_EDITING_ENABLED -> builder.setZIndexEditingEnabled(
@@ -1145,6 +1157,39 @@ class AnnotationConfigurationAdaptor {
           }catch (e: Exception){
               e.printStackTrace()
               return listOf()
+            }
+        }
+
+        /**
+         * Extracts custom stamp picker items with subtitle support.
+         * Note: Color customization is not supported by the Android StampPickerItem.Builder API.
+         * Colors are handled by the native stamp appearance, which uses predefined colors based
+         * on stamp type (e.g., green for "Approved", red for "Rejected").
+         */
+        private fun extractCustomStampPickerItems(customItems: List<*>, context: Context): List<StampPickerItem> {
+            try {
+                val stampPickerItems = mutableListOf<StampPickerItem>()
+                customItems.forEach { item ->
+                    val itemMap = item as? Map<*, *> ?: return@forEach
+                    val title = itemMap["title"] as? String ?: return@forEach
+
+                    val builder = StampPickerItem.fromTitle(context, title)
+
+                    // Note: Color is not directly settable on StampPickerItem.Builder in Android SDK.
+                    // The stamp color is determined by the stamp appearance stream generator.
+                    // Custom colors would require implementing a custom AppearanceStreamGenerator.
+
+                    // Set subtitle if provided
+                    (itemMap["subtitle"] as? String)?.let { subtitle ->
+                        builder.withSubtitle(subtitle)
+                    }
+
+                    stampPickerItems.add(builder.build())
+                }
+                return stampPickerItems
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return listOf()
             }
         }
 

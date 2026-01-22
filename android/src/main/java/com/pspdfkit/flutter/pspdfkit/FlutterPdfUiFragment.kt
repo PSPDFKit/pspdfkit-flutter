@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -26,11 +26,13 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
-import com.pspdfkit.flutter.pspdfkit.GlobalAnnotationMenuConfiguration
+import com.pspdfkit.R
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
 import com.pspdfkit.ui.toolbar.AnnotationEditingToolbar
@@ -74,6 +76,37 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupKeyboardInsetListener()
+    }
+
+    /**
+     * Sets up a keyboard visibility listener using WindowInsetsCompat.
+     * When the keyboard appears, applies bottom margin to the pdfFragment's view
+     * so the PDF content can scroll to the bottom without being hidden by the keyboard.
+     * This modern approach supports keyboard animations on API 30+ and is backported to API 21+.
+     */
+    private fun setupKeyboardInsetListener() {
+        val pdfView = pdfFragment?.view ?: return
+
+        ViewCompat.setOnApplyWindowInsetsListener(pdfView) { v, insets ->
+            val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+            val params = v.layoutParams as? ViewGroup.MarginLayoutParams
+            if (params != null) {
+                val newBottomMargin = if (imeVisible) imeHeight else 0
+                if (params.bottomMargin != newBottomMargin) {
+                    params.bottomMargin = newBottomMargin
+                    v.layoutParams = params
+                }
+            }
+
+            insets
+        }
     }
 
     /**

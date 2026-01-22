@@ -2,7 +2,7 @@ import 'package:flutter/rendering.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.

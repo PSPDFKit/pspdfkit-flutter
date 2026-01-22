@@ -1,4 +1,4 @@
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -10,12 +10,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/annotations/annotation_utils.dart';
+import 'package:nutrient_flutter/src/bookmarks/bookmark_manager_native.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter/src/document/annotation_manager_native.dart';
 
 class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   late final PdfDocumentApi _api;
   AnnotationManagerNative? _annotationManagerInstance;
+  BookmarkManagerNative? _bookmarkManagerInstance;
 
   PdfDocumentNative({required super.documentId, required PdfDocumentApi api}) {
     _api = api;
@@ -25,6 +27,11 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
     _annotationManagerInstance ??=
         AnnotationManagerNative(documentId: documentId);
     return _annotationManagerInstance!;
+  }
+
+  BookmarkManagerNative get _bookmarkManager {
+    _bookmarkManagerInstance ??= BookmarkManagerNative(documentId: documentId);
+    return _bookmarkManagerInstance!;
   }
 
   @override
@@ -49,8 +56,9 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future<PdfFormField> getFormField(String fieldName) {
-    return _api.getFormField(fieldName).then((result) {
-      return PdfFormField.fromMap(result.cast<String, dynamic>());
+    return _api.getFormFieldJson(fieldName).then((jsonString) {
+      final result = jsonDecode(jsonString) as Map<String, dynamic>;
+      return PdfFormField.fromMap(result);
     }).catchError((error) {
       throw Exception('Error getting form field: $error');
     });
@@ -58,9 +66,11 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future<List<PdfFormField>> getFormFields() {
-    return _api.getFormFields().then((results) {
+    return _api.getFormFieldsJson().then((jsonString) {
+      final results = jsonDecode(jsonString) as List<dynamic>;
       return results
-          .map((result) => PdfFormField.fromMap(result.cast<String, dynamic>()))
+          .map((result) =>
+              PdfFormField.fromMap(Map<String, dynamic>.from(result as Map)))
           .toList();
     }).catchError((error) {
       throw Exception('Error getting form fields: $error');
@@ -77,7 +87,10 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
       jsonAttachment = (annotation as HasAttachment).attachment?.toJson();
     }
 
-    return _api.addAnnotation(jsonAnnotation, jsonEncode(jsonAttachment));
+    // Only encode attachment if it's not null, otherwise pass null directly
+    final attachmentParam =
+        jsonAttachment != null ? jsonEncode(jsonAttachment) : null;
+    return _api.addAnnotation(jsonAnnotation, attachmentParam);
   }
 
   @override
@@ -97,40 +110,26 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future<Object> getAllUnsavedAnnotations() {
-    return _api.getAllUnsavedAnnotations();
+    return _api.getAllUnsavedAnnotationsJson();
   }
 
   @override
   Future<List<Annotation>> getAnnotations(
       int pageIndex, AnnotationType type) async {
-    var results = await _api.getAnnotations(pageIndex, type.fullName);
+    var jsonString = await _api.getAnnotationsJson(pageIndex, type.fullName);
+    var results = jsonDecode(jsonString) as List<dynamic>;
 
-    if (results is List) {
-      List<Annotation> annotations = [];
-
-      for (var element in results) {
-        if (element is Map) {
-          if (element['type'] == null || element['type'] == '') {
-            continue;
-          }
-          var annotationJSON = element.cast<String, dynamic>();
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else if (element is String) {
-          var annotationJSON = jsonDecode(element);
-          if (annotationJSON == null ||
-              annotationJSON['type'] == null ||
-              annotationJSON['type'] == '') {
-            continue;
-          }
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else {
-          throw Exception('Invalid annotation type: $element');
+    List<Annotation> annotations = [];
+    for (var element in results) {
+      if (element is Map) {
+        if (element['type'] == null || element['type'] == '') {
+          continue;
         }
+        var annotationJSON = Map<String, dynamic>.from(element);
+        annotations.add(Annotation.fromJson(annotationJSON));
       }
-
-      return annotations;
     }
-    return [];
+    return annotations;
   }
 
   @override
@@ -167,21 +166,11 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future getAnnotationsAsJson(int pageIndex, AnnotationType type) {
-    return _api.getAnnotations(pageIndex, type.fullName).then((results) {
-      if (results is List) {
-        return results.map((result) {
-          if (result is Map) {
-            return result;
-          } else if (result is String) {
-            // Convert string to map
-            return jsonDecode(result);
-          } else {
-            throw Exception('Invalid annotation type: $result');
-          }
-        }).toList();
-      } else {
-        throw Exception('Invalid annotations type: $results');
-      }
+    return _api.getAnnotationsJson(pageIndex, type.fullName).then((jsonString) {
+      var results = jsonDecode(jsonString) as List<dynamic>;
+      return results.map((result) {
+        return Map<String, dynamic>.from(result as Map);
+      }).toList();
     }).catchError((error) {
       throw Exception('Error getting annotations: $error');
     });
@@ -189,14 +178,11 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future<List<Annotation>> getUnsavedAnnotations() {
-    return _api.getAllUnsavedAnnotations().then((results) {
-      if (results is String) {
-        results = jsonDecode(results);
-        results = results as Map<String, dynamic>;
-        return AnnotationUtils.annotationsFromInstantJSON(results);
-      } else if (results is Map) {
+    return _api.getAllUnsavedAnnotationsJson().then((jsonString) {
+      var results = jsonDecode(jsonString);
+      if (results is Map) {
         return AnnotationUtils.annotationsFromInstantJSON(
-            results.cast<String, dynamic>());
+            Map<String, dynamic>.from(results));
       } else {
         return [];
       }
@@ -204,7 +190,7 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   }
 
   @override
-  Future<bool?> removeAnnotation(annotation) {
+  Future<bool?> removeAnnotation(annotation) async {
     var annotationJSON = convertAnnotationToJson(annotation);
     return _api.removeAnnotation(annotationJSON);
   }
@@ -235,5 +221,155 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   Future<List<Annotation>> searchAnnotations(String query,
       [int? pageIndex]) async {
     return _annotationManager.searchAnnotations(query, pageIndex);
+  }
+
+  // ============================
+  // Annotation Processing Methods
+  // ============================
+
+  @override
+  Future<bool> processAnnotations(
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) async {
+    try {
+      return await _api.processAnnotations(
+          type, processingMode, destinationPath);
+    } catch (e) {
+      debugPrint('Error processing annotations: $e');
+      throw Exception('Error processing annotations: $e');
+    }
+  }
+
+  // ============================
+  // Document Lifecycle Methods
+  // ============================
+
+  @override
+  bool get isHeadless => false;
+
+  @override
+  Future<bool> close() async {
+    // For viewer-bound documents, lifecycle is managed by the view.
+    // This is a no-op for compatibility.
+    return true;
+    // Bookmark Methods
+    // ============================
+  }
+
+  @override
+  Future<List<Bookmark>> getBookmarks() async {
+    return _bookmarkManager.getBookmarks();
+  }
+
+  @override
+  Future<Bookmark> addBookmark(Bookmark bookmark) async {
+    return _bookmarkManager.addBookmark(bookmark);
+  }
+
+  @override
+  Future<bool> removeBookmark(Bookmark bookmark) async {
+    return _bookmarkManager.removeBookmark(bookmark);
+  }
+
+  @override
+  Future<bool> updateBookmark(Bookmark bookmark) async {
+    return _bookmarkManager.updateBookmark(bookmark);
+  }
+
+  @override
+  Future<List<Bookmark>> getBookmarksForPage(int pageIndex) async {
+    return _bookmarkManager.getBookmarksForPage(pageIndex);
+  }
+
+  @override
+  Future<bool> hasBookmarkForPage(int pageIndex) async {
+    return _bookmarkManager.hasBookmarkForPage(pageIndex);
+  }
+
+  // ============================
+  // Document Dirty State - Cross-Platform
+  // ============================
+
+  @override
+  Future<bool> hasUnsavedChanges() async {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return iOSHasDirtyAnnotations();
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
+      final annotationChanges = await androidHasUnsavedAnnotationChanges();
+      final formChanges = await androidHasUnsavedFormChanges();
+      final bookmarkChanges = await androidHasUnsavedBookmarkChanges();
+      return annotationChanges || formChanges || bookmarkChanges;
+    }
+    return false;
+  }
+
+  // ============================
+  // Document Dirty State - iOS Specific
+  // ============================
+
+  @override
+  Future<bool> iOSHasDirtyAnnotations() {
+    return _api.iOSHasDirtyAnnotations();
+  }
+
+  @override
+  Future<bool> iOSGetAnnotationIsDirty(int pageIndex, String annotationId) {
+    return _api.iOSGetAnnotationIsDirty(pageIndex, annotationId);
+  }
+
+  @override
+  Future<bool> iOSSetAnnotationIsDirty(
+      int pageIndex, String annotationId, bool isDirty) {
+    return _api.iOSSetAnnotationIsDirty(pageIndex, annotationId, isDirty);
+  }
+
+  @override
+  Future<bool> iOSClearNeedsSaveFlag() {
+    return _api.iOSClearNeedsSaveFlag();
+  }
+
+  // ============================
+  // Document Dirty State - Android Specific
+  // ============================
+
+  @override
+  Future<bool> androidHasUnsavedAnnotationChanges() {
+    return _api.androidHasUnsavedAnnotationChanges();
+  }
+
+  @override
+  Future<bool> androidHasUnsavedFormChanges() {
+    return _api.androidHasUnsavedFormChanges();
+  }
+
+  @override
+  Future<bool> androidHasUnsavedBookmarkChanges() {
+    return _api.androidHasUnsavedBookmarkChanges();
+  }
+
+  @override
+  Future<bool> androidGetBookmarkIsDirty(String bookmarkId) {
+    return _api.androidGetBookmarkIsDirty(bookmarkId);
+  }
+
+  @override
+  Future<bool> androidClearBookmarkDirtyState(String bookmarkId) {
+    return _api.androidClearBookmarkDirtyState(bookmarkId);
+  }
+
+  @override
+  Future<bool> androidGetFormFieldIsDirty(String fullyQualifiedName) {
+    return _api.androidGetFormFieldIsDirty(fullyQualifiedName);
+  }
+
+  // ============================
+  // Document Dirty State - Web Specific
+  // ============================
+
+  @override
+  Future<bool> webHasUnsavedChanges() {
+    return _api.webHasUnsavedChanges();
   }
 }

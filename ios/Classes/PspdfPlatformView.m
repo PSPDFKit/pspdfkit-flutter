@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -15,6 +15,9 @@
 @import PSPDFKit;
 @import PSPDFKitUI;
 
+// Forward declaration for Swift class - actual implementation in PspdfkitApiImpl.swift
+@class AutomaticConflictResolutionManager;
+
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
@@ -24,9 +27,11 @@
 @property (nonatomic) PSPDFNavigationController *navigationController;
 @property (nonatomic) FlutterPdfDocument *flutterPdfDocument;
 @property (nonatomic) AnnotationManagerImpl *annotationManager;
+@property (nonatomic) BookmarkManagerImpl *bookmarkManager;
 @property (nonatomic) NSObject<FlutterBinaryMessenger> *binaryMessenger;
 @property (nonatomic) PSPDFPageIndex initialPageIndex; // Store the initial page index from configuration
 @property PspdfkitPlatformViewImpl *platformViewImpl;
+@property (nonatomic, strong) AutomaticConflictResolutionManager *conflictResolutionManager; // For automatic file conflict resolution
 @end
 
 @implementation PspdfPlatformView
@@ -122,6 +127,16 @@
                     [PspdfkitMeasurementConvertor addMeasurementValueConfigurationWithDocument:_pdfViewController.document configuration: measurementValueConfigurationDictionary];
                 }
             }
+
+            // Configure file conflict resolution for embedded views
+            NSString *fileConflictResolutionString = configurationDictionary[@"fileConflictResolution"];
+            if (fileConflictResolutionString != nil) {
+                NSNumber *resolutionNumber = [PspdfkitFlutterConverter fileConflictResolution:fileConflictResolutionString];
+                if (resolutionNumber != nil) {
+                    PSPDFFileConflictResolution resolution = (PSPDFFileConflictResolution)[resolutionNumber unsignedIntegerValue];
+                    _conflictResolutionManager = [[AutomaticConflictResolutionManager alloc] initWithResolution:resolution];
+                }
+            }
         }
 
         if (_pdfViewController.configuration.userInterfaceViewMode == PSPDFUserInterfaceViewModeNever) {
@@ -174,6 +189,9 @@
         // Create and register AnnotationManager for this document
         _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
 
+        // Create and register BookmarkManager for this document
+        _bookmarkManager = [BookmarkManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+
         [_platformViewImpl onDocumentLoadedWithDocumentId:documentId];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
     }
@@ -202,6 +220,9 @@
         // [AnnotationManagerImpl unregisterDocumentWithId:self.pdfViewController.document.UID];
         self.annotationManager = nil;
     }
+
+    // Cleanup conflict resolution manager
+    self.conflictResolutionManager = nil;
 
     [self.platformViewImpl unRegisterWithBinaryMessenger:_binaryMessenger];
     self.platformViewImpl = nil;

@@ -10,8 +10,11 @@ class AnnotationUtils {
       annotationsJSON = (json['annotations'] as List);
 
       if (json['attachments'] != null) {
-        attachments = (json['attachments'] as Map<String, dynamic>)
-            .cast<String, Map<String, dynamic>>();
+        final rawAttachments = json['attachments'] as Map;
+        attachments = <String, Map<String, dynamic>>{};
+        rawAttachments.forEach((key, value) {
+          attachments![key.toString()] = Map<String, dynamic>.from(value as Map);
+        });
       }
 
       var annotations = (annotationsJSON)

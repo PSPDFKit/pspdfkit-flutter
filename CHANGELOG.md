@@ -1,8 +1,25 @@
+## 5.3.0 — 22 Jan 2026
+
+- Adds a headless document API for opening and manipulating PDF documents without displaying a viewer. (J#HYB-931)
+- Adds programmatic bookmark management APIs to `PdfDocument` for creating, reading, updating, and deleting bookmarks. (J#HYB-932)
+- Adds document dirty state APIs for tracking unsaved changes with cross-platform `hasUnsavedChanges()` and platform-specific methods. (J#HYB-934)
+- Adds the `iOSFileConflictResolution` configuration option to handle file conflicts when a PDF is modified externally on iOS. (J#HYB-933)
+- Adds the `CustomStampItem` class for configuring custom stamps with colors (iOS) and subtitles (iOS/Android).
+- Improves the annotation properties API (J#HYB-935):
+  - Fixes the text annotation font color being reset to black when updating other properties like opacity (Web).
+  - Fixes the ink annotation line width property not being applied correctly.
+  - Fixes the `pspdfkit/undefined` type exception when adding or removing text annotations.
+  - Fixes `getAnnotationProperties` returning null for valid annotations.
+  - Makes `Annotation` class properties immutable; use `AnnotationProperties` and `AnnotationManager` for updates.
+- Updates to Nutrient iOS SDK 26.4.0.
+- Updates to Nutrient Android SDK 10.10.1.
+- Fixes an Android issue where the PDF view was hidden behind the keyboard when editing form fields. (J#HYB-929)
+
 ## 5.2.0 - 13 Oct 2025
 
 - Introduces `AnnotationProperties` class to manage and update annotation properties such as color, opacity, line width, flags, and custom data. (J#HYB-879)
 - Updates Android SDK configuration (minSdk 24, compileSdk/targetSdk 36) to support Nutrient Android SDK 10.7.0.
-- Updates iOS deployment target to 16 to support Nutrient iOS SDK 14.12.0.
+- Updates iOS deployment target to 16 to support Nutrient iOS SDK 26.0.0.
 - Updates AI Assistant implementation to use new `createAiAssistant` API with `AiAssistantProvider` interface support. (J#HYB-886)
 - Fixes issue where getPageInfo throws an error if not page labels are set on Android. (J#HYB-882)
 - Fixes issue where updating annotation flags results into unexpected behavior. (J#HYB-880,J#HYB-879)

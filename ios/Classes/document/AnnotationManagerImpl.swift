@@ -1,5 +1,5 @@
 //
-//  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2025-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -52,7 +52,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         }
     }
 
-    private static func getDocument(withId documentId: String) -> Document? {
+    static func getDocument(withId documentId: String) -> Document? {
         var result: Document?
         registryQueue.sync {
             result = documentRegistry[documentId]?.document
@@ -125,7 +125,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
                 self.updateAnnotation(annotation, with: modifiedProperties)
 
                 // Restore preserved data if it wasn't explicitly updated
-                if modifiedProperties.customData == nil {
+                if modifiedProperties.customDataJson == nil {
                     annotation.customData = existingCustomData
                 }
 
@@ -147,7 +147,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         }
     }
 
-    func getAnnotations(pageIndex: Int64, annotationType: String, completion: @escaping (Result<Any, Error>) -> Void) {
+    func getAnnotationsJson(pageIndex: Int64, annotationType: String, completion: @escaping (Result<String, Error>) -> Void) {
         queue.async {
             do {
                 guard let document = self.document else {
@@ -170,25 +170,27 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
                     }
                 }
 
-                // Convert to JSON strings like Android does
-                let results = annotations.compactMap { annotation -> String? in
-                    // Try PSPDFKit's generateInstantJSON first
-                    if let jsonData = try? annotation.generateInstantJSON(),
-                       let jsonString = String(data: jsonData, encoding: .utf8) {
-                        return jsonString
-                    } else {
-                        // Fallback: Convert our dictionary to JSON string
-                        let dict = self.annotationToMap(annotation)
-                        if let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: []),
-                           let jsonString = String(data: jsonData, encoding: .utf8) {
-                            return jsonString
+                // Convert to JSON objects using PSPDFKit's generateInstantJSON
+                // Use compactMap to skip annotations that fail to serialize, rather than
+                // failing the entire operation (some annotations may not serialize well)
+                var results: [Any] = []
+                for annotation in annotations {
+                    do {
+                        let jsonData = try annotation.generateInstantJSON()
+                        if let jsonObject = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
+                            results.append(jsonObject)
                         }
+                    } catch {
+                        // Skip annotations that can't be serialized
                     }
-                    return nil
                 }
 
+                // Convert to JSON string
+                let jsonData = try JSONSerialization.data(withJSONObject: results, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8) ?? "[]"
+
                 DispatchQueue.main.async {
-                    completion(.success(results))
+                    completion(.success(jsonString))
                 }
 
             } catch {
@@ -269,7 +271,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         }
     }
 
-    func searchAnnotations(query: String, pageIndex: Int64?, completion: @escaping (Result<Any, Error>) -> Void) {
+    func searchAnnotationsJson(query: String, pageIndex: Int64?, completion: @escaping (Result<String, Error>) -> Void) {
         queue.async {
             do {
                 guard let document = self.document else {
@@ -298,8 +300,12 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
                     results.append(contentsOf: matching.map { self.annotationToMap($0) })
                 }
 
+                // Convert to JSON string
+                let jsonData = try JSONSerialization.data(withJSONObject: results, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8) ?? "[]"
+
                 DispatchQueue.main.async {
-                    completion(.success(results))
+                    completion(.success(jsonString))
                 }
 
             } catch {
@@ -380,7 +386,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         }
     }
 
-    func getUnsavedAnnotations(completion: @escaping (Result<Any, Error>) -> Void) {
+    func getUnsavedAnnotationsJson(completion: @escaping (Result<String, Error>) -> Void) {
         queue.async {
             do {
                 guard let document = self.document else {
@@ -393,8 +399,12 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
                 // tracking changes at the application level or using document change notifications
                 let results: [[String: Any?]] = []
 
+                // Convert to JSON string
+                let jsonData = try JSONSerialization.data(withJSONObject: results, options: [])
+                let jsonString = String(data: jsonData, encoding: .utf8) ?? "[]"
+
                 DispatchQueue.main.async {
-                    completion(.success(results))
+                    completion(.success(jsonString))
                 }
 
             } catch {
@@ -415,19 +425,14 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
             fillColor: annotation.fillColor?.argbValue,
             opacity: Double(annotation.alpha),
             lineWidth: annotation.lineWidth != 0 ? Double(annotation.lineWidth) : nil,
-            flags: getAnnotationFlags(annotation),
-            customData: annotation.customData,
+            flagsJson: getAnnotationFlagsJson(annotation),
+            customDataJson: getCustomDataJson(from: annotation),
             contents: annotation.contents,
             subject: annotation.subject,
             creator: annotation.user,
-            bbox: [
-                Double(annotation.boundingBox.minX),
-                Double(annotation.boundingBox.minY),
-                Double(annotation.boundingBox.width),
-                Double(annotation.boundingBox.height)
-            ],
+            bboxJson: getBboxJson(from: annotation),
             note: (annotation as? NoteAnnotation)?.contents,
-            inkLines: getInkLines(from: annotation),
+            inkLinesJson: getInkLinesJson(from: annotation),
             fontName: getFontName(from: annotation),
             fontSize: getFontSize(from: annotation),
             iconName: getIconName(from: annotation)
@@ -463,11 +468,15 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
             annotation.user = creator
         }
 
-        if let customData = properties.customData {
+        if let customDataJson = properties.customDataJson,
+           !customDataJson.isEmpty,
+           let jsonData = customDataJson.data(using: .utf8),
+           let customData = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
             annotation.customData = customData
         }
 
-        if let flags = properties.flags {
+        if let flagsJson = properties.flagsJson,
+           let flags = decodeFlagsJson(flagsJson) {
             updateAnnotationFlags(annotation, flags: flags)
         }
 
@@ -475,7 +484,8 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
             noteAnnotation.contents = note
         }
 
-        if let bbox = properties.bbox, bbox.count >= 4 {
+        if let bboxJson = properties.bboxJson,
+           let bbox = decodeBboxJson(bboxJson), bbox.count >= 4 {
             annotation.boundingBox = CGRect(
                 x: CGFloat(bbox[0]),
                 y: CGFloat(bbox[1]),
@@ -484,7 +494,9 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
             )
         }
 
-        if let inkLines = properties.inkLines, let inkAnnotation = annotation as? InkAnnotation {
+        if let inkLinesJson = properties.inkLinesJson,
+           let inkLines = decodeInkLines(from: inkLinesJson),
+           let inkAnnotation = annotation as? InkAnnotation {
             setInkLines(inkAnnotation, lines: inkLines)
         }
 
@@ -530,42 +542,100 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
     }
 
     private func getAnnotationType(for annotation: Annotation) -> String {
+        // Return Instant JSON format type strings
         switch annotation {
         case is InkAnnotation:
             return "pspdfkit/ink"
         case is HighlightAnnotation:
-            return "pspdfkit/highlight"
+            return "pspdfkit/markup/highlight"
         case is UnderlineAnnotation:
-            return "pspdfkit/underline"
+            return "pspdfkit/markup/underline"
         case is StrikeOutAnnotation:
-            return "pspdfkit/strikeOut"
+            return "pspdfkit/markup/strikeout"
         case is SquigglyAnnotation:
-            return "pspdfkit/squiggly"
+            return "pspdfkit/markup/squiggly"
         case is SquareAnnotation:
-            return "pspdfkit/square"
+            return "pspdfkit/shape/rectangle"
         case is CircleAnnotation:
-            return "pspdfkit/circle"
+            return "pspdfkit/shape/ellipse"
         case is LineAnnotation:
-            return "pspdfkit/line"
+            return "pspdfkit/shape/line"
         case is PolygonAnnotation:
-            return "pspdfkit/polygon"
+            return "pspdfkit/shape/polygon"
         case is PolyLineAnnotation:
-            return "pspdfkit/polyline"
+            return "pspdfkit/shape/polyline"
         case is FreeTextAnnotation:
-            return "pspdfkit/freeText"
+            return "pspdfkit/text"
         case is NoteAnnotation:
             return "pspdfkit/note"
         case is StampAnnotation:
             return "pspdfkit/stamp"
-        // FileAttachmentAnnotation is no longer available in current PSPDFKit SDK
-        // case is FileAttachmentAnnotation:
-        //     return "pspdfkit/file"
+        case is LinkAnnotation:
+            return "pspdfkit/link"
+        case is RedactionAnnotation:
+            return "pspdfkit/markup/redaction"
+        case is WidgetAnnotation:
+            return "pspdfkit/widget"
+        case is SoundAnnotation:
+            return "pspdfkit/sound"
+        case is CaretAnnotation:
+            return "pspdfkit/caret"
+        case is PopupAnnotation:
+            return "pspdfkit/popup"
+        case is ScreenAnnotation:
+            return "pspdfkit/screen"
+        case is RichMediaAnnotation:
+            return "pspdfkit/media"
         default:
             // Return undefined for unknown types so they are skipped
             return "pspdfkit/undefined"
         }
     }
 
+    /// Gets annotation flags and returns them as a JSON string array.
+    private func getAnnotationFlagsJson(_ annotation: Annotation) -> String {
+        var flags: [String] = []
+
+        if annotation.flags.contains(.hidden) {
+            flags.append("hidden")
+        }
+        if annotation.flags.contains(.invisible) {
+            flags.append("invisible")
+        }
+        if annotation.flags.contains(.print) {
+            flags.append("print")
+        }
+        if annotation.flags.contains(.noZoom) {
+            flags.append("noZoom")
+        }
+        if annotation.flags.contains(.noRotate) {
+            flags.append("noRotate")
+        }
+        if annotation.flags.contains(.noView) {
+            flags.append("noView")
+        }
+        if annotation.flags.contains(.readOnly) {
+            flags.append("readOnly")
+        }
+        if annotation.flags.contains(.locked) {
+            flags.append("locked")
+        }
+        if annotation.flags.contains(.toggleNoView) {
+            flags.append("toggleNoView")
+        }
+        if annotation.flags.contains(.lockedContents) {
+            flags.append("lockedContents")
+        }
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: flags),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return "[]"
+        }
+        return jsonString
+    }
+
+    /// Gets annotation flags and returns them as a string array.
+    /// Used by annotationToMap() for building JSON dictionaries.
     private func getAnnotationFlags(_ annotation: Annotation) -> [String] {
         var flags: [String] = []
 
@@ -601,6 +671,40 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         }
 
         return flags
+    }
+
+    /// Decodes flags from JSON string array.
+    private func decodeFlagsJson(_ json: String) -> [String]? {
+        guard let jsonData = json.data(using: .utf8),
+              let flags = try? JSONSerialization.jsonObject(with: jsonData) as? [String] else {
+            return nil
+        }
+        return flags
+    }
+
+    /// Gets bounding box and returns it as a JSON string array [x, y, width, height].
+    private func getBboxJson(from annotation: Annotation) -> String {
+        let bbox = [
+            Double(annotation.boundingBox.minX),
+            Double(annotation.boundingBox.minY),
+            Double(annotation.boundingBox.width),
+            Double(annotation.boundingBox.height)
+        ]
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: bbox),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return "[]"
+        }
+        return jsonString
+    }
+
+    /// Decodes bbox from JSON string array.
+    private func decodeBboxJson(_ json: String) -> [Double]? {
+        guard let jsonData = json.data(using: .utf8),
+              let bbox = try? JSONSerialization.jsonObject(with: jsonData) as? [Double] else {
+            return nil
+        }
+        return bbox
     }
 
     private func updateAnnotationFlags(_ annotation: Annotation, flags: [String]) {
@@ -641,16 +745,65 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         annotation.flags = newFlags
     }
 
-    private func getInkLines(from annotation: Annotation) -> [[[Double]]]? {
-        guard let inkAnnotation = annotation as? InkAnnotation else {
+    /// Gets ink lines from an InkAnnotation and returns them as a JSON string.
+    /// Format: [[[x, y, pressure], [x, y, pressure], ...], ...]
+    private func getInkLinesJson(from annotation: Annotation) -> String? {
+        guard let inkAnnotation = annotation as? InkAnnotation,
+              let lines = inkAnnotation.lines else {
             return nil
         }
 
-        return inkAnnotation.lines?.map { line in
+        let inkLines = lines.map { line in
             line.map { point in
-                [Double(point.location.x), Double(point.location.y), Double(point.intensity)] // DrawingPoint has location and intensity
+                [Double(point.location.x), Double(point.location.y), Double(point.intensity)]
             }
         }
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: inkLines),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return nil
+        }
+
+        return jsonString
+    }
+
+    /// Gets ink lines from an InkAnnotation and returns them as an array.
+    /// Used by annotationToMap() for building JSON dictionaries.
+    /// Format: [[[x, y, pressure], [x, y, pressure], ...], ...]
+    private func getInkLines(from annotation: Annotation) -> [[[Double]]]? {
+        guard let inkAnnotation = annotation as? InkAnnotation,
+              let lines = inkAnnotation.lines else {
+            return nil
+        }
+
+        return lines.map { line in
+            line.map { point in
+                [Double(point.location.x), Double(point.location.y), Double(point.intensity)]
+            }
+        }
+    }
+
+    /// Decodes ink lines from a JSON string.
+    private func decodeInkLines(from json: String) -> [[[Double]]]? {
+        guard let jsonData = json.data(using: .utf8),
+              let inkLines = try? JSONSerialization.jsonObject(with: jsonData) as? [[[Double]]] else {
+            return nil
+        }
+        return inkLines
+    }
+
+    /// Gets custom data from an annotation and returns it as a JSON string.
+    private func getCustomDataJson(from annotation: Annotation) -> String? {
+        guard let customData = annotation.customData else {
+            return nil
+        }
+
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: customData),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return nil
+        }
+
+        return jsonString
     }
 
     private func setInkLines(_ inkAnnotation: InkAnnotation, lines: [[[Double]]]) {

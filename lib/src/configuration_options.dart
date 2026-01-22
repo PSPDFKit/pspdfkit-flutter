@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -48,6 +48,11 @@ const String androidDefaultThemeResource = 'androidDefaultThemeResource';
 const String iOSLeftBarButtonItems = 'iOSLeftBarButtonItems';
 const String iOSRightBarButtonItems = 'iOSRightBarButtonItems';
 const String iOSAllowToolbarTitleChange = 'iOSAllowToolbarTitleChange';
+
+/// iOS-only option for handling file conflicts.
+/// Resolution options for conflicts due to out-of-process file changes or deletion.
+/// Possible values: 'defaultBehavior', 'close', 'save', 'reload'.
+const String iOSFileConflictResolution = 'iOSFileConflictResolution';
 
 /// Thumbnail Options
 

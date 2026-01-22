@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -31,17 +31,17 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
-ext.pspdfkitMavenUrl = localProperties.getProperty('pspdfkit.mavenUrl')
-if (pspdfkitMavenUrl == null || pspdfkitMavenUrl == '') {
-    ext.pspdfkitMavenUrl = 'https://my.nutrient.io/maven/'
+ext.nutrientMavenUrl = localProperties.getProperty('pspdfkit.mavenUrl')
+if (nutrientMavenUrl == null || nutrientMavenUrl == '') {
+    ext.nutrientMavenUrl = 'https://my.nutrient.io/maven/'
 }
 
-ext.pspdfkitVersion = localProperties.getProperty('pspdfkit.version')
-if (pspdfkitVersion == null || pspdfkitVersion == '') {
-    ext.pspdfkitVersion = '10.7.0'
+ext.nutrientVersion = localProperties.getProperty('pspdfkit.version')
+if (nutrientVersion == null || nutrientVersion == '') {
+    ext.nutrientVersion = '10.10.1'
 }
 
-ext.pspdfkitMavenModuleName = 'nutrient'
+ext.nutrientMavenModuleName = 'nutrient'
 
 // Get our library version from the top level pubspec.yaml file.
 def pubspecFilePath = '../pubspec.yaml'
@@ -50,7 +50,7 @@ if (!pubspecFile.exists()) {
     throw new GradleException("'pubspec.yaml' file not found. Expected at the top level of the Flutter repository.")
 }
 def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
-ext.pspdfkitFlutterVersion = pubspecYaml.version
+ext.nutrientFlutterVersion = pubspecYaml.version
 
 ext.androidCompileSdkVersion = 36
 ext.androidMinSdkVersion = 24

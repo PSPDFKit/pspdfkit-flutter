@@ -1,4 +1,4 @@
-///  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2025-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -17,6 +17,7 @@ class AnnotationPropertyEditor extends StatelessWidget {
   final Function(double) onLineWidthChanged;
   final Function(AnnotationFlag) onFlagToggled;
   final VoidCallback onAddCustomData;
+  final VoidCallback? onViewCustomData;
 
   const AnnotationPropertyEditor({
     Key? key,
@@ -27,6 +28,7 @@ class AnnotationPropertyEditor extends StatelessWidget {
     required this.onLineWidthChanged,
     required this.onFlagToggled,
     required this.onAddCustomData,
+    this.onViewCustomData,
   }) : super(key: key);
 
   @override
@@ -119,10 +121,52 @@ class AnnotationPropertyEditor extends StatelessWidget {
   }
 
   Widget _buildColorPicker() {
+    final currentColor =
+        properties.strokeColor != null ? Color(properties.strokeColor!) : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Color', style: TextStyle(fontWeight: FontWeight.w600)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Color', style: TextStyle(fontWeight: FontWeight.w600)),
+            if (currentColor != null)
+              Row(
+                children: [
+                  Text(
+                    'Current: ',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: currentColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.grey[400]!, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _colorToHex(currentColor),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -255,6 +299,9 @@ class AnnotationPropertyEditor extends StatelessWidget {
   }
 
   Widget _buildCustomDataSection() {
+    final customData = properties.customData!;
+    final hasNestedData = customData.values.any((v) => v is Map || v is List);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -266,30 +313,104 @@ class AnnotationPropertyEditor extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Custom Data',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.data_object, size: 18, color: Colors.blue[700]),
+                  const SizedBox(width: 6),
+                  const Text('Custom Data',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                ],
+              ),
+              if (onViewCustomData != null)
+                TextButton.icon(
+                  onPressed: onViewCustomData,
+                  icon: const Icon(Icons.visibility, size: 16),
+                  label: const Text('View All'),
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+            ],
+          ),
           const SizedBox(height: 8),
-          ...properties.customData!.entries
-              .map((entry) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${entry.key}: ',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w500, fontSize: 12)),
-                        Expanded(
-                          child: Text('${entry.value}',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[700])),
-                        ),
-                      ],
+          // Show summary of entries
+          ...customData.entries.take(5).map((entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${entry.key}: ',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 12)),
+                    Expanded(
+                      child: Text(
+                        _formatValue(entry.value),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ))
-              .toList(),
+                  ],
+                ),
+              )),
+          if (customData.length > 5) ...[
+            const SizedBox(height: 4),
+            Text(
+              '... and ${customData.length - 5} more entries',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                  fontStyle: FontStyle.italic),
+            ),
+          ],
+          if (hasNestedData) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Contains nested data. Tap "View All" for details.',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.blue[600],
+                  fontStyle: FontStyle.italic),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  /// Formats a value for display, handling nested structures
+  String _formatValue(Object? value) {
+    if (value == null) return 'null';
+    if (value is Map) return '{...} (${value.length} items)';
+    if (value is List) return '[...] (${value.length} items)';
+    return value.toString();
+  }
+
+  /// Converts a Color to a hex string representation
+  String _colorToHex(Color color) {
+    final r = (color.r * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final g = (color.g * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final b = (color.b * 255.0)
+        .round()
+        .clamp(0, 255)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    return '#$r$g$b'.toUpperCase();
   }
 
   Widget _buildAttachmentInfo() {

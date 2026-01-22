@@ -1,4 +1,4 @@
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -183,5 +183,154 @@ class PdfDocumentWeb extends PdfDocument with AnnotationJsonConverter {
   Future<List<Annotation>> searchAnnotations(String query,
       [int? pageIndex]) async {
     return _annotationManager.searchAnnotations(query, pageIndex);
+  }
+
+  // ============================
+  // Annotation Processing Methods
+  // ============================
+
+  @override
+  Future<bool> processAnnotations(
+    AnnotationType type,
+    AnnotationProcessingMode processingMode,
+    String destinationPath,
+  ) async {
+    // Web platform annotation processing is not fully supported in headless mode.
+    // For viewer-bound documents, use the NutrientViewController.processAnnotations method.
+    throw UnimplementedError(
+        'processAnnotations is not yet supported on web platform in headless mode');
+  }
+
+  // ============================
+  // Document Lifecycle Methods
+  // ============================
+
+  @override
+  bool get isHeadless => false;
+
+  @override
+  Future<bool> close() async {
+    // For viewer-bound web documents, lifecycle is managed by the view.
+    // This is a no-op for compatibility.
+    return true;
+    // Bookmark Methods
+    // ============================
+  }
+
+  @override
+  Future<List<Bookmark>> getBookmarks() {
+    return _instance.getBookmarks();
+  }
+
+  @override
+  Future<Bookmark> addBookmark(Bookmark bookmark) {
+    return _instance.addBookmark(bookmark);
+  }
+
+  @override
+  Future<bool> removeBookmark(Bookmark bookmark) {
+    return _instance.removeBookmark(bookmark);
+  }
+
+  @override
+  Future<bool> updateBookmark(Bookmark bookmark) {
+    return _instance.updateBookmark(bookmark);
+  }
+
+  @override
+  Future<List<Bookmark>> getBookmarksForPage(int pageIndex) {
+    return _instance.getBookmarksForPage(pageIndex);
+  }
+
+  @override
+  Future<bool> hasBookmarkForPage(int pageIndex) {
+    return _instance.hasBookmarkForPage(pageIndex);
+  }
+
+  // ============================
+  // Document Dirty State - Cross-Platform
+  // ============================
+
+  @override
+  Future<bool> hasUnsavedChanges() {
+    return _instance.hasUnsavedChanges();
+  }
+
+  // ============================
+  // Document Dirty State - iOS Specific (Not supported on Web)
+  // ============================
+
+  @override
+  Future<bool> iOSHasDirtyAnnotations() {
+    throw UnsupportedError(
+        'iOSHasDirtyAnnotations is only available on iOS. Use webHasUnsavedChanges() on Web.');
+  }
+
+  @override
+  Future<bool> iOSGetAnnotationIsDirty(int pageIndex, String annotationId) {
+    throw UnsupportedError(
+        'iOSGetAnnotationIsDirty is only available on iOS. Web does not support per-annotation dirty state.');
+  }
+
+  @override
+  Future<bool> iOSSetAnnotationIsDirty(
+      int pageIndex, String annotationId, bool isDirty) {
+    throw UnsupportedError(
+        'iOSSetAnnotationIsDirty is only available on iOS. Web does not support per-annotation dirty state.');
+  }
+
+  @override
+  Future<bool> iOSClearNeedsSaveFlag() {
+    throw UnsupportedError(
+        'iOSClearNeedsSaveFlag is only available on iOS. Web does not support clearing the needs-save flag.');
+  }
+
+  // ============================
+  // Document Dirty State - Android Specific (Not supported on Web)
+  // ============================
+
+  @override
+  Future<bool> androidHasUnsavedAnnotationChanges() {
+    throw UnsupportedError(
+        'androidHasUnsavedAnnotationChanges is only available on Android. Use webHasUnsavedChanges() on Web.');
+  }
+
+  @override
+  Future<bool> androidHasUnsavedFormChanges() {
+    throw UnsupportedError(
+        'androidHasUnsavedFormChanges is only available on Android. Use webHasUnsavedChanges() on Web.');
+  }
+
+  @override
+  Future<bool> androidHasUnsavedBookmarkChanges() {
+    throw UnsupportedError(
+        'androidHasUnsavedBookmarkChanges is only available on Android. Use webHasUnsavedChanges() on Web.');
+  }
+
+  @override
+  Future<bool> androidGetBookmarkIsDirty(String bookmarkId) {
+    throw UnsupportedError(
+        'androidGetBookmarkIsDirty is only available on Android. Web does not support per-bookmark dirty state.');
+  }
+
+  @override
+  Future<bool> androidClearBookmarkDirtyState(String bookmarkId) {
+    throw UnsupportedError(
+        'androidClearBookmarkDirtyState is only available on Android. Web does not support clearing bookmark dirty state.');
+  }
+
+  @override
+  Future<bool> androidGetFormFieldIsDirty(String fullyQualifiedName) {
+    throw UnsupportedError(
+        'androidGetFormFieldIsDirty is only available on Android. Web does not support per-field dirty state.');
+  }
+
+  // ============================
+  // Document Dirty State - Web Specific
+  // ============================
+
+  @override
+  Future<bool> webHasUnsavedChanges() {
+    return _instance.hasUnsavedChanges();
   }
 }

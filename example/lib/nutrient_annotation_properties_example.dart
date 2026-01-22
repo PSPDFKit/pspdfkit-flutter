@@ -1,9 +1,11 @@
-///  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2025-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
+
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
@@ -225,6 +227,7 @@ class _NutrientAnnotationPropertiesExampleState
                   });
                   _addCustomData();
                 },
+                onViewCustomData: _showCustomDataPreview,
               ),
             ),
           ),
@@ -510,6 +513,73 @@ class _NutrientAnnotationPropertiesExampleState
     });
 
     _showMessage('Tap any annotation to edit its properties');
+  }
+
+  /// Shows a dialog with the full custom data in a formatted JSON view
+  void _showCustomDataPreview() {
+    final customData = _selectedProperties?.customData;
+    if (customData == null || customData.isEmpty) {
+      _showMessage('No custom data to display');
+      return;
+    }
+
+    // Format the JSON with indentation for readability
+    const encoder = JsonEncoder.withIndent('  ');
+    final formattedJson = encoder.convert(customData);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.data_object, color: Colors.blue[700]),
+            const SizedBox(width: 8),
+            const Text('Custom Data'),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: SelectableText(
+                    formattedJson,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '${customData.length} top-level entries',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<Map<String, String>?> _showCustomDataDialog() async {

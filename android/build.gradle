@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ *   Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  *
  *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -19,13 +19,13 @@ buildscript {
     }
 }
 
-group 'com.pspdfkit.flutter.pspdfkit'
-version pspdfkitFlutterVersion
+group 'io.nutrient.nutrient_flutter'
+version nutrientFlutterVersion
 
 rootProject.allprojects {
     repositories {
         maven {
-            url pspdfkitMavenUrl
+            url nutrientMavenUrl
         }
         google()
         mavenCentral()
@@ -36,7 +36,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace "com.pspdfkit.flutter.pspdfkit"
+    namespace "io.nutrient.nutrient_flutter"
 
     compileSdk androidCompileSdkVersion
     
@@ -61,9 +61,11 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation "io.nutrient:$pspdfkitMavenModuleName:$pspdfkitVersion"
+    implementation "io.nutrient:$nutrientMavenModuleName:$nutrientVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    // Fragment support for FFI-based platform views
+    implementation "androidx.fragment:fragment-ktx:1.8.9"
     implementation "androidx.compose.material:material:1.8.3"
     implementation "androidx.constraintlayout:constraintlayout:2.2.1"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.1.1"

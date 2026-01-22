@@ -1,4 +1,4 @@
-///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -248,6 +248,24 @@ enum ShowSignatureValidationStatusMode {
 /// - `saveIfSelected`: Save the signature only if it is selected.
 enum SignatureSavingStrategy { neverSave, alwaysSave, saveIfSelected }
 
+/// Enum representing the different modes for displaying bookmark indicators on pages.
+/// This is only available on iOS.
+///
+/// The modes are:
+/// - `off`: Never show the bookmark indicator on page views.
+/// - `alwaysOn`: Always show the bookmark indicator on page views.
+/// - `onWhenBookmarked`: Only display the bookmark indicator when the page is bookmarked.
+enum IOSBookmarkIndicatorMode {
+  /// Never show the bookmark indicator on page views.
+  off,
+
+  /// Always show the bookmark indicator on page views.
+  alwaysOn,
+
+  /// Only display the bookmark indicator when the page is bookmarked.
+  onWhenBookmarked,
+}
+
 /// Enum representing the different creation modes for a signature.
 ///
 /// The possible values are:
@@ -317,6 +335,36 @@ enum NutrientAndroidSignatureOrientation {
   landscape,
   automatic,
   unlocked
+}
+
+/// Resolution options for file conflicts due to out-of-process file changes
+/// or deletion on iOS.
+///
+/// When a PDF file is modified or deleted externally while being viewed in the
+/// app, the SDK can handle this conflict in different ways. This enum specifies
+/// how to resolve such conflicts.
+///
+/// This option is iOS-only. On Android and Web, this setting is ignored.
+///
+/// The available options are:
+/// - [defaultBehavior]: Shows an alert to the user to choose how to resolve the conflict.
+/// - [close]: Automatically closes the document when a conflict is detected.
+/// - [save]: Automatically saves the current in-memory changes, overriding any external modifications. If the file was deleted, it will be restored.
+/// - [reload]: Automatically discards local changes and reloads the document from disk.
+enum IOSFileConflictResolution {
+  /// The default conflict resolution behavior. An alert will be shown to the
+  /// user to choose how to resolve the conflict.
+  defaultBehavior,
+
+  /// Resolve the conflict by closing the document.
+  close,
+
+  /// Resolve the conflict by saving the open document and overriding any file
+  /// changes. If the file was deleted, it will be restored.
+  save,
+
+  /// Discard local changes and reload the document from disk.
+  reload,
 }
 
 /// A class representing the configuration for creating a signature.
@@ -402,8 +450,6 @@ extension WebShowSignatureValidationStatusMode
         return 'HAS_ERRORS';
       case ShowSignatureValidationStatusMode.never:
         return 'NEVER';
-      default:
-        return null;
     }
   }
 }
@@ -416,7 +462,6 @@ extension WebPageLayoutMode on PageLayoutMode {
       case PageLayoutMode.automatic:
         return 'AUTOMATIC';
       case PageLayoutMode.single:
-      default:
         return 'SINGLE';
     }
   }
@@ -445,8 +490,6 @@ extension WebAutoSaveMode on AutoSaveMode {
         return 'INTELLIGENT';
       case AutoSaveMode.immediate:
         return 'IMMEDIATE';
-      default:
-        return null;
     }
   }
 }
@@ -464,8 +507,6 @@ extension WebSidebarMode on SidebarMode {
         return 'DOCUMENT_OUTLINE';
       case SidebarMode.custom:
         return 'CUSTOM';
-      default:
-        return null;
     }
   }
 }
@@ -479,8 +520,6 @@ extension WebZoomMode on ZoomMode {
         return 'FIT_TO_WIDTH';
       case ZoomMode.fitToViewPort:
         return 'FIT_TO_VIEWPORT';
-      default:
-        return null;
     }
   }
 }
@@ -572,8 +611,6 @@ extension WebWebInteractionMode on NutrientWebInteractionMode {
         return 'MEASUREMENT';
       case NutrientWebInteractionMode.measurementSettings:
         return 'MEASUREMENT_SETTINGS';
-      default:
-        return null;
     }
   }
 }
@@ -587,8 +624,6 @@ extension WebAppearanceMode on AppearanceMode {
       case AppearanceMode.sepia:
       case AppearanceMode.allCustomColors:
         return 'LIGHT';
-      default:
-        return null;
     }
   }
 
@@ -602,8 +637,6 @@ extension WebAppearanceMode on AppearanceMode {
         return 'sepia';
       case AppearanceMode.allCustomColors:
         return 'allCustomColors';
-      default:
-        return null;
     }
   }
 }
@@ -615,8 +648,6 @@ extension WebToolbarPlacement on ToolbarPlacement {
         return 'TOP';
       case ToolbarPlacement.bottom:
         return 'BOTTOM';
-      default:
-        return null;
     }
   }
 }

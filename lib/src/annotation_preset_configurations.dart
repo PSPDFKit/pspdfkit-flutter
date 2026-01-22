@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 ///
-///  Copyright © 2019-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2019-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -217,18 +217,167 @@ class MarkupAnnotationConfiguration extends AnnotationConfiguration {
   }
 }
 
+/// Represents a custom stamp item with optional color configuration.
+///
+/// Use this class to create custom stamps with specific colors for approval workflows,
+/// document status indicators, or other use cases requiring color-coded stamps.
+///
+/// **Platform Support:**
+/// - **iOS**: Full support for color and subtitle via `setAnnotationConfigurations`.
+/// - **Android**: Subtitle is supported. Color is not directly supported by the
+///   Android SDK's `StampPickerItem.Builder` API.
+/// - **Web**: `setAnnotationConfigurations` is not supported. Use [toWebTemplate]
+///   with [PdfWebConfiguration.stampAnnotationTemplates] instead.
+///
+/// Example for iOS/Android:
+/// ```dart
+/// controller.setAnnotationConfigurations({
+///   AnnotationTool.stamp: StampAnnotationConfiguration(
+///     customStampItems: [
+///       CustomStampItem(title: 'APPROVED', color: Colors.green),
+///       CustomStampItem(title: 'REJECTED', color: Colors.red),
+///     ],
+///   ),
+/// });
+/// ```
+///
+/// Example for Web (via configuration):
+/// ```dart
+/// NutrientView(
+///   webConfiguration: PdfWebConfiguration(
+///     stampAnnotationTemplates: [
+///       CustomStampItem(title: 'APPROVED', color: Colors.green).toWebTemplate(),
+///       CustomStampItem(title: 'REJECTED', color: Colors.red).toWebTemplate(),
+///     ],
+///   ),
+/// )
+/// ```
+class CustomStampItem {
+  /// The main text displayed on the stamp.
+  final String title;
+
+  /// The color of the stamp. If null, the default color will be used.
+  ///
+  /// **Note:** Color support varies by platform:
+  /// - **iOS**: Fully supported via `StampAnnotation.color`.
+  /// - **Android**: Not supported. The Android SDK's `StampPickerItem.Builder`
+  ///   does not expose a color API. The color value is ignored on Android.
+  /// - **Web**: Supported via `toWebTemplate()` with `stampAnnotationTemplates`.
+  final Color? color;
+
+  /// Optional subtitle text displayed below the main title.
+  ///
+  /// Note: Subtitle support varies by platform.
+  final String? subtitle;
+
+  CustomStampItem({
+    required this.title,
+    this.color,
+    this.subtitle,
+  });
+
+  /// Converts this stamp item to a map for serialization (used by Android/iOS).
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      if (color != null) 'color': color!.toHex(),
+      if (subtitle != null) 'subtitle': subtitle,
+    };
+  }
+
+  /// Converts this stamp item to a web-compatible stamp template.
+  ///
+  /// Use this method when configuring stamps for Flutter web via
+  /// [PdfWebConfiguration.stampAnnotationTemplates].
+  ///
+  /// Example:
+  /// ```dart
+  /// final stamps = [
+  ///   CustomStampItem(title: 'APPROVED', color: Colors.green),
+  ///   CustomStampItem(title: 'REJECTED', color: Colors.red),
+  /// ];
+  ///
+  /// PdfWebConfiguration(
+  ///   stampAnnotationTemplates: stamps.map((s) => s.toWebTemplate()).toList(),
+  /// )
+  /// ```
+  Map<String, dynamic> toWebTemplate({
+    double width = 300,
+    double height = 100,
+  }) {
+    return {
+      'stampType': 'Custom',
+      'title': title,
+      if (subtitle != null) 'subtitle': subtitle,
+      if (color != null)
+        'color': {
+          'r': (color!.r * 255.0).round().clamp(0, 255),
+          'g': (color!.g * 255.0).round().clamp(0, 255),
+          'b': (color!.b * 255.0).round().clamp(0, 255),
+        },
+      'boundingBox': {
+        'left': 0,
+        'top': 0,
+        'width': width,
+        'height': height,
+      },
+    };
+  }
+}
+
 /// Annotation configuration class for Stamp annotation. Stamp annotations include: Stamp and Image Annotation.
+///
+/// You can configure stamps using either simple string titles or [CustomStampItem] objects
+/// for more control over colors and subtitles.
+///
+/// **Note:** This configuration is used with `setAnnotationConfigurations` which is
+/// supported on iOS and Android only. For web, use [PdfWebConfiguration.stampAnnotationTemplates]
+/// with [CustomStampItem.toWebTemplate].
+///
+/// Example with simple strings:
+/// ```dart
+/// StampAnnotationConfiguration(
+///   availableStampItems: ['Approved', 'Rejected', 'Draft'],
+/// )
+/// ```
+///
+/// Example with custom stamp items (iOS/Android):
+/// ```dart
+/// StampAnnotationConfiguration(
+///   customStampItems: [
+///     CustomStampItem(title: 'APPROVED', color: Colors.green),
+///     CustomStampItem(title: 'REJECTED', color: Colors.red),
+///     CustomStampItem(title: 'PENDING', color: Colors.orange),
+///   ],
+/// )
+/// ```
 class StampAnnotationConfiguration extends AnnotationConfiguration {
+  /// Simple string-based stamp items (titles only).
+  /// Use [customStampItems] for color customization.
   final List<String>? availableStampItems;
+
+  /// Custom stamp items with color and subtitle support.
+  /// Takes precedence over [availableStampItems] if both are provided.
+  final List<CustomStampItem>? customStampItems;
 
   StampAnnotationConfiguration({
     this.availableStampItems,
+    this.customStampItems,
   });
 
   @override
   Map<String, Object> toMap() {
     final map = _getProperties();
-    map['availableStampItems'] = availableStampItems;
+
+    // If customStampItems is provided, use it (takes precedence)
+    if (customStampItems != null && customStampItems!.isNotEmpty) {
+      map['customStampItems'] =
+          customStampItems!.map((e) => e.toMap()).toList();
+    } else if (availableStampItems != null) {
+      // Fall back to simple string items
+      map['availableStampItems'] = availableStampItems;
+    }
+
     map.removeWhere((key, value) => value == null);
     return map.cast<String, Object>();
   }

@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -22,6 +22,7 @@ static FlutterMethodChannel *channel;
 @interface PspdfkitPlugin() <PSPDFViewControllerDelegate, PSPDFInstantClientDelegate>
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property PspdfkitApiImpl *apiImpl;
+@property HeadlessDocumentApiImpl *headlessDocumentApiImpl;
 @end
 
 @implementation PspdfkitPlugin
@@ -31,13 +32,17 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     PspdfPlatformViewFactory *platformViewFactory = [[PspdfPlatformViewFactory alloc] initWithMessenger:[registrar messenger]];
     [registrar registerViewFactory:platformViewFactory withId:@"com.nutrient.widget"];
-    
+
     channel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:[registrar messenger]];
     PspdfkitPlugin* instance = [[PspdfkitPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     // Register pigeon APIs.
     instance.apiImpl = [[PspdfkitApiImpl alloc] init];
     [instance.apiImpl registerWithBinaryMessenger:[registrar messenger]];
+
+    // Register headless document API.
+    instance.headlessDocumentApiImpl = [[HeadlessDocumentApiImpl alloc] initWithBinaryMessenger:[registrar messenger]];
+    [instance.headlessDocumentApiImpl registerWithBinaryMessenger:[registrar messenger]];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -179,9 +184,15 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
  }
 
 - (void) detachFromEngineForRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    // Unregister the API implementation.
+    // Unregister the API implementations.
     [_apiImpl unRegister];
     _apiImpl = nil;
+
+    [_headlessDocumentApiImpl unregisterWithBinaryMessenger:[registrar messenger]];
+    _headlessDocumentApiImpl = nil;
+
+    // Clean up all headless documents
+    [HeadlessDocumentApiImpl clearAllDocuments];
 }
 
 - (NSString*)getTemporaryDirectory {
@@ -254,6 +265,7 @@ PSPDFSettingKey const PSPDFSettingKeyHybridEnvironment = @"com.pspdfkit.hybrid-e
 - (void)dealloc {
     self.pdfViewController = nil;
     self.apiImpl = nil;
+    self.headlessDocumentApiImpl = nil;
 }
 
 @end

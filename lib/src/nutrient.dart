@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -262,5 +262,81 @@ class Nutrient {
 
   static set analyticsEventsListener(AnalyticsEventsListener? listener) {
     NutrientFlutterPlatform.instance.analyticsEventsListener = listener;
+  }
+
+  // ============================
+  // Headless Document API
+  // ============================
+
+  /// Opens a PDF document without displaying a viewer (headless mode).
+  ///
+  /// This allows programmatic access to the document for operations like:
+  /// - Reading and modifying annotations
+  /// - Processing annotations (flatten, embed, remove)
+  /// - Copying annotations between documents
+  /// - Exporting/importing XFDF
+  /// - Form field manipulation
+  ///
+  /// The returned [PdfDocument] must be closed when no longer needed by
+  /// calling [PdfDocument.close] to release native resources.
+  ///
+  /// **Example - Basic usage:**
+  /// ```dart
+  /// final document = await Nutrient.openDocument('/path/to/document.pdf');
+  /// try {
+  ///   final annotations = await document.getAnnotations(0, AnnotationType.all);
+  ///   await document.processAnnotations(
+  ///     AnnotationType.all,
+  ///     AnnotationProcessingMode.flatten,
+  ///     '/path/to/output.pdf',
+  ///   );
+  /// } finally {
+  ///   await document.close();
+  /// }
+  /// ```
+  ///
+  /// **Example - Copy annotations between documents:**
+  /// This is useful for scenarios like removing watermarks while preserving annotations.
+  /// ```dart
+  /// final sourceDoc = await Nutrient.openDocument('/path/to/watermarked.pdf');
+  /// final targetDoc = await Nutrient.openDocument('/path/to/clean.pdf');
+  ///
+  /// try {
+  ///   // Export annotations from source as XFDF
+  ///   final tempXfdfPath = '${(await Nutrient.getTemporaryDirectory()).path}/temp.xfdf';
+  ///   await sourceDoc.exportXfdf(tempXfdfPath);
+  ///
+  ///   // Import annotations to target
+  ///   final xfdfContent = await File(tempXfdfPath).readAsString();
+  ///   await targetDoc.importXfdf(xfdfContent);
+  ///
+  ///   // Save target document
+  ///   await targetDoc.save();
+  /// } finally {
+  ///   await sourceDoc.close();
+  ///   await targetDoc.close();
+  /// }
+  /// ```
+  ///
+  /// **Example - Password-protected document:**
+  /// ```dart
+  /// final document = await Nutrient.openDocument(
+  ///   '/path/to/encrypted.pdf',
+  ///   password: 'secret',
+  /// );
+  /// ```
+  ///
+  /// @param documentPath Path to the PDF document (file path or content:// URI)
+  /// @param password Optional password for encrypted documents
+  /// @return A [PdfDocument] instance for programmatic access
+  /// @throws Exception if the document cannot be opened
+  static Future<PdfDocument> openDocument(
+    String documentPath, {
+    String? password,
+  }) async {
+    return NutrientFlutterPlatform.instance.openDocument(
+      documentPath,
+      password: password,
+    );
   }
 }

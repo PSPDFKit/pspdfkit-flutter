@@ -32,8 +32,8 @@ host_cpu = RbConfig::CONFIG["host_cpu"]
 
 target "Runner" do
   flutter_install_all_ios_pods __dir__
-  # PSPDFKit iOS SDK version specified by PSPDFKit Flutter Plugin. Do not remove this line.
-  # Instant iOS SDK version specified by PSPDFKit Flutter Plugin. Do not remove this line.
+  # Nutrient iOS SDK version specified by Nutrient Flutter Plugin. Do not remove this line.
+  # Instant iOS SDK version specified by Nutrient Flutter Plugin. Do not remove this line.
   use_modular_headers!
 end
 

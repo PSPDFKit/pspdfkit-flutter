@@ -1,4 +1,4 @@
-///  Copyright © 2023-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2023-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -8,19 +8,57 @@
 
 import 'dart:async';
 import 'dart:convert';
+// ignore: deprecated_member_use
 import 'dart:js';
+import 'dart:js_interop';
 import 'models/models.dart';
+
+// Re-export the toJS extension for use by other files
+export 'dart:js_interop' show FunctionToJSExportedDartFunction;
+
+/// Wraps a Dart function that takes one argument to be callable from JavaScript.
+/// This is a compatibility wrapper for the deprecated allowInterop function.
+/// Use this instead of the removed allowInterop function.
+Function jsAllowInterop(Function(dynamic) dartFunction) {
+  // Convert Dart function to JS function and back to get an interop-compatible function
+  JSAny? wrapper(JSAny? arg) {
+    final result = dartFunction(arg?.dartify());
+    return result?.jsify();
+  }
+
+  return wrapper.toJS.toDart;
+}
+
+/// Wraps a Dart function that takes two optional arguments to be callable from JavaScript.
+Function jsAllowInterop2(Function([dynamic, dynamic]) dartFunction) {
+  JSAny? wrapper(JSAny? arg1, JSAny? arg2) {
+    final result = dartFunction(arg1?.dartify(), arg2?.dartify());
+    return result?.jsify();
+  }
+
+  return wrapper.toJS.toDart;
+}
+
+/// Wraps a Dart function that takes no arguments to be callable from JavaScript.
+Function jsAllowInteropNoArgs(Function() dartFunction) {
+  JSAny? wrapper() {
+    final result = dartFunction();
+    return result?.jsify();
+  }
+
+  return wrapper.toJS.toDart;
+}
 
 /// Converts a JavaScript promise to a Dart future.
 Future<dynamic> promiseToFuture(JsObject promise) {
   final completer = Completer();
   promise.callMethod('then', [
-    allowInterop((value) {
+    jsAllowInterop((value) {
       completer.complete(value);
     })
   ]);
   promise.callMethod('catch', [
-    allowInterop((error) {
+    jsAllowInterop((error) {
       completer.completeError(error);
     })
   ]);

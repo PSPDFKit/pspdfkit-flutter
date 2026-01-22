@@ -1,5 +1,5 @@
 //
-//  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+//  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 //
 //  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 //  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -28,6 +28,7 @@ let DEFAULT_BORDER_EFFECT = "borderEffect"
 let DEFAULT_TEXT_ALIGNMENT = "textAlignment"
 let DEFAULT_ICON_NAME = "iconName"
 let AVAILABLE_STAMP_ITEMS = "availableStampItems"
+let CUSTOM_STAMP_ITEMS = "customStampItems"
 
 // Annotation types constants
 let ANNOTATION_INK_PEN = "inkPen"
@@ -313,6 +314,12 @@ public class AnnotationsPresetConfigurations: NSObject {
                     setDefaultStampItems(stampItems: stampItems)
                 }
                 break
+            case CUSTOM_STAMP_ITEMS:
+                if let customItems = presets[key] as? Array<[String: Any]>
+                {
+                    setCustomStampItems(customItems: customItems)
+                }
+                break
             default:
                 break
             }
@@ -453,7 +460,38 @@ public class AnnotationsPresetConfigurations: NSObject {
             stamps.append(stampAnnotation)
         }
         StampViewController.defaultStampAnnotations = stamps
-        
+
+        // Mark that custom stamps have been configured
+        customStampsConfigured = true
+    }
+
+    /// Sets custom stamp items with color and subtitle support.
+    private static func setCustomStampItems(customItems: Array<[String: Any]>) {
+        var stamps = [StampAnnotation]()
+
+        for item in customItems {
+            guard let title = item["title"] as? String else { continue }
+
+            let stampAnnotation = StampAnnotation(title: title.uppercased())
+
+            // Set color if provided
+            if let colorString = item["color"] as? String,
+               let color = parseColor(colorString: colorString) {
+                stampAnnotation.color = color
+            }
+
+            // Set subtitle if provided
+            if let subtitle = item["subtitle"] as? String {
+                stampAnnotation.subtitle = subtitle
+            }
+
+            let suggestedSize = stampAnnotation.sizeThatFits(CGSize(width: 200, height: 100))
+            stampAnnotation.boundingBox = CGRect(x: 0, y: 0, width: suggestedSize.width, height: suggestedSize.height)
+            stamps.append(stampAnnotation)
+        }
+
+        StampViewController.defaultStampAnnotations = stamps
+
         // Mark that custom stamps have been configured
         customStampsConfigured = true
     }

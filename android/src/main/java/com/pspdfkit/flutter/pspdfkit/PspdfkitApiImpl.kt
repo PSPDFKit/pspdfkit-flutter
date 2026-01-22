@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -387,17 +387,17 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         callback(Result.success(true))
     }
 
-    override fun getAnnotations(
+    override fun getAnnotationsJson(
         pageIndex: Long,
         type: String,
-        callback: (Result<Any?>) -> Unit
+        callback: (Result<String?>) -> Unit
     ) {
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
-            activityPluginBinding?.activity as PdfActivity, "Pspdfkit.exportInstantJson()"
+            activityPluginBinding?.activity as PdfActivity, "Pspdfkit.getAnnotationsJson()"
         )
 
-        val annotationJsonList = ArrayList<String>()
+        val jsonArray = org.json.JSONArray()
         // noinspection checkResult
         document.annotationProvider.getAllAnnotationsOfTypeAsync(
             AnnotationTypeAdapter.fromString(
@@ -405,7 +405,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             ), pageIndex.toInt(), 1
         ).subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
             .subscribe({ annotation ->
-                annotationJsonList.add(annotation.toInstantJson())
+                jsonArray.put(org.json.JSONObject(annotation.toInstantJson()))
             }, { throwable ->
                 callback(
                     Result.failure(
@@ -416,15 +416,15 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     )
                 )
             }, {
-                callback(Result.success(annotationJsonList))
+                callback(Result.success(jsonArray.toString()))
             })
     }
 
-    override fun getAllUnsavedAnnotations(callback: (Result<Any?>) -> Unit) {
+    override fun getAllUnsavedAnnotationsJson(callback: (Result<String?>) -> Unit) {
 
         checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
         val document = Preconditions.requireDocumentNotNull(
-            activityPluginBinding?.activity as PdfActivity, "Pspdfkit.getAllUnsavedAnnotations()"
+            activityPluginBinding?.activity as PdfActivity, "Pspdfkit.getAllUnsavedAnnotationsJson()"
         )
 
         val outputStream = ByteArrayOutputStream()

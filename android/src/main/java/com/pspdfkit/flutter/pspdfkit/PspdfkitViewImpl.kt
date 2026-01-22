@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -377,11 +377,11 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         callback(Result.success(true))
     }
 
-    override fun getAnnotations(pageIndex: Long, type: String, callback: (Result<Any>) -> Unit) {
+    override fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String>) -> Unit) {
         checkNotNull(pdfUiFragment) { "PdfFragment is not set" }
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
 
-        val annotationJsonList = ArrayList<String>()
+        val jsonArray = org.json.JSONArray()
         // noinspection checkResult
         document.annotationProvider.getAllAnnotationsOfTypeAsync(
             AnnotationTypeAdapter.fromString(
@@ -393,7 +393,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { annotation ->
-                    annotationJsonList.add(annotation.toInstantJson())
+                    jsonArray.put(org.json.JSONObject(annotation.toInstantJson()))
                 },
                 { throwable ->
                     callback(
@@ -406,12 +406,12 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                     )
                 },
                 {
-                    callback(Result.success(annotationJsonList))
+                    callback(Result.success(jsonArray.toString()))
                 }
             )
-    }   
+    }
 
-    override fun getAllUnsavedAnnotations(callback: (Result<Any>) -> Unit) {
+    override fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         val outputStream = ByteArrayOutputStream()
         disposable = DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)

@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -76,12 +76,17 @@ class PspdfkitFlutterWidgetControllerImpl
 
   @override
   Future getAllUnsavedAnnotations() {
-    return _pspdfkitWidgetControllerApi.getAllUnsavedAnnotations();
+    return _pspdfkitWidgetControllerApi.getAllUnsavedAnnotationsJson();
   }
 
   @override
   Future getAnnotations(int pageIndex, String type) {
-    return _pspdfkitWidgetControllerApi.getAnnotations(pageIndex, type);
+    return _pspdfkitWidgetControllerApi.getAnnotationsJson(pageIndex, type).then((jsonString) {
+      var results = jsonDecode(jsonString) as List<dynamic>;
+      return results.map((result) {
+        return Map<String, dynamic>.from(result as Map);
+      }).toList();
+    });
   }
 
   @override

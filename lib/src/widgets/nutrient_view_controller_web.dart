@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -9,7 +9,6 @@
 
 import 'dart:ui';
 
-import 'dart:js';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
@@ -17,6 +16,7 @@ import 'package:nutrient_flutter/src/events/nutrient_events_extension.dart';
 import '../document/annotation_json_converter.dart';
 import '../web/nutrient_web.dart';
 import '../web/nutrient_web_instance.dart';
+import '../web/nutrient_web_utils.dart';
 
 /// A controller for a Nutrient viewer widget.
 class NutrientViewControllerWeb extends NutrientViewController
@@ -25,7 +25,7 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   NutrientViewControllerWeb(this.pspdfkitInstance);
 
-  // Map to store original callbacks against their allowInterop-wrapped versions for removal.
+  // Map to store original callbacks against their jsAllowInterop-wrapped versions for removal.
   // Key: NutrientWebEvent, Value: Map<Original Dart Callback, Wrapped JS Callback>
   final Map<NutrientWebEvent, Map<Function, Function>> _webEventListeners = {};
 
@@ -101,11 +101,20 @@ class NutrientViewControllerWeb extends NutrientViewController
   @override
   Future<void> addEventListener(
       NutrientEvent event, Function(dynamic) callback) async {
+    // Skip unsupported events on web
+    if (!event.isWebSupported) {
+      if (kDebugMode) {
+        print(
+            'Event ${event.name} is not supported on web, skipping listener registration');
+      }
+      return;
+    }
+
     // Note: This uses the older NutrientEvent enum.
     // Store the wrapped function for later removal
-    final wrappedCallback = allowInterop((dynamic data) {
+    final wrappedCallback = jsAllowInterop((dynamic data) {
       _processAndInvokeCallback(data, callback, event);
-    });
+    }) as Function(dynamic);
 
     _legacyEventListeners[event] = wrappedCallback;
     pspdfkitInstance.addEventListener(event.webName, wrappedCallback);
@@ -113,6 +122,11 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   @override
   Future<void> removeEventListener(NutrientEvent event) async {
+    // Skip unsupported events on web (they were never registered)
+    if (!event.isWebSupported) {
+      return;
+    }
+
     final wrappedCallback = _legacyEventListeners[event];
     if (wrappedCallback != null) {
       try {
@@ -133,7 +147,7 @@ class NutrientViewControllerWeb extends NutrientViewController
   @override
   void addWebEventListener(NutrientWebEvent event, Function(dynamic) callback) {
     // Create the wrapped JS function that calls our common processor
-    final Function wrappedJsFunction = allowInterop((dynamic data) {
+    final Function wrappedJsFunction = jsAllowInterop((dynamic data) {
       _processAndInvokeCallback(data, callback, event);
     });
 

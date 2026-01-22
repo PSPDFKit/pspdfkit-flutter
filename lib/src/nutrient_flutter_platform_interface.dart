@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -11,7 +11,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:nutrient_flutter/src/nutrient_flutter_api_impl.dart';
+
+// Conditional import: use web implementation on web, native on other platforms
+import 'package:nutrient_flutter/src/nutrient_flutter_api_impl.dart'
+    if (dart.library.html) 'package:nutrient_flutter/src/nutrient_flutter_web.dart'
+    as platform_impl;
 
 typedef InstantSyncStartedCallback = void Function(String? documentId);
 typedef InstantSyncFinishedCallback = void Function(String? documentId);
@@ -41,11 +45,12 @@ abstract class NutrientFlutterPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static NutrientFlutterPlatform _instance = (NutrientFlutterApiImpl());
+  static NutrientFlutterPlatform _instance =
+      platform_impl.createPlatformInstance();
 
   /// The default instance of [NutrientFlutterPlatform] to use.
   ///
-  /// Defaults to [NutrientFlutterApiImpl].
+  /// Defaults to [NutrientFlutterWeb] on web, [NutrientFlutterApiImpl] on native platforms.
   static NutrientFlutterPlatform get instance => _instance;
 
   /// Platform-specific implementations should set this with their own
@@ -262,4 +267,29 @@ abstract class NutrientFlutterPlatform extends PlatformInterface {
   /// Gets the default main toolbar [NutrientWebToolbarItem]s on Web.
   /// Returns an empty list when called on other platforms.
   List<NutrientWebToolbarItem> get defaultWebToolbarItems;
+
+  // ============================
+  // Headless Document API
+  // ============================
+
+  /// Opens a PDF document without displaying a viewer (headless mode).
+  ///
+  /// This allows programmatic access to the document for operations like:
+  /// - Reading and modifying annotations
+  /// - Processing annotations (flatten, embed, remove)
+  /// - Copying annotations between documents
+  /// - Exporting/importing XFDF
+  /// - Form field manipulation
+  ///
+  /// The returned [PdfDocument] must be closed when no longer needed by
+  /// calling [PdfDocument.close] to release native resources.
+  ///
+  /// @param documentPath Path to the PDF document (file path or content:// URI)
+  /// @param password Optional password for encrypted documents
+  /// @return A [PdfDocument] instance for programmatic access
+  /// @throws Exception if the document cannot be opened
+  Future<PdfDocument> openDocument(
+    String documentPath, {
+    String? password,
+  });
 }

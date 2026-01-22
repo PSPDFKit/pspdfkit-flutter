@@ -1,4 +1,4 @@
-#   Copyright © 2019-2025 PSPDFKit GmbH. All rights reserved.
+#   Copyright © 2019-2026 PSPDFKit GmbH. All rights reserved.
 #
 #   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 #   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -15,7 +15,6 @@ analyzer:
     invalid_assignment: error
     missing_return: error
     dead_code: warning
-#    avoid_print: false
 
 linter:
   rules:
@@ -24,5 +23,3 @@ linter:
     - sort_child_properties_last
     - unawaited_futures
     - use_full_hex_values_for_flutter_colors
-
-

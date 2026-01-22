@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2025 PSPDFKit GmbH. All rights reserved.
+ * Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
  * <p>
  * THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
  * AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -15,10 +15,8 @@ import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction
 import com.pspdfkit.flutter.pspdfkit.GlobalAnnotationMenuConfiguration
-import com.pspdfkit.flutter.pspdfkit.R
-import com.pspdfkit.ui.toolbar.AnnotationEditingToolbar
+import com.pspdfkit.R
 import com.pspdfkit.ui.toolbar.ContextualToolbar
-import com.pspdfkit.ui.toolbar.ContextualToolbarMenuItem
 import java.util.Locale
 
 /**

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
@@ -21,12 +23,12 @@ void main() {
         fillColor: 0xFF00FF00,
         opacity: 0.75,
         lineWidth: 2.5,
-        flags: ['readOnly', 'print'],
-        customData: {'metadata': 'test', 'status': 'approved'},
+        flagsJson: jsonEncode(['readOnly', 'print']),
+        customDataJson: jsonEncode({'metadata': 'test', 'status': 'approved'}),
         contents: 'Test content',
         subject: 'Test subject',
         creator: 'Test user',
-        bbox: [0.0, 0.0, 100.0, 50.0],
+        bboxJson: jsonEncode([0.0, 0.0, 100.0, 50.0]),
         note: 'Test note',
         fontName: 'Arial',
         fontSize: 12.0,
@@ -62,11 +64,11 @@ void main() {
         lineWidth: 1.0,
         contents: 'Original content',
         subject: 'Original subject',
-        customData: {
+        customDataJson: jsonEncode({
           'key1': 'value1',
           'key2': 'value2',
           'timestamp': '2025-01-01',
-        },
+        }),
       );
 
       // Create a modified version with only some properties changed
@@ -121,7 +123,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test',
         pageIndex: 0,
-        flags: ['readOnly', 'hidden', 'print', 'locked'],
+        flagsJson: jsonEncode(['readOnly', 'hidden', 'print', 'locked']),
       );
 
       expect(properties.flags, isNotNull);
@@ -175,7 +177,7 @@ void main() {
         fillColor: 0xFF00FF00,
         opacity: 0.5,
         lineWidth: 2.0,
-        customData: {'original': true},
+        customDataJson: jsonEncode({'original': true}),
       );
 
       // Test withColor (only updates stroke color, not fill color)
@@ -234,10 +236,10 @@ void main() {
         annotationId: 'file-annotation',
         pageIndex: 0,
         strokeColor: 0xFFFF0000,
-        customData: {
+        customDataJson: jsonEncode({
           'hasAttachment': true,
           'fileName': 'document.pdf',
-        },
+        }),
       );
 
       // Update only the color, attachment data should be preserved in original
@@ -268,7 +270,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test',
         pageIndex: 0,
-        bbox: bbox,
+        bboxJson: jsonEncode(bbox),
       );
 
       expect(properties.bbox, equals(bbox));

@@ -63,8 +63,28 @@ class _AnnotationPresetCustomizationState
                 AnnotationTool.highlight: MarkupAnnotationConfiguration(
                   color: Colors.red,
                 ),
+                // Custom stamps with colors (iOS supports colors, Android supports subtitle)
                 AnnotationTool.stamp: StampAnnotationConfiguration(
-                  availableStampItems: ['Approved', 'Draft', 'Final'],
+                  customStampItems: [
+                    CustomStampItem(
+                      title: 'APPROVED',
+                      color: Colors.green,
+                      subtitle: 'Verified',
+                    ),
+                    CustomStampItem(
+                      title: 'REJECTED',
+                      color: Colors.red,
+                      subtitle: 'Not Approved',
+                    ),
+                    CustomStampItem(
+                      title: 'PENDING',
+                      color: Colors.orange,
+                    ),
+                    CustomStampItem(
+                      title: 'DRAFT',
+                      color: Colors.blue,
+                    ),
+                  ],
                 ),
               },
             );

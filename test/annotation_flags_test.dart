@@ -1,9 +1,11 @@
-///  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2025-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
+
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
@@ -15,7 +17,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test-id',
         pageIndex: 0,
-        flags: ['readOnly', 'locked', 'print'],
+        flagsJson: jsonEncode(['readOnly', 'locked', 'print']),
       );
 
       expect(properties.flags, isNotNull);
@@ -28,7 +30,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test-id',
         pageIndex: 0,
-        flags: ['readOnly', 'locked', 'print'],
+        flagsJson: jsonEncode(['readOnly', 'locked', 'print']),
       );
 
       final flagsSet = properties.flagsSet;
@@ -42,7 +44,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test-id',
         pageIndex: 0,
-        flags: ['readOnly'],
+        flagsJson: jsonEncode(['readOnly']),
       );
 
       // Update flags

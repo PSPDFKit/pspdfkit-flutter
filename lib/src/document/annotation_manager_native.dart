@@ -1,4 +1,4 @@
-///  Copyright © 2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2025-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -41,47 +41,26 @@ class AnnotationManagerNative extends AnnotationManager {
     int pageIndex, [
     AnnotationType type = AnnotationType.all,
   ]) async {
-    var results = await _api.getAnnotations(pageIndex, type.name);
+    var jsonString = await _api.getAnnotationsJson(pageIndex, type.name);
+    var results = jsonDecode(jsonString) as List<dynamic>;
 
-    if (results is List) {
-      List<Annotation> annotations = [];
-
-      for (var element in results) {
-        if (element is Map) {
-          if (element['type'] == null ||
-              element['type'] == '' ||
-              element['type'] == 'pspdfkit/undefined') {
-            continue;
-          }
-          var annotationJSON = element.cast<String, dynamic>();
-          try {
-            annotations.add(Annotation.fromJson(annotationJSON));
-          } catch (e) {
-            // Skip annotations that can't be parsed
-            // Skip annotations that can't be parsed
-          }
-        } else if (element is String) {
-          var annotationJSON = jsonDecode(element);
-          if (annotationJSON == null ||
-              annotationJSON['type'] == null ||
-              annotationJSON['type'] == '' ||
-              annotationJSON['type'] == 'pspdfkit/undefined') {
-            continue;
-          }
-          try {
-            annotations.add(Annotation.fromJson(annotationJSON));
-          } catch (e) {
-            // Skip annotations that can't be parsed
-            // Skip annotations that can't be parsed
-          }
-        } else {
-          throw Exception('Invalid annotation type: $element');
+    List<Annotation> annotations = [];
+    for (var element in results) {
+      if (element is Map) {
+        if (element['type'] == null ||
+            element['type'] == '' ||
+            element['type'] == 'pspdfkit/undefined') {
+          continue;
+        }
+        var annotationJSON = Map<String, dynamic>.from(element);
+        try {
+          annotations.add(Annotation.fromJson(annotationJSON));
+        } catch (e) {
+          // Skip annotations that can't be parsed
         }
       }
-
-      return annotations;
     }
-    return [];
+    return annotations;
   }
 
   @override
@@ -109,34 +88,20 @@ class AnnotationManagerNative extends AnnotationManager {
   @override
   Future<List<Annotation>> searchAnnotations(String query,
       [int? pageIndex]) async {
-    var results = await _api.searchAnnotations(query, pageIndex);
+    var jsonString = await _api.searchAnnotationsJson(query, pageIndex);
+    var results = jsonDecode(jsonString) as List<dynamic>;
 
-    if (results is List) {
-      List<Annotation> annotations = [];
-
-      for (var element in results) {
-        if (element is Map) {
-          if (element['type'] == null || element['type'] == '') {
-            continue;
-          }
-          var annotationJSON = element.cast<String, dynamic>();
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else if (element is String) {
-          var annotationJSON = jsonDecode(element);
-          if (annotationJSON == null ||
-              annotationJSON['type'] == null ||
-              annotationJSON['type'] == '') {
-            continue;
-          }
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else {
-          throw Exception('Invalid annotation type: $element');
+    List<Annotation> annotations = [];
+    for (var element in results) {
+      if (element is Map) {
+        if (element['type'] == null || element['type'] == '') {
+          continue;
         }
+        var annotationJSON = Map<String, dynamic>.from(element);
+        annotations.add(Annotation.fromJson(annotationJSON));
       }
-
-      return annotations;
     }
-    return [];
+    return annotations;
   }
 
   @override
@@ -151,33 +116,19 @@ class AnnotationManagerNative extends AnnotationManager {
 
   @override
   Future<List<Annotation>> getUnsavedAnnotations() async {
-    var results = await _api.getUnsavedAnnotations();
+    var jsonString = await _api.getUnsavedAnnotationsJson();
+    var results = jsonDecode(jsonString) as List<dynamic>;
 
-    if (results is List) {
-      List<Annotation> annotations = [];
-
-      for (var element in results) {
-        if (element is Map) {
-          if (element['type'] == null || element['type'] == '') {
-            continue;
-          }
-          var annotationJSON = element.cast<String, dynamic>();
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else if (element is String) {
-          var annotationJSON = jsonDecode(element);
-          if (annotationJSON == null ||
-              annotationJSON['type'] == null ||
-              annotationJSON['type'] == '') {
-            continue;
-          }
-          annotations.add(Annotation.fromJson(annotationJSON));
-        } else {
-          throw Exception('Invalid annotation type: $element');
+    List<Annotation> annotations = [];
+    for (var element in results) {
+      if (element is Map) {
+        if (element['type'] == null || element['type'] == '') {
+          continue;
         }
+        var annotationJSON = Map<String, dynamic>.from(element);
+        annotations.add(Annotation.fromJson(annotationJSON));
       }
-
-      return annotations;
     }
-    return [];
+    return annotations;
   }
 }

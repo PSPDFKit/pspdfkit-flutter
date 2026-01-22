@@ -1,5 +1,5 @@
 ///
-///  Copyright © 2024-2025 PSPDFKit GmbH. All rights reserved.
+///  Copyright © 2024-2026 PSPDFKit GmbH. All rights reserved.
 ///
 ///  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
 ///  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
@@ -13,6 +13,9 @@ import 'package:flutter/services.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter/src/nutrient_flutter_platform_interface.dart';
+
+/// Creates the platform-specific instance for native platforms.
+NutrientFlutterPlatform createPlatformInstance() => NutrientFlutterApiImpl();
 
 class NutrientFlutterApiImpl
     with AnnotationJsonConverter
@@ -118,35 +121,47 @@ class NutrientFlutterApiImpl
 
   @override
   Future getAllUnsavedAnnotations() {
-    return _nutrientApi.getAllUnsavedAnnotations();
+    return _nutrientApi.getAllUnsavedAnnotationsJson();
   }
 
   @override
   Future<List<Annotation>> getUnsavedAnnotations() async {
-    final dynamic result = await _nutrientApi.getAllUnsavedAnnotations();
-    if (result is List) {
-      return result
-          .map((dynamic json) =>
-              Annotation.fromJson(json as Map<String, dynamic>))
-          .toList();
+    final jsonString = await _nutrientApi.getAllUnsavedAnnotationsJson();
+    if (jsonString != null) {
+      final results = jsonDecode(jsonString);
+      if (results is List) {
+        return results
+            .map((dynamic json) =>
+                Annotation.fromJson(Map<String, dynamic>.from(json as Map)))
+            .toList();
+      }
     }
     return [];
   }
 
   @override
   Future getAnnotationsAsJSON(int pageIndex, String type) {
-    return _nutrientApi.getAnnotations(pageIndex, type);
+    return _nutrientApi.getAnnotationsJson(pageIndex, type).then((jsonString) {
+      if (jsonString != null) {
+        var results = jsonDecode(jsonString) as List<dynamic>;
+        return results.map((result) {
+          return Map<String, dynamic>.from(result as Map);
+        }).toList();
+      }
+      return [];
+    });
   }
 
   @override
   Future<List<Annotation>> getAnnotations(
       int pageIndex, AnnotationType type) async {
-    final dynamic result =
-        await _nutrientApi.getAnnotations(pageIndex, type.fullName);
-    if (result is List) {
-      return result
+    final jsonString =
+        await _nutrientApi.getAnnotationsJson(pageIndex, type.fullName);
+    if (jsonString != null) {
+      final results = jsonDecode(jsonString) as List<dynamic>;
+      return results
           .map((dynamic json) =>
-              Annotation.fromJson(json as Map<String, dynamic>))
+              Annotation.fromJson(Map<String, dynamic>.from(json as Map)))
           .toList();
     }
     return [];
@@ -378,5 +393,39 @@ class NutrientFlutterApiImpl
   @override
   Future<void> setDefaultAuthorName(String authorName) {
     return _nutrientApi.setAuthorName(authorName);
+  }
+
+  // ============================
+  // Headless Document API
+  // ============================
+
+  final HeadlessDocumentApi _headlessDocumentApi = HeadlessDocumentApi(
+    binaryMessenger: const MethodChannel('com.nutrient.global').binaryMessenger,
+    messageChannelSuffix: 'nutrient',
+  );
+
+  @override
+  Future<PdfDocument> openDocument(
+    String documentPath, {
+    String? password,
+  }) async {
+    final options = password != null
+        ? HeadlessDocumentOpenOptions(password: password)
+        : null;
+
+    final documentId =
+        await _headlessDocumentApi.openDocument(documentPath, options);
+
+    // Create a PdfDocumentApi for this specific document using the documentId as channel suffix
+    final documentApi = PdfDocumentApi(
+      binaryMessenger:
+          const MethodChannel('com.nutrient.global').binaryMessenger,
+      messageChannelSuffix: documentId,
+    );
+
+    return HeadlessPdfDocumentNative(
+      documentId: documentId,
+      api: documentApi,
+    );
   }
 }

@@ -1,6 +1,6 @@
 name: nutrient_example
 description: Demonstrates how to use the Nutrient Flutter plugin.
-version: 5.2.0
+version: 5.3.0
 homepage: https://nutrient.io/
 publish_to: 'none'  # Remove this line if you wish to publish to pub.dev
 environment:

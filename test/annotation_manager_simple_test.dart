@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
@@ -12,11 +14,11 @@ void main() {
         fillColor: 0xFF00FF00, // Green
         opacity: 0.75,
         lineWidth: 2.5,
-        flags: ['readOnly', 'print'],
-        customData: {
+        flagsJson: jsonEncode(['readOnly', 'print']),
+        customDataJson: jsonEncode({
           'key': 'value',
           'nested': {'data': true}
-        },
+        }),
       );
 
       expect(properties.annotationId, 'test-annotation-1');
@@ -59,7 +61,7 @@ void main() {
       final properties = AnnotationProperties(
         annotationId: 'test-3',
         pageIndex: 0,
-        flags: ['readOnly'],
+        flagsJson: jsonEncode(['readOnly']),
       );
 
       // Test withFlags - replaces all flags
@@ -81,14 +83,14 @@ void main() {
       final original = AnnotationProperties(
         annotationId: 'stamp-with-attachment',
         pageIndex: 2,
-        customData: {
+        customDataJson: jsonEncode({
           'attachment': 'base64-image-data-here',
           'metadata': {
             'author': 'John Doe',
             'timestamp': '2025-01-26T10:00:00Z',
             'version': 1,
           }
-        },
+        }),
         strokeColor: 0xFF000000,
       );
 

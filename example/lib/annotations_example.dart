@@ -153,8 +153,8 @@ final exampleAnnotations = [
 
   // Square shape annotation example
   SquareAnnotation(
-    id: 'square-annotation-1',
-    name: 'Square annotation 1',
+    id: 'square-annotation-2',
+    name: 'Square annotation 2',
     bbox: [50.0, 500.0, 100.0, 100.0],
     createdAt: '2025-01-07T16:49:18+03:00',
     strokeColor: const Color(0xFF4CAF50),
@@ -224,8 +224,8 @@ final exampleAnnotations = [
 
   // Polygon annotation example
   PolygonAnnotation(
-    id: 'polygon-annotation-1',
-    name: 'Polygon annotation 1',
+    id: 'polygon-annotation-2',
+    name: 'Polygon annotation 2',
     bbox: [50.0, 600.0, 150.0, 150.0],
     createdAt: '2025-01-07T16:49:18+03:00',
     strokeColor: const Color(0xFF795548),
@@ -425,24 +425,34 @@ class _PspdfkitAnnotationsExampleWidgetState
 
   Future<void> _updateAnnotation() async {
     try {
-      // Get the ink annotation
-      final annotations = await document?.getAnnotations(0, AnnotationType.all);
-      if (annotations == null) return;
+      // Find the first ink annotation
+      final annotations = await document?.getAnnotations(0, AnnotationType.ink);
+      if (annotations == null || annotations.isEmpty) {
+        throw Exception('No ink annotations found');
+      }
 
-      final inkAnnotation = annotations.firstWhere(
-        (a) => a.id == 'ink-annotation-1',
-        orElse: () => throw Exception('Ink annotation not found'),
-      ) as InkAnnotation;
+      // Get the annotation's name to look up its properties
+      final inkAnnotation = annotations.first;
+      final annotationName = inkAnnotation.name;
+      if (annotationName == null || annotationName.isEmpty) {
+        throw Exception('Ink annotation has no name');
+      }
 
-      // Create an updated version
-      final updatedInkAnnotation = inkAnnotation.copyWith(
+      // Get the annotation properties using the name
+      final properties =
+          await document?.getAnnotationProperties(0, annotationName);
+      if (properties == null) {
+        throw Exception('Could not get annotation properties');
+      }
+
+      // Update properties using the withUpdates method
+      final updated = properties.withUpdates(
         lineWidth: 10,
-        strokeColor: Colors.red,
-        creatorName: 'PSPDFKit Flutter Updated',
+        color: Colors.red,
       );
 
-      // Update the annotation
-      await document?.updateAnnotation(updatedInkAnnotation);
+      // Save the updated properties
+      await document?.saveAnnotationProperties(updated);
     } catch (e) {
       if (kDebugMode) {
         print('Error updating annotation: $e');
@@ -500,9 +510,9 @@ class _PspdfkitAnnotationsExampleWidgetState
   }
 
   Future<void> _removeAnnotations() async {
-    dynamic annotationsJson =
-        await document?.getAnnotations(0, AnnotationType.all);
-    for (var annotation in annotationsJson) {
+    final annotations = await document?.getAnnotations(0, AnnotationType.all);
+    if (annotations == null) return;
+    for (var annotation in annotations) {
       await document?.removeAnnotation(annotation);
     }
   }
