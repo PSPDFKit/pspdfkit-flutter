@@ -372,9 +372,8 @@ extension AnnotationPropertiesModification on AnnotationProperties {
       flagsJson: flags != null
           ? _encodeFlags(flags.map((f) => f.name).toList())
           : flagsJson,
-      customDataJson: customData != null
-          ? _encodeCustomData(customData)
-          : customDataJson,
+      customDataJson:
+          customData != null ? _encodeCustomData(customData) : customDataJson,
       contents: contents ?? this.contents,
       subject: subject ?? this.subject,
       creator: creator ?? this.creator,

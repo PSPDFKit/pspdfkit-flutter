@@ -41,16 +41,52 @@ class FlutterEventsHelper(
 
         when (event) {
             NutrientEvent.ANNOTATIONS_CREATED -> {
-                createAnnotationListener(pdfFragment, event, 
+                createAnnotationListener(pdfFragment, event,
                     onCreated = { annotation ->
-                        sendEvent(event, mapOf("annotations" to listOf(annotation.toInstantJson())))
+                        try {
+                            // For stamp/image annotations that don't have content yet,
+                            // set a placeholder title so toInstantJson() can succeed.
+                            // This handles the timing issue where onAnnotationCreated fires
+                            // before the binary attachment is set.
+                            //
+                            // Note: hasBinaryInstantJsonAttachment() may return true even when
+                            // the actual binary data hasn't been attached yet (it checks if
+                            // imageAttachmentId is set in JSON, not if data is present).
+                            // So we only check for title and stampType.
+                            if (annotation is com.pspdfkit.annotations.StampAnnotation) {
+                                if (annotation.title.isNullOrEmpty() && annotation.stampType == null) {
+                                    annotation.title = "Image"
+                                }
+                            }
+                            sendEvent(event, mapOf("annotations" to listOf(annotation.toInstantJson())))
+                        } catch (e: IllegalStateException) {
+                            // Some annotations (like stamp/image annotations) may not have their
+                            // content fully set when onAnnotationCreated is called. In this case,
+                            // toInstantJson() will throw. We skip the event - the annotation
+                            // will trigger an onAnnotationUpdated event once the content is set.
+                            Log.d("FlutterEventsHelper", "Skipping annotation created event - annotation not fully initialized: ${e.message}")
+                        }
                     }
                 )
             }
             NutrientEvent.ANNOTATIONS_UPDATED -> {
                 createAnnotationListener(pdfFragment, event,
                     onUpdated = { annotation ->
-                        sendEvent(event, mapOf("annotations" to listOf(annotation.toInstantJson())))
+                        try {
+                            // For stamp/image annotations that don't have content yet,
+                            // set a placeholder title so toInstantJson() can succeed.
+                            // Same logic as ANNOTATIONS_CREATED - don't check hasBinaryInstantJsonAttachment()
+                            // because it may return true before actual data is attached.
+                            if (annotation is com.pspdfkit.annotations.StampAnnotation) {
+                                if (annotation.title.isNullOrEmpty() && annotation.stampType == null) {
+                                    annotation.title = "Image"
+                                }
+                            }
+                            sendEvent(event, mapOf("annotations" to listOf(annotation.toInstantJson())))
+                        } catch (e: IllegalStateException) {
+                            // Some annotations may not be fully initialized yet
+                            Log.d("FlutterEventsHelper", "Skipping annotation updated event - annotation not fully initialized: ${e.message}")
+                        }
                     }
                 )
             }

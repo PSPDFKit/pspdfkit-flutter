@@ -366,12 +366,75 @@ class FlutterPdfDocument(
         attachment: Any?,
         callback: (Result<Boolean?>) -> Unit
     ) {
+        // WORKAROUND for PSPDFKit Native SDK limitation:
+        //
+        // Problem: When creating image annotations, PSPDFKit fires `onAnnotationCreated`
+        // synchronously during `createAnnotationFromInstantJsonAsync()`, BEFORE we can attach
+        // the binary image data. When event listeners call `toInstantJson()` on the annotation,
+        // it fails with: "Can't create Instant JSON for stamp annotation that has no content -
+        // title, stamp icon or an image!"
+        //
+        // Root cause: PSPDFKit stores image annotations as StampAnnotations internally.
+        // The `toInstantJson()` method validates that stamps have "content" (title, stampType,
+        // or attached image). Since the image isn't attached yet when the event fires, and
+        // image annotations don't have title/stampType by spec, validation fails.
+        //
+        // Workaround: Inject a temporary title into the JSON before creating the annotation.
+        // This satisfies the validation check. Once the image is attached (after creation),
+        // subsequent serialization includes the image data.
+        //
+        // Note: The Instant JSON spec does NOT define `title` for image annotations
+        // (only for stamps). This is purely an internal workaround for PSPDFKit's validation.
+        //
+        // Ideal fix: PSPDFKit should either:
+        // 1. Allow attaching binary data before/during annotation creation, or
+        // 2. Skip validation in `toInstantJson()` for annotations being created, or
+        // 3. Delay firing `onAnnotationCreated` until after attachments are set
+        val processedJson = if (attachment != null && attachment is String) {
+            try {
+                val json = JSONObject(jsonAnnotation)
+                val annotationType = json.optString("type", "")
+                // Inject placeholder title for image/stamp annotations with binary attachments.
+                // "Image" for pspdfkit/image, "Stamp" for pspdfkit/stamp (per spec naming).
+                when (annotationType) {
+                    "pspdfkit/image" -> {
+                        if (!json.has("title") || json.optString("title").isNullOrEmpty()) {
+                            json.put("title", "Image")
+                        }
+                    }
+                    "pspdfkit/stamp" -> {
+                        if (!json.has("title") || json.optString("title").isNullOrEmpty()) {
+                            json.put("title", "Stamp")
+                        }
+                    }
+                }
+                json.toString()
+            } catch (e: Exception) {
+                jsonAnnotation // Use original if parsing fails
+            }
+        } else {
+            jsonAnnotation
+        }
+
         disposable =
-            pdfDocument.annotationProvider.createAnnotationFromInstantJsonAsync(jsonAnnotation)
+            pdfDocument.annotationProvider.createAnnotationFromInstantJsonAsync(processedJson)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { annotation ->
+                        // For stamp/image annotations, set title IMMEDIATELY after creation.
+                        // This is needed because PSPDFKit fires onAnnotationCreated synchronously
+                        // during createAnnotationFromInstantJsonAsync(), and the title from JSON
+                        // may not be applied for image annotations (title is not in the image spec).
+                        if (annotation is com.pspdfkit.annotations.StampAnnotation) {
+                            if (annotation.title.isNullOrEmpty()) {
+                                val type = try {
+                                    JSONObject(processedJson).optString("type", "")
+                                } catch (e: Exception) { "" }
+                                annotation.title = if (type == "pspdfkit/image") "Image" else "Stamp"
+                            }
+                        }
+
                         // Handle attachment if provided
                         if (attachment != null && attachment is String) {
                             try {
@@ -383,6 +446,23 @@ class FlutterPdfDocument(
                                     val binaryData = Base64.decode(binary, Base64.DEFAULT)
                                     val dataProvider = BinaryDataProvider(binaryData)
                                     annotation.attachBinaryInstantJsonAttachment(dataProvider, contentType)
+
+                                    // Generate the appearance stream to render the attached image.
+                                    annotation.generateAppearanceStreamAsync()
+                                        .subscribeOn(Schedulers.computation())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(
+                                            {
+                                                callback(Result.success(true))
+                                            },
+                                            { appearanceError ->
+                                                // Log but don't fail - the annotation was created successfully,
+                                                // just the appearance generation failed
+                                                android.util.Log.w("FlutterPdfDocument", "Failed to generate appearance stream: ${appearanceError.message}")
+                                                callback(Result.success(true))
+                                            }
+                                        )
+                                    return@subscribe
                                 }
                             } catch (e: Exception) {
                                 // Log but don't fail - annotation was created successfully
@@ -479,48 +559,72 @@ class FlutterPdfDocument(
     }
 
     override fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String>) -> Unit) {
-        val jsonArray = JSONArray()
+        try {
+            val jsonArray = JSONArray()
 
-        // Get annotations directly from the annotation provider
-        val annotations = pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
-        val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
-        val filterAll = annotationTypeSet.size == com.pspdfkit.annotations.AnnotationType.values().size
+            // Get annotations directly from the annotation provider
+            val annotations = pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
+            val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
+            val filterAll = annotationTypeSet.size == com.pspdfkit.annotations.AnnotationType.values().size
 
-        for (annotation in annotations) {
-            // Filter by type if not "all"
-            if (!filterAll && !annotationTypeSet.contains(annotation.type)) {
-                continue
+            for (annotation in annotations) {
+                // Filter by type if not "all"
+                if (!filterAll && !annotationTypeSet.contains(annotation.type)) {
+                    continue
+                }
+
+                // Skip floating/unattached annotations that can't be serialized to JSON.
+                // These are typically internal annotations (like some LINK annotations) that
+                // haven't been fully connected to the document structure.
+                if (!annotation.isAttached) {
+                    continue
+                }
+
+                // For stamp/image annotations that don't have content yet,
+                // set a placeholder title so toInstantJson() can succeed.
+                // Don't check hasBinaryInstantJsonAttachment() because it may return true
+                // before actual data is attached (it checks imageAttachmentId, not binary data).
+                if (annotation is com.pspdfkit.annotations.StampAnnotation) {
+                    if (annotation.title.isNullOrEmpty() && annotation.stampType == null) {
+                        annotation.title = "Image"
+                    }
+                }
+
+                // Try to convert annotation to JSON, skip if it fails
+                // Some annotations (like stamp/image annotations) may throw IllegalStateException
+                // if they don't have their content fully set yet
+                var jsonString: String
+                try {
+                    jsonString = annotation.toInstantJson() ?: continue
+                } catch (e: IllegalStateException) {
+                    // Skip annotations that can't be serialized
+                    continue
+                }
+
+                // Skip annotations that can't be serialized to JSON
+                if (jsonString.isEmpty()) {
+                    continue
+                }
+
+                // For annotations with binary attachments, include the attachment data
+                if (annotation.hasBinaryInstantJsonAttachment()) {
+                    jsonString = addAttachmentToJson(annotation, jsonString)
+                }
+
+                // Try to parse the JSON, skip if it fails
+                try {
+                    jsonArray.put(JSONObject(jsonString))
+                } catch (e: Exception) {
+                    android.util.Log.w("FlutterPdfDocument", "Failed to parse annotation JSON: ${e.message}")
+                    continue
+                }
             }
 
-            // Skip floating/unattached annotations that can't be serialized to JSON.
-            // These are typically internal annotations (like some LINK annotations) that
-            // haven't been fully connected to the document structure.
-            if (!annotation.isAttached) {
-                continue
-            }
-
-            var jsonString = annotation.toInstantJson()
-
-            // Skip annotations that can't be serialized to JSON
-            if (jsonString.isNullOrEmpty()) {
-                continue
-            }
-
-            // For annotations with binary attachments, include the attachment data
-            if (annotation.hasBinaryInstantJsonAttachment()) {
-                jsonString = addAttachmentToJson(annotation, jsonString)
-            }
-
-            // Try to parse the JSON, skip if it fails
-            try {
-                jsonArray.put(JSONObject(jsonString))
-            } catch (e: Exception) {
-                android.util.Log.w("FlutterPdfDocument", "Failed to parse annotation JSON: ${e.message}")
-                continue
-            }
+            callback(Result.success(jsonArray.toString()))
+        } catch (e: Exception) {
+            android.util.Log.e("FlutterPdfDocument", "Error getting annotations JSON: ${e.message}", e)
+            callback(Result.failure(e))
         }
-
-        callback(Result.success(jsonArray.toString()))
     }
 
     /**

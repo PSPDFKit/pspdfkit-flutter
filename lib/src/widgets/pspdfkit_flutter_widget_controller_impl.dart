@@ -81,7 +81,9 @@ class PspdfkitFlutterWidgetControllerImpl
 
   @override
   Future getAnnotations(int pageIndex, String type) {
-    return _pspdfkitWidgetControllerApi.getAnnotationsJson(pageIndex, type).then((jsonString) {
+    return _pspdfkitWidgetControllerApi
+        .getAnnotationsJson(pageIndex, type)
+        .then((jsonString) {
       var results = jsonDecode(jsonString) as List<dynamic>;
       return results.map((result) {
         return Map<String, dynamic>.from(result as Map);

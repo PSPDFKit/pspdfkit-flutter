@@ -52,8 +52,9 @@ class GoToAction extends Action {
     return GoToAction(
       pageIndex: json['pageIndex'] as int,
       destinationType: json['destinationType'] as String,
-      params:
-          (json['params'] as List<dynamic>?)?.map((e) => e as double).toList(),
+      params: (json['params'] as List<dynamic>?)
+          ?.map((e) => (e as num).toDouble())
+          .toList(),
       subAction: json['subAction'] != null
           ? Action.fromJson(json['subAction'] as Map<String, dynamic>)
           : null,

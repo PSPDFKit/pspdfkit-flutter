@@ -333,9 +333,8 @@ class AnnotationManagerWeb extends AnnotationManager {
     final flagsJson = json['flags'] != null
         ? jsonEncode(_convertWebFlagsToFlutter(json['flags']))
         : null;
-    final customDataJson = json['customData'] != null
-        ? jsonEncode(json['customData'])
-        : null;
+    final customDataJson =
+        json['customData'] != null ? jsonEncode(json['customData']) : null;
     final bboxJson = json['bbox'] != null
         ? jsonEncode(List<double>.from(json['bbox']))
         : null;

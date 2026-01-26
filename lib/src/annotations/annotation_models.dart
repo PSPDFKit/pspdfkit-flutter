@@ -365,7 +365,8 @@ class NoteAnnotation extends Annotation {
   factory NoteAnnotation.fromJson(Map<String, dynamic> json) {
     return NoteAnnotation(
       id: json['id'] as String?,
-      text: TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
+      text:
+          TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
       icon: NoteIcon.values.firstWhere(
         (e) => e.toString().split('.').last == json['icon'],
         orElse: () => NoteIcon.note,
@@ -801,7 +802,8 @@ class LineAnnotation extends ShapeAnnotation {
       startPoint: Annotation._toDoubleList(json['startPoint'] as List<dynamic>),
       endPoint: Annotation._toDoubleList(json['endPoint'] as List<dynamic>),
       lineCaps: json['lineCaps'] != null
-          ? LineCaps.fromJson(Map<String, dynamic>.from(json['lineCaps'] as Map))
+          ? LineCaps.fromJson(
+              Map<String, dynamic>.from(json['lineCaps'] as Map))
           : null,
       fillColor: Annotation._hexToColor(json['fillColor'] as String?),
       borderStyle: json['borderStyle'] != null
@@ -967,7 +969,8 @@ class FreeTextAnnotation extends Annotation {
       bbox: Annotation._toDoubleList(json['bbox'] as List),
       createdAt: json['createdAt'] as String,
       creatorName: json['creatorName'] as String?,
-      text: TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
+      text:
+          TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
       backgroundColor:
           Annotation._hexToColor(json['backgroundColor'] as String?),
       fontSize: Annotation._toDouble(json['fontSize']),

@@ -21,7 +21,8 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
+List<Object?> wrapResponse(
+    {Object? result, PlatformException? error, bool empty = false}) {
   if (empty) {
     return <Object?>[];
   }
@@ -131,18 +132,25 @@ enum AnnotationProcessingMode {
 enum DocumentPermissions {
   /// Allow printing of document.
   printing,
+
   /// Modify the contents of the document.
   modification,
+
   /// Copy text and images from the document.
   extract,
+
   /// Add or modify text annotations, fill in interactive form fields.
   annotationsAndForms,
+
   /// Fill in existing interactive form fields (including signature fields).
   fillForms,
+
   /// Extract text and images from the document.
   extractAccessibility,
+
   /// Assemble the document (insert, rotate, or delete pages and create document outline items or thumbnail images).
   assemble,
+
   /// Print high quality.
   printHighQuality,
 }
@@ -173,20 +181,28 @@ enum PdfFormFieldTypes {
 enum NutrientEvent {
   /// Event triggered when annotations are created.
   annotationsCreated,
+
   /// Event triggered when annotations are pressed.
   annotationsDeselected,
+
   /// Event triggered when annotations are updated.
   annotationsUpdated,
+
   /// Event triggered when annotations are deleted.
   annotationsDeleted,
+
   /// Event triggered when annotations are focused.
   annotationsSelected,
+
   /// Event triggered when form field values are updated.
   formFieldValuesUpdated,
+
   /// Event triggered when form fields are loaded.
   formFieldSelected,
+
   /// Event triggered when form fields are about to be saved.
   formFieldDeselected,
+
   /// Event triggered when text selection changes.
   textSelectionChanged,
 }
@@ -201,26 +217,32 @@ enum AnnotationMenuAction {
   /// - iOS: Part of UIMenu system actions
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_delete
   delete,
+
   /// Copy action - copies the annotation
   /// - iOS: System copy action (may be harder to remove)
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_copy
   copy,
+
   /// Cut action - cuts the annotation to clipboard
   /// - iOS: System cut action
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_cut
   cut,
+
   /// Color action - opens annotation color picker/inspector
   /// - iOS: Style picker in UIMenu
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_picker
   color,
+
   /// Note action - opens annotation note editor
   /// - iOS: Note action in UIMenu
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_annotation_note
   note,
+
   /// Undo action - undoes the last action
   /// - iOS: Undo in UIMenu
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_undo
   undo,
+
   /// Redo action - redoes the previously undone action
   /// - iOS: Redo in UIMenu
   /// - Android: R.id.pspdf__annotation_editing_toolbar_item_redo
@@ -625,8 +647,10 @@ class AnnotationMenuConfigurationData {
   static AnnotationMenuConfigurationData decode(Object result) {
     result as List<Object?>;
     return AnnotationMenuConfigurationData(
-      itemsToRemove: (result[0] as List<Object?>?)!.cast<AnnotationMenuAction>(),
-      itemsToDisable: (result[1] as List<Object?>?)!.cast<AnnotationMenuAction>(),
+      itemsToRemove:
+          (result[0] as List<Object?>?)!.cast<AnnotationMenuAction>(),
+      itemsToDisable:
+          (result[1] as List<Object?>?)!.cast<AnnotationMenuAction>(),
       showStylePicker: result[2]! as bool,
       groupMarkupItems: result[3]! as bool,
       maxVisibleItems: result[4] as int?,
@@ -845,7 +869,6 @@ class Bookmark {
   }
 }
 
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -853,64 +876,64 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    }    else if (value is AndroidPermissionStatus) {
+    } else if (value is AndroidPermissionStatus) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    }    else if (value is AnnotationType) {
+    } else if (value is AnnotationType) {
       buffer.putUint8(130);
       writeValue(buffer, value.index);
-    }    else if (value is AnnotationTool) {
+    } else if (value is AnnotationTool) {
       buffer.putUint8(131);
       writeValue(buffer, value.index);
-    }    else if (value is AnnotationToolVariant) {
+    } else if (value is AnnotationToolVariant) {
       buffer.putUint8(132);
       writeValue(buffer, value.index);
-    }    else if (value is AnnotationProcessingMode) {
+    } else if (value is AnnotationProcessingMode) {
       buffer.putUint8(133);
       writeValue(buffer, value.index);
-    }    else if (value is DocumentPermissions) {
+    } else if (value is DocumentPermissions) {
       buffer.putUint8(134);
       writeValue(buffer, value.index);
-    }    else if (value is PdfVersion) {
+    } else if (value is PdfVersion) {
       buffer.putUint8(135);
       writeValue(buffer, value.index);
-    }    else if (value is PdfFormFieldTypes) {
+    } else if (value is PdfFormFieldTypes) {
       buffer.putUint8(136);
       writeValue(buffer, value.index);
-    }    else if (value is NutrientEvent) {
+    } else if (value is NutrientEvent) {
       buffer.putUint8(137);
       writeValue(buffer, value.index);
-    }    else if (value is AnnotationMenuAction) {
+    } else if (value is AnnotationMenuAction) {
       buffer.putUint8(138);
       writeValue(buffer, value.index);
-    }    else if (value is PdfRect) {
+    } else if (value is PdfRect) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    }    else if (value is PageInfo) {
+    } else if (value is PageInfo) {
       buffer.putUint8(140);
       writeValue(buffer, value.encode());
-    }    else if (value is DocumentSaveOptions) {
+    } else if (value is DocumentSaveOptions) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
-    }    else if (value is PdfFormOption) {
+    } else if (value is PdfFormOption) {
       buffer.putUint8(142);
       writeValue(buffer, value.encode());
-    }    else if (value is FormFieldData) {
+    } else if (value is FormFieldData) {
       buffer.putUint8(143);
       writeValue(buffer, value.encode());
-    }    else if (value is HeadlessDocumentOpenOptions) {
+    } else if (value is HeadlessDocumentOpenOptions) {
       buffer.putUint8(144);
       writeValue(buffer, value.encode());
-    }    else if (value is PointF) {
+    } else if (value is PointF) {
       buffer.putUint8(145);
       writeValue(buffer, value.encode());
-    }    else if (value is AnnotationMenuConfigurationData) {
+    } else if (value is AnnotationMenuConfigurationData) {
       buffer.putUint8(146);
       writeValue(buffer, value.encode());
-    }    else if (value is AnnotationProperties) {
+    } else if (value is AnnotationProperties) {
       buffer.putUint8(147);
       writeValue(buffer, value.encode());
-    }    else if (value is Bookmark) {
+    } else if (value is Bookmark) {
       buffer.putUint8(148);
       writeValue(buffer, value.encode());
     } else {
@@ -921,55 +944,55 @@ class _PigeonCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 129: 
+      case 129:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AndroidPermissionStatus.values[value];
-      case 130: 
+      case 130:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationType.values[value];
-      case 131: 
+      case 131:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationTool.values[value];
-      case 132: 
+      case 132:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationToolVariant.values[value];
-      case 133: 
+      case 133:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationProcessingMode.values[value];
-      case 134: 
+      case 134:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : DocumentPermissions.values[value];
-      case 135: 
+      case 135:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PdfVersion.values[value];
-      case 136: 
+      case 136:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : PdfFormFieldTypes.values[value];
-      case 137: 
+      case 137:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : NutrientEvent.values[value];
-      case 138: 
+      case 138:
         final int? value = readValue(buffer) as int?;
         return value == null ? null : AnnotationMenuAction.values[value];
-      case 139: 
+      case 139:
         return PdfRect.decode(readValue(buffer)!);
-      case 140: 
+      case 140:
         return PageInfo.decode(readValue(buffer)!);
-      case 141: 
+      case 141:
         return DocumentSaveOptions.decode(readValue(buffer)!);
-      case 142: 
+      case 142:
         return PdfFormOption.decode(readValue(buffer)!);
-      case 143: 
+      case 143:
         return FormFieldData.decode(readValue(buffer)!);
-      case 144: 
+      case 144:
         return HeadlessDocumentOpenOptions.decode(readValue(buffer)!);
-      case 145: 
+      case 145:
         return PointF.decode(readValue(buffer)!);
-      case 146: 
+      case 146:
         return AnnotationMenuConfigurationData.decode(readValue(buffer)!);
-      case 147: 
+      case 147:
         return AnnotationProperties.decode(readValue(buffer)!);
-      case 148: 
+      case 148:
         return Bookmark.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -982,9 +1005,11 @@ class NutrientApi {
   /// Constructor for [NutrientApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  NutrientApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  NutrientApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -992,8 +1017,10 @@ class NutrientApi {
   final String pigeonVar_messageChannelSuffix;
 
   Future<String?> getFrameworkVersion() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getFrameworkVersion$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getFrameworkVersion$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1015,13 +1042,16 @@ class NutrientApi {
   }
 
   Future<void> setLicenseKey(String? licenseKey) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setLicenseKey$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setLicenseKey$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[licenseKey]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[licenseKey]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1037,14 +1067,18 @@ class NutrientApi {
     }
   }
 
-  Future<void> setLicenseKeys(String? androidLicenseKey, String? iOSLicenseKey, String? webLicenseKey) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setLicenseKeys$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<void> setLicenseKeys(String? androidLicenseKey, String? iOSLicenseKey,
+      String? webLicenseKey) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setLicenseKeys$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[androidLicenseKey, iOSLicenseKey, webLicenseKey]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
+        .send(<Object?>[androidLicenseKey, iOSLicenseKey, webLicenseKey]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1060,14 +1094,18 @@ class NutrientApi {
     }
   }
 
-  Future<bool?> present(String document, {Map<String, Object>? configuration}) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.present$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> present(String document,
+      {Map<String, Object>? configuration}) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.present$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[document, configuration]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[document, configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1083,14 +1121,21 @@ class NutrientApi {
     }
   }
 
-  Future<bool?> presentInstant(String serverUrl, String jwt, {Map<String, Object>? configuration, }) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.presentInstant$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> presentInstant(
+    String serverUrl,
+    String jwt, {
+    Map<String, Object>? configuration,
+  }) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.presentInstant$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[serverUrl, jwt, configuration]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[serverUrl, jwt, configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1106,14 +1151,18 @@ class NutrientApi {
     }
   }
 
-  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(
+      String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1130,13 +1179,16 @@ class NutrientApi {
   }
 
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1153,13 +1205,16 @@ class NutrientApi {
   }
 
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1176,8 +1231,10 @@ class NutrientApi {
   }
 
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1199,13 +1256,16 @@ class NutrientApi {
   }
 
   Future<bool?> addAnnotation(String annotation, String? attachment) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation, attachment]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotation, attachment]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1222,13 +1282,16 @@ class NutrientApi {
   }
 
   Future<bool?> removeAnnotation(String annotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1248,13 +1311,16 @@ class NutrientApi {
   /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String?> getAnnotationsJson(int pageIndex, String type) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1274,8 +1340,10 @@ class NutrientApi {
   /// The JSON string can be decoded to the appropriate type on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String?> getAllUnsavedAnnotationsJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1297,13 +1365,16 @@ class NutrientApi {
   }
 
   Future<void> updateAnnotation(String annotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.updateAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.updateAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1319,14 +1390,18 @@ class NutrientApi {
     }
   }
 
-  Future<bool?> processAnnotations(AnnotationType type, AnnotationProcessingMode processingMode, String destinationPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.processAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> processAnnotations(AnnotationType type,
+      AnnotationProcessingMode processingMode, String destinationPath) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.processAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type, processingMode, destinationPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
+        .send(<Object?>[type, processingMode, destinationPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1343,13 +1418,16 @@ class NutrientApi {
   }
 
   Future<bool?> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1366,13 +1444,16 @@ class NutrientApi {
   }
 
   Future<bool?> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1389,8 +1470,10 @@ class NutrientApi {
   }
 
   Future<bool?> save() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1412,13 +1495,16 @@ class NutrientApi {
   }
 
   Future<bool?> setDelayForSyncingLocalChanges(double delay) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setDelayForSyncingLocalChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setDelayForSyncingLocalChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[delay]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[delay]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1435,13 +1521,16 @@ class NutrientApi {
   }
 
   Future<bool?> setListenToServerChanges(bool listen) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setListenToServerChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setListenToServerChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[listen]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[listen]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1458,8 +1547,10 @@ class NutrientApi {
   }
 
   Future<bool?> syncAnnotations() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.syncAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.syncAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1481,8 +1572,10 @@ class NutrientApi {
   }
 
   Future<bool?> checkAndroidWriteExternalStoragePermission() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.checkAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.checkAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1503,9 +1596,12 @@ class NutrientApi {
     }
   }
 
-  Future<AndroidPermissionStatus> requestAndroidWriteExternalStoragePermission() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.requestAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<AndroidPermissionStatus>
+      requestAndroidWriteExternalStoragePermission() async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.requestAndroidWriteExternalStoragePermission$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1532,8 +1628,10 @@ class NutrientApi {
   }
 
   Future<void> openAndroidSettings() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.openAndroidSettings$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.openAndroidSettings$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1554,14 +1652,18 @@ class NutrientApi {
     }
   }
 
-  Future<bool?> setAnnotationPresetConfigurations(Map<String, Object?> configurations) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationPresetConfigurations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationPresetConfigurations(
+      Map<String, Object?> configurations) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationPresetConfigurations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configurations]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configurations]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1578,8 +1680,10 @@ class NutrientApi {
   }
 
   Future<String> getTemporaryDirectory() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getTemporaryDirectory$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getTemporaryDirectory$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1606,13 +1710,16 @@ class NutrientApi {
   }
 
   Future<void> setAuthorName(String name) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAuthorName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAuthorName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[name]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[name]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1629,8 +1736,10 @@ class NutrientApi {
   }
 
   Future<String> getAuthorName() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAuthorName$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.getAuthorName$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -1660,14 +1769,18 @@ class NutrientApi {
   /// [pages]: [NewPage]s to be added to the PDF.
   /// [outputPath]: The path to the output file.
   /// Returns the path to the generated PDF path or null if the input is invalid or if the PDF generation fails.
-  Future<String?> generatePdf(List<Map<String, Object>> pages, String outputPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String?> generatePdf(
+      List<Map<String, Object>> pages, String outputPath) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pages, outputPath]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pages, outputPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1688,14 +1801,18 @@ class NutrientApi {
   /// [html]: The HTML string to be converted to PDF.
   /// [outPutFile]: The path to the output file.
   /// Returns the path to the generated PDF file or null if the input is invalid or if the PDF generation fails.
-  Future<String?> generatePdfFromHtmlString(String html, String outPutFile, Map<String, Object>? options) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdfFromHtmlString$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String?> generatePdfFromHtmlString(
+      String html, String outPutFile, Map<String, Object>? options) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdfFromHtmlString$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[html, outPutFile, options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[html, outPutFile, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1711,14 +1828,18 @@ class NutrientApi {
     }
   }
 
-  Future<String?> generatePdfFromHtmlUri(String htmlUri, String outPutFile, Map<String, Object>? options) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdfFromHtmlUri$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String?> generatePdfFromHtmlUri(
+      String htmlUri, String outPutFile, Map<String, Object>? options) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.generatePdfFromHtmlUri$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[htmlUri, outPutFile, options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[htmlUri, outPutFile, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1736,13 +1857,16 @@ class NutrientApi {
 
   /// Configure Nutrient Analytics events.
   Future<void> enableAnalyticsEvents(bool enable) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.enableAnalyticsEvents$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.enableAnalyticsEvents$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[enable]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[enable]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1763,14 +1887,18 @@ class NutrientApi {
   ///
   /// @param configuration The annotation menu configuration to apply.
   /// @return True if the configuration was set successfully, false otherwise.
-  Future<bool?> setAnnotationMenuConfiguration(AnnotationMenuConfigurationData configuration) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configuration]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -1826,11 +1954,19 @@ abstract class NutrientApiCallbacks {
   /// Called when instant document download fails.
   void onInstantDownloadFailed(String documentId, String error);
 
-  static void setUp(NutrientApiCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    NutrientApiCallbacks? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfActivityOnPause$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfActivityOnPause$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1841,15 +1977,19 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfFragmentAdded$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfFragmentAdded$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1860,22 +2000,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onDocumentLoaded$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onDocumentLoaded$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onDocumentLoaded was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onDocumentLoaded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1885,15 +2029,19 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfViewControllerWillDismiss$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfViewControllerWillDismiss$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1904,15 +2052,19 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfViewControllerDidDismiss$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onPdfViewControllerDidDismiss$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
@@ -1923,22 +2075,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncStarted$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncStarted$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncStarted was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncStarted was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1948,22 +2104,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFinished$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFinished$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFinished was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -1973,22 +2133,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFailed$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFailed$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFailed was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantSyncFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -2001,22 +2165,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFinished$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFinished$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFinished was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -2029,22 +2197,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFailed$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFailed$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFailed was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantAuthenticationFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -2057,22 +2229,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFinished$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFinished$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFinished was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFinished was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -2082,22 +2258,26 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFailed$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFailed$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFailed was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientApiCallbacks.onInstantDownloadFailed was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -2110,8 +2290,9 @@ abstract class NutrientApiCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -2123,9 +2304,11 @@ class NutrientViewControllerApi {
   /// Constructor for [NutrientViewControllerApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  NutrientViewControllerApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  NutrientViewControllerApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -2134,14 +2317,18 @@ class NutrientViewControllerApi {
 
   /// Sets the value of a form field by specifying its fully qualified field name.
   /// This method is deprecated. Use [PdfDocument.setFormFieldValue] instead.
-  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(
+      String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2159,13 +2346,16 @@ class NutrientViewControllerApi {
 
   /// Gets the form field value by specifying its fully qualified name.
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2183,13 +2373,16 @@ class NutrientViewControllerApi {
 
   /// Applies Instant document JSON to the presented document.
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2207,8 +2400,10 @@ class NutrientViewControllerApi {
 
   /// Exports Instant document JSON from the presented document.
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2232,13 +2427,16 @@ class NutrientViewControllerApi {
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> addAnnotation(String annotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2257,13 +2455,16 @@ class NutrientViewControllerApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> removeAnnotation(String annotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2283,13 +2484,16 @@ class NutrientViewControllerApi {
   /// The JSON string can be decoded to List<Map<String, dynamic>> on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String> getAnnotationsJson(int pageIndex, String type) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2314,8 +2518,10 @@ class NutrientViewControllerApi {
   /// The JSON string can be decoded to the appropriate type on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String> getAllUnsavedAnnotationsJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2343,14 +2549,18 @@ class NutrientViewControllerApi {
 
   /// Processes annotations of the given type with the provided processing
   /// mode and stores the PDF at the given destination path.
-  Future<bool> processAnnotations(AnnotationType type, AnnotationProcessingMode processingMode, String destinationPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.processAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> processAnnotations(AnnotationType type,
+      AnnotationProcessingMode processingMode, String destinationPath) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.processAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type, processingMode, destinationPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
+        .send(<Object?>[type, processingMode, destinationPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2373,13 +2583,16 @@ class NutrientViewControllerApi {
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2402,13 +2615,16 @@ class NutrientViewControllerApi {
 
   /// Exports annotations to the XFDF file at the given path.
   Future<bool> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2432,8 +2648,10 @@ class NutrientViewControllerApi {
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool> save() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2463,14 +2681,18 @@ class NutrientViewControllerApi {
   /// @param configurations A map of annotation tools and their corresponding configurations.
   /// @param modifyAssociatedAnnotations Whether to modify the annotations associated with the old configuration. Only used for Android.
   /// @return True if the configurations were set successfully, false otherwise.
-  Future<bool?> setAnnotationConfigurations(Map<String, Map<String, Object>> configurations) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationConfigurations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationConfigurations(
+      Map<String, Map<String, Object>> configurations) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationConfigurations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configurations]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configurations]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2490,13 +2712,16 @@ class NutrientViewControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the visible rect of the given page.
   Future<PdfRect> getVisibleRect(int pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getVisibleRect$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getVisibleRect$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2521,14 +2746,18 @@ class NutrientViewControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// rect The rect to zoom to.
   /// Returns a [Future] that completes when the zoom operation is done.
-  Future<bool> zoomToRect(int pageIndex, PdfRect rect, bool? animated, double? duration) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.zoomToRect$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> zoomToRect(
+      int pageIndex, PdfRect rect, bool? animated, double? duration) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.zoomToRect$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, rect, animated, duration]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, rect, animated, duration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2553,13 +2782,16 @@ class NutrientViewControllerApi {
   /// pageIndex The index of the page. This is a zero-based index.
   /// Returns a [Future] that completes with the zoom scale of the given page.
   Future<double> getZoomScale(int pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getZoomScale$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.getZoomScale$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2581,13 +2813,16 @@ class NutrientViewControllerApi {
   }
 
   Future<void> addEventListener(NutrientEvent event) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.addEventListener$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.addEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[event]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2604,13 +2839,16 @@ class NutrientViewControllerApi {
   }
 
   Future<void> removeEventListener(NutrientEvent event) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.removeEventListener$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.removeEventListener$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[event]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[event]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2633,14 +2871,18 @@ class NutrientViewControllerApi {
   ///
   /// Returns a [Future] that completes with a boolean indicating whether
   /// entering annotation creation mode was successful.
-  Future<bool?> enterAnnotationCreationMode(AnnotationTool? annotationTool) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.enterAnnotationCreationMode$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> enterAnnotationCreationMode(
+      AnnotationTool? annotationTool) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.enterAnnotationCreationMode$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationTool]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotationTool]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2661,8 +2903,10 @@ class NutrientViewControllerApi {
   /// Returns a [Future] that completes with a boolean indicating whether
   /// exiting annotation creation mode was successful.
   Future<bool?> exitAnnotationCreationMode() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exitAnnotationCreationMode$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.exitAnnotationCreationMode$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2688,14 +2932,18 @@ class NutrientViewControllerApi {
   ///
   /// @param configuration The annotation menu configuration to apply.
   /// @return True if the configuration was set successfully, false otherwise.
-  Future<bool?> setAnnotationMenuConfiguration(AnnotationMenuConfigurationData configuration) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setAnnotationMenuConfiguration(
+      AnnotationMenuConfigurationData configuration) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.setAnnotationMenuConfiguration$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[configuration]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[configuration]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2716,9 +2964,11 @@ class PdfDocumentApi {
   /// Constructor for [PdfDocumentApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  PdfDocumentApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  PdfDocumentApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -2728,13 +2978,16 @@ class PdfDocumentApi {
   /// Returns the page info for the given page index.
   /// pageIndex The index of the page. This is a zero-based index.
   Future<PageInfo> getPageInfo(int pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getPageInfo$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getPageInfo$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2759,13 +3012,16 @@ class PdfDocumentApi {
   /// options:[DocumentSaveOptions] The options to use when exporting the document.
   /// Returns a [Uint8List] containing the exported PDF data.
   Future<Uint8List> exportPdf(DocumentSaveOptions? options) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportPdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportPdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2791,13 +3047,16 @@ class PdfDocumentApi {
   /// to a Map<String, dynamic> on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types.
   Future<String> getFormFieldJson(String fieldName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fieldName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fieldName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2823,8 +3082,10 @@ class PdfDocumentApi {
   /// decoded to List<Map<String, dynamic>> on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types.
   Future<String> getFormFieldsJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2851,14 +3112,18 @@ class PdfDocumentApi {
   }
 
   /// Sets the value of a form field by specifying its fully qualified field name.
-  Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool?> setFormFieldValue(
+      String value, String fullyQualifiedName) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.setFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[value, fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2876,13 +3141,16 @@ class PdfDocumentApi {
 
   /// Gets the form field value by specifying its fully qualified name.
   Future<String?> getFormFieldValue(String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getFormFieldValue$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2900,13 +3168,16 @@ class PdfDocumentApi {
 
   /// Applies Instant document JSON to the presented document.
   Future<bool?> applyInstantJson(String annotationsJson) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.applyInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.applyInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[annotationsJson]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[annotationsJson]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2924,8 +3195,10 @@ class PdfDocumentApi {
 
   /// Exports Instant document JSON from the presented document.
   Future<String?> exportInstantJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportInstantJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportInstantJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -2949,13 +3222,16 @@ class PdfDocumentApi {
   /// Adds the given annotation to the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> addAnnotation(String jsonAnnotation, Object? attachment) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation, attachment]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[jsonAnnotation, attachment]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -2982,13 +3258,16 @@ class PdfDocumentApi {
   /// - For single property updates: Use specific setters like setAnnotationColor()
   /// - For multiple property updates: Use setAnnotationProperties()
   Future<bool?> updateAnnotation(String jsonAnnotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.updateAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.updateAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[jsonAnnotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3007,13 +3286,16 @@ class PdfDocumentApi {
   /// Removes the given annotation from the presented document.
   /// `jsonAnnotation` can either be a JSON string or a valid JSON Dictionary (iOS) / HashMap (Android).
   Future<bool?> removeAnnotation(String jsonAnnotation) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[jsonAnnotation]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3036,13 +3318,16 @@ class PdfDocumentApi {
   /// For annotations with attachments (image, stamp, file), the response includes an `attachment` object
   /// containing `binary` (base64-encoded) and `contentType` fields, enabling complete annotation copying.
   Future<String> getAnnotationsJson(int pageIndex, String type) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, type]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, type]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3067,8 +3352,10 @@ class PdfDocumentApi {
   /// The JSON string can be decoded to the appropriate type on the Dart side.
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String> getAllUnsavedAnnotationsJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getAllUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3096,13 +3383,16 @@ class PdfDocumentApi {
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool> importXfdf(String xfdfString) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.importXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.importXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3125,13 +3415,16 @@ class PdfDocumentApi {
 
   /// Exports annotations to the XFDF file at the given path.
   Future<bool> exportXfdf(String xfdfPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportXfdf$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.exportXfdf$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfPath]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3155,13 +3448,16 @@ class PdfDocumentApi {
   /// Saves the document back to its original location if it has been changed.
   /// If there were no changes to the document, the document file will not be modified.
   Future<bool> save(String? outputPath, DocumentSaveOptions? options) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.save$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.save$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[outputPath, options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[outputPath, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3184,8 +3480,10 @@ class PdfDocumentApi {
 
   /// Get the total number of pages in the document.
   Future<int> getPageCount() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getPageCount$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.getPageCount$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3220,14 +3518,18 @@ class PdfDocumentApi {
   /// @param processingMode The processing mode (flatten, embed, remove, print)
   /// @param destinationPath The path where the processed PDF should be saved
   /// @return true if processing succeeded, false otherwise
-  Future<bool> processAnnotations(AnnotationType type, AnnotationProcessingMode processingMode, String destinationPath) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.processAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> processAnnotations(AnnotationType type,
+      AnnotationProcessingMode processingMode, String destinationPath) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.processAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[type, processingMode, destinationPath]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel
+        .send(<Object?>[type, processingMode, destinationPath]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3256,8 +3558,10 @@ class PdfDocumentApi {
   ///
   /// @return true if the document was closed successfully
   Future<bool> closeDocument() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.closeDocument$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.closeDocument$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3297,8 +3601,10 @@ class PdfDocumentApi {
   /// @return true if there are dirty annotations
   /// @throws On Android/Web
   Future<bool> iOSHasDirtyAnnotations() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSHasDirtyAnnotations$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSHasDirtyAnnotations$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3339,14 +3645,18 @@ class PdfDocumentApi {
   /// @param annotationId The annotation's unique identifier
   /// @return true if the annotation is dirty
   /// @throws On Android/Web, or if annotation not found
-  Future<bool> iOSGetAnnotationIsDirty(int pageIndex, String annotationId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSGetAnnotationIsDirty$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> iOSGetAnnotationIsDirty(
+      int pageIndex, String annotationId) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSGetAnnotationIsDirty$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3383,14 +3693,18 @@ class PdfDocumentApi {
   /// @param isDirty The dirty state to set
   /// @return true if successfully set
   /// @throws On Android/Web, or if annotation not found
-  Future<bool> iOSSetAnnotationIsDirty(int pageIndex, String annotationId, bool isDirty) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSSetAnnotationIsDirty$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> iOSSetAnnotationIsDirty(
+      int pageIndex, String annotationId, bool isDirty) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSSetAnnotationIsDirty$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, annotationId, isDirty]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId, isDirty]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3424,8 +3738,10 @@ class PdfDocumentApi {
   /// @return true if successfully cleared
   /// @throws On Android/Web
   Future<bool> iOSClearNeedsSaveFlag() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSClearNeedsSaveFlag$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.iOSClearNeedsSaveFlag$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3463,8 +3779,10 @@ class PdfDocumentApi {
   /// @return true if there are unsaved annotation changes
   /// @throws On iOS/Web
   Future<bool> androidHasUnsavedAnnotationChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedAnnotationChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedAnnotationChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3502,8 +3820,10 @@ class PdfDocumentApi {
   /// @return true if there are unsaved form field changes
   /// @throws On iOS/Web
   Future<bool> androidHasUnsavedFormChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedFormChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedFormChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3541,8 +3861,10 @@ class PdfDocumentApi {
   /// @return true if there are unsaved bookmark changes
   /// @throws On iOS/Web
   Future<bool> androidHasUnsavedBookmarkChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedBookmarkChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidHasUnsavedBookmarkChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3581,13 +3903,16 @@ class PdfDocumentApi {
   /// @return true if the bookmark is dirty
   /// @throws On iOS/Web, or if bookmark not found
   Future<bool> androidGetBookmarkIsDirty(String bookmarkId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetBookmarkIsDirty$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetBookmarkIsDirty$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[bookmarkId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[bookmarkId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3621,13 +3946,16 @@ class PdfDocumentApi {
   /// @return true if successfully cleared
   /// @throws On iOS/Web, or if bookmark not found
   Future<bool> androidClearBookmarkDirtyState(String bookmarkId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidClearBookmarkDirtyState$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidClearBookmarkDirtyState$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[bookmarkId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[bookmarkId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3661,13 +3989,16 @@ class PdfDocumentApi {
   /// @return true if the form field is dirty
   /// @throws On iOS/Web, or if form field not found
   Future<bool> androidGetFormFieldIsDirty(String fullyQualifiedName) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetFormFieldIsDirty$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.androidGetFormFieldIsDirty$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[fullyQualifiedName]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3701,8 +4032,10 @@ class PdfDocumentApi {
   /// @return true if there are unsaved changes
   /// @throws On iOS/Android
   Future<bool> webHasUnsavedChanges() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.webHasUnsavedChanges$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.PdfDocumentApi.webHasUnsavedChanges$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -3756,9 +4089,11 @@ class HeadlessDocumentApi {
   /// Constructor for [HeadlessDocumentApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  HeadlessDocumentApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  HeadlessDocumentApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -3775,14 +4110,18 @@ class HeadlessDocumentApi {
   /// @param options Optional settings like password for encrypted documents
   /// @return Unique document ID for use with PdfDocumentApi
   /// @throws NutrientApiError if the document cannot be opened
-  Future<String> openDocument(String documentPath, HeadlessDocumentOpenOptions? options) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.HeadlessDocumentApi.openDocument$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String> openDocument(
+      String documentPath, HeadlessDocumentOpenOptions? options) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.HeadlessDocumentApi.openDocument$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[documentPath, options]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[documentPath, options]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -3813,22 +4152,31 @@ abstract class NutrientViewCallbacks {
 
   void onPageChanged(String documentId, int pageIndex);
 
-  void onPageClick(String documentId, int pageIndex, PointF? point, Object? annotation);
+  void onPageClick(
+      String documentId, int pageIndex, PointF? point, Object? annotation);
 
   void onDocumentSaved(String documentId, String? path);
 
-  static void setUp(NutrientViewCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    NutrientViewCallbacks? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentLoaded$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentLoaded$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentLoaded was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentLoaded was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3838,22 +4186,26 @@ abstract class NutrientViewCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentError$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentError$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentError was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentError was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3866,22 +4218,26 @@ abstract class NutrientViewCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageChanged$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageChanged$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageChanged was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageChanged was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3894,22 +4250,26 @@ abstract class NutrientViewCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageClick$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageClick$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageClick was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onPageClick was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3920,26 +4280,31 @@ abstract class NutrientViewCallbacks {
           final PointF? arg_point = (args[2] as PointF?);
           final Object? arg_annotation = (args[3] as Object?);
           try {
-            api.onPageClick(arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
+            api.onPageClick(
+                arg_documentId!, arg_pageIndex!, arg_point, arg_annotation);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
     }
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentSaved$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentSaved$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentSaved was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientViewCallbacks.onDocumentSaved was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_documentId = (args[0] as String?);
           assert(arg_documentId != null,
@@ -3950,8 +4315,9 @@ abstract class NutrientViewCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -3964,18 +4330,26 @@ abstract class NutrientEventsCallbacks {
 
   void onEvent(NutrientEvent event, Object? data);
 
-  static void setUp(NutrientEventsCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    NutrientEventsCallbacks? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.NutrientEventsCallbacks.onEvent$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.NutrientEventsCallbacks.onEvent$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientEventsCallbacks.onEvent was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.NutrientEventsCallbacks.onEvent was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final NutrientEvent? arg_event = (args[0] as NutrientEvent?);
           assert(arg_event != null,
@@ -3986,8 +4360,9 @@ abstract class NutrientEventsCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -4000,30 +4375,40 @@ abstract class AnalyticsEventsCallback {
 
   void onEvent(String event, Map<String, Object?>? attributes);
 
-  static void setUp(AnalyticsEventsCallback? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    AnalyticsEventsCallback? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.AnalyticsEventsCallback.onEvent$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.AnalyticsEventsCallback.onEvent$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.AnalyticsEventsCallback.onEvent was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.AnalyticsEventsCallback.onEvent was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_event = (args[0] as String?);
           assert(arg_event != null,
               'Argument for dev.flutter.pigeon.nutrient_flutter.AnalyticsEventsCallback.onEvent was null, expected non-null String.');
-          final Map<String, Object?>? arg_attributes = (args[1] as Map<Object?, Object?>?)?.cast<String, Object?>();
+          final Map<String, Object?>? arg_attributes =
+              (args[1] as Map<Object?, Object?>?)?.cast<String, Object?>();
           try {
             api.onEvent(arg_event!, arg_attributes);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -4038,18 +4423,26 @@ abstract class CustomToolbarCallbacks {
   /// Called when a custom toolbar item is tapped
   void onCustomToolbarItemTapped(String identifier);
 
-  static void setUp(CustomToolbarCallbacks? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
-    messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+  static void setUp(
+    CustomToolbarCallbacks? api, {
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) {
+    messageChannelSuffix =
+        messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.nutrient_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped$messageChannelSuffix', pigeonChannelCodec,
+      final BasicMessageChannel<
+          Object?> pigeonVar_channel = BasicMessageChannel<
+              Object?>(
+          'dev.flutter.pigeon.nutrient_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped$messageChannelSuffix',
+          pigeonChannelCodec,
           binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(message != null,
-          'Argument for dev.flutter.pigeon.nutrient_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped was null.');
+              'Argument for dev.flutter.pigeon.nutrient_flutter.CustomToolbarCallbacks.onCustomToolbarItemTapped was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final String? arg_identifier = (args[0] as String?);
           assert(arg_identifier != null,
@@ -4059,8 +4452,9 @@ abstract class CustomToolbarCallbacks {
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          }          catch (e) {
-            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          } catch (e) {
+            return wrapResponse(
+                error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }
@@ -4088,9 +4482,11 @@ class AnnotationManagerApi {
   /// Constructor for [AnnotationManagerApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  AnnotationManagerApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  AnnotationManagerApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -4102,13 +4498,16 @@ class AnnotationManagerApi {
   ///
   /// @param documentId The unique identifier of the document
   Future<void> initialize(String documentId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.initialize$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.initialize$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[documentId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[documentId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4130,14 +4529,18 @@ class AnnotationManagerApi {
   /// @param pageIndex Zero-based page index
   /// @param annotationId Unique identifier of the annotation
   /// @return Current annotation properties or null if not found
-  Future<AnnotationProperties?> getAnnotationProperties(int pageIndex, String annotationId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationProperties$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<AnnotationProperties?> getAnnotationProperties(
+      int pageIndex, String annotationId) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationProperties$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4159,14 +4562,18 @@ class AnnotationManagerApi {
   ///
   /// @param modifiedProperties Properties to update (only non-null values are applied)
   /// @return true if successfully saved, false otherwise
-  Future<bool> saveAnnotationProperties(AnnotationProperties modifiedProperties) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.saveAnnotationProperties$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<bool> saveAnnotationProperties(
+      AnnotationProperties modifiedProperties) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.saveAnnotationProperties$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[modifiedProperties]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[modifiedProperties]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4193,14 +4600,18 @@ class AnnotationManagerApi {
   /// @param annotationType Type of annotations to retrieve (e.g., "all", "ink", "note")
   /// @return JSON string containing array of annotations
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
-  Future<String> getAnnotationsJson(int pageIndex, String annotationType) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String> getAnnotationsJson(
+      int pageIndex, String annotationType) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, annotationType]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationType]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4226,14 +4637,18 @@ class AnnotationManagerApi {
   /// @param jsonAnnotation JSON representation of the annotation
   /// @param jsonAttachment Optional JSON representation of attachment (for file/image annotations)
   /// @return Unique identifier of the created annotation
-  Future<String> addAnnotation(String jsonAnnotation, String? jsonAttachment) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.addAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+  Future<String> addAnnotation(
+      String jsonAnnotation, String? jsonAttachment) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.addAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[jsonAnnotation, jsonAttachment]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[jsonAnnotation, jsonAttachment]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4260,13 +4675,16 @@ class AnnotationManagerApi {
   /// @param annotationId Unique identifier of the annotation
   /// @return true if successfully removed, false otherwise
   Future<bool> removeAnnotation(int pageIndex, String annotationId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.removeAnnotation$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex, annotationId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4294,13 +4712,16 @@ class AnnotationManagerApi {
   /// @return JSON string containing array of matching annotations
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String> searchAnnotationsJson(String query, int? pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.searchAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[query, pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[query, pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4326,13 +4747,16 @@ class AnnotationManagerApi {
   /// @param pageIndex Optional page index to export specific page annotations
   /// @return XFDF string representation
   Future<String> exportXFDF(int? pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.exportXFDF$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.exportXFDF$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4358,13 +4782,16 @@ class AnnotationManagerApi {
   /// @param xfdfString XFDF string to import
   /// @return true if successfully imported, false otherwise
   Future<bool> importXFDF(String xfdfString) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.importXFDF$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.importXFDF$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[xfdfString]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[xfdfString]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4390,8 +4817,10 @@ class AnnotationManagerApi {
   /// @return JSON string containing array of annotations with pending changes
   /// Using JSON string avoids Pigeon's CastList issues with nested types in release mode.
   Future<String> getUnsavedAnnotationsJson() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.AnnotationManagerApi.getUnsavedAnnotationsJson$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -4428,9 +4857,11 @@ class BookmarkManagerApi {
   /// Constructor for [BookmarkManagerApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  BookmarkManagerApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
+  BookmarkManagerApi(
+      {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
       : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+        pigeonVar_messageChannelSuffix =
+            messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
@@ -4442,13 +4873,16 @@ class BookmarkManagerApi {
   ///
   /// @param documentId The unique identifier of the document
   Future<void> initialize(String documentId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.initialize$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.initialize$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[documentId]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[documentId]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4468,8 +4902,10 @@ class BookmarkManagerApi {
   ///
   /// @return List of all bookmarks
   Future<List<Bookmark>> getBookmarks() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarks$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarks$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
@@ -4500,13 +4936,16 @@ class BookmarkManagerApi {
   /// @param bookmark The bookmark to add
   /// @return The created bookmark with its assigned pdfBookmarkId
   Future<Bookmark> addBookmark(Bookmark bookmark) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.addBookmark$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.addBookmark$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[bookmark]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[bookmark]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4532,13 +4971,16 @@ class BookmarkManagerApi {
   /// @param bookmark The bookmark to remove (identified by pdfBookmarkId or action)
   /// @return true if successfully removed, false otherwise
   Future<bool> removeBookmark(Bookmark bookmark) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.removeBookmark$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.removeBookmark$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[bookmark]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[bookmark]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4564,13 +5006,16 @@ class BookmarkManagerApi {
   /// @param bookmark The bookmark with updated values (must have a valid pdfBookmarkId)
   /// @return true if successfully updated, false otherwise
   Future<bool> updateBookmark(Bookmark bookmark) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.updateBookmark$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.updateBookmark$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[bookmark]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[bookmark]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4596,13 +5041,16 @@ class BookmarkManagerApi {
   /// @param pageIndex Zero-based page index
   /// @return List of bookmarks pointing to the specified page
   Future<List<Bookmark>> getBookmarksForPage(int pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarksForPage$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.getBookmarksForPage$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
@@ -4628,13 +5076,16 @@ class BookmarkManagerApi {
   /// @param pageIndex Zero-based page index
   /// @return true if at least one bookmark exists for the page
   Future<bool> hasBookmarkForPage(int pageIndex) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.hasBookmarkForPage$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.nutrient_flutter.BookmarkManagerApi.hasBookmarkForPage$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel =
+        BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[pageIndex]);
+    final Future<Object?> pigeonVar_sendFuture =
+        pigeonVar_channel.send(<Object?>[pageIndex]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

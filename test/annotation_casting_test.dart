@@ -221,6 +221,59 @@ void main() {
         expect(annotation.action, isA<UriAction>());
         expect((annotation.action as UriAction).uri, 'https://example.com');
       });
+
+      test('parses GoToAction with integer params (Bug fix verification)', () {
+        // This test verifies the fix for: type 'int' is not a subtype of type 'double' in type cast
+        // Native code may return integer values for params that should be doubles
+        final nativeStyleJson = <Object?, Object?>{
+          'id': 'test_link',
+          'type': 'pspdfkit/link',
+          'bbox': <Object?>[100.0, 100.0, 200.0, 120.0],
+          'createdAt': testTime,
+          'pageIndex': 0,
+          'action': <Object?, Object?>{
+            'type': 'goTo',
+            'pageIndex': 5,
+            'destinationType': 'originAndZoom',
+            // These params come as integers from native code but should be parsed as doubles
+            'params': <Object?>[100, 200, 2], // integers, not doubles!
+          },
+        };
+
+        final json = Map<String, dynamic>.from(nativeStyleJson);
+        final annotation = LinkAnnotation.fromJson(json);
+
+        expect(annotation.action, isA<GoToAction>());
+        final goToAction = annotation.action as GoToAction;
+        expect(goToAction.pageIndex, 5);
+        expect(goToAction.destinationType, 'originAndZoom');
+        expect(goToAction.params,
+            [100.0, 200.0, 2.0]); // Should be converted to doubles
+      });
+
+      test('parses GoToAction with mixed int/double params', () {
+        final nativeStyleJson = <Object?, Object?>{
+          'id': 'test_link',
+          'type': 'pspdfkit/link',
+          'bbox': <Object?>[100.0, 100.0, 200.0, 120.0],
+          'createdAt': testTime,
+          'pageIndex': 0,
+          'action': <Object?, Object?>{
+            'type': 'goTo',
+            'pageIndex': 0,
+            'destinationType': 'fitRectangle',
+            // Mixed int and double values
+            'params': <Object?>[100, 200.5, 300, 400.75],
+          },
+        };
+
+        final json = Map<String, dynamic>.from(nativeStyleJson);
+        final annotation = LinkAnnotation.fromJson(json);
+
+        expect(annotation.action, isA<GoToAction>());
+        final goToAction = annotation.action as GoToAction;
+        expect(goToAction.params, [100.0, 200.5, 300.0, 400.75]);
+      });
     });
   });
 
@@ -258,7 +311,8 @@ void main() {
         },
       };
 
-      final annotations = AnnotationUtils.annotationsFromInstantJSON(instantJson);
+      final annotations =
+          AnnotationUtils.annotationsFromInstantJSON(instantJson);
 
       expect(annotations.length, 1);
       expect(annotations[0], isA<InkAnnotation>());
@@ -289,7 +343,8 @@ void main() {
         // No attachments
       };
 
-      final annotations = AnnotationUtils.annotationsFromInstantJSON(instantJson);
+      final annotations =
+          AnnotationUtils.annotationsFromInstantJSON(instantJson);
 
       expect(annotations.length, 1);
     });
@@ -299,7 +354,8 @@ void main() {
         'annotations': [],
       };
 
-      final annotations = AnnotationUtils.annotationsFromInstantJSON(instantJson);
+      final annotations =
+          AnnotationUtils.annotationsFromInstantJSON(instantJson);
 
       expect(annotations, isEmpty);
     });
@@ -307,7 +363,8 @@ void main() {
     test('handles missing annotations key', () {
       final instantJson = <String, dynamic>{};
 
-      final annotations = AnnotationUtils.annotationsFromInstantJSON(instantJson);
+      final annotations =
+          AnnotationUtils.annotationsFromInstantJSON(instantJson);
 
       expect(annotations, isEmpty);
     });
@@ -350,7 +407,11 @@ void main() {
         'bbox': [0.0, 0.0, 100.0, 20.0],
         'createdAt': testTime,
         'pageIndex': 0,
-        'action': {'type': 'goTo', 'pageIndex': 0, 'destinationType': 'fitPage'},
+        'action': {
+          'type': 'goTo',
+          'pageIndex': 0,
+          'destinationType': 'fitPage'
+        },
       };
 
       final annotation = Annotation.fromJson(json);
@@ -525,7 +586,8 @@ void main() {
 
       expect(restored.id, original.id);
       expect(restored.action, isA<UriAction>());
-      expect((restored.action as UriAction).uri, (original.action as UriAction).uri);
+      expect((restored.action as UriAction).uri,
+          (original.action as UriAction).uri);
     });
 
     test('LineAnnotation round-trip preserves lineCaps', () {

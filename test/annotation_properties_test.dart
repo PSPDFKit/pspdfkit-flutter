@@ -297,7 +297,10 @@ void main() {
     });
 
     test('customData getter decodes JSON correctly', () {
-      final customData = {'key': 'value', 'nested': {'inner': 42}};
+      final customData = {
+        'key': 'value',
+        'nested': {'inner': 42}
+      };
       final properties = AnnotationProperties(
         annotationId: 'test',
         pageIndex: 0,

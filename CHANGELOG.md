@@ -1,3 +1,8 @@
+## 5.3.1 - 26 Jan 2026
+
+- Fixes an Android crash when adding image annotations with the `annotationsCreated` event listener active. (#50400)
+- Fixes a type cast error when parsing `GoToAction` link annotations with integer parameters.
+
 ## 5.3.0 — 22 Jan 2026
 
 - Adds a headless document API for opening and manipulating PDF documents without displaying a viewer. (J#HYB-931)

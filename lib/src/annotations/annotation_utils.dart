@@ -13,7 +13,8 @@ class AnnotationUtils {
         final rawAttachments = json['attachments'] as Map;
         attachments = <String, Map<String, dynamic>>{};
         rawAttachments.forEach((key, value) {
-          attachments![key.toString()] = Map<String, dynamic>.from(value as Map);
+          attachments![key.toString()] =
+              Map<String, dynamic>.from(value as Map);
         });
       }
 
