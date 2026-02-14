@@ -91,6 +91,7 @@ class ConfigurationAdapter {
 
     // Annotation, Forms and Bookmark Options
     private static final String ENABLE_ANNOTATION_EDITING = "enableAnnotationEditing";
+    private static final String ENABLE_FORM_EDITING = "enableFormEditing";
     private static final String SHOW_ANNOTATION_LIST_ACTION = "showAnnotationListAction";
     private static final String SHOW_ANNOTATION_CREATION_ACTION = "showAnnotationCreationAction";
 
@@ -329,6 +330,10 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, ENABLE_ANNOTATION_EDITING, Boolean.class);
             if (key != null) {
                 configureEnableAnnotationEditing((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, ENABLE_FORM_EDITING, Boolean.class);
+            if (key != null) {
+                configureEnableFormEditing((Boolean) configurationMap.get(key));
             }
             key = getKeyOfType(configurationMap, SHOW_SHARE_ACTION, Boolean.class);
             if (key != null) {
@@ -729,6 +734,10 @@ class ConfigurationAdapter {
 
     private void configureEnableAnnotationEditing(boolean enableAnnotationEditing) {
         configuration.annotationEditingEnabled(enableAnnotationEditing);
+    }
+
+    private void configureEnableFormEditing(boolean enableFormEditing) {
+        configuration.formEditingEnabled(enableFormEditing);
     }
 
     private void configureShowShareAction(boolean showShareAction) {

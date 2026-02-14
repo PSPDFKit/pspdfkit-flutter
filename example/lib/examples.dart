@@ -50,6 +50,9 @@ import 'nutrient_annotation_properties_example.dart';
 import 'custom_data_example.dart';
 import 'dirty_state_example.dart';
 
+// Platform Adapter examples
+import 'platform_adapters/platform_adapter_example.dart';
+
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _measurementsDocs = 'PDFs/Measurements.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -294,7 +297,24 @@ List<NutrientExampleItem> examples(BuildContext context) => [
           description:
               'Convert Excel, Word, and PowerPoint documents to PDF format.',
           onTap: () => goTo(const OfficeToPdfExample(), context),
-        )
+        ),
+    ];
+
+/// Platform Adapter Examples - Native SDK access via JNI (Android), FFI (iOS), and JS interop (Web).
+///
+/// These examples demonstrate how to use platform adapters to access native SDK
+/// functionality directly, enabling advanced customization and event handling.
+List<NutrientExampleItem> platformAdapterExamples(BuildContext context) => [
+      NutrientExampleItem(
+        title: 'Comprehensive Platform Adapter',
+        description:
+            'Complete adapter implementation combining configuration, event listeners, and UI customization using native SDK APIs.',
+        onTap: () async {
+          await extractAsset(context, _documentPath).then((value) => goTo(
+              PlatformAdapterExample(documentPath: value.path),
+              context));
+        },
+      ),
     ];
 
 List<NutrientExampleItem> globalExamples(BuildContext context) => [
@@ -410,8 +430,13 @@ void unlockPasswordProtectedDocument(context) async {
 void showFormDocumentExample(context) async {
   final extractedFormDocument = await extractAsset(context, _formPath);
   await Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
-      builder: (_) =>
-          FormExampleWidget(documentPath: extractedFormDocument.path)));
+      builder: (_) => FormExampleWidget(
+            documentPath: extractedFormDocument.path,
+            // Test: disable form editing - form fields should NOT be editable
+            configuration: PdfConfiguration(
+              enableFormEditing: false,
+            ),
+          )));
 }
 
 void importInstantJsonExample(context) async {

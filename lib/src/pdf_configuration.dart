@@ -163,6 +163,27 @@ class PdfConfiguration {
   /// Sets whether to enable annotation editing. Defaults to true.
   final bool? enableAnnotationEditing;
 
+  /// Sets whether to enable form field editing. Defaults to true.
+  /// When set to false, form fields (text fields, checkboxes, radio buttons, etc.)
+  /// cannot be edited by the user.
+  ///
+  /// **Platform behavior:**
+  /// - **Android**: Uses a separate `formEditingEnabled` API, so form editing can be
+  ///   controlled independently from annotation editing.
+  /// - **iOS**: Forms are implemented as widget annotations. When [enableAnnotationEditing]
+  ///   is set to `false`, all annotations including forms are disabled by default. However,
+  ///   setting `enableFormEditing: true` will re-enable form editing even when annotation
+  ///   editing is disabled.
+  ///
+  /// **Behavior matrix:**
+  /// | [enableAnnotationEditing] | [enableFormEditing] | Result |
+  /// |---------------------------|---------------------|--------|
+  /// | `true` (or not set)       | `true` (or not set) | All annotations and forms editable |
+  /// | `true` (or not set)       | `false`             | Annotations editable, forms NOT editable |
+  /// | `false`                   | `true`              | Forms editable, other annotations NOT editable |
+  /// | `false`                   | `false` (or not set)| Nothing editable |
+  final bool? enableFormEditing;
+
   /// Sets whether to show the annotation list action in the Android toolbar.
   /// Defaults to true.
   final bool? androidShowAnnotationListAction;
@@ -266,6 +287,7 @@ class PdfConfiguration {
     this.showThumbnailBar,
     this.androidShowThumbnailGridAction,
     this.enableAnnotationEditing,
+    this.enableFormEditing,
     this.enableInstantComments,
     this.webConfiguration,
     this.editableAnnotationTypes,
@@ -329,6 +351,7 @@ class PdfConfiguration {
       'showThumbnailBar': showThumbnailBar?.name,
       'androidShowThumbnailGridAction': androidShowThumbnailGridAction,
       'enableAnnotationEditing': enableAnnotationEditing,
+      'enableFormEditing': enableFormEditing,
       'androidShowAnnotationListAction': androidShowAnnotationListAction,
       'androidShowAnnotationCreationAction':
           androidShowAnnotationCreationAction,

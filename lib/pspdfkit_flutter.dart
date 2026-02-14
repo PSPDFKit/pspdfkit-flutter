@@ -22,7 +22,7 @@ export 'src/configuration_options.dart';
 export 'src/toolbar/toolbar.dart';
 export 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.io) 'src/widgets/pspdfkit_widget.dart'
-    if (dart.library.html) 'src/widgets/pspdfkit_widget_web.dart';
+    if (dart.library.js_interop) 'src/widgets/pspdfkit_widget_web.dart';
 export 'src/widgets/pspdfkit_widget_controller.dart';
 export 'src/measurements/measurements.dart';
 export 'src/processor/processor.dart';

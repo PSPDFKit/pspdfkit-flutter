@@ -16,6 +16,11 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   flutter_web_plugins:
     sdk: flutter
+  # Platform interface and adapters for native SDK access
+  nutrient_flutter_platform_interface: ^1.0.0
+  nutrient_flutter_android: ^1.0.0
+  nutrient_flutter_ios: ^1.0.0
+  nutrient_flutter_web: ^1.0.0
 
 
 # For information on the generic Dart part of this file, see the
@@ -43,3 +48,14 @@ dev_dependencies:
 # Ignore false positives for security scanning
 false_secrets:
   - example/lib/utils/jwt_util.dart
+
+# For local development until packages are published to pub.dev
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../nutrient_flutter_web

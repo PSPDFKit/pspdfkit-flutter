@@ -473,24 +473,14 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
     ///   - configuration: The new annotation menu configuration
     ///   - completion: Completion callback with success/failure result
     func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void) {
-        do {
-            NSLog("PspdfkitPlatformViewImpl: setAnnotationMenuConfiguration called")
-            
-            // Update the stored configuration - this will be applied when the menu is actually shown
-            self.annotationMenuConfiguration = configuration
-            
-            // Immediately update the annotation menu helper with the new configuration
-            // This ensures that any currently visible menus or immediate menu requests use the new config
-            AnnotationMenuHelper.updateConfiguration(configuration: configuration)
-            
-            NSLog("PspdfkitPlatformViewImpl: Annotation menu configuration updated successfully")
-            
-            // Return success
-            completion(.success(true))
-        } catch {
-            NSLog("PspdfkitPlatformViewImpl: Error updating annotation menu configuration: \(error)")
-            completion(.failure(error))
-        }
+        // Update the stored configuration - this will be applied when the menu is actually shown
+        self.annotationMenuConfiguration = configuration
+
+        // Immediately update the annotation menu helper with the new configuration
+        // This ensures that any currently visible menus or immediate menu requests use the new config
+        AnnotationMenuHelper.updateConfiguration(configuration: configuration)
+
+        completion(.success(true))
     }
 
     /// Updates the annotation menu configuration (internal method)
@@ -510,7 +500,7 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
             let configuration = try parseAnnotationMenuConfiguration(from: dictionary)
             setAnnotationMenuConfiguration(configuration)
         } catch {
-            print("Warning: Failed to parse annotation menu configuration: \(error)")
+            // Configuration parsing failed - silently ignore invalid configurations
         }
     }
     

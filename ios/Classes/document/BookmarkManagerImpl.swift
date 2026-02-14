@@ -261,7 +261,7 @@ public class BookmarkManagerImpl: NSObject, BookmarkManagerApi {
         return manager
     }
 
-    @objc public static func createAndInitialize(document: Document, binaryMessenger: FlutterBinaryMessenger) -> BookmarkManagerImpl {
+    @objc public static func createAndInitialize(document: Document, binaryMessenger: FlutterBinaryMessenger) throws -> BookmarkManagerImpl {
         let documentId = document.uid ?? UUID().uuidString
 
         // Create and register bookmark manager
@@ -269,11 +269,7 @@ public class BookmarkManagerImpl: NSObject, BookmarkManagerApi {
         manager.register(binaryMessenger: binaryMessenger)
 
         // Initialize with document reference
-        do {
-            try manager.initialize(documentId: documentId)
-        } catch {
-            print("BookmarkManager: Failed to initialize with document \(documentId): \(error)")
-        }
+        try manager.initialize(documentId: documentId)
 
         return manager
     }

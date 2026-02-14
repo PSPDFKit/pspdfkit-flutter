@@ -1,7 +1,7 @@
 ## 5.3.1 - 26 Jan 2026
 
-- Fixes an Android crash when adding image annotations with the `annotationsCreated` event listener active. (#50400)
-- Fixes a type cast error when parsing `GoToAction` link annotations with integer parameters.
+- Fixes an Android crash when adding image annotations with the `annotationsCreated` event listener active. (#50437)
+- Fixes a type cast error when parsing `GoToAction` link annotations with integer parameters. (#50437)
 
 ## 5.3.0 — 22 Jan 2026
 
@@ -19,6 +19,8 @@
 - Updates to Nutrient iOS SDK 26.4.0.
 - Updates to Nutrient Android SDK 10.10.1.
 - Fixes an Android issue where the PDF view was hidden behind the keyboard when editing form fields. (J#HYB-929)
+
+- Adds `enableFormEditing` configuration option to `PdfConfiguration` for controlling form field editing independently from annotation editing on iOS and Android. (J#HYB-925)
 
 ## 5.2.0 - 13 Oct 2025
 

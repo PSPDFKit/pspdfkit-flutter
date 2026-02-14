@@ -274,7 +274,6 @@
         // Create the folder where the writable file will be saved.
         NSError *createFolderError;
         if (![fileManager createDirectoryAtPath:writableFileURL.path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:&createFolderError]) {
-            NSLog(@"Failed to create directory: %@", createFolderError.localizedDescription);
             return nil;
         }
 
@@ -283,7 +282,6 @@
         NSError *copyError;
         if (copyIfNeeded && [fileManager fileExistsAtPath:(NSString *)fileURL.path]) {
             if (![fileManager copyItemAtURL:fileURL toURL:writableFileURL error:&copyError]) {
-                NSLog(@"Failed to copy item at URL '%@' with error: %@", path, copyError.localizedDescription);
                 return nil;
             }
         }
@@ -538,18 +536,11 @@
     NSString *name = jsonDict[@"name"];
     NSString *instantId = jsonDict[@"id"];
 
-    NSLog(@"[FlutterPdfDocument] removeAnnotation: name='%@', id='%@'", name ?: @"nil", instantId ?: @"nil");
-
     if (name.length <= 0 && instantId.length <= 0) {
         return [FlutterError errorWithCode:@"" message:@"Annotation has no identifier (name or id)." details:nil];
     }
 
     NSArray<PSPDFAnnotation *> *allAnnotations = [[document allAnnotationsOfType:PSPDFAnnotationTypeAll].allValues valueForKeyPath:@"@unionOfArrays.self"];
-
-    NSLog(@"[FlutterPdfDocument] Found %lu annotations in document", (unsigned long)allAnnotations.count);
-    for (PSPDFAnnotation *ann in allAnnotations) {
-        NSLog(@"[FlutterPdfDocument]   - Annotation: name='%@', uuid='%@', type=%lu", ann.name ?: @"nil", ann.uuid, (unsigned long)ann.type);
-    }
 
     PSPDFAnnotation *foundAnnotation = nil;
 
@@ -561,7 +552,6 @@
                 break;
             }
         }
-        NSLog(@"[FlutterPdfDocument] Search by name '%@': %@", name, foundAnnotation ? @"FOUND" : @"NOT FOUND");
     }
 
     // Strategy 2: Try to find by uuid
@@ -572,7 +562,6 @@
                 break;
             }
         }
-        NSLog(@"[FlutterPdfDocument] Search by uuid '%@': %@", instantId, foundAnnotation ? @"FOUND" : @"NOT FOUND");
 
         // Strategy 3: Try to find by Instant JSON id
         if (!foundAnnotation) {
@@ -582,25 +571,19 @@
                 if (annJsonData && !error) {
                     NSDictionary *annJson = [NSJSONSerialization JSONObjectWithData:annJsonData options:0 error:nil];
                     NSString *annId = annJson[@"id"];
-                    NSLog(@"[FlutterPdfDocument]   Comparing Instant JSON id: '%@' == '%@' ? %@", annId, instantId, [annId isEqualToString:instantId] ? @"YES" : @"NO");
                     if ([annId isEqualToString:instantId]) {
                         foundAnnotation = annotation;
                         break;
                     }
-                } else {
-                    NSLog(@"[FlutterPdfDocument]   Error getting Instant JSON: %@", error.localizedDescription);
                 }
             }
-            NSLog(@"[FlutterPdfDocument] Search by Instant JSON id: %@", foundAnnotation ? @"FOUND" : @"NOT FOUND");
         }
     }
 
     if (!foundAnnotation) {
-        NSLog(@"[FlutterPdfDocument] Annotation not found with name='%@' or id='%@'", name ?: @"nil", instantId ?: @"nil");
         return @(NO);
     }
 
-    NSLog(@"[FlutterPdfDocument] Removing annotation: type=%lu, name='%@'", (unsigned long)foundAnnotation.type, foundAnnotation.name ?: @"nil");
     BOOL success = [document removeAnnotations:@[foundAnnotation] options:nil];
     return @(success);
 }

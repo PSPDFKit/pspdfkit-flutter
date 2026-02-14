@@ -133,7 +133,7 @@ internal class PSPDFKitView(
             }
 
             fragmentCallbacks = FlutterPdfUiFragmentCallbacks(
-                methodChannel, measurementValueConfigurations,
+                id, methodChannel, measurementValueConfigurations,
                 messenger, FlutterWidgetCallback(widgetCallbacks)
             )
 
@@ -415,6 +415,42 @@ internal class PSPDFKitView(
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
         var  aiAssistant: AiAssistant? = null
+
+        // Registry for PdfFragment instances, keyed by view ID.
+        // This allows Dart adapters to access the native PdfFragment via JNI.
+        private val pdfFragmentRegistry = mutableMapOf<Int, PdfFragment>()
+
+        /**
+         * Registers a PdfFragment for a given view ID.
+         * Called internally when the fragment is attached.
+         */
+        @JvmStatic
+        fun registerPdfFragment(viewId: Int, fragment: PdfFragment) {
+            pdfFragmentRegistry[viewId] = fragment
+            Log.d(LOG_TAG, "Registered PdfFragment for view $viewId")
+        }
+
+        /**
+         * Unregisters the PdfFragment for a given view ID.
+         * Called internally when the view is disposed.
+         */
+        @JvmStatic
+        fun unregisterPdfFragment(viewId: Int) {
+            pdfFragmentRegistry.remove(viewId)
+            Log.d(LOG_TAG, "Unregistered PdfFragment for view $viewId")
+        }
+
+        /**
+         * Gets the PdfFragment for a given view ID.
+         * This method is intended to be called from Dart via JNI.
+         *
+         * @param viewId The platform view ID
+         * @return The PdfFragment instance, or null if not registered
+         */
+        @JvmStatic
+        fun getPdfFragment(viewId: Int): PdfFragment? {
+            return pdfFragmentRegistry[viewId]
+        }
     }
 }
 

@@ -26,7 +26,6 @@ public class AiAssistantHelper: NSObject {
 
         // Safely create URL and handle potential nil case
         guard let serverURL = URL(string: serverUrl) else {
-            NSLog("Invalid server URL provided for AI Assistant: \(serverUrl)")
             return
         }
         

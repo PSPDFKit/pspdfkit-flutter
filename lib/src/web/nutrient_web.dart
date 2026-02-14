@@ -73,12 +73,15 @@ class NutrientWeb {
   /// ```
   static Future<NutrientWebInstance> load(String documentPath, Element element,
       PdfConfiguration? configuration) async {
-    var webConfiguration = WebConfigurationHelper.populateWebConfiguration(
+    // ignore: deprecated_member_use_from_same_package
+    var webConfigurationMap = WebConfigurationHelper.populateWebConfiguration(
       element,
       documentPath,
       _pspdfkitLicenseKey,
       configuration,
     );
+    // Convert the map to a JsObject for the legacy API
+    var webConfiguration = JsObject.jsify(webConfigurationMap);
     JsObject nutrient = context['PSPDFKit'];
     try {
       var instance = await promiseToFuture(

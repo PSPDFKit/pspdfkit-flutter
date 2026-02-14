@@ -36,6 +36,39 @@
 
 @implementation PspdfPlatformView
 
+// Static registry for PSPDFViewController instances, keyed by view ID
+static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerRegistry;
+
+#pragma mark - Static Registry Methods
+
++ (void)initialize {
+    if (self == [PspdfPlatformView class]) {
+        viewControllerRegistry = [NSMutableDictionary dictionary];
+    }
+}
+
++ (void)registerViewController:(int64_t)viewId controller:(PSPDFViewController *)controller {
+    @synchronized (viewControllerRegistry) {
+        viewControllerRegistry[@(viewId)] = controller;
+        NSLog(@"Registered PSPDFViewController for view %lld", viewId);
+    }
+}
+
++ (void)unregisterViewController:(int64_t)viewId {
+    @synchronized (viewControllerRegistry) {
+        [viewControllerRegistry removeObjectForKey:@(viewId)];
+        NSLog(@"Unregistered PSPDFViewController for view %lld", viewId);
+    }
+}
+
++ (PSPDFViewController *)getViewController:(int64_t)viewId {
+    @synchronized (viewControllerRegistry) {
+        return viewControllerRegistry[@(viewId)];
+    }
+}
+
+#pragma mark - FlutterPlatformView
+
 - (nonnull UIView *)view {
     return self.navigationController.view ?: [UIView new];
 }
@@ -43,6 +76,7 @@
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     
     if ((self = [super init])) {
+        _platformViewId = viewId;
         _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.nutrient.widget.%lld", viewId] binaryMessenger:messenger];
         _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:messenger];
         _binaryMessenger = messenger;
@@ -57,16 +91,13 @@
         
         // View controller containment
         _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-        if (_flutterViewController == nil) {
-            NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
-        } else {
+        if (_flutterViewController != nil) {
             [_flutterViewController addChildViewController:_navigationController];
             [_navigationController didMoveToParentViewController:_flutterViewController];
         }
 
         NSString *documentPath = args[@"document"];
         if ([documentPath isKindOfClass:[NSString class]] == NO || [documentPath length] == 0) {
-            NSLog(@"Warning: 'document' argument is not a string. Showing an empty view in default configuration.");
             _pdfViewController = [[PSPDFViewController alloc] init];
         } else {
            
@@ -158,10 +189,17 @@
         }
         
         [_platformViewImpl setViewControllerWithController:_pdfViewController];
-        
+
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
         }];
+
+        // Register the PSPDFViewController in the static registry for adapter access via FFI
+        [PspdfPlatformView registerViewController:viewId controller:_pdfViewController];
+
+        // Notify Dart that the PSPDFViewController is ready for adapter access
+        [_channel invokeMethod:@"onViewControllerReady" arguments:nil];
+        NSLog(@"Sent onViewControllerReady notification to Dart");
     }
 
     return self;
@@ -187,10 +225,24 @@
         [_flutterPdfDocument registerWithBinaryMessenger:_binaryMessenger];
 
         // Create and register AnnotationManager for this document
-        _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+        NSError *annotationError = nil;
+        _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger error:&annotationError];
+        if (annotationError) {
+            [_channel invokeMethod:@"onDocumentError" arguments:@{
+                @"error": annotationError.localizedDescription ?: @"Failed to initialize annotation manager",
+                @"type": @"annotationManager"
+            }];
+        }
 
         // Create and register BookmarkManager for this document
-        _bookmarkManager = [BookmarkManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+        NSError *bookmarkError = nil;
+        _bookmarkManager = [BookmarkManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger error:&bookmarkError];
+        if (bookmarkError) {
+            [_channel invokeMethod:@"onDocumentError" arguments:@{
+                @"error": bookmarkError.localizedDescription ?: @"Failed to initialize bookmark manager",
+                @"type": @"bookmarkManager"
+            }];
+        }
 
         [_platformViewImpl onDocumentLoadedWithDocumentId:documentId];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
@@ -210,6 +262,9 @@
 }
 
 - (void)cleanup {
+    // Unregister the PSPDFViewController from the static registry
+    [PspdfPlatformView unregisterViewController:self.platformViewId];
+
     [self.flutterPdfDocument unRegisterWithBinaryMessenger:_binaryMessenger];
     self.flutterPdfDocument = nil;
 
@@ -247,3 +302,16 @@
 }
 
 @end
+
+#pragma mark - C FFI Functions for Adapter Bridge
+
+/// Gets the PSPDFViewController registered for a given view ID.
+/// This function is called from Dart via FFI to allow adapters to access
+/// the native PSPDFViewController from the PspdfPlatformView registry.
+///
+/// @param viewId The platform view ID.
+/// @return The PSPDFViewController pointer, or NULL if not registered.
+void* nutrient_get_view_controller(int64_t viewId) {
+    PSPDFViewController *controller = [PspdfPlatformView getViewController:viewId];
+    return (__bridge void *)controller;
+}
