@@ -1,0 +1,10 @@
+# For local development until packages are published to pub.dev
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../nutrient_flutter_web

@@ -71,7 +71,6 @@ class PspdfkitFlutterHelper: NSObject {
             do {
                 try fileManager.createDirectory(atPath: (writableFileURL.path as NSString).deletingLastPathComponent, withIntermediateDirectories: true, attributes: nil)
             } catch {
-                print("Failed to create directory: \(error.localizedDescription)")
                 return nil
             }
             
@@ -79,7 +78,6 @@ class PspdfkitFlutterHelper: NSObject {
                 do {
                     try fileManager.copyItem(at: fileURL, to: writableFileURL)
                 } catch {
-                    print("Failed to copy item at URL '\(path)' with error: \(error.localizedDescription)")
                     return nil
                 }
             }
@@ -114,7 +112,7 @@ class PspdfkitFlutterHelper: NSObject {
         var leftItems = [UIBarButtonItem]()
         for barButtonItemString in items {
             if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
-               ((pdfViewController.navigationItem.rightBarButtonItems?.contains(barButtonItem)) == nil) {
+               !(pdfViewController.navigationItem.rightBarButtonItems?.contains(barButtonItem) ?? false) {
                 leftItems.append(barButtonItem)
             }
         }
@@ -128,7 +126,7 @@ class PspdfkitFlutterHelper: NSObject {
         var rightItems = [UIBarButtonItem]()
         for barButtonItemString in items {
             if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
-               ((pdfViewController.navigationItem.leftBarButtonItems?.contains(barButtonItem)) == nil) {
+               !(pdfViewController.navigationItem.leftBarButtonItems?.contains(barButtonItem) ?? false) {
                 rightItems.append(barButtonItem)
             }
         }
@@ -470,16 +468,14 @@ class PspdfkitFlutterHelper: NSObject {
     
     static func applyInstantJson(annotationsJson: String, document: Document) throws -> Bool {
         guard let jsonData = annotationsJson.data(using: .utf8) else {
-            print("Invalid JSON data.")
             throw NutrientApiError(code: "", message: "Invalid JSON data.", details : nil)
         }
-        
+
         let jsonContainer = DataContainerProvider(data: jsonData)
         do {
             try document.applyInstantJSON(fromDataProvider: jsonContainer, to: document.documentProviders.first!, lenient: false)
             return true
         } catch {
-            print("Error while importing document Instant JSON: \(error.localizedDescription)")
             throw NutrientApiError(code: "", message: "Error while importing document Instant JSON.", details: error.localizedDescription)
         }
     }

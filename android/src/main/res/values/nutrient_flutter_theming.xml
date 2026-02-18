@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
+
+  THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+  AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+  This notice may not be removed from this file.
+-->
+<resources>
+    <!-- Placeholder color resource for dynamic background override.
+         On API 30+, this is overridden at runtime via ResourcesLoader.
+         On API 24-29, the closest quantized palette style is used instead. -->
+    <color name="nutrient_flutter_dynamic_bg">#FFFFFFFF</color>
+
+    <!-- Dynamic theme overlay that references the placeholder color.
+         Used to set pspdf__backgroundColor before PSPDFKit views are inflated.
+         Do NOT set android:colorBackground — it breaks toolbar text/icons. -->
+    <style name="NutrientFlutter.DynamicTheme" parent="">
+        <item name="pspdf__backgroundColor">@color/nutrient_flutter_dynamic_bg</item>
+    </style>
+
+    <!-- Quantized palette for API 24-29 fallback. These are predefined
+         background colors covering the full luminance range. -->
+    <style name="NutrientFlutter.Bg.White" parent="">
+        <item name="pspdf__backgroundColor">#FFFFFFFF</item>
+    </style>
+    <style name="NutrientFlutter.Bg.LightGray" parent="">
+        <item name="pspdf__backgroundColor">#FFF5F5F5</item>
+    </style>
+    <style name="NutrientFlutter.Bg.Gray" parent="">
+        <item name="pspdf__backgroundColor">#FF808080</item>
+    </style>
+    <style name="NutrientFlutter.Bg.DarkGray" parent="">
+        <item name="pspdf__backgroundColor">#FF303030</item>
+    </style>
+    <style name="NutrientFlutter.Bg.VeryDark" parent="">
+        <item name="pspdf__backgroundColor">#FF1E1E2E</item>
+    </style>
+    <style name="NutrientFlutter.Bg.NearBlack" parent="">
+        <item name="pspdf__backgroundColor">#FF121212</item>
+    </style>
+    <style name="NutrientFlutter.Bg.Black" parent="">
+        <item name="pspdf__backgroundColor">#FF000000</item>
+    </style>
+</resources>

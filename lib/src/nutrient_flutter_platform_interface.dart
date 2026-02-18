@@ -14,7 +14,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 // Conditional import: use web implementation on web, native on other platforms
 import 'package:nutrient_flutter/src/nutrient_flutter_api_impl.dart'
-    if (dart.library.html) 'package:nutrient_flutter/src/nutrient_flutter_web.dart'
+    if (dart.library.js_interop) 'package:nutrient_flutter/src/nutrient_flutter_web.dart'
     as platform_impl;
 
 typedef InstantSyncStartedCallback = void Function(String? documentId);

@@ -128,12 +128,20 @@ internal class PSPDFKitView(
                 }
             }
 
+            // Set theme colors BEFORE the fragment is committed so that
+            // onGetLayoutInflater() can wrap the context with a themed inflater.
+            // This must happen before commitNow() which triggers view creation.
+            val themeColors = configurationAdapter.getThemeColors()
+            if (themeColors != null) {
+                (pdfUiFragment as? FlutterPdfUiFragment)?.setThemeColors(themeColors)
+            }
+
             aiAssistantConfigurationMap?.let {
                 setupAiAssistant(context, it)
             }
 
             fragmentCallbacks = FlutterPdfUiFragmentCallbacks(
-                methodChannel, measurementValueConfigurations,
+                id, methodChannel, measurementValueConfigurations,
                 messenger, FlutterWidgetCallback(widgetCallbacks)
             )
 
@@ -172,6 +180,13 @@ internal class PSPDFKitView(
                         val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
                         flutterFragment?.let { fragment ->
                             fragment.setOnContextualToolbarLifecycleListener(fragment)
+                        }
+
+                        // Pass theme colors to the fragment
+                        val themeColors = configurationAdapter.getThemeColors()
+                        if (themeColors != null) {
+                            val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
+                            flutterFragment?.setThemeColors(themeColors)
                         }
                     }
 
@@ -415,6 +430,42 @@ internal class PSPDFKitView(
     companion object {
         private const val LOG_TAG = "PSPDFKitPlugin"
         var  aiAssistant: AiAssistant? = null
+
+        // Registry for PdfFragment instances, keyed by view ID.
+        // This allows Dart adapters to access the native PdfFragment via JNI.
+        private val pdfFragmentRegistry = mutableMapOf<Int, PdfFragment>()
+
+        /**
+         * Registers a PdfFragment for a given view ID.
+         * Called internally when the fragment is attached.
+         */
+        @JvmStatic
+        fun registerPdfFragment(viewId: Int, fragment: PdfFragment) {
+            pdfFragmentRegistry[viewId] = fragment
+            Log.d(LOG_TAG, "Registered PdfFragment for view $viewId")
+        }
+
+        /**
+         * Unregisters the PdfFragment for a given view ID.
+         * Called internally when the view is disposed.
+         */
+        @JvmStatic
+        fun unregisterPdfFragment(viewId: Int) {
+            pdfFragmentRegistry.remove(viewId)
+            Log.d(LOG_TAG, "Unregistered PdfFragment for view $viewId")
+        }
+
+        /**
+         * Gets the PdfFragment for a given view ID.
+         * This method is intended to be called from Dart via JNI.
+         *
+         * @param viewId The platform view ID
+         * @return The PdfFragment instance, or null if not registered
+         */
+        @JvmStatic
+        fun getPdfFragment(viewId: Int): PdfFragment? {
+            return pdfFragmentRegistry[viewId]
+        }
     }
 }
 

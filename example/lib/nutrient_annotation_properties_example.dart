@@ -379,20 +379,39 @@ class _NutrientAnnotationPropertiesExampleState
   /// Handles annotation selection from events
   Future<void> _handleAnnotationSelection(dynamic annotationData) async {
     final document = _document;
-    if (document == null) return;
+    if (document == null) {
+      debugPrint(
+          '[AnnotationPropertiesExample] _handleAnnotationSelection: document is null');
+      return;
+    }
+
+    debugPrint(
+        '[AnnotationPropertiesExample] _handleAnnotationSelection called');
+    debugPrint(
+        '[AnnotationPropertiesExample] annotationData type: ${annotationData.runtimeType}');
 
     try {
       // If annotationData is already an Annotation object, use it directly
       if (annotationData is Annotation) {
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationData is Annotation');
         final annotationId = annotationData.id ?? annotationData.name ?? '';
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationId: $annotationId, pageIndex: ${annotationData.pageIndex}');
 
         if (annotationId.isNotEmpty) {
+          debugPrint(
+              '[AnnotationPropertiesExample] Calling getAnnotationProperties...');
           final properties = await document.getAnnotationProperties(
             annotationData.pageIndex,
             annotationId,
           );
+          debugPrint(
+              '[AnnotationPropertiesExample] getAnnotationProperties returned: ${properties != null ? "non-null" : "null"}');
 
           if (properties != null) {
+            debugPrint(
+                '[AnnotationPropertiesExample] Properties: strokeColor=${properties.strokeColor}, opacity=${properties.opacity}, lineWidth=${properties.lineWidth}');
             setState(() {
               _selectedAnnotation = annotationData;
               _selectedProperties = properties;
@@ -406,8 +425,13 @@ class _NutrientAnnotationPropertiesExampleState
       // If it's a Map, extract page index and ID, then fetch full annotation
       final Map<String, dynamic> annotationMap;
       if (annotationData is Map) {
+        debugPrint('[AnnotationPropertiesExample] annotationData is Map');
         annotationMap = Map<String, dynamic>.from(annotationData);
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationMap keys: ${annotationMap.keys.toList()}');
       } else {
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationData is unknown type: ${annotationData.runtimeType}, trying Annotation.fromJson');
         // Try to parse as Annotation
         final annotation = Annotation.fromJson(annotationData);
         final annotationId = annotation.id ?? annotation.name ?? '';
@@ -433,11 +457,17 @@ class _NutrientAnnotationPropertiesExampleState
       final int? pageIndex = annotationMap['pageIndex'] as int?;
       final String? annotationId =
           (annotationMap['id'] ?? annotationMap['name']) as String?;
+      debugPrint(
+          '[AnnotationPropertiesExample] From map: pageIndex=$pageIndex, annotationId=$annotationId');
 
       if (pageIndex != null && annotationId != null) {
         // Get all annotations on the page to find the selected one
+        debugPrint(
+            '[AnnotationPropertiesExample] Fetching annotations for page $pageIndex...');
         final annotations =
             await document.getAnnotations(pageIndex, AnnotationType.all);
+        debugPrint(
+            '[AnnotationPropertiesExample] Got ${annotations.length} annotations');
 
         // Find the annotation with matching ID
         Annotation? matchingAnnotation;
@@ -449,14 +479,23 @@ class _NutrientAnnotationPropertiesExampleState
           }
         }
 
+        debugPrint(
+            '[AnnotationPropertiesExample] matchingAnnotation: ${matchingAnnotation != null ? "found" : "not found"}');
+
         if (matchingAnnotation != null) {
           // Get properties
+          debugPrint(
+              '[AnnotationPropertiesExample] Calling getAnnotationProperties...');
           final properties = await document.getAnnotationProperties(
             pageIndex,
             annotationId,
           );
+          debugPrint(
+              '[AnnotationPropertiesExample] getAnnotationProperties returned: ${properties != null ? "non-null" : "null"}');
 
           if (properties != null) {
+            debugPrint(
+                '[AnnotationPropertiesExample] Properties: strokeColor=${properties.strokeColor}, opacity=${properties.opacity}, lineWidth=${properties.lineWidth}');
             setState(() {
               _selectedAnnotation = matchingAnnotation;
               _selectedProperties = properties;
@@ -465,7 +504,10 @@ class _NutrientAnnotationPropertiesExampleState
           }
         }
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint(
+          '[AnnotationPropertiesExample] _handleAnnotationSelection error: $e');
+      debugPrint('[AnnotationPropertiesExample] Stack trace: $st');
       _showError('Failed to select annotation: $e');
     }
   }
@@ -479,13 +521,26 @@ class _NutrientAnnotationPropertiesExampleState
     _controller?.addEventListener(NutrientEvent.annotationsSelected,
         (event) async {
       try {
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationsSelected event received');
+        debugPrint(
+            '[AnnotationPropertiesExample] event type: ${event.runtimeType}');
+        debugPrint('[AnnotationPropertiesExample] event: $event');
+
         // Get the selected annotation from the event
         // The event contains an 'annotation' field with the annotation object
         final dynamic annotationData = event?['annotation'];
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationData type: ${annotationData.runtimeType}');
+        debugPrint(
+            '[AnnotationPropertiesExample] annotationData: $annotationData');
 
         if (annotationData == null) {
+          debugPrint(
+              '[AnnotationPropertiesExample] annotationData is null, checking annotations (plural)');
           // Sometimes the event might have 'annotations' (plural) instead
           final annotations = event?['annotations'] as List?;
+          debugPrint('[AnnotationPropertiesExample] annotations: $annotations');
           if (annotations != null && annotations.isNotEmpty) {
             await _handleAnnotationSelection(annotations.first);
           }
@@ -493,7 +548,10 @@ class _NutrientAnnotationPropertiesExampleState
         }
 
         await _handleAnnotationSelection(annotationData);
-      } catch (e) {
+      } catch (e, st) {
+        debugPrint(
+            '[AnnotationPropertiesExample] Error in annotationsSelected: $e');
+        debugPrint('[AnnotationPropertiesExample] Stack trace: $st');
         _showError('Failed to handle annotation selection: $e');
       }
     });

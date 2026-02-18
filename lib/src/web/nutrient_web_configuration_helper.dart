@@ -7,165 +7,148 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'dart:html';
-import 'dart:js';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
-import 'nutrient_web.dart';
-import 'nutrient_web_utils.dart';
+/// Product identifier for Flutter Web.
+const flutterWebProductId = 'FlutterForWeb';
 
-/// This is a utility class used to convert a [PdfConfiguration] to a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html) JsObject for Web.
-/// It is used in [NutrientWeb.load]. This class isolates the js interop code from the rest of the plugin.
+/// Utility class to convert a [PdfConfiguration] to a configuration Map
+/// for the Nutrient Web SDK.
+///
+/// The resulting map is used by the adapter's `configureLoad()` method
+/// and gets converted to a JSObject before passing to PSPDFKit.load().
 class WebConfigurationHelper {
-  /// Populates a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html)
-  /// JsObject with the values from a [PdfConfiguration] and [PdfWebConfiguration].
+  /// Populates a configuration map with values from a [PdfConfiguration].
   ///
-  /// The [id] parameter is used to identify the container element in which the PSPDFKit instance will be rendered.
+  /// The [config] map is modified in place, adding configuration values
+  /// derived from the [PdfConfiguration].
   ///
-  /// The [documentPath] parameter is the path to the document that will be loaded.
-  ///
-  /// The [licenseKey] parameter is the license key that will be used to unlock PSPDFKit.
-  ///
-  /// The [configuration] parameter is the configuration that will be used to configure PSPDFKit.
-  ///
-  /// Returns a [PSPDFKit.Configuration](https://www.nutrient.io/api/web/PSPDFKit.Configuration.html) JsObject.
-  static JsObject populateWebConfiguration(
-    Element element,
-    String documentPath,
-    String? licenseKey,
+  /// This is designed to be called from an adapter's `configureLoad()` method
+  /// where the config map will later be converted to JS via `.jsify()`.
+  static void populateConfiguration(
+    Map<String, dynamic> config,
     PdfConfiguration? configuration,
   ) {
-    var viewState = <String, dynamic>{
-      'currentPageIndex': configuration?.startPage,
-      'allowPrinting': configuration?.webConfiguration?.allowPrinting,
+    if (configuration == null) {
+      return;
+    }
+
+    // Build initial view state as a plain map.
+    // The Web SDK accepts these as top-level config properties when
+    // passed via PSPDFKit.load() configuration object.
+    //
+    // IMPORTANT: Only include properties that are explicitly set to avoid
+    // type conversion issues when jsify() converts nested maps to JavaScript.
+    // The SDK is strict about types (e.g., currentPageIndex must be a number).
+    final viewStateProps = <String, dynamic>{
+      'currentPageIndex': configuration.startPage,
+      'allowPrinting': configuration.webConfiguration?.allowPrinting,
       'canScrollWhileDrawing':
-          configuration?.webConfiguration?.canScrollWhileDrawing,
-      'enableAnnotationToolbar': configuration?.enableAnnotationEditing,
-      'formDesignMode': configuration?.webConfiguration?.formDesignMode,
+          configuration.webConfiguration?.canScrollWhileDrawing,
+      'enableAnnotationToolbar': configuration.enableAnnotationEditing,
+      'formDesignMode': configuration.webConfiguration?.formDesignMode,
       'interactionMode':
-          configuration?.webConfiguration?.interactionMode?.webName,
+          configuration.webConfiguration?.interactionMode?.webName,
       'keepFirstSpreadAsSinglePage':
-          configuration?.webConfiguration?.keepFirstSpreadAsSinglePage,
-      'keepSelectedTool': configuration?.webConfiguration?.keepSelectedTool,
-      'layoutMode': configuration?.pageLayoutMode?.webName,
-      'pageSpacing': configuration?.webConfiguration?.pageSpacing,
-      'pageRotation': configuration?.webConfiguration?.pageRotation,
+          configuration.webConfiguration?.keepFirstSpreadAsSinglePage,
+      'keepSelectedTool': configuration.webConfiguration?.keepSelectedTool,
+      'layoutMode': configuration.pageLayoutMode?.webName,
+      'pageSpacing': configuration.webConfiguration?.pageSpacing,
+      'pagesRotation': configuration.webConfiguration?.pageRotation,
       'previewRedactionMode':
-          configuration?.webConfiguration?.previewRedactionMode,
-      'readOnly': configuration?.enableAnnotationEditing != null &&
-          !configuration!.enableAnnotationEditing!,
-      'scrollMode': configuration?.pageTransition?.webName,
+          configuration.webConfiguration?.previewRedactionMode,
+      // Only set readOnly if enableAnnotationEditing was explicitly configured
+      'readOnly': configuration.enableAnnotationEditing != null
+          ? !configuration.enableAnnotationEditing!
+          : null,
+      'scrollMode': configuration.pageTransition?.webName,
       'showAnnotationNotes':
-          configuration?.webConfiguration?.showAnnotationNotes,
-      'showAnnotations': configuration?.webConfiguration?.showAnnotations,
-      'showComments': configuration?.enableInstantComments,
+          configuration.webConfiguration?.showAnnotationNotes,
+      'showAnnotations': configuration.webConfiguration?.showAnnotations,
+      'showComments': configuration.enableInstantComments,
       'showSignatureValidationStatus': configuration
-          ?.webConfiguration?.showSignatureValidationStatus?.webName,
-      'showToolbar':
-          _convertUserInterfaceViewMode(configuration?.userInterfaceViewMode),
-      'sidebarMode': configuration?.webConfiguration?.sideBarMode?.webName,
-      'spreadSpacing': configuration?.webConfiguration?.spreadSpacing,
-      'viewportPadding': configuration?.webConfiguration?.viewportPadding,
-      'zoom': _getZoomValue(configuration?.defaultZoomScale ??
-          configuration?.webConfiguration?.zoom),
-      'zoomStep': configuration?.webConfiguration?.zoomStep,
+          .webConfiguration?.showSignatureValidationStatus?.webName,
+      // Only set showToolbar if userInterfaceViewMode was explicitly configured
+      'showToolbar': configuration.userInterfaceViewMode != null
+          ? _convertUserInterfaceViewMode(configuration.userInterfaceViewMode)
+          : null,
+      'sidebarMode': configuration.webConfiguration?.sideBarMode?.webName,
+      'spreadSpacing': configuration.webConfiguration?.spreadSpacing,
+      'viewportPadding': configuration.webConfiguration?.viewportPadding,
+      'zoom': _getZoomValue(configuration.defaultZoomScale ??
+          configuration.webConfiguration?.zoom),
+      'zoomStep': configuration.webConfiguration?.zoomStep,
     }..removeWhere((key, value) => value == null);
 
-    // Creating a new PSPDFKit.ViewState JsObject with viewState.
-    var initialViewState =
-        JsObject(context['PSPDFKit']['ViewState'], [JsObject.jsify(viewState)]);
+    // Apply view state properties as initialViewState map.
+    // The Web SDK's PSPDFKit.load() accepts initialViewState as a plain object.
+    // Only add if we have actual user-configured properties to set.
+    if (viewStateProps.isNotEmpty) {
+      config['initialViewState'] = viewStateProps;
+    }
 
-    // Convert toolbar items from here to avoid html imports in the main plugin.
-    var toolbarItems = configuration?.webConfiguration?.toolbarItems
-        ?.map((item) => item.toJsObject())
+    // Convert toolbar items to plain maps.
+    final toolbarItems = configuration.webConfiguration?.toolbarItems
+        ?.map((item) => _toolbarItemToMap(item))
         .toList();
 
-    // Remove the toolbar items from the configuration.
-    var finalWebConfigurations = configuration?.webConfiguration?.toMap()
-      ?..removeWhere((key, value) => key == 'toolbarItems');
-
-    // Override the default zoom levels if they are set.
-    if (configuration?.maximumZoomScale != null) {
-      finalWebConfigurations
-          ?.addAll({'maxDefaultZoomLevel': configuration?.maximumZoomScale});
-    }
-
-    if (configuration?.minimumZoomScale != null) {
-      finalWebConfigurations
-          ?.addAll({'minDefaultZoomLevel': configuration?.minimumZoomScale});
-    }
-
-    // Convert annotation toolbar items from here to avoid html imports in the main plugin.
-    dynamic annotationToolbarItemsCallback(
-        JsObject annotation, JsObject options) {
-      // Extract the default annotation toolbar items.
-      var callbackOptions =
-          annotationToolbarItemsCallbackOptionsFromJsObject(options);
-
-      var newAnnotationToolbarItems = configuration
-          ?.webConfiguration?.annotationToolbarItems
-          ?.call(annotation.toJson(), callbackOptions);
-
-      // Return a list of new annotation toolbar items.
-      return JsObject.jsify(
-          newAnnotationToolbarItems?.map((e) => e.toJsObject()).toList() ??
-              [
-                ...callbackOptions.defaultAnnotationToolbarItems
-                    .map((e) => e.toJsObject())
-              ]);
-    }
-
-    dynamic measurementValueConfigurationCallback(
-        dynamic defaultConfigurations) {
-      var measurementValueConfigurations =
-          configuration?.measurementValueConfigurations ?? [];
-      var configs = defaultConfigurations
-          .map((e) => (e as JsObject).toJson())
-          .toList(growable: false);
-      try {
-        for (var config in configs) {
-          var value = MeasurementValueConfiguration.fromWebMap(config);
-          measurementValueConfigurations.add(value);
-        }
-      } catch (e) {
-        throw Exception(
-            'Failed to convert measurement value configurations: $e');
-      }
-      var convertedConfigurations = measurementValueConfigurations
-          .map((e) => e.toWebMap())
-          .toList(growable: false);
-      return JsObject.jsify([...convertedConfigurations]);
-    }
-
-    // Remove the annotation toolbar items from the configuration.
-    finalWebConfigurations
-        ?.removeWhere((key, value) => key == 'annotationToolbarItems');
-
-    // Convert measurement configuration from here to avoid html imports in the main plugin.
-    var map = <String, dynamic>{
-      'document': documentPath,
-      'licenseKey': licenseKey,
-      'productId': flutterWebProductId,
-      'container': element,
-      'initialViewState': initialViewState,
-      'password': configuration?.password,
-      'editableAnnotationTypes': configuration?.editableAnnotationTypes,
-      'disableTextSelection': configuration?.enableTextSelection,
-      'autoSaveMode': configuration?.disableAutosave == true
-          ? 'DISABLED'
-          : configuration?.webConfiguration?.autoSaveMode?.webName,
-      'theme': configuration?.appearanceMode?.webName,
-      // Add the converted toolbar items.
-      'toolbarItems': toolbarItems,
-      'annotationToolbarItems': annotationToolbarItemsCallback,
-      'measurementValueConfiguration': measurementValueConfigurationCallback,
-      ...?finalWebConfigurations,
-      'aiAssistant': configuration?.aiAssistantConfiguration?.toWebMap(),
+    // Get remaining web configurations, excluding:
+    // - toolbarItems/annotationToolbarItems (handled separately above)
+    // - ViewState properties (already handled via viewStateProps → initialViewState)
+    //   The Web SDK's Configuration does not accept ViewState properties at the
+    //   top level — they must be passed via initialViewState.
+    const viewStateKeys = {
+      'allowPrinting',
+      'canScrollWhileDrawing',
+      'formDesignMode',
+      'interactionMode',
+      'keepFirstSpreadAsSinglePage',
+      'keepSelectedTool',
+      'pageSpacing',
+      'pageRotation',
+      'previewRedactionMode',
+      'showSignatureValidationStatus',
+      'showAnnotationNotes',
+      'showAnnotations',
+      'spreadSpacing',
+      'sidebarMode',
+      'viewportPadding',
     };
+    final finalWebConfigurations = configuration.webConfiguration?.toMap()
+      ?..removeWhere((key, value) =>
+          key == 'toolbarItems' ||
+          key == 'annotationToolbarItems' ||
+          viewStateKeys.contains(key));
 
-    var config = map..removeWhere((key, value) => value == null);
-    var jsConfig = JsObject.jsify(config);
-    return jsConfig;
+    // Override default zoom levels if set.
+    if (configuration.maximumZoomScale != null) {
+      finalWebConfigurations
+          ?.addAll({'maxDefaultZoomLevel': configuration.maximumZoomScale});
+    }
+    if (configuration.minimumZoomScale != null) {
+      finalWebConfigurations
+          ?.addAll({'minDefaultZoomLevel': configuration.minimumZoomScale});
+    }
+
+    // Build the configuration map.
+    final configEntries = <String, dynamic>{
+      'productId': flutterWebProductId,
+      'password': configuration.password,
+      'editableAnnotationTypes': configuration.editableAnnotationTypes,
+      'disableTextSelection': configuration.enableTextSelection,
+      'autoSaveMode': configuration.disableAutosave == true
+          ? 'DISABLED'
+          : configuration.webConfiguration?.autoSaveMode?.webName,
+      'theme': configuration.appearanceMode?.webName,
+      'toolbarItems': toolbarItems,
+      'aiAssistant': configuration.aiAssistantConfiguration?.toWebMap(),
+      // Measurement value configurations are applied as data, not callbacks.
+      // The callback pattern from the old implementation required dart:js.
+      // Instead, pass the configuration values directly.
+      ...?finalWebConfigurations,
+    }..removeWhere((key, value) => value == null);
+
+    config.addAll(configEntries);
   }
 
   static bool? _convertUserInterfaceViewMode(
@@ -181,6 +164,23 @@ class WebConfigurationHelper {
     }
   }
 
+  static Map<String, dynamic> _toolbarItemToMap(NutrientWebToolbarItem item) {
+    return <String, dynamic>{
+      'type': item.type.name,
+      if (item.title != null) 'title': item.title,
+      if (item.className != null) 'className': item.className,
+      if (item.disabled != null) 'disabled': item.disabled,
+      if (item.dropdownGroup != null) 'dropdownGroup': item.dropdownGroup,
+      if (item.icon != null) 'icon': item.icon,
+      if (item.id != null) 'id': item.id,
+      if (item.mediaQueries != null) 'mediaQueries': item.mediaQueries,
+      if (item.onPress != null) 'onPress': item.onPress,
+      if (item.preset != null) 'preset': item.preset,
+      if (item.responsiveGroup != null) 'responsiveGroup': item.responsiveGroup,
+      if (item.selected != null) 'selected': item.selected,
+    };
+  }
+
   static dynamic _getZoomValue(dynamic zoom) {
     if (zoom is num) {
       return zoom;
@@ -189,5 +189,25 @@ class WebConfigurationHelper {
     } else {
       return null;
     }
+  }
+
+  /// Legacy method for backwards compatibility with `nutrient_web.dart`.
+  ///
+  /// @Deprecated: Use [populateConfiguration] instead with the new adapter pattern.
+  /// This method will be removed when `nutrient_web.dart` is removed.
+  @Deprecated('Use populateConfiguration with the new adapter pattern instead')
+  static Map<String, dynamic> populateWebConfiguration(
+    dynamic element,
+    String documentPath,
+    String? licenseKey,
+    PdfConfiguration? configuration,
+  ) {
+    final config = <String, dynamic>{
+      'container': element,
+      'document': documentPath,
+      if (licenseKey != null) 'licenseKey': licenseKey,
+    };
+    populateConfiguration(config, configuration);
+    return config;
   }
 }

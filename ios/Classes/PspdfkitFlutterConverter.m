@@ -144,6 +144,37 @@
             builder.editableAnnotationTypes = [dictionary[key] boolValue] ? editableAnnotations : nil;
         }
 
+        key = @"enableFormEditing";
+        if (dictionary[key]) {
+            NSNumber *annotationEditingValue = dictionary[@"enableAnnotationEditing"];
+            BOOL annotationEditingExplicitlyDisabled = annotationEditingValue && ![annotationEditingValue boolValue];
+            BOOL enableFormEditing = [dictionary[key] boolValue];
+
+            if (enableFormEditing) {
+                // Enable form editing - add Widget type if not already present
+                if (annotationEditingExplicitlyDisabled) {
+                    // Annotation editing is disabled, but form editing should be enabled
+                    // Set editableAnnotationTypes to only include Widget
+                    builder.editableAnnotationTypes = [NSSet setWithObject:PSPDFAnnotationStringWidget];
+                }
+                // If annotation editing is enabled (or not set), forms are already editable by default
+            } else {
+                // Disable form editing - remove Widget type from editableAnnotationTypes
+                if (!annotationEditingExplicitlyDisabled) {
+                    NSMutableSet *currentTypes;
+                    if (builder.editableAnnotationTypes) {
+                        currentTypes = [builder.editableAnnotationTypes mutableCopy];
+                    } else {
+                        // Use the same default set as enableAnnotationEditing
+                        currentTypes = [NSMutableSet setWithArray:@[PSPDFAnnotationStringLink, PSPDFAnnotationStringHighlight, PSPDFAnnotationStringStrikeOut, PSPDFAnnotationStringUnderline, PSPDFAnnotationStringSquiggly, PSPDFAnnotationStringNote, PSPDFAnnotationStringFreeText, PSPDFAnnotationStringInk, PSPDFAnnotationStringSquare, PSPDFAnnotationStringCircle, PSPDFAnnotationStringLine, PSPDFAnnotationStringPolygon, PSPDFAnnotationStringPolyLine, PSPDFAnnotationStringSignature, PSPDFAnnotationStringStamp, PSPDFAnnotationStringEraser, PSPDFAnnotationStringSound, PSPDFAnnotationStringImage, PSPDFAnnotationStringRedaction, PSPDFAnnotationStringWidget, PSPDFAnnotationStringFile, PSPDFAnnotationStringRichMedia, PSPDFAnnotationStringScreen, PSPDFAnnotationStringCaret, PSPDFAnnotationStringPopup, PSPDFAnnotationStringWatermark, PSPDFAnnotationStringTrapNet, PSPDFAnnotationString3D]];
+                    }
+                    [currentTypes removeObject:PSPDFAnnotationStringWidget];
+                    builder.editableAnnotationTypes = currentTypes.count > 0 ? currentTypes : nil;
+                }
+                // If annotation editing is explicitly disabled, forms are already disabled (nil = nothing editable)
+            }
+        }
+
         // Deprecated Options
 
         key = @"pageScrollDirection";
@@ -360,9 +391,8 @@
             finalOptions |= PSPDFSettingsOptionSpreadFitting;
         } else if ([option isEqualToString:@"androidTheme"] || [option isEqualToString:@"androidPageLayout"] || [option isEqualToString:@"androidScreenAwake"]) {
             // NO OP. Only supported on Android
-        } else {
-            NSLog(@"WARNING: '%@' is an invalid settings option. It will be ignored.", option);
         }
+        // Unknown options are silently ignored
     }
 
     // If no options were passed, we use the default setting options.
@@ -498,7 +528,7 @@
             annotationDictionary[@"attachment"] = attachmentObject;
         }
     } @catch (NSException *exception) {
-        NSLog(@"PspdfkitFlutterConverter: Failed to fetch attachment binary: %@", exception.reason);
+        // Silently ignore attachment fetch failures
     }
 }
 

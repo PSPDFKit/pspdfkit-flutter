@@ -10,10 +10,10 @@
 // Export the correct widget based on the platform.
 export 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.io) 'src/widgets/pspdfkit_widget.dart'
-    if (dart.library.html) 'src/widgets/pspdfkit_widget_web.dart';
+    if (dart.library.js_interop) 'src/widgets/pspdfkit_widget_web.dart';
 export 'src/widgets/nutrient_view.dart'
     if (dart.library.io) 'src/widgets/nutrient_view.dart'
-    if (dart.library.html) 'src/widgets/nutrient_view_web.dart';
+    if (dart.library.js_interop) 'src/widgets/nutrient_view_web.dart';
 
 // All other exports.
 export 'src/pdf_configuration.dart';
@@ -45,4 +45,18 @@ export 'src/nutrient.dart';
 
 export 'src/widgets/nutrient_view_controller.dart';
 export 'src/ai/ai_assistant_configuration.dart';
+export 'src/theme_configuration.dart';
 export 'src/utils/missing_platform_directory_exception.dart';
+
+// Adapter infrastructure for native SDK access
+export 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart'
+    show
+        NutrientController,
+        NutrientViewHandle,
+        NativeInstanceRegistry,
+        NutrientPlatformAdapter;
+
+// Platform adapters - conditional exports per platform
+export 'src/adapters/adapters_stub.dart'
+    if (dart.library.io) 'src/adapters/adapters_native.dart'
+    if (dart.library.js_interop) 'src/adapters/adapters_web.dart';

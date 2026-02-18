@@ -8,6 +8,7 @@
 //
 #import "PspdfPlatformView.h"
 #include <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "PspdfkitFlutterHelper.h"
 #import "PspdfkitFlutterConverter.h"
 #import "nutrient_flutter-Swift.h"
@@ -32,9 +33,72 @@
 @property (nonatomic) PSPDFPageIndex initialPageIndex; // Store the initial page index from configuration
 @property PspdfkitPlatformViewImpl *platformViewImpl;
 @property (nonatomic, strong) AutomaticConflictResolutionManager *conflictResolutionManager; // For automatic file conflict resolution
+
+// Theme colors stored for later application
+@property (nonatomic, strong) UIColor *themeSubToolbarBackgroundColor;
+@property (nonatomic, strong) UIColor *themeSubToolbarIconColor;
+@property (nonatomic, strong) UIColor *themeSubToolbarActiveIconColor;
+@property (nonatomic, strong) UIColor *themeSubToolbarActiveToolBackgroundColor;
+@property (nonatomic, strong) UIColor *themeNavigationTabBackgroundColor;
+@property (nonatomic, strong) UIColor *themeNavigationTabIconColor;
+@property (nonatomic, strong) UIColor *themeNavigationTabSelectedIconColor;
+@property (nonatomic, strong) UIColor *themeSearchBackgroundColor;
+@property (nonatomic, strong) UIColor *themeSearchHighlightColor;
+@property (nonatomic, strong) UIColor *themeThumbnailBarBackgroundColor;
+@property (nonatomic, strong) UIColor *themeSelectionTextHighlightColor;
+@property (nonatomic, strong) UIColor *themeSelectionAnnotationBorderColor;
+@property (nonatomic, strong) UIColor *themeDialogBackgroundColor;
+@property (nonatomic, strong) UIColor *themeSeparatorColor;
 @end
 
+/// Parses a hex color string (e.g. "#FF0000" or "FF0000") into a UIColor.
+static UIColor *PSPDFColorFromHexString(NSString *hexString) {
+    NSString *hex = [hexString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if ([hex hasPrefix:@"#"]) {
+        hex = [hex substringFromIndex:1];
+    }
+    unsigned int rgb = 0;
+    [[NSScanner scannerWithString:hex] scanHexInt:&rgb];
+    CGFloat r = ((rgb & 0xFF0000) >> 16) / 255.0;
+    CGFloat g = ((rgb & 0x00FF00) >> 8) / 255.0;
+    CGFloat b = (rgb & 0x0000FF) / 255.0;
+    return [UIColor colorWithRed:r green:g blue:b alpha:1.0];
+}
+
 @implementation PspdfPlatformView
+
+// Static registry for PSPDFViewController instances, keyed by view ID
+static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerRegistry;
+
+#pragma mark - Static Registry Methods
+
++ (void)initialize {
+    if (self == [PspdfPlatformView class]) {
+        viewControllerRegistry = [NSMutableDictionary dictionary];
+    }
+}
+
++ (void)registerViewController:(int64_t)viewId controller:(PSPDFViewController *)controller {
+    @synchronized (viewControllerRegistry) {
+        viewControllerRegistry[@(viewId)] = controller;
+        NSLog(@"Registered PSPDFViewController for view %lld", viewId);
+    }
+}
+
++ (void)unregisterViewController:(int64_t)viewId {
+    @synchronized (viewControllerRegistry) {
+        [viewControllerRegistry removeObjectForKey:@(viewId)];
+        NSLog(@"Unregistered PSPDFViewController for view %lld", viewId);
+    }
+}
+
++ (PSPDFViewController *)getViewController:(int64_t)viewId {
+    @synchronized (viewControllerRegistry) {
+        return viewControllerRegistry[@(viewId)];
+    }
+}
+
+#pragma mark - FlutterPlatformView
 
 - (nonnull UIView *)view {
     return self.navigationController.view ?: [UIView new];
@@ -43,6 +107,7 @@
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     
     if ((self = [super init])) {
+        _platformViewId = viewId;
         _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.nutrient.widget.%lld", viewId] binaryMessenger:messenger];
         _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:messenger];
         _binaryMessenger = messenger;
@@ -57,16 +122,13 @@
         
         // View controller containment
         _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-        if (_flutterViewController == nil) {
-            NSLog(@"Warning: FlutterViewController is nil. This may lead to view container containment problems with PSPDFViewController since we no longer receive UIKit lifecycle events.");
-        } else {
+        if (_flutterViewController != nil) {
             [_flutterViewController addChildViewController:_navigationController];
             [_navigationController didMoveToParentViewController:_flutterViewController];
         }
 
         NSString *documentPath = args[@"document"];
         if ([documentPath isKindOfClass:[NSString class]] == NO || [documentPath length] == 0) {
-            NSLog(@"Warning: 'document' argument is not a string. Showing an empty view in default configuration.");
             _pdfViewController = [[PSPDFViewController alloc] init];
         } else {
            
@@ -115,10 +177,169 @@
                 }
                 
                 NSArray *annotationToolbarGroupingitems = configurationDictionary[@"toolbarItemGrouping"];
-                
+
                 if (annotationToolbarGroupingitems){
                     PSPDFAnnotationToolbarConfiguration *configuration = [AnnotationToolbarItemsGrouping convertAnnotationToolbarConfigurationWithToolbarItems:annotationToolbarGroupingitems];
                     _pdfViewController.annotationToolbarController.annotationToolbar.configurations = @[configuration];
+                }
+
+                // Apply theme configuration colors
+                NSDictionary *themeConfig = configurationDictionary[@"themeConfiguration"];
+                if (themeConfig && [themeConfig isKindOfClass:[NSDictionary class]]) {
+                    // Apply background color
+                    NSString *bgColorHex = themeConfig[@"backgroundColor"];
+                    if (bgColorHex && [bgColorHex isKindOfClass:[NSString class]]) {
+                        UIColor *bgColor = PSPDFColorFromHexString(bgColorHex);
+                        [_pdfViewController updateConfigurationWithBuilder:^(PSPDFConfigurationBuilder *builder) {
+                            builder.backgroundColor = bgColor;
+                        }];
+                    }
+
+                    // Apply toolbar colors
+                    NSDictionary *toolbarConfig = themeConfig[@"toolbar"];
+                    if (toolbarConfig && [toolbarConfig isKindOfClass:[NSDictionary class]]) {
+                        // Toolbar background color
+                        NSString *toolbarBgHex = toolbarConfig[@"backgroundColor"];
+                        if (toolbarBgHex && [toolbarBgHex isKindOfClass:[NSString class]]) {
+                            UIColor *toolbarBgColor = PSPDFColorFromHexString(toolbarBgHex);
+
+                            // For iOS 15+, use UINavigationBarAppearance
+                            if (@available(iOS 15.0, *)) {
+                                UINavigationBarAppearance *appearance = [[UINavigationBarAppearance alloc] init];
+                                [appearance configureWithOpaqueBackground];
+                                appearance.backgroundColor = toolbarBgColor;
+
+                                _navigationController.navigationBar.standardAppearance = appearance;
+                                _navigationController.navigationBar.scrollEdgeAppearance = appearance;
+                                _navigationController.navigationBar.compactAppearance = appearance;
+                            }
+
+                            // Also set barTintColor for iOS 14 compatibility
+                            _navigationController.navigationBar.barTintColor = toolbarBgColor;
+                        }
+
+                        // Toolbar icon color (tint color)
+                        NSString *iconColorHex = toolbarConfig[@"iconColor"];
+                        if (iconColorHex && [iconColorHex isKindOfClass:[NSString class]]) {
+                            UIColor *iconColor = PSPDFColorFromHexString(iconColorHex);
+                            _navigationController.navigationBar.tintColor = iconColor;
+                        }
+
+                        // Toolbar title color
+                        NSString *titleColorHex = toolbarConfig[@"titleColor"];
+                        if (titleColorHex && [titleColorHex isKindOfClass:[NSString class]]) {
+                            UIColor *titleColor = PSPDFColorFromHexString(titleColorHex);
+                            _navigationController.navigationBar.titleTextAttributes = @{
+                                NSForegroundColorAttributeName: titleColor
+                            };
+
+                            // Also update appearance for iOS 15+
+                            if (@available(iOS 15.0, *)) {
+                                UINavigationBarAppearance *appearance = _navigationController.navigationBar.standardAppearance;
+                                if (appearance) {
+                                    appearance.titleTextAttributes = @{NSForegroundColorAttributeName: titleColor};
+                                    _navigationController.navigationBar.standardAppearance = appearance;
+                                    _navigationController.navigationBar.scrollEdgeAppearance = appearance;
+                                    _navigationController.navigationBar.compactAppearance = appearance;
+                                }
+                            }
+                        }
+                    }
+
+                    // Store annotation toolbar colors for later application
+                    NSDictionary *annotationToolbarConfig = themeConfig[@"annotationToolbar"];
+                    if (annotationToolbarConfig && [annotationToolbarConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *annotationToolbarBgHex = annotationToolbarConfig[@"backgroundColor"];
+                        if (annotationToolbarBgHex && [annotationToolbarBgHex isKindOfClass:[NSString class]]) {
+                            _themeSubToolbarBackgroundColor = PSPDFColorFromHexString(annotationToolbarBgHex);
+                        }
+
+                        NSString *annotationToolbarIconHex = annotationToolbarConfig[@"iconColor"];
+                        if (annotationToolbarIconHex && [annotationToolbarIconHex isKindOfClass:[NSString class]]) {
+                            _themeSubToolbarIconColor = PSPDFColorFromHexString(annotationToolbarIconHex);
+                        }
+
+                        NSString *annotationToolbarActiveIconHex = annotationToolbarConfig[@"activeIconColor"];
+                        if (annotationToolbarActiveIconHex && [annotationToolbarActiveIconHex isKindOfClass:[NSString class]]) {
+                            _themeSubToolbarActiveIconColor = PSPDFColorFromHexString(annotationToolbarActiveIconHex);
+                        }
+
+                        NSString *annotationToolbarActiveToolBgHex = annotationToolbarConfig[@"activeToolBackgroundColor"];
+                        if (annotationToolbarActiveToolBgHex && [annotationToolbarActiveToolBgHex isKindOfClass:[NSString class]]) {
+                            _themeSubToolbarActiveToolBackgroundColor = PSPDFColorFromHexString(annotationToolbarActiveToolBgHex);
+                        }
+                    }
+
+                    // Store navigation tab colors for later application
+                    NSDictionary *navTabConfig = themeConfig[@"navigationTab"];
+                    if (navTabConfig && [navTabConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *navTabBgHex = navTabConfig[@"backgroundColor"];
+                        if (navTabBgHex && [navTabBgHex isKindOfClass:[NSString class]]) {
+                            _themeNavigationTabBackgroundColor = PSPDFColorFromHexString(navTabBgHex);
+                        }
+
+                        NSString *navTabIconHex = navTabConfig[@"iconColor"];
+                        if (navTabIconHex && [navTabIconHex isKindOfClass:[NSString class]]) {
+                            _themeNavigationTabIconColor = PSPDFColorFromHexString(navTabIconHex);
+                        }
+
+                        NSString *navTabSelectedIconHex = navTabConfig[@"selectedIconColor"];
+                        if (navTabSelectedIconHex && [navTabSelectedIconHex isKindOfClass:[NSString class]]) {
+                            _themeNavigationTabSelectedIconColor = PSPDFColorFromHexString(navTabSelectedIconHex);
+                        }
+                    }
+
+                    // Store search colors for later application
+                    NSDictionary *searchConfig = themeConfig[@"search"];
+                    if (searchConfig && [searchConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *searchBgHex = searchConfig[@"backgroundColor"];
+                        if (searchBgHex && [searchBgHex isKindOfClass:[NSString class]]) {
+                            _themeSearchBackgroundColor = PSPDFColorFromHexString(searchBgHex);
+                        }
+
+                        NSString *searchHighlightHex = searchConfig[@"highlightColor"];
+                        if (searchHighlightHex && [searchHighlightHex isKindOfClass:[NSString class]]) {
+                            _themeSearchHighlightColor = PSPDFColorFromHexString(searchHighlightHex);
+                        }
+                    }
+
+                    // Store thumbnail bar color for later application
+                    NSDictionary *thumbnailBarConfig = themeConfig[@"thumbnailBar"];
+                    if (thumbnailBarConfig && [thumbnailBarConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *thumbnailBarBgHex = thumbnailBarConfig[@"backgroundColor"];
+                        if (thumbnailBarBgHex && [thumbnailBarBgHex isKindOfClass:[NSString class]]) {
+                            _themeThumbnailBarBackgroundColor = PSPDFColorFromHexString(thumbnailBarBgHex);
+                        }
+                    }
+
+                    // Store selection colors for later application
+                    NSDictionary *selectionConfig = themeConfig[@"selection"];
+                    if (selectionConfig && [selectionConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *textHighlightHex = selectionConfig[@"textHighlightColor"];
+                        if (textHighlightHex && [textHighlightHex isKindOfClass:[NSString class]]) {
+                            _themeSelectionTextHighlightColor = PSPDFColorFromHexString(textHighlightHex);
+                        }
+
+                        NSString *annotationBorderHex = selectionConfig[@"annotationBorderColor"];
+                        if (annotationBorderHex && [annotationBorderHex isKindOfClass:[NSString class]]) {
+                            _themeSelectionAnnotationBorderColor = PSPDFColorFromHexString(annotationBorderHex);
+                        }
+                    }
+
+                    // Store dialog background color for later application
+                    NSDictionary *dialogConfig = themeConfig[@"dialog"];
+                    if (dialogConfig && [dialogConfig isKindOfClass:[NSDictionary class]]) {
+                        NSString *dialogBgHex = dialogConfig[@"backgroundColor"];
+                        if (dialogBgHex && [dialogBgHex isKindOfClass:[NSString class]]) {
+                            _themeDialogBackgroundColor = PSPDFColorFromHexString(dialogBgHex);
+                        }
+                    }
+
+                    // Store separator color for later application
+                    NSString *separatorColorHex = themeConfig[@"separatorColor"];
+                    if (separatorColorHex && [separatorColorHex isKindOfClass:[NSString class]]) {
+                        _themeSeparatorColor = PSPDFColorFromHexString(separatorColorHex);
+                    }
                 }
             }
             // Set Measurement value configurations
@@ -158,10 +379,17 @@
         }
         
         [_platformViewImpl setViewControllerWithController:_pdfViewController];
-        
+
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
         }];
+
+        // Register the PSPDFViewController in the static registry for adapter access via FFI
+        [PspdfPlatformView registerViewController:viewId controller:_pdfViewController];
+
+        // Notify Dart that the PSPDFViewController is ready for adapter access
+        [_channel invokeMethod:@"onViewControllerReady" arguments:nil];
+        NSLog(@"Sent onViewControllerReady notification to Dart");
     }
 
     return self;
@@ -187,10 +415,24 @@
         [_flutterPdfDocument registerWithBinaryMessenger:_binaryMessenger];
 
         // Create and register AnnotationManager for this document
-        _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+        NSError *annotationError = nil;
+        _annotationManager = [AnnotationManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger error:&annotationError];
+        if (annotationError) {
+            [_channel invokeMethod:@"onDocumentError" arguments:@{
+                @"error": annotationError.localizedDescription ?: @"Failed to initialize annotation manager",
+                @"type": @"annotationManager"
+            }];
+        }
 
         // Create and register BookmarkManager for this document
-        _bookmarkManager = [BookmarkManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger];
+        NSError *bookmarkError = nil;
+        _bookmarkManager = [BookmarkManagerImpl createAndInitializeWithDocument:self.pdfViewController.document binaryMessenger:_binaryMessenger error:&bookmarkError];
+        if (bookmarkError) {
+            [_channel invokeMethod:@"onDocumentError" arguments:@{
+                @"error": bookmarkError.localizedDescription ?: @"Failed to initialize bookmark manager",
+                @"type": @"bookmarkManager"
+            }];
+        }
 
         [_platformViewImpl onDocumentLoadedWithDocumentId:documentId];
         [_channel invokeMethod:@"onDocumentLoaded" arguments:arguments];
@@ -210,6 +452,9 @@
 }
 
 - (void)cleanup {
+    // Unregister the PSPDFViewController from the static registry
+    [PspdfPlatformView unregisterViewController:self.platformViewId];
+
     [self.flutterPdfDocument unRegisterWithBinaryMessenger:_binaryMessenger];
     self.flutterPdfDocument = nil;
 
@@ -247,3 +492,16 @@
 }
 
 @end
+
+#pragma mark - C FFI Functions for Adapter Bridge
+
+/// Gets the PSPDFViewController registered for a given view ID.
+/// This function is called from Dart via FFI to allow adapters to access
+/// the native PSPDFViewController from the PspdfPlatformView registry.
+///
+/// @param viewId The platform view ID.
+/// @return The PSPDFViewController pointer, or NULL if not registered.
+void* nutrient_get_view_controller(int64_t viewId) {
+    PSPDFViewController *controller = [PspdfPlatformView getViewController:viewId];
+    return (__bridge void *)controller;
+}

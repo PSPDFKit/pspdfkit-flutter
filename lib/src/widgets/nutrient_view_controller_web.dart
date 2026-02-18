@@ -7,35 +7,45 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/painting.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/events/nutrient_events_extension.dart';
-import '../document/annotation_json_converter.dart';
-import '../web/nutrient_web.dart';
-import '../web/nutrient_web_instance.dart';
-import '../web/nutrient_web_utils.dart';
+import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
+    show
+        NutrientWebInstance,
+        NutrientWebInstanceExtension,
+        NutrientWebStaticExtension,
+        NutrientNamespace,
+        NutrientRect,
+        annotationTypeMap,
+        pspdfkit;
 
-/// A controller for a Nutrient viewer widget.
+/// A controller for a Nutrient viewer widget on the web platform.
+///
+/// Wraps a [NutrientWebInstance] from the modern `dart:js_interop`-based
+/// web bindings provided by `nutrient_flutter_web`.
 class NutrientViewControllerWeb extends NutrientViewController
     with AnnotationJsonConverter {
-  final NutrientWebInstance pspdfkitInstance;
+  final NutrientWebInstance instance;
 
-  NutrientViewControllerWeb(this.pspdfkitInstance);
+  NutrientViewControllerWeb(this.instance);
 
-  // Map to store original callbacks against their jsAllowInterop-wrapped versions for removal.
-  // Key: NutrientWebEvent, Value: Map<Original Dart Callback, Wrapped JS Callback>
-  final Map<NutrientWebEvent, Map<Function, Function>> _webEventListeners = {};
+  // Map to store web event listeners for removal.
+  final Map<NutrientWebEvent, Map<Function, JSFunction>> _webEventListeners =
+      {};
 
-  // Map to track legacy NutrientEvent listeners (for backward compatibility)
-  final Map<NutrientEvent, Function> _legacyEventListeners = {};
+  // Map to track legacy NutrientEvent listeners
+  final Map<NutrientEvent, JSFunction> _legacyEventListeners = {};
 
   @override
   Future<bool?> importXfdf(String xfdfPath) async {
-    await pspdfkitInstance.importXfdf(xfdfPath);
-    return Future.value(true);
+    await instance.importXFDF(xfdfPath).toDart;
+    return true;
   }
 
   @override
@@ -49,17 +59,14 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   @override
   Future<bool?> save() async {
-    await pspdfkitInstance.save();
-    return Future.value(true);
+    await instance.save().toDart;
+    return true;
   }
 
   @override
   Future<bool?> setAnnotationMenuConfiguration(
     AnnotationMenuConfiguration configuration,
   ) {
-    // Web implementation: annotation menu configuration is handled differently on web
-    // This would need to be implemented using the web-specific API
-    // For now, we'll return true to indicate the API is available
     if (kDebugMode) {
       print(
           'setAnnotationMenuConfiguration called on web - not yet implemented');
@@ -74,34 +81,39 @@ class NutrientViewControllerWeb extends NutrientViewController
   }
 
   void dispose() {
-    // Remove all web event listeners before unloading
-    final eventsCopy =
-        Map<NutrientWebEvent, Map<Function, Function>>.from(_webEventListeners);
+    // Remove all web event listeners
+    final eventsCopy = Map<NutrientWebEvent, Map<Function, JSFunction>>.from(
+        _webEventListeners);
     for (final eventEntry in eventsCopy.entries) {
       final event = eventEntry.key;
-      final callbacksCopy = Map<Function, Function>.from(eventEntry.value);
+      final callbacksCopy = Map<Function, JSFunction>.from(eventEntry.value);
       for (final callbackEntry in callbacksCopy.entries) {
-        final originalCallback = callbackEntry.key as Function(dynamic);
-        removeWebEventListener(event, originalCallback);
+        removeWebEventListener(event, callbackEntry.key as Function(dynamic));
       }
     }
     _webEventListeners.clear();
 
     // Remove all legacy event listeners
     final legacyEventsCopy =
-        Map<NutrientEvent, Function>.from(_legacyEventListeners);
+        Map<NutrientEvent, JSFunction>.from(_legacyEventListeners);
     for (final eventEntry in legacyEventsCopy.entries) {
       removeEventListener(eventEntry.key);
     }
     _legacyEventListeners.clear();
 
-    NutrientWeb.unload(pspdfkitInstance.jsObject);
+    // Unload the instance
+    try {
+      pspdfkit.unload(instance);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error unloading PSPDFKit instance: $e');
+      }
+    }
   }
 
   @override
   Future<void> addEventListener(
       NutrientEvent event, Function(dynamic) callback) async {
-    // Skip unsupported events on web
     if (!event.isWebSupported) {
       if (kDebugMode) {
         print(
@@ -110,60 +122,44 @@ class NutrientViewControllerWeb extends NutrientViewController
       return;
     }
 
-    // Note: This uses the older NutrientEvent enum.
-    // Store the wrapped function for later removal
-    final wrappedCallback = jsAllowInterop((dynamic data) {
-      _processAndInvokeCallback(data, callback, event);
-    }) as Function(dynamic);
+    final JSFunction jsCallback = ((JSAny? data) {
+      _processAndInvokeCallback(_safeConvertJsAny(data), callback, event);
+    }).toJS;
 
-    _legacyEventListeners[event] = wrappedCallback;
-    pspdfkitInstance.addEventListener(event.webName, wrappedCallback);
+    _legacyEventListeners[event] = jsCallback;
+    instance.addEventListener(event.webName, jsCallback);
   }
 
   @override
   Future<void> removeEventListener(NutrientEvent event) async {
-    // Skip unsupported events on web (they were never registered)
-    if (!event.isWebSupported) {
-      return;
-    }
+    if (!event.isWebSupported) return;
 
-    final wrappedCallback = _legacyEventListeners[event];
-    if (wrappedCallback != null) {
+    final jsCallback = _legacyEventListeners[event];
+    if (jsCallback != null) {
       try {
-        pspdfkitInstance.removeEventListener(event.webName, wrappedCallback);
+        instance.removeEventListener(event.webName, jsCallback);
         _legacyEventListeners.remove(event);
       } catch (e) {
         if (kDebugMode) {
           print('Error removing legacy event listener for $event: $e');
         }
       }
-    } else {
-      if (kDebugMode) {
-        print('Warning: No legacy event listener found for $event');
-      }
     }
   }
 
   @override
   void addWebEventListener(NutrientWebEvent event, Function(dynamic) callback) {
-    // Create the wrapped JS function that calls our common processor
-    final Function wrappedJsFunction = jsAllowInterop((dynamic data) {
-      _processAndInvokeCallback(data, callback, event);
-    });
+    final JSFunction jsCallback = ((JSAny? data) {
+      _processAndInvokeCallback(_safeConvertJsAny(data), callback, event);
+    }).toJS;
 
-    // Store the mapping before adding the listener
-    _webEventListeners.putIfAbsent(event, () => {})[callback] =
-        wrappedJsFunction;
+    _webEventListeners.putIfAbsent(event, () => {})[callback] = jsCallback;
 
-    // Make sure we're properly converting the function to the right type
-    dynamic jsFunction = wrappedJsFunction;
-
-    // Add the listener using the wrapped function
     try {
       if (kDebugMode) {
         print('Adding event listener for: ${event.name}');
       }
-      pspdfkitInstance.addEventListener(event.name, jsFunction);
+      instance.addEventListener(event.name, jsCallback);
     } catch (e) {
       if (kDebugMode) {
         print('Error adding web event listener for ${event.name}: $e');
@@ -174,24 +170,18 @@ class NutrientViewControllerWeb extends NutrientViewController
   @override
   void removeWebEventListener(
       NutrientWebEvent event, Function(dynamic) callback) {
-    // Find the map for the specific event
     final eventCallbacks = _webEventListeners[event];
     if (eventCallbacks != null) {
-      // Find the wrapped JS function associated with the original Dart callback
-      final wrappedJsFunction = eventCallbacks[callback];
-      if (wrappedJsFunction != null) {
+      final jsCallback = eventCallbacks[callback];
+      if (jsCallback != null) {
         try {
-          // Remove the listener using the stored wrapped function
-          pspdfkitInstance.removeEventListener(event.name, wrappedJsFunction);
+          instance.removeEventListener(event.name, jsCallback);
         } catch (e) {
           if (kDebugMode) {
             print('Error removing web event listener for $event: $e');
           }
-          // Log error but proceed to remove from map
         }
-        // Remove the entry from our tracking map
         eventCallbacks.remove(callback);
-        // Clean up the outer map if the inner map becomes empty
         if (eventCallbacks.isEmpty) {
           _webEventListeners.remove(event);
         }
@@ -203,69 +193,231 @@ class NutrientViewControllerWeb extends NutrientViewController
   Future<bool?> enterAnnotationCreationMode(
       [AnnotationTool? annotationTool]) async {
     try {
-      if (annotationTool != null) {
-        await pspdfkitInstance.setToolMode(annotationTool);
-      } else {
-        // Use a default annotation tool (ink) if none is specified
-        // This is consistent with native implementations
-        await pspdfkitInstance.setToolMode(AnnotationTool.inkPen);
+      final tool = annotationTool ?? AnnotationTool.inkPen;
+      debugPrint('[enterAnnotationCreationMode] tool: $tool');
+
+      // Get the PSPDFKit.InteractionMode constant from the SDK
+      final pspdfkitNamespace = globalContext['PSPDFKit'] as JSObject?;
+      if (pspdfkitNamespace == null) {
+        throw Exception('PSPDFKit namespace not found');
       }
-      return Future.value(true);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error entering annotation creation mode: $e');
+      final interactionModeNamespace =
+          pspdfkitNamespace['InteractionMode'] as JSObject?;
+      if (interactionModeNamespace == null) {
+        throw Exception('PSPDFKit.InteractionMode namespace not found');
       }
-      return Future.value(false);
+
+      // Use the comprehensive toWebInteractionMode() extension method
+      final modeName = tool.toWebInteractionMode();
+      debugPrint('[enterAnnotationCreationMode] modeName: $modeName');
+
+      final interactionMode = interactionModeNamespace[modeName];
+      debugPrint(
+          '[enterAnnotationCreationMode] interactionMode found: ${interactionMode != null}');
+
+      if (interactionMode == null) {
+        debugPrint(
+            '[enterAnnotationCreationMode] InteractionMode "$modeName" not found in SDK');
+        return false;
+      }
+
+      // For text markup tools, set the annotation preset first
+      // The Web SDK uses TEXT_HIGHLIGHTER mode for all text markup, but
+      // differentiates by preset (highlight, underline, strikeout, squiggly)
+      final presetId = _getAnnotationPresetId(tool);
+      if (presetId != null) {
+        debugPrint('[enterAnnotationCreationMode] Setting preset: $presetId');
+        await instance.setCurrentAnnotationPreset(presetId).toDart;
+      }
+
+      // Use a callback function to update the view state (Immutable.js pattern)
+      final updateFn = ((JSObject viewState) {
+        return viewState.callMethod(
+            'set'.toJS, 'interactionMode'.toJS, interactionMode);
+      }).toJS;
+
+      instance.setViewState(updateFn);
+      debugPrint(
+          '[enterAnnotationCreationMode] setViewState called successfully');
+      return true;
+    } catch (e, stack) {
+      debugPrint('[enterAnnotationCreationMode] Error: $e');
+      debugPrint('[enterAnnotationCreationMode] Stack: $stack');
+      return false;
+    }
+  }
+
+  /// Returns the annotation preset ID for tools that require it.
+  /// Text markup tools (highlight, underline, strikeout, squiggly) all use
+  /// the TEXT_HIGHLIGHTER interaction mode but differentiate by preset.
+  String? _getAnnotationPresetId(AnnotationTool tool) {
+    switch (tool) {
+      case AnnotationTool.highlight:
+        return 'highlight';
+      case AnnotationTool.underline:
+        return 'underline';
+      case AnnotationTool.strikeOut:
+        return 'strikeout';
+      case AnnotationTool.squiggly:
+        return 'squiggly';
+      default:
+        return null;
     }
   }
 
   @override
   Future<bool?> exitAnnotationCreationMode() async {
     try {
-      // Set tool mode to null to exit annotation creation mode
-      // This will reset to the default interaction mode
-      await pspdfkitInstance.setToolMode(null);
-      return Future.value(true);
+      // Set interactionMode to null to exit annotation creation mode
+      // This resets to the default state (no active annotation tool)
+      final updateFn = ((JSObject viewState) {
+        return viewState.callMethod('set'.toJS, 'interactionMode'.toJS, null);
+      }).toJS;
+
+      instance.setViewState(updateFn);
+      return true;
     } catch (e) {
       if (kDebugMode) {
         print('Error exiting annotation creation mode: $e');
       }
-      return Future.value(false);
+      return false;
     }
   }
 
   @override
   Future<Rect> getVisibleRect(int pageIndex) {
-    // This method is not supported on the web.
     throw UnimplementedError('This method is not supported yet on web!');
   }
 
   @override
-  Future<void> zoomToRect(int pageIndex, Rect rect) {
-    return pspdfkitInstance.zoomToRect(pageIndex, rect);
+  Future<void> zoomToRect(int pageIndex, Rect rect) async {
+    try {
+      // Create a PSPDFKit.Geometry.Rect object using the SDK constructor
+      final pspdfkitNamespace = globalContext['PSPDFKit'] as JSObject?;
+      if (pspdfkitNamespace == null) {
+        throw Exception('PSPDFKit namespace not found');
+      }
+      final geometryNamespace = pspdfkitNamespace['Geometry'] as JSObject?;
+      if (geometryNamespace == null) {
+        throw Exception('PSPDFKit.Geometry namespace not found');
+      }
+      final rectConstructor = geometryNamespace['Rect'] as JSFunction?;
+      if (rectConstructor == null) {
+        throw Exception('PSPDFKit.Geometry.Rect constructor not found');
+      }
+
+      final rectData = {
+        'left': rect.left,
+        'top': rect.top,
+        'width': rect.width,
+        'height': rect.height,
+      }.jsify();
+
+      final webRect = rectConstructor.callAsConstructor(rectData);
+      instance.jumpAndZoomToRect(pageIndex, webRect as NutrientRect);
+    } catch (e) {
+      throw Exception('Failed to zoom to rect: $e');
+    }
   }
 
   @override
-  Future<double> getZoomScale(int pageIndex) {
-    return pspdfkitInstance.getZoomScale(pageIndex);
+  Future<double> getZoomScale(int pageIndex) async {
+    try {
+      final scale = (instance as JSObject).getProperty('currentZoomLevel'.toJS);
+      return (scale as JSNumber).toDartDouble;
+    } catch (e) {
+      throw Exception('Failed to get zoom scale: $e');
+    }
   }
 
-  // Helper method to process event data and invoke the user callback
+  @override
+  Future<bool?> exportXfdf(String xfdfPath) async {
+    final result = await instance.exportXFDF(null).toDart;
+    if (result != null) {
+      _downloadContent(
+          (result as JSString).toDart, xfdfPath, 'application/vnd.adobe.xfdf');
+    }
+    return true;
+  }
+
+  /// Helper to trigger a file download in the browser.
+  void _downloadContent(String content, String filename, String mimeType) {
+    try {
+      final urlObj = globalContext['URL'] as JSObject;
+      final doc = globalContext['document'] as JSObject;
+
+      final blob = globalContext.callMethod(
+        'eval'.toJS,
+        'new Blob([arguments[0]], {type: arguments[1]})'.toJS,
+        content.toJS,
+        mimeType.toJS,
+      );
+      final url = urlObj.callMethod('createObjectURL'.toJS, blob);
+      final anchor = doc.callMethod('createElement'.toJS, 'a'.toJS) as JSObject;
+      anchor['href'] = url;
+      anchor['download'] = filename.toJS;
+      anchor.callMethod('click'.toJS);
+      urlObj.callMethod('revokeObjectURL'.toJS, url);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error downloading XFDF: $e');
+      }
+    }
+  }
+
+  /// Tries to convert a JS object (e.g. Immutable.js Record) to a Dart map
+  /// using the Web SDK's `Annotations.toSerializableObject()`.
+  ///
+  /// Returns null if the object cannot be converted.
+  Map<String, dynamic>? _tryConvertJsAnnotation(dynamic jsObj) {
+    try {
+      final ns = NutrientNamespace.getAsJSObject();
+      final annotationsNs = ns['Annotations'] as JSObject?;
+      if (annotationsNs == null) return null;
+
+      final jsAnnotation = jsObj as JSObject;
+      final jsJson = annotationsNs.callMethod(
+        'toSerializableObject'.toJS,
+        jsAnnotation,
+      );
+      if (jsJson == null) return null;
+
+      final result = jsJson.dartify();
+      Map<String, dynamic> typedMap;
+      if (result is Map<String, dynamic>) {
+        typedMap = _deepConvertMap(result);
+      } else if (result is Map) {
+        typedMap = _deepConvertMap(Map<String, dynamic>.from(result));
+      } else {
+        return null;
+      }
+
+      // Add type info via instanceof checks
+      for (final entry in annotationTypeMap.entries) {
+        final annotationClass = annotationsNs[entry.key];
+        if (annotationClass == null) continue;
+        if (jsAnnotation.instanceof(annotationClass as JSFunction)) {
+          typedMap['type'] = entry.value;
+          break;
+        }
+      }
+
+      return typedMap;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _processAndInvokeCallback(
       dynamic data, Function(dynamic) userCallback, dynamic eventEnum) {
     try {
-      // Improved detection for annotation objects
-      bool isAnnotation(dynamic obj) {
-        if (obj is! Map<String, dynamic>) return false;
-
-        // Primary check: Type property with pspdfkit/ prefix
+      bool isAnnotation(Map<String, dynamic> obj) {
         if (obj.containsKey('type') &&
             obj['type'] is String &&
             (obj['type'] as String).startsWith('pspdfkit/')) {
           return true;
         }
 
-        // Secondary check: has id and common annotation properties
         if (obj.containsKey('id')) {
           final annotationProps = [
             'boundingBox',
@@ -285,11 +437,29 @@ class NutrientViewControllerWeb extends NutrientViewController
         return false;
       }
 
-      // Function to recursively process objects and convert annotations
       dynamic processObject(dynamic obj) {
-        // Case 1: Map that could be an annotation or contain annotations
+        // Handle JS objects that dartify() couldn't convert (e.g. Immutable.js Records).
+        // Try converting them as annotations via the Web SDK.
+        if (obj is JSObject) {
+          final converted = _tryConvertJsAnnotation(obj);
+          if (converted != null) {
+            try {
+              return Annotation.fromJson(converted);
+            } catch (_) {
+              return converted;
+            }
+          }
+          // Can't convert — return as-is
+          return obj;
+        }
+
+        // dartify() may produce Map<Object?, Object?> instead of Map<String, dynamic>.
+        // Normalize to Map<String, dynamic>.
+        if (obj is Map && obj is! Map<String, dynamic>) {
+          obj = Map<String, dynamic>.from(obj);
+        }
+
         if (obj is Map<String, dynamic>) {
-          // If it's an annotation, convert it to Annotation object
           if (isAnnotation(obj)) {
             try {
               return Annotation.fromJson(obj);
@@ -297,54 +467,42 @@ class NutrientViewControllerWeb extends NutrientViewController
               if (kDebugMode) {
                 print('Failed to convert annotation to Dart object: $e');
               }
-              return obj; // Return original on error
+              return obj;
             }
           }
 
-          // Otherwise recursively process each value in the map
           final result = <String, dynamic>{};
           for (final entry in obj.entries) {
             result[entry.key] = processObject(entry.value);
           }
           return result;
-        }
-
-        // Case 2: List that might contain annotations
-        else if (obj is List) {
+        } else if (obj is List) {
           return obj.map((item) => processObject(item)).toList();
         }
 
-        // Case 3: Primitive value, just return it
         return obj;
       }
 
       dynamic finalData;
-      dynamic processedEvent1;
-      dynamic processedEvent2;
 
-      // --- Process event 1 and event 2 (if provided from JS) ---
+      // Normalize top-level map from dartify()
+      if (data is Map && data is! Map<String, dynamic>) {
+        data = Map<String, dynamic>.from(data);
+      }
+
       if (data is Map<String, dynamic> &&
           data.containsKey('argument1') &&
           data.containsKey('argument2')) {
-        // This is a multi-argument event from JavaScript
-        processedEvent1 = processObject(data['argument1']);
-        processedEvent2 = processObject(data['argument2']);
-
-        // Package into the expected format
         finalData = {
-          'argument1': processedEvent1,
-          'argument2': processedEvent2,
+          'argument1': processObject(data['argument1']),
+          'argument2': processObject(data['argument2']),
         };
       } else {
-        // Standard single-argument event
         finalData = processObject(data);
       }
 
-      // Debug log for events with annotations (useful for troubleshooting)
       if (kDebugMode && eventEnum.toString().contains('annotations')) {
-        if (kDebugMode) {
-          print('Processing ${eventEnum.toString()} event: $finalData');
-        }
+        print('Processing ${eventEnum.toString()} event: $finalData');
       }
 
       userCallback(finalData);
@@ -352,14 +510,118 @@ class NutrientViewControllerWeb extends NutrientViewController
       if (kDebugMode) {
         print('Error processing event listener data for $eventEnum: $e');
       }
-      // Fallback: Pass original data if processing fails
       userCallback(data);
     }
   }
 
-  @override
-  Future<bool?> exportXfdf(String xfdfPath) async {
-    await pspdfkitInstance.exportXfdf(xfdfPath);
-    return Future.value(true);
+  /// Safely converts a JSAny to a Dart value, handling cases where dartify() fails.
+  ///
+  /// Some JS objects (like Immutable.js Records or certain event data) cannot
+  /// be converted by dartify() and return LegacyJavaScriptObject instances.
+  /// This method handles those cases by manually extracting properties.
+  dynamic _safeConvertJsAny(JSAny? jsValue) {
+    if (jsValue == null) return null;
+
+    // Try dartify first
+    try {
+      final dartified = jsValue.dartify();
+      // Check if dartify succeeded - if it returns the same type or a usable type
+      if (dartified is Map ||
+          dartified is List ||
+          dartified is String ||
+          dartified is num ||
+          dartified is bool ||
+          dartified == null) {
+        // Deep convert to handle nested IdentityMap instances
+        if (dartified is Map) {
+          return _deepConvertAny(dartified);
+        }
+        return dartified;
+      }
+      // dartify returned something unusable (like LegacyJavaScriptObject)
+      // Fall through to manual conversion
+    } catch (_) {
+      // dartify failed, fall through to manual conversion
+    }
+
+    // Manual conversion for JSObject using js_interop_unsafe
+    try {
+      final jsObj = jsValue as JSObject;
+      return _convertJsObjectToMap(jsObj);
+    } catch (_) {
+      // Not a JSObject or conversion failed
+    }
+
+    // Return null for unconvertible values
+    return null;
+  }
+
+  /// Converts a JSObject to a Map<String, dynamic> by extracting its properties.
+  Map<String, dynamic> _convertJsObjectToMap(JSObject jsObj) {
+    final result = <String, dynamic>{};
+
+    // Get object keys using Object.keys() via globalContext
+    final objectKeys = globalContext['Object'] as JSObject?;
+    if (objectKeys != null) {
+      final keysMethod = objectKeys['keys'];
+      if (keysMethod != null) {
+        final keysArray = objectKeys.callMethod('keys'.toJS, jsObj);
+        if (keysArray != null) {
+          // Convert JSArray to list
+          final dartKeys = (keysArray as JSArray).toDart;
+          for (final jsKey in dartKeys) {
+            final key = (jsKey as JSString).toDart;
+            final value = jsObj[key];
+            result[key] = _safeConvertJsAny(value);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /// Deep converts any value, handling nested maps and lists.
+  dynamic _deepConvertAny(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return _deepConvertMap(value);
+    } else if (value is Map) {
+      final converted = <String, dynamic>{};
+      for (final entry in value.entries) {
+        converted[entry.key.toString()] = _deepConvertAny(entry.value);
+      }
+      return converted;
+    } else if (value is List) {
+      return value.map(_deepConvertAny).toList();
+    }
+    return value;
+  }
+
+  /// Recursively converts a map and all nested maps/lists to proper Dart types.
+  ///
+  /// This is needed because `dartify()` may return `IdentityMap` instances
+  /// for nested objects which don't behave like regular Dart maps.
+  Map<String, dynamic> _deepConvertMap(Map<String, dynamic> input) {
+    final result = <String, dynamic>{};
+    for (final entry in input.entries) {
+      result[entry.key] = _deepConvertValue(entry.value);
+    }
+    return result;
+  }
+
+  /// Recursively converts a value, handling maps and lists.
+  dynamic _deepConvertValue(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return _deepConvertMap(value);
+    } else if (value is Map) {
+      final converted = <String, dynamic>{};
+      for (final entry in value.entries) {
+        converted[entry.key.toString()] = _deepConvertValue(entry.value);
+      }
+      return converted;
+    } else if (value is List) {
+      return value.map(_deepConvertValue).toList();
+    }
+    return value;
   }
 }

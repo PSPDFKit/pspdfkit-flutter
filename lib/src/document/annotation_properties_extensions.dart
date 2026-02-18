@@ -404,10 +404,28 @@ extension AnnotationPropertiesGetters on AnnotationProperties {
 
   /// Gets the flags as a Set of AnnotationFlag enums.
   /// Decodes from the internal JSON string representation.
+  /// Skips any flag names that don't match a valid AnnotationFlag value
+  /// (e.g., Web SDK may return 'noPrint' which maps to the 'print' flag).
   Set<AnnotationFlag>? get flagsSet {
     final flags = _decodeFlags(flagsJson);
     if (flags == null) return null;
-    return flags.map((name) => AnnotationFlag.values.byName(name)).toSet();
+
+    // Map Web SDK flag names to AnnotationFlag enum names.
+    // The Web SDK uses 'noPrint' (inverted logic), while AnnotationFlag uses 'print'.
+    const webToFlutterFlagMap = <String, String>{
+      'noPrint': 'print',
+    };
+
+    final result = <AnnotationFlag>{};
+    for (final name in flags) {
+      final mappedName = webToFlutterFlagMap[name] ?? name;
+      try {
+        result.add(AnnotationFlag.values.byName(mappedName));
+      } catch (_) {
+        // Skip unrecognized flag names gracefully
+      }
+    }
+    return result;
   }
 
   /// Gets the flags as a list of strings.

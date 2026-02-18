@@ -1,0 +1,69 @@
+appId: com.pspdfkit.example
+---
+# Test flow for the Native SDK Adapter Example
+# This test verifies that the adapter pattern works correctly for direct native SDK access
+
+- launchApp:
+    clearState: true
+
+# Wait for the app to load
+- waitForAnimationToEnd
+
+# Scroll down to find the "Native SDK Adapter" example
+- scrollUntilVisible:
+    element: "Native SDK Adapter"
+    direction: DOWN
+    timeout: 10000
+
+# Tap on the adapter example
+- tapOn: "Native SDK Adapter"
+
+# Wait for the view to load
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Adapter Status"
+    timeout: 10000
+
+# Verify the adapter status panel is visible
+- assertVisible: "Adapter Status"
+
+# Wait for the adapter to become ready
+# The status should change from "Initializing..." to something else
+- extendedWaitUntil:
+    visible:
+      id: ".*ready.*"
+      optional: true
+    timeout: 15000
+
+# Verify document info is displayed
+# After loading, we should see page count
+- extendedWaitUntil:
+    visible: "Page Count:"
+    timeout: 10000
+
+# Take a screenshot to verify the UI state
+- takeScreenshot: adapter_example_loaded
+
+# Verify the platform indicator is shown
+- assertVisible:
+    text: "Platform:"
+
+# Try to scroll the PDF to trigger page change
+# This verifies the adapter's page change handling
+- scroll:
+    direction: DOWN
+
+- waitForAnimationToEnd
+
+# Take another screenshot after scrolling
+- takeScreenshot: adapter_example_after_scroll
+
+# Go back to the main screen
+- tapOn:
+    id: ".*back.*"
+    optional: true
+
+# Alternative back navigation
+- back
+
+- waitForAnimationToEnd

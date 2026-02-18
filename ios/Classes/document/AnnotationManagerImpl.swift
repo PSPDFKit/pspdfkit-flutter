@@ -1005,7 +1005,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         return manager
     }
 
-    @objc public static func createAndInitialize(document: Document, binaryMessenger: FlutterBinaryMessenger) -> AnnotationManagerImpl {
+    @objc public static func createAndInitialize(document: Document, binaryMessenger: FlutterBinaryMessenger) throws -> AnnotationManagerImpl {
         let documentId = document.uid ?? UUID().uuidString
 
         // Register document in the registry
@@ -1016,12 +1016,7 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
         manager.register(binaryMessenger: binaryMessenger)
 
         // Initialize with document reference
-        do {
-            try manager.initialize(documentId: documentId)
-        } catch {
-            // Log error but don't fail - the manager can be initialized later
-            print("AnnotationManager: Failed to initialize with document \(documentId): \(error)")
-        }
+        try manager.initialize(documentId: documentId)
 
         return manager
     }

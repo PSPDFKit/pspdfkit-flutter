@@ -26,8 +26,6 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
         super.init()
 
         Self.instances.setObject(self, forKey: NSNumber(value: viewId))
-
-        print("[ViewControllerContainer] Created platform view with ID: \(viewId)")
     }
 
     public func view() -> UIView {
@@ -48,10 +46,7 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
         _ viewId: Int64,
         _ viewController: UnsafeMutableRawPointer  // PDFViewController pointer from FFI
     ) -> Bool {
-        print("[ViewControllerContainer] Attaching view controller to platform view \(viewId)")
-
         guard let container = instances.object(forKey: NSNumber(value: viewId)) else {
-            print("[ViewControllerContainer] Error: No container found for view ID \(viewId)")
             return false
         }
 
@@ -68,7 +63,6 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
             }
 
             guard let flutterViewController = container.findFlutterViewController() else {
-                print("[ViewControllerContainer] Error: Could not find Flutter view controller")
                 return false
             }
 
@@ -86,7 +80,6 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
                 container.pdfViewController = hostedController as? PDFViewController
             }
 
-            print("[ViewControllerContainer] PDF view controller attached successfully")
             return true
         }
 
@@ -106,21 +99,18 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first(where: { $0.isKeyWindow }),
               let rootViewController = window.rootViewController else {
-            print("[ViewControllerContainer] Could not find key window or root view controller")
             return nil
         }
-        
+
         // The root view controller in a Flutter app is typically the FlutterViewController
         if let flutterVC = rootViewController as? FlutterViewController {
-            print("[ViewControllerContainer] Found FlutterViewController directly")
             return flutterVC
         }
-        
+
         // If wrapped in a navigation controller or other container, find the Flutter VC
         if let navController = rootViewController as? UINavigationController {
             for vc in navController.viewControllers {
                 if let flutterVC = vc as? FlutterViewController {
-                    print("[ViewControllerContainer] Found FlutterViewController in navigation stack")
                     return flutterVC
                 }
             }
@@ -145,7 +135,6 @@ public class ViewControllerContainerPlatformView: NSObject, FlutterPlatformView 
     }
 
     deinit {
-        print("[ViewControllerContainer] Disposing platform view: \(viewId)")
         Self.instances.removeObject(forKey: NSNumber(value: viewId))
         hostingController?.willMove(toParent: nil)
         hostingController?.view.removeFromSuperview()

@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
+import com.pspdfkit.flutter.pspdfkit.util.DynamicColorResourcesHelper
 import com.pspdfkit.R
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
@@ -57,6 +58,9 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     // Configuration for hiding annotation creation button
     private var hideAnnotationCreationButton: Boolean = false
 
+    // Theme colors configuration
+    private var themeColors: HashMap<String, Int>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -66,6 +70,48 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
             setDisplayHomeAsUpEnabled(true)
             setDisplayShowHomeEnabled(true)
         }
+    }
+
+    /**
+     * Applies the theme overlay to the Activity's theme before view inflation.
+     * PSPDFKit's internal views (including PdfFragment) resolve `pspdf__backgroundColor`
+     * from the Activity's theme, so we must modify it there.
+     *
+     * Theme colors must be set via [setThemeColors] BEFORE the fragment is committed
+     * to the FragmentManager, as this method is called during view creation.
+     */
+    override fun onGetLayoutInflater(savedInstanceState: Bundle?): LayoutInflater {
+        val inflater = super.onGetLayoutInflater(savedInstanceState)
+        val bgColor = themeColors?.get("backgroundColor") ?: return inflater
+
+        try {
+            // Apply the theme overlay to the Activity's theme directly.
+            // This is necessary because PdfFragment resolves pspdf__backgroundColor
+            // from the Activity context, not from the fragment's inflater context.
+            DynamicColorResourcesHelper.applyToActivityTheme(requireActivity(), bgColor)
+
+            // Verify: resolve pspdf__backgroundColor from Activity's theme
+            val attrId = requireActivity().resources.getIdentifier(
+                "pspdf__backgroundColor", "attr", "com.pspdfkit"
+            )
+            if (attrId != 0) {
+                val tv = android.util.TypedValue()
+                val resolved = requireActivity().theme.resolveAttribute(attrId, tv, true)
+                Log.d("FlutterPdfUiFragment",
+                    "pspdf__backgroundColor resolved=$resolved, type=${tv.type}, data=${String.format("#%08X", tv.data)}")
+            } else {
+                Log.w("FlutterPdfUiFragment", "pspdf__backgroundColor attr not found in com.pspdfkit package")
+                // Try without package qualifier
+                val attrId2 = requireActivity().resources.getIdentifier(
+                    "pspdf__backgroundColor", "attr", requireActivity().packageName
+                )
+                Log.d("FlutterPdfUiFragment", "pspdf__backgroundColor in app package: attrId=$attrId2")
+            }
+        } catch (e: Exception) {
+            Log.e("FlutterPdfUiFragment", "Failed to apply theme overlay to activity", e)
+        }
+
+        return inflater
     }
 
     override fun onCreateView(
@@ -81,6 +127,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupKeyboardInsetListener()
+        applyImmediateThemeColors()
     }
 
     /**
@@ -110,12 +157,89 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     }
 
     /**
+     * Applies theme colors to views after inflation.
+     * Targets specific PSPDFKit internal views by their R.id to ensure
+     * consistent theming across the viewer UI.
+     */
+    private fun applyImmediateThemeColors() {
+        val colors = themeColors ?: return
+
+        try {
+            // Apply background color.
+            // The viewport background is primarily handled by onGetLayoutInflater() which sets
+            // pspdf__backgroundColor via ContextThemeWrapper BEFORE views are inflated.
+            // These calls handle the root view and PdfFragment's own background API.
+            colors["backgroundColor"]?.let { color ->
+                view?.setBackgroundColor(color)
+                pdfFragment?.setBackgroundColor(color)
+                Log.d("FlutterPdfUiFragment", "Applied background color")
+            }
+
+            // Apply toolbar colors
+            val toolbar = view?.findViewById<Toolbar>(R.id.pspdf__toolbar_main)
+            if (toolbar != null) {
+                colors["toolbar.backgroundColor"]?.let { color ->
+                    toolbar.setBackgroundColor(color)
+                    Log.d("FlutterPdfUiFragment", "Applied toolbar background color")
+                }
+
+                colors["toolbar.iconColor"]?.let { color ->
+                    toolbar.navigationIcon?.setTint(color)
+                    toolbar.overflowIcon?.setTint(color)
+                    toolbar.menu?.let { menu ->
+                        for (i in 0 until menu.size()) {
+                            menu.getItem(i).icon?.setTint(color)
+                        }
+                    }
+                    Log.d("FlutterPdfUiFragment", "Applied toolbar icon color")
+                }
+
+                colors["toolbar.titleColor"]?.let { color ->
+                    toolbar.setTitleTextColor(color)
+                    Log.d("FlutterPdfUiFragment", "Applied toolbar title color")
+                }
+            }
+
+            // Apply status bar color
+            colors["toolbar.statusBarColor"]?.let { color ->
+                activity?.window?.statusBarColor = color
+                Log.d("FlutterPdfUiFragment", "Applied status bar color")
+            }
+
+            // Apply thumbnail bar background
+            colors["thumbnailBar.backgroundColor"]?.let { color ->
+                view?.findViewById<View>(R.id.pspdf__activity_thumbnail_bar)?.setBackgroundColor(color)
+                view?.findViewById<View>(R.id.pspdf__static_thumbnail_bar)?.setBackgroundColor(color)
+                Log.d("FlutterPdfUiFragment", "Applied thumbnail bar background color")
+            }
+
+            // Apply outline/navigation view background
+            colors["navigationTab.backgroundColor"]?.let { color ->
+                view?.findViewById<View>(R.id.pspdf__activity_outline_view)?.setBackgroundColor(color)
+                Log.d("FlutterPdfUiFragment", "Applied navigation tab background color")
+            }
+
+            // Apply search view background
+            colors["search.backgroundColor"]?.let { color ->
+                view?.findViewById<View>(R.id.pspdf__activity_search_view_modular)?.setBackgroundColor(color)
+                Log.d("FlutterPdfUiFragment", "Applied search background color")
+            }
+        } catch (e: Exception) {
+            Log.e("FlutterPdfUiFragment", "Error applying immediate theme colors", e)
+        }
+    }
+
+    /**
      * Called when the document is loaded. Notifies Flutter that the document has been loaded.
      *
      * @param document The loaded PDF document.
      */
     override fun onDocumentLoaded(document: PdfDocument) {
         super.onDocumentLoaded(document)
+        Log.d("FlutterPdfUiFragment", "onDocumentLoaded called, pdfFragment=${pdfFragment != null}")
+        // Re-apply theme colors now that the document view is fully initialized.
+        // PdfFragment.setBackgroundColor() requires the document to be loaded.
+        applyImmediateThemeColors()
         // Notify the Nutrient Flutter plugin that the document has been loaded.
         EventDispatcher.getInstance().notifyDocumentLoaded(document)
     }
@@ -198,6 +322,20 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
         this.hideAnnotationCreationButton = hide
         // Invalidate options menu to trigger onPrepareOptionsMenu
         activity?.invalidateOptionsMenu()
+    }
+
+    /**
+     * Sets the theme colors to be applied to the PDF viewer UI.
+     *
+     * @param colors A map of theme color keys (in dot notation) to color integers
+     */
+    fun setThemeColors(colors: HashMap<String, Int>?) {
+        this.themeColors = colors
+        Log.d("FlutterPdfUiFragment", "Theme colors configured with ${colors?.size ?: 0} colors")
+        // If the view is already created, apply immediately
+        if (view != null) {
+            applyImmediateThemeColors()
+        }
     }
 
     // Store titles for custom toolbar items
@@ -445,6 +583,11 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
             )
         }
 
+        // Apply annotation toolbar theme colors for both annotation toolbars
+        if (contextualToolbar is AnnotationCreationToolbar || contextualToolbar is AnnotationEditingToolbar) {
+            applyAnnotationToolbarThemeColors(contextualToolbar)
+        }
+
         // For annotation editing toolbar, use only static configuration from GlobalAnnotationMenuConfiguration
         if (contextualToolbar is AnnotationEditingToolbar) {
             val selectedAnnotations = pdfFragment?.selectedAnnotations
@@ -454,7 +597,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
                     "FlutterPdfUiFragment",
                     "Preparing toolbar for annotation: ${selectedAnnotation.type.name}, UUID: ${selectedAnnotation.uuid}"
                 )
-                
+
                 // Use only static configuration from GlobalAnnotationMenuConfiguration
                 getEffectiveAnnotationMenuHandler()?.let { handler ->
                     handler.onAnnotationSelected(
@@ -473,7 +616,71 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     }
 
     override fun onDisplayContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        // No special handling needed for display
+        // Apply annotation toolbar theme colors when toolbar is displayed
+        if (contextualToolbar is AnnotationCreationToolbar || contextualToolbar is AnnotationEditingToolbar) {
+            applyAnnotationToolbarThemeColors(contextualToolbar)
+        }
+    }
+
+    /**
+     * Applies annotation toolbar theme colors to a contextual toolbar.
+     * This includes background color and icon colors for annotation toolbars.
+     */
+    private fun applyAnnotationToolbarThemeColors(contextualToolbar: ContextualToolbar<*>) {
+        val colors = themeColors ?: return
+
+        try {
+            Log.d("FlutterPdfUiFragment", "Applying annotation toolbar colors to ${contextualToolbar.javaClass.simpleName}")
+
+            // Apply annotation toolbar background color
+            // ContextualToolbar is a ViewGroup — setBackgroundColor works directly on the view
+            colors["annotationToolbar.backgroundColor"]?.let { color ->
+                (contextualToolbar as? View)?.setBackgroundColor(color)
+                Log.d("FlutterPdfUiFragment", "Applied annotation toolbar background color")
+            }
+
+            // Apply icon color tint to toolbar menu items
+            // ContextualToolbar has getMenuItems() to access items
+            colors["annotationToolbar.iconColor"]?.let { color ->
+                try {
+                    val menuItems = contextualToolbar.menuItems
+                    if (menuItems != null) {
+                        for (item in menuItems) {
+                            item.icon?.setTint(color)
+                        }
+                        Log.d("FlutterPdfUiFragment", "Applied annotation toolbar icon color to ${menuItems.size} items")
+                    }
+                } catch (e: Exception) {
+                    Log.w("FlutterPdfUiFragment", "Could not tint annotation toolbar icons via menuItems", e)
+                }
+                // Also traverse child views to tint any ImageViews
+                try {
+                    val viewGroup = contextualToolbar as? ViewGroup
+                    if (viewGroup != null) {
+                        tintAllIcons(viewGroup, color)
+                    }
+                } catch (e: Exception) {
+                    Log.w("FlutterPdfUiFragment", "Could not traverse annotation toolbar children", e)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FlutterPdfUiFragment", "Error applying annotation toolbar theme colors", e)
+        }
+    }
+
+    /**
+     * Recursively tints all ImageView drawables within a ViewGroup.
+     */
+    private fun tintAllIcons(viewGroup: ViewGroup, color: Int) {
+        for (i in 0 until viewGroup.childCount) {
+            val child = viewGroup.getChildAt(i)
+            if (child is android.widget.ImageView) {
+                child.drawable?.setTint(color)
+                child.imageTintList = android.content.res.ColorStateList.valueOf(color)
+            } else if (child is ViewGroup) {
+                tintAllIcons(child, color)
+            }
+        }
     }
 
     override fun onRemoveContextualToolbar(contextualToolbar: ContextualToolbar<*>) {

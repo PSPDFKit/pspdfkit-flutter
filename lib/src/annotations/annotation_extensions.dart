@@ -109,7 +109,12 @@ extension AnnotationToolWebExtension on AnnotationTool {
     }
   }
 
-  /// Returns the appropriate PSPDFKit Web InteractionMode string
+  /// Returns the appropriate PSPDFKit Web InteractionMode string.
+  ///
+  /// Note: Some annotation tools don't have direct Web SDK equivalents:
+  /// - underline, strikeOut, squiggly: Web SDK only has TEXT_HIGHLIGHTER
+  /// - arrow: Uses SHAPE_LINE (arrows are line annotations with endLineCap)
+  /// - image: Uses STAMP_CUSTOM (images are stamp annotations)
   String toWebInteractionMode([AnnotationToolVariant? variant]) {
     switch (this) {
       // Ink tools
@@ -118,15 +123,13 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.inkHighlighter:
         return 'INK';
 
-      // Text markup tools
+      // Text markup tools - Web SDK only has TEXT_HIGHLIGHTER
+      // Underline, strikeout, and squiggly are not separate interaction modes
       case AnnotationTool.highlight:
-        return 'TEXT_HIGHLIGHTER';
       case AnnotationTool.underline:
-        return 'TEXT_UNDERLINE';
       case AnnotationTool.strikeOut:
-        return 'TEXT_STRIKEOUT';
       case AnnotationTool.squiggly:
-        return 'TEXT_SQUIGGLY';
+        return 'TEXT_HIGHLIGHTER';
 
       // Text tools
       case AnnotationTool.freeText:
@@ -144,11 +147,10 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.polyline:
         return 'SHAPE_POLYLINE';
 
-      // Line tools
+      // Line tools - arrow uses SHAPE_LINE (end caps configured separately)
       case AnnotationTool.line:
-        return 'SHAPE_LINE';
       case AnnotationTool.arrow:
-        return 'ARROW';
+        return 'SHAPE_LINE';
 
       // Other annotation tools
       case AnnotationTool.note:
@@ -156,9 +158,8 @@ extension AnnotationToolWebExtension on AnnotationTool {
       case AnnotationTool.stamp:
         return 'STAMP_PICKER';
       case AnnotationTool.stampImage:
+      case AnnotationTool.image: // Images use stamp custom mode
         return 'STAMP_CUSTOM';
-      case AnnotationTool.image:
-        return 'IMAGE';
       case AnnotationTool.signature:
         return 'SIGNATURE';
       case AnnotationTool.eraser:
