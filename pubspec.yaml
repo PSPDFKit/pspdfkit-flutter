@@ -1,6 +1,6 @@
 name: nutrient_flutter
 description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful Nutrient PDF SDK.
-version: 5.4.0
+version: 5.3.1
 homepage: https://nutrient.io/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
 issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
@@ -48,3 +48,14 @@ dev_dependencies:
 # Ignore false positives for security scanning
 false_secrets:
   - example/lib/utils/jwt_util.dart
+
+# For local development until packages are published to pub.dev
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../nutrient_flutter_web

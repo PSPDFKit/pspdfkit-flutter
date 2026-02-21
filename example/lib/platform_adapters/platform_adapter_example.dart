@@ -26,7 +26,8 @@ class PlatformAdapterExample extends StatefulWidget {
   const PlatformAdapterExample({super.key, required this.documentPath});
 
   @override
-  State<PlatformAdapterExample> createState() => _PlatformAdapterExampleState();
+  State<PlatformAdapterExample> createState() =>
+      _PlatformAdapterExampleState();
 }
 
 class _PlatformAdapterExampleState extends State<PlatformAdapterExample> {
@@ -245,8 +246,9 @@ class _PlatformAdapterExampleState extends State<PlatformAdapterExample> {
             IconButton(
               icon: const Icon(Icons.chevron_left),
               iconSize: 20,
-              onPressed:
-                  _currentPage > 0 ? () => _goToPage(_currentPage - 1) : null,
+              onPressed: _currentPage > 0
+                  ? () => _goToPage(_currentPage - 1)
+                  : null,
               tooltip: 'Previous',
             ),
             Expanded(child: _buildPageIndicator()),
@@ -381,7 +383,8 @@ class _PlatformAdapterExampleState extends State<PlatformAdapterExample> {
                   children: [
                     IconButton.outlined(
                       icon: const Icon(Icons.first_page, size: 18),
-                      onPressed: _currentPage > 0 ? () => _goToPage(0) : null,
+                      onPressed:
+                          _currentPage > 0 ? () => _goToPage(0) : null,
                       tooltip: 'First',
                       visualDensity: VisualDensity.compact,
                     ),

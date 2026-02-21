@@ -72,35 +72,43 @@ class _LegacyControllerWrapper extends PspdfkitWidgetController {
 
   @override
   Future<bool?> setFormFieldValue(String value, String fullyQualifiedName) =>
-      throw UnimplementedError('Use PdfDocument.setFormFieldValue instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.setFormFieldValue instead.');
 
   @override
   Future<String?> getFormFieldValue(String fullyQualifiedName) =>
-      throw UnimplementedError('Use PdfDocument.getFormFieldValue instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.getFormFieldValue instead.');
 
   @override
   Future<bool?> applyInstantJson(String annotationsJson) =>
-      throw UnimplementedError('Use PdfDocument.applyInstantJson instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.applyInstantJson instead.');
 
   @override
   Future<String?> exportInstantJson() =>
-      throw UnimplementedError('Use PdfDocument.exportInstantJson instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.exportInstantJson instead.');
 
   @override
   Future<bool?> addAnnotation(Map<String, dynamic> jsonAnnotation) =>
-      throw UnimplementedError('Use PdfDocument.addAnnotation instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.addAnnotation instead.');
 
   @override
   Future<bool?> removeAnnotation(dynamic jsonAnnotation) =>
-      throw UnimplementedError('Use PdfDocument.removeAnnotation instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.removeAnnotation instead.');
 
   @override
   Future<dynamic> getAnnotations(int pageIndex, String type) =>
-      throw UnimplementedError('Use PdfDocument.getAnnotations instead.');
+      throw UnimplementedError(
+          'Use PdfDocument.getAnnotations instead.');
 
   @override
-  Future<dynamic> getAllUnsavedAnnotations() => throw UnimplementedError(
-      'Use PdfDocument.getAllUnsavedAnnotations instead.');
+  Future<dynamic> getAllUnsavedAnnotations() =>
+      throw UnimplementedError(
+          'Use PdfDocument.getAllUnsavedAnnotations instead.');
 
   @override
   Future<bool?> processAnnotations(
@@ -138,7 +146,8 @@ class _LegacyControllerWrapper extends PspdfkitWidgetController {
       _delegate.getZoomScale(pageIndex);
 
   @override
-  Future<bool?> enterAnnotationCreationMode([AnnotationTool? annotationTool]) =>
+  Future<bool?> enterAnnotationCreationMode(
+          [AnnotationTool? annotationTool]) =>
       _delegate.enterAnnotationCreationMode(annotationTool);
 
   @override

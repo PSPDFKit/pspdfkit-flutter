@@ -245,16 +245,6 @@ class PdfConfiguration {
   /// Configuration for annotation contextual menu customization.
   final AnnotationMenuConfiguration? annotationMenuConfiguration;
 
-  /// Configuration for customizing the viewer's visual theme.
-  ///
-  /// Allows controlling colors for the toolbar, sub-toolbar, icons,
-  /// background, search, thumbnails, selection, dialogs, and more
-  /// from Flutter. This overrides the device's system theme for the
-  /// viewer on all platforms (Android, iOS, Web).
-  ///
-  /// See [ThemeConfiguration] for details and available options.
-  final ThemeConfiguration? themeConfiguration;
-
   PdfConfiguration({
     this.scrollDirection,
     this.pageTransition,
@@ -315,7 +305,6 @@ class PdfConfiguration {
     this.aiAssistantConfiguration,
     this.androidEnableAiAssistant,
     this.annotationMenuConfiguration,
-    this.themeConfiguration,
   });
 
   /// Returns a [Map] representation of the [PdfConfiguration] object.
@@ -381,7 +370,6 @@ class PdfConfiguration {
       'aiAssistant': aiAssistantConfiguration?.toMap(),
       'enableAiAssistant': androidEnableAiAssistant,
       'annotationMenuConfiguration': annotationMenuConfiguration?.toMap(),
-      'themeConfiguration': themeConfiguration?.toMap(),
     }..removeWhere((key, value) => value == null);
   }
 

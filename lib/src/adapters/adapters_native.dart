@@ -14,4 +14,5 @@
 
 export 'package:nutrient_flutter_android/nutrient_flutter_android.dart'
     show AndroidAdapter;
-export 'package:nutrient_flutter_ios/nutrient_flutter_ios.dart' show IOSAdapter;
+export 'package:nutrient_flutter_ios/nutrient_flutter_ios.dart'
+    show IOSAdapter;

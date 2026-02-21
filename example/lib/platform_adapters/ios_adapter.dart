@@ -84,7 +84,8 @@ class ExampleIOSAdapter extends IOSAdapter implements ExampleAdapterController {
   // — View controller lifecycle
 
   @override
-  Future<void> onViewControllerReady(PSPDFViewController viewController) async {
+  Future<void> onViewControllerReady(
+      PSPDFViewController viewController) async {
     _viewController = viewController;
 
     _setupDelegate(viewController);
@@ -206,7 +207,8 @@ class ExampleIOSAdapter extends IOSAdapter implements ExampleAdapterController {
   }
 
   @override
-  Future<String?> getDocumentTitle() async => _document?.title?.toDartString();
+  Future<String?> getDocumentTitle() async =>
+      _document?.title?.toDartString();
 
   // — Cleanup
 

@@ -225,14 +225,17 @@ class ExampleAndroidAdapter extends AndroidAdapter
     _toolbarLifecycleListener =
         ToolbarCoordinatorLayout$OnContextualToolbarLifecycleListener.implement(
       $ToolbarCoordinatorLayout$OnContextualToolbarLifecycleListener(
-        onPrepareContextualToolbar: (ContextualToolbar<jni.JObject?> toolbar) {
+        onPrepareContextualToolbar:
+            (ContextualToolbar<jni.JObject?> toolbar) {
           final itemCount = toolbar.getMenuItems().length;
           _log('[UI] Contextual toolbar preparing: $itemCount items');
         },
-        onDisplayContextualToolbar: (ContextualToolbar<jni.JObject?> toolbar) {
+        onDisplayContextualToolbar:
+            (ContextualToolbar<jni.JObject?> toolbar) {
           _log('[UI] Contextual toolbar displayed');
         },
-        onRemoveContextualToolbar: (ContextualToolbar<jni.JObject?> toolbar) {
+        onRemoveContextualToolbar:
+            (ContextualToolbar<jni.JObject?> toolbar) {
           _log('[UI] Contextual toolbar removed');
         },
       ),

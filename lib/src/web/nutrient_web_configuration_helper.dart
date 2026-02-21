@@ -7,6 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 /// Product identifier for Flutter Web.
@@ -30,8 +31,13 @@ class WebConfigurationHelper {
     PdfConfiguration? configuration,
   ) {
     if (configuration == null) {
+      debugPrint('[WebConfigurationHelper] No configuration provided, skipping');
       return;
     }
+    debugPrint('[WebConfigurationHelper] Processing PdfConfiguration');
+    debugPrint('[WebConfigurationHelper] startPage: ${configuration.startPage}');
+    debugPrint('[WebConfigurationHelper] enableAnnotationEditing: ${configuration.enableAnnotationEditing}');
+    debugPrint('[WebConfigurationHelper] userInterfaceViewMode: ${configuration.userInterfaceViewMode}');
 
     // Build initial view state as a plain map.
     // The Web SDK accepts these as top-level config properties when
@@ -75,16 +81,22 @@ class WebConfigurationHelper {
       'sidebarMode': configuration.webConfiguration?.sideBarMode?.webName,
       'spreadSpacing': configuration.webConfiguration?.spreadSpacing,
       'viewportPadding': configuration.webConfiguration?.viewportPadding,
-      'zoom': _getZoomValue(configuration.defaultZoomScale ??
-          configuration.webConfiguration?.zoom),
+      'zoom': _getZoomValue(
+          configuration.defaultZoomScale ?? configuration.webConfiguration?.zoom),
       'zoomStep': configuration.webConfiguration?.zoomStep,
     }..removeWhere((key, value) => value == null);
+
+    debugPrint('[WebConfigurationHelper] viewStateProps after null removal: $viewStateProps');
+    debugPrint('[WebConfigurationHelper] viewStateProps keys: ${viewStateProps.keys.toList()}');
 
     // Apply view state properties as initialViewState map.
     // The Web SDK's PSPDFKit.load() accepts initialViewState as a plain object.
     // Only add if we have actual user-configured properties to set.
     if (viewStateProps.isNotEmpty) {
+      debugPrint('[WebConfigurationHelper] Adding initialViewState to config');
       config['initialViewState'] = viewStateProps;
+    } else {
+      debugPrint('[WebConfigurationHelper] viewStateProps is empty, not adding initialViewState');
     }
 
     // Convert toolbar items to plain maps.

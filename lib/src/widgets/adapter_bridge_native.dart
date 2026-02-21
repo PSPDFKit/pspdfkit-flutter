@@ -160,7 +160,8 @@ class AdapterBridge {
             '[AdapterBridge] Android PdfFragment ready and adapter notified');
       } else {
         // JNI bindings not available for PSPDFKitView - notify adapter without fragment
-        debugPrint('[AdapterBridge] PdfFragment JNI access not available. '
+        debugPrint(
+            '[AdapterBridge] PdfFragment JNI access not available. '
             'For direct native access, use NutrientViewAndroid instead.');
 
         // Still notify the adapter that the view is ready
@@ -170,8 +171,7 @@ class AdapterBridge {
       // Mark adapter as ready
       await androidAdapter.markReady();
     } catch (e, stackTrace) {
-      debugPrint(
-          '[AdapterBridge] Error handling PdfFragment ready: $e\n$stackTrace');
+      debugPrint('[AdapterBridge] Error handling PdfFragment ready: $e\n$stackTrace');
 
       // Fallback: notify adapter via platform view created
       await _adapter.onPlatformViewCreated(_handle!);

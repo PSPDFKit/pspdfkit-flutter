@@ -209,9 +209,6 @@ class ConfigurationAdapter {
 
     private static final String ENABLE_AI_ASSISTANT = "enableAiAssistant";
 
-    // Theme Configuration
-    private static final String THEME_CONFIGURATION = "themeConfiguration";
-
     private static final Map<String, SignatureSavingStrategy> signatureSavingStrategyMap = new HashMap<>(){{
         put("alwaysSave", SignatureSavingStrategy.ALWAYS_SAVE);
         put("saveIfSelected", SignatureSavingStrategy.SAVE_IF_SELECTED);
@@ -226,8 +223,6 @@ class ConfigurationAdapter {
     private String password = null;
     private boolean enableInstantComments = false;
     private boolean hideAnnotationCreationButton = false;
-    @Nullable
-    private HashMap<String, Integer> themeColors = null;
 
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
@@ -276,9 +271,9 @@ class ConfigurationAdapter {
             if (key != null) {
                 configureUserInterfaceViewMode((String) configurationMap.get(key));
             }
-            key = getKeyOfType(configurationMap, START_PAGE, Long.class);
+            key = getKeyOfType(configurationMap, START_PAGE, Integer.class);
             if (key != null) {
-                configureStartPage(((Long) configurationMap.get(key)).intValue());
+                configureStartPage((Integer) configurationMap.get(key));
             }
             key = getKeyOfType(configurationMap, SHOW_SEARCH_ACTION, Boolean.class);
             if (key != null) {
@@ -455,10 +450,6 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, ENABLE_AI_ASSISTANT, Boolean.class);
             if (key != null) {
                 configureAiAssistant((Boolean) configurationMap.get(key));
-            }
-            key = getKeyOfType(configurationMap, THEME_CONFIGURATION, Map.class);
-            if (key != null) {
-                parseThemeConfiguration((HashMap<String, Object>) configurationMap.get(key));
             }
         }
     }
@@ -896,113 +887,6 @@ class ConfigurationAdapter {
         configuration.setAiAssistantEnabled(aBoolean);
     }
 
-    /**
-     * Parses the theme configuration from the configuration map and extracts color values.
-     * Creates a flat map with dot-notation keys for easy access.
-     *
-     * @param themeConfig The theme configuration map from Flutter
-     */
-    private void parseThemeConfiguration(HashMap<String, Object> themeConfig) {
-        if (themeConfig == null || themeConfig.isEmpty()) {
-            return;
-        }
-
-        themeColors = new HashMap<>();
-
-        try {
-            // Parse top-level colors
-            parseColor(themeConfig, "backgroundColor", "backgroundColor");
-            parseColor(themeConfig, "separatorColor", "separatorColor");
-
-            // Parse toolbar colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> toolbar = (HashMap<String, Object>) themeConfig.get("toolbar");
-            if (toolbar != null) {
-                parseColor(toolbar, "backgroundColor", "toolbar.backgroundColor");
-                parseColor(toolbar, "iconColor", "toolbar.iconColor");
-                parseColor(toolbar, "activeIconColor", "toolbar.activeIconColor");
-                parseColor(toolbar, "titleColor", "toolbar.titleColor");
-                parseColor(toolbar, "statusBarColor", "toolbar.statusBarColor");
-            }
-
-            // Parse annotation toolbar colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> annotationToolbar = (HashMap<String, Object>) themeConfig.get("annotationToolbar");
-            if (annotationToolbar != null) {
-                parseColor(annotationToolbar, "backgroundColor", "annotationToolbar.backgroundColor");
-                parseColor(annotationToolbar, "iconColor", "annotationToolbar.iconColor");
-                parseColor(annotationToolbar, "activeIconColor", "annotationToolbar.activeIconColor");
-                parseColor(annotationToolbar, "activeToolBackgroundColor", "annotationToolbar.activeToolBackgroundColor");
-            }
-
-            // Parse navigation tab colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> navigationTab = (HashMap<String, Object>) themeConfig.get("navigationTab");
-            if (navigationTab != null) {
-                parseColor(navigationTab, "backgroundColor", "navigationTab.backgroundColor");
-                parseColor(navigationTab, "iconColor", "navigationTab.iconColor");
-                parseColor(navigationTab, "selectedIconColor", "navigationTab.selectedIconColor");
-            }
-
-            // Parse search colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> search = (HashMap<String, Object>) themeConfig.get("search");
-            if (search != null) {
-                parseColor(search, "backgroundColor", "search.backgroundColor");
-                parseColor(search, "highlightColor", "search.highlightColor");
-            }
-
-            // Parse thumbnail bar colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> thumbnailBar = (HashMap<String, Object>) themeConfig.get("thumbnailBar");
-            if (thumbnailBar != null) {
-                parseColor(thumbnailBar, "backgroundColor", "thumbnailBar.backgroundColor");
-            }
-
-            // Parse selection colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> selection = (HashMap<String, Object>) themeConfig.get("selection");
-            if (selection != null) {
-                parseColor(selection, "textHighlightColor", "selection.textHighlightColor");
-                parseColor(selection, "textHandleColor", "selection.textHandleColor");
-                parseColor(selection, "annotationBorderColor", "selection.annotationBorderColor");
-            }
-
-            // Parse dialog colors
-            @SuppressWarnings("unchecked")
-            HashMap<String, Object> dialog = (HashMap<String, Object>) themeConfig.get("dialog");
-            if (dialog != null) {
-                parseColor(dialog, "backgroundColor", "dialog.backgroundColor");
-            }
-
-            Log.d(LOG_TAG, "Parsed theme configuration with " + themeColors.size() + " colors");
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Error parsing theme configuration", e);
-            themeColors = null;
-        }
-    }
-
-    /**
-     * Helper method to parse a color from a map and add it to the themeColors map.
-     *
-     * @param map The map containing the color value
-     * @param key The key to look up in the map
-     * @param dotNotationKey The dot-notation key to use in the flat themeColors map
-     */
-    private void parseColor(HashMap<String, Object> map, String key, String dotNotationKey) {
-        Object colorObj = map.get(key);
-        if (colorObj instanceof String) {
-            String colorHex = (String) colorObj;
-            try {
-                int color = ColorUtil.extractColor(colorHex);
-                themeColors.put(dotNotationKey, color);
-                Log.d(LOG_TAG, "Parsed color " + dotNotationKey + ": " + colorHex);
-            } catch (Exception e) {
-                Log.w(LOG_TAG, "Failed to parse color for " + dotNotationKey + ": " + colorHex, e);
-            }
-        }
-    }
-
     private <T> boolean containsKeyOfType(@NonNull HashMap<String, Object> configurationMap,
                                           @NonNull String key,
                                           @NonNull Class<T> clazz) {
@@ -1152,16 +1036,6 @@ class ConfigurationAdapter {
 
     String getPassword() {
         return password;
-    }
-
-    /**
-     * Gets the parsed theme colors as a flat map with dot-notation keys.
-     *
-     * @return The theme colors map, or null if no theme configuration was provided
-     */
-    @Nullable
-    public HashMap<String, Integer> getThemeColors() {
-        return themeColors;
     }
 
     PdfActivityConfiguration build() {

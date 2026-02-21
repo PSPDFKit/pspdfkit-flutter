@@ -17,8 +17,8 @@ import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_in
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as web
-    show nutrient, pspdfkit, NutrientWebStaticExtension;
+import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
+    as web show nutrient, pspdfkit, NutrientWebStaticExtension;
 
 /// Creates the platform-specific instance for web.
 NutrientFlutterPlatform createPlatformInstance() => NutrientFlutterWeb();
@@ -194,34 +194,32 @@ class NutrientFlutterWeb extends NutrientFlutterPlatform {
   List<NutrientWebToolbarItem> get defaultWebToolbarItems {
     try {
       // Try NutrientViewer namespace first, fall back to PSPDFKit
-      final sdk =
-          globalContext.has('NutrientViewer') ? web.nutrient : web.pspdfkit;
+      final sdk = globalContext.has('NutrientViewer')
+          ? web.nutrient
+          : web.pspdfkit;
       final jsItems = sdk.defaultToolbarItems;
       final dartItems = jsItems.toDart;
-      return dartItems
-          .map((jsItem) {
-            if (jsItem == null) return null;
-            final obj = jsItem as JSObject;
-            final type = (obj['type'] as JSString?)?.toDart;
-            if (type == null) return null;
-            return NutrientWebToolbarItem(
-              type: NutrientWebToolbarItemType.values.firstWhere(
-                (e) => e.name == type,
-                orElse: () => NutrientWebToolbarItemType.custom,
-              ),
-              title: (obj['title'] as JSString?)?.toDart,
-              className: (obj['className'] as JSString?)?.toDart,
-              disabled: (obj['disabled'] as JSBoolean?)?.toDart,
-              dropdownGroup: (obj['dropdownGroup'] as JSString?)?.toDart,
-              icon: (obj['icon'] as JSString?)?.toDart,
-              id: (obj['id'] as JSString?)?.toDart,
-              preset: (obj['preset'] as JSString?)?.toDart,
-              responsiveGroup: (obj['responsiveGroup'] as JSString?)?.toDart,
-              selected: (obj['selected'] as JSBoolean?)?.toDart,
-            );
-          })
-          .whereType<NutrientWebToolbarItem>()
-          .toList();
+      return dartItems.map((jsItem) {
+        if (jsItem == null) return null;
+        final obj = jsItem as JSObject;
+        final type = (obj['type'] as JSString?)?.toDart;
+        if (type == null) return null;
+        return NutrientWebToolbarItem(
+          type: NutrientWebToolbarItemType.values.firstWhere(
+            (e) => e.name == type,
+            orElse: () => NutrientWebToolbarItemType.custom,
+          ),
+          title: (obj['title'] as JSString?)?.toDart,
+          className: (obj['className'] as JSString?)?.toDart,
+          disabled: (obj['disabled'] as JSBoolean?)?.toDart,
+          dropdownGroup: (obj['dropdownGroup'] as JSString?)?.toDart,
+          icon: (obj['icon'] as JSString?)?.toDart,
+          id: (obj['id'] as JSString?)?.toDart,
+          preset: (obj['preset'] as JSString?)?.toDart,
+          responsiveGroup: (obj['responsiveGroup'] as JSString?)?.toDart,
+          selected: (obj['selected'] as JSBoolean?)?.toDart,
+        );
+      }).whereType<NutrientWebToolbarItem>().toList();
     } catch (e) {
       throw Exception('Failed to get defaultWebToolbarItems: $e');
     }

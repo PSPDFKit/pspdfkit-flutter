@@ -16,14 +16,9 @@ import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/events/nutrient_events_extension.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
-    show
-        NutrientWebInstance,
-        NutrientWebInstanceExtension,
-        NutrientWebStaticExtension,
-        NutrientNamespace,
-        NutrientRect,
-        annotationTypeMap,
-        pspdfkit;
+    show NutrientWebInstance, NutrientWebInstanceExtension,
+         NutrientWebStaticExtension, NutrientNamespace, NutrientRect,
+         annotationTypeMap, pspdfkit;
 
 /// A controller for a Nutrient viewer widget on the web platform.
 ///
@@ -82,13 +77,16 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   void dispose() {
     // Remove all web event listeners
-    final eventsCopy = Map<NutrientWebEvent, Map<Function, JSFunction>>.from(
-        _webEventListeners);
+    final eventsCopy =
+        Map<NutrientWebEvent, Map<Function, JSFunction>>.from(
+            _webEventListeners);
     for (final eventEntry in eventsCopy.entries) {
       final event = eventEntry.key;
-      final callbacksCopy = Map<Function, JSFunction>.from(eventEntry.value);
+      final callbacksCopy =
+          Map<Function, JSFunction>.from(eventEntry.value);
       for (final callbackEntry in callbacksCopy.entries) {
-        removeWebEventListener(event, callbackEntry.key as Function(dynamic));
+        removeWebEventListener(
+            event, callbackEntry.key as Function(dynamic));
       }
     }
     _webEventListeners.clear();
@@ -148,7 +146,8 @@ class NutrientViewControllerWeb extends NutrientViewController
   }
 
   @override
-  void addWebEventListener(NutrientWebEvent event, Function(dynamic) callback) {
+  void addWebEventListener(
+      NutrientWebEvent event, Function(dynamic) callback) {
     final JSFunction jsCallback = ((JSAny? data) {
       _processAndInvokeCallback(_safeConvertJsAny(data), callback, event);
     }).toJS;
@@ -237,8 +236,7 @@ class NutrientViewControllerWeb extends NutrientViewController
       }).toJS;
 
       instance.setViewState(updateFn);
-      debugPrint(
-          '[enterAnnotationCreationMode] setViewState called successfully');
+      debugPrint('[enterAnnotationCreationMode] setViewState called successfully');
       return true;
     } catch (e, stack) {
       debugPrint('[enterAnnotationCreationMode] Error: $e');
@@ -323,7 +321,8 @@ class NutrientViewControllerWeb extends NutrientViewController
   @override
   Future<double> getZoomScale(int pageIndex) async {
     try {
-      final scale = (instance as JSObject).getProperty('currentZoomLevel'.toJS);
+      final scale =
+          (instance as JSObject).getProperty('currentZoomLevel'.toJS);
       return (scale as JSNumber).toDartDouble;
     } catch (e) {
       throw Exception('Failed to get zoom scale: $e');
@@ -420,12 +419,8 @@ class NutrientViewControllerWeb extends NutrientViewController
 
         if (obj.containsKey('id')) {
           final annotationProps = [
-            'boundingBox',
-            'pageIndex',
-            'rects',
-            'creatorName',
-            'createdAt',
-            'updatedAt'
+            'boundingBox', 'pageIndex', 'rects',
+            'creatorName', 'createdAt', 'updatedAt'
           ];
           int matchCount = 0;
           for (final prop in annotationProps) {
@@ -526,12 +521,8 @@ class NutrientViewControllerWeb extends NutrientViewController
     try {
       final dartified = jsValue.dartify();
       // Check if dartify succeeded - if it returns the same type or a usable type
-      if (dartified is Map ||
-          dartified is List ||
-          dartified is String ||
-          dartified is num ||
-          dartified is bool ||
-          dartified == null) {
+      if (dartified is Map || dartified is List || dartified is String ||
+          dartified is num || dartified is bool || dartified == null) {
         // Deep convert to handle nested IdentityMap instances
         if (dartified is Map) {
           return _deepConvertAny(dartified);

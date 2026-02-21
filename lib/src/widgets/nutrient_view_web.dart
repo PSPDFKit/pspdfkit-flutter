@@ -18,17 +18,12 @@ import 'package:nutrient_flutter/src/widgets/nutrient_view_controller_web.dart';
 import 'package:nutrient_flutter/src/web/nutrient_web_configuration_helper.dart';
 import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart'
     as platform show NativeInstanceRegistry;
-import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as web
-    show
-        NutrientViewWeb,
-        NutrientWebAdapter,
-        NutrientWebInstance,
-        NutrientWebInstanceExtension,
-        NutrientAnnotationOperations,
-        NutrientDocumentOperations,
-        NutrientFormOperations,
-        NutrientBookmarkOperations,
-        WebColorUtils;
+import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
+    as web show NutrientViewWeb, NutrientWebAdapter, NutrientWebInstance,
+              NutrientWebInstanceExtension,
+              NutrientAnnotationOperations, NutrientDocumentOperations,
+              NutrientFormOperations, NutrientBookmarkOperations,
+              WebColorUtils;
 // Import extension types without prefix so extension methods are accessible
 import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
     show NutrientViewStateExtension, NutrientPageInfoExtension;
@@ -164,14 +159,12 @@ class _NutrientViewState extends State<NutrientView> {
 
     try {
       // Get the new NutrientWebInstance from the registry
-      final instance =
-          platform.NativeInstanceRegistry.get(handle.viewId, 'instance')
-              as web.NutrientWebInstance?;
+      final instance = platform.NativeInstanceRegistry.get(
+          handle.viewId, 'instance') as web.NutrientWebInstance?;
 
       if (instance == null) {
         debugPrint('[NutrientView Web] Instance not found in registry');
-        widget.onDocumentError
-            ?.call('Failed to load document: instance not found');
+        widget.onDocumentError?.call('Failed to load document: instance not found');
         return;
       }
 
@@ -222,7 +215,8 @@ class _NutrientViewState extends State<NutrientView> {
         widget.onPageChanged?.call(pageIndex);
       }).toJS;
 
-      instance.addEventListener('viewState.currentPageIndex.change', listener);
+      instance.addEventListener(
+          'viewState.currentPageIndex.change', listener);
       _eventListeners['viewState.currentPageIndex.change'] = listener;
     }
 
@@ -589,7 +583,8 @@ class _WebPdfDocumentStub implements PdfDocument {
     final ops = _annotationOps;
     if (ops == null) return;
     try {
-      await ops.addAnnotations(annotations.map((a) => a.toJson()).toList());
+      await ops.addAnnotations(
+          annotations.map((a) => a.toJson()).toList());
     } catch (e) {
       debugPrint('[_WebPdfDocumentStub] addAnnotations error: $e');
     }
@@ -648,7 +643,8 @@ class _WebPdfDocumentStub implements PdfDocument {
     final ops = _annotationOps;
     if (ops == null) return [];
     try {
-      final typeFilter = type == AnnotationType.all ? null : type.fullName;
+      final typeFilter =
+          type == AnnotationType.all ? null : type.fullName;
       final maps = await ops.getAnnotations(pageIndex, typeFilter);
       return maps.map((m) => Annotation.fromJson(m)).toList();
     } catch (e) {
@@ -663,7 +659,8 @@ class _WebPdfDocumentStub implements PdfDocument {
     final ops = _annotationOps;
     if (ops == null) return <dynamic>[];
     try {
-      final typeFilter = type == AnnotationType.all ? null : type.fullName;
+      final typeFilter =
+          type == AnnotationType.all ? null : type.fullName;
       return await ops.getAnnotations(pageIndex, typeFilter);
     } catch (e) {
       debugPrint('[_WebPdfDocumentStub] getAnnotationsAsJson error: $e');
@@ -734,10 +731,8 @@ class _WebPdfDocumentStub implements PdfDocument {
       if (jsonMap == null) return null;
 
       // Debug: log the fontColor from the live annotation JSON
-      debugPrint(
-          '[_WebPdfDocumentStub] getAnnotationProperties jsonMap fontColor: ${jsonMap['fontColor']}');
-      debugPrint(
-          '[_WebPdfDocumentStub] getAnnotationProperties jsonMap type: ${jsonMap['type']}');
+      debugPrint('[_WebPdfDocumentStub] getAnnotationProperties jsonMap fontColor: ${jsonMap['fontColor']}');
+      debugPrint('[_WebPdfDocumentStub] getAnnotationProperties jsonMap type: ${jsonMap['type']}');
 
       return _webJsonToAnnotationProperties(jsonMap, pageIndex);
     } catch (e) {
@@ -819,16 +814,14 @@ class _WebPdfDocumentStub implements PdfDocument {
         final c = Color(properties.fillColor!);
         propsMap['fillColor'] = {'r': c.red, 'g': c.green, 'b': c.blue};
       }
-      if (properties.contents != null)
-        propsMap['contents'] = properties.contents;
+      if (properties.contents != null) propsMap['contents'] = properties.contents;
       if (properties.creator != null) propsMap['creator'] = properties.creator;
       final customData = properties.customData;
       if (customData != null) propsMap['customData'] = customData;
       final flags = properties.flags;
       if (flags != null) propsMap['flags'] = flags;
 
-      debugPrint(
-          '[_WebPdfDocumentStub] saveAnnotationProperties propsMap: $propsMap');
+      debugPrint('[_WebPdfDocumentStub] saveAnnotationProperties propsMap: $propsMap');
       await ops.updateAnnotationProperties(propsMap);
       return true;
     } catch (e) {
@@ -982,18 +975,21 @@ class _WebPdfDocumentStub implements PdfDocument {
 
   @override
   Future<bool> iOSGetAnnotationIsDirty(int pageIndex, String annotationId) {
-    throw UnsupportedError('iOSGetAnnotationIsDirty is only available on iOS.');
+    throw UnsupportedError(
+        'iOSGetAnnotationIsDirty is only available on iOS.');
   }
 
   @override
   Future<bool> iOSSetAnnotationIsDirty(
       int pageIndex, String annotationId, bool isDirty) {
-    throw UnsupportedError('iOSSetAnnotationIsDirty is only available on iOS.');
+    throw UnsupportedError(
+        'iOSSetAnnotationIsDirty is only available on iOS.');
   }
 
   @override
   Future<bool> iOSClearNeedsSaveFlag() {
-    throw UnsupportedError('iOSClearNeedsSaveFlag is only available on iOS.');
+    throw UnsupportedError(
+        'iOSClearNeedsSaveFlag is only available on iOS.');
   }
 
   // ========================================================================

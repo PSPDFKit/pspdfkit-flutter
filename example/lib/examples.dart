@@ -37,7 +37,6 @@ import 'package:nutrient_example/office_to_pdf_example.dart';
 
 import 'basic_example.dart';
 import 'bookmarks_example.dart';
-import 'theme_example.dart';
 import 'form_example.dart';
 import 'headless_document_example.dart';
 import 'copy_annotations_example.dart';
@@ -106,15 +105,6 @@ List<NutrientExampleItem> examples(BuildContext context) => [
         title: 'Dark Theme',
         description: 'Opens a document in night mode with a custom dark theme.',
         onTap: () => applyDarkTheme(context),
-      ),
-      NutrientExampleItem(
-        title: 'Custom Theme',
-        description:
-            'Opens a document with a custom ThemeConfiguration controlling toolbar, icons, background, and more.',
-        onTap: () async {
-          await extractAsset(context, _documentPath).then(
-              (value) => goTo(ThemeExample(documentPath: value.path), context));
-        },
       ),
       NutrientExampleItem(
         title: 'Custom configuration options',
@@ -320,8 +310,9 @@ List<NutrientExampleItem> platformAdapterExamples(BuildContext context) => [
         description:
             'Complete adapter implementation combining configuration, event listeners, and UI customization using native SDK APIs.',
         onTap: () async {
-          await extractAsset(context, _documentPath).then((value) =>
-              goTo(PlatformAdapterExample(documentPath: value.path), context));
+          await extractAsset(context, _documentPath).then((value) => goTo(
+              PlatformAdapterExample(documentPath: value.path),
+              context));
         },
       ),
     ];

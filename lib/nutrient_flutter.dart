@@ -45,16 +45,11 @@ export 'src/nutrient.dart';
 
 export 'src/widgets/nutrient_view_controller.dart';
 export 'src/ai/ai_assistant_configuration.dart';
-export 'src/theme_configuration.dart';
 export 'src/utils/missing_platform_directory_exception.dart';
 
 // Adapter infrastructure for native SDK access
 export 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart'
-    show
-        NutrientController,
-        NutrientViewHandle,
-        NativeInstanceRegistry,
-        NutrientPlatformAdapter;
+    show NutrientController, NutrientViewHandle, NativeInstanceRegistry, NutrientPlatformAdapter;
 
 // Platform adapters - conditional exports per platform
 export 'src/adapters/adapters_stub.dart'

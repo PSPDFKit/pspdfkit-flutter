@@ -128,14 +128,6 @@ internal class PSPDFKitView(
                 }
             }
 
-            // Set theme colors BEFORE the fragment is committed so that
-            // onGetLayoutInflater() can wrap the context with a themed inflater.
-            // This must happen before commitNow() which triggers view creation.
-            val themeColors = configurationAdapter.getThemeColors()
-            if (themeColors != null) {
-                (pdfUiFragment as? FlutterPdfUiFragment)?.setThemeColors(themeColors)
-            }
-
             aiAssistantConfigurationMap?.let {
                 setupAiAssistant(context, it)
             }
@@ -180,13 +172,6 @@ internal class PSPDFKitView(
                         val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
                         flutterFragment?.let { fragment ->
                             fragment.setOnContextualToolbarLifecycleListener(fragment)
-                        }
-
-                        // Pass theme colors to the fragment
-                        val themeColors = configurationAdapter.getThemeColors()
-                        if (themeColors != null) {
-                            val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
-                            flutterFragment?.setThemeColors(themeColors)
                         }
                     }
 

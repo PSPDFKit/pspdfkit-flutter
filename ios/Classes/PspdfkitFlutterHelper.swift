@@ -112,7 +112,7 @@ class PspdfkitFlutterHelper: NSObject {
         var leftItems = [UIBarButtonItem]()
         for barButtonItemString in items {
             if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
-               !(pdfViewController.navigationItem.rightBarButtonItems?.contains(barButtonItem) ?? false) {
+               ((pdfViewController.navigationItem.rightBarButtonItems?.contains(barButtonItem)) == nil) {
                 leftItems.append(barButtonItem)
             }
         }
@@ -126,7 +126,7 @@ class PspdfkitFlutterHelper: NSObject {
         var rightItems = [UIBarButtonItem]()
         for barButtonItemString in items {
             if let barButtonItem = barButtonItem(fromString: barButtonItemString, for: pdfViewController),
-               !(pdfViewController.navigationItem.leftBarButtonItems?.contains(barButtonItem) ?? false) {
+               ((pdfViewController.navigationItem.leftBarButtonItems?.contains(barButtonItem)) == nil) {
                 rightItems.append(barButtonItem)
             }
         }
