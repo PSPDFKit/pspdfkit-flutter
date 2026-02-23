@@ -1,3 +1,8 @@
+## 5.4.1 - 22 Feb 2026
+
+- Updates to Nutrient iOS SDK 26.5.0. (#50888)
+- Fixes an iOS issue where the `AdapterBridge` couldn't retrieve the `PSPDFViewController` via FFI when using `NutrientView` with a platform adapter. (#50888)
+
 ## 5.4.0 - 18 Feb 2026
 
 - [**Beta**] Adds federated plugin architecture with platform-specific packages (`nutrient_flutter_platform_interface`, `nutrient_flutter_android`, `nutrient_flutter_ios`, `nutrient_flutter_web`) for native SDK bindings via JNI (Android), FFI (iOS), and `dart:js_interop` (Web). Refer to the [platform adapters](/guides/flutter/platform-adapters/) guide for details. (J#HYB-895)

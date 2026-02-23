@@ -51,17 +51,27 @@
 @property (nonatomic, strong) UIColor *themeSeparatorColor;
 @end
 
-/// Parses a hex color string (e.g. "#FF0000" or "FF0000") into a UIColor.
+/// Parses a hex color string into a UIColor.
+/// Supports 6-character RGB ("#FF0000") and 8-character ARGB ("#80FF0000") formats.
 static UIColor *PSPDFColorFromHexString(NSString *hexString) {
     NSString *hex = [hexString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if ([hex hasPrefix:@"#"]) {
         hex = [hex substringFromIndex:1];
     }
-    unsigned int rgb = 0;
-    [[NSScanner scannerWithString:hex] scanHexInt:&rgb];
-    CGFloat r = ((rgb & 0xFF0000) >> 16) / 255.0;
-    CGFloat g = ((rgb & 0x00FF00) >> 8) / 255.0;
-    CGFloat b = (rgb & 0x0000FF) / 255.0;
+    unsigned int hexValue = 0;
+    [[NSScanner scannerWithString:hex] scanHexInt:&hexValue];
+    if (hex.length == 8) {
+        // ARGB format: #AARRGGBB
+        CGFloat a = ((hexValue >> 24) & 0xFF) / 255.0;
+        CGFloat r = ((hexValue >> 16) & 0xFF) / 255.0;
+        CGFloat g = ((hexValue >> 8) & 0xFF) / 255.0;
+        CGFloat b = (hexValue & 0xFF) / 255.0;
+        return [UIColor colorWithRed:r green:g blue:b alpha:a];
+    }
+    // 6-character RGB format: #RRGGBB
+    CGFloat r = ((hexValue >> 16) & 0xFF) / 255.0;
+    CGFloat g = ((hexValue >> 8) & 0xFF) / 255.0;
+    CGFloat b = (hexValue & 0xFF) / 255.0;
     return [UIColor colorWithRed:r green:g blue:b alpha:1.0];
 }
 
@@ -380,6 +390,9 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
         
         [_platformViewImpl setViewControllerWithController:_pdfViewController];
 
+        // Apply stored theme colors to PSPDFKit UI components
+        [self applyStoredThemeColors];
+
         [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
             [weakSelf handleMethodCall:call result:result];
         }];
@@ -477,6 +490,46 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
     [self.navigationController.navigationBar removeFromSuperview];
     [self.navigationController.view removeFromSuperview];
     [self.navigationController removeFromParentViewController];
+}
+
+- (void)applyStoredThemeColors {
+    // Annotation toolbar colors
+    if (_themeSubToolbarBackgroundColor || _themeSubToolbarIconColor ||
+        _themeSubToolbarActiveIconColor || _themeSubToolbarActiveToolBackgroundColor) {
+        PSPDFAnnotationToolbar *annotationToolbar = _pdfViewController.annotationToolbarController.annotationToolbar;
+        if (annotationToolbar) {
+            if (_themeSubToolbarBackgroundColor) {
+                annotationToolbar.barTintColor = _themeSubToolbarBackgroundColor;
+            }
+            if (_themeSubToolbarIconColor) {
+                annotationToolbar.tintColor = _themeSubToolbarIconColor;
+            }
+            if (_themeSubToolbarActiveIconColor) {
+                annotationToolbar.selectedTintColor = _themeSubToolbarActiveIconColor;
+            }
+            if (_themeSubToolbarActiveToolBackgroundColor) {
+                annotationToolbar.selectedBackgroundColor = _themeSubToolbarActiveToolBackgroundColor;
+            }
+        }
+    }
+
+    // Search highlight color via UIAppearance
+    if (_themeSearchHighlightColor) {
+        [PSPDFSearchHighlightView appearance].selectionBackgroundColor = _themeSearchHighlightColor;
+    }
+
+    // Text selection highlight color
+    if (_themeSelectionTextHighlightColor) {
+        [PSPDFPageView appearance].highlightColor = _themeSelectionTextHighlightColor;
+    }
+
+    // Separator color
+    if (_themeSeparatorColor) {
+        _navigationController.navigationBar.standardAppearance.shadowColor = _themeSeparatorColor;
+        if (@available(iOS 15.0, *)) {
+            _navigationController.navigationBar.scrollEdgeAppearance.shadowColor = _themeSeparatorColor;
+        }
+    }
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {

@@ -187,6 +187,7 @@ object DynamicColorResourcesHelper {
 
             val loader = ResourcesLoader()
             loader.addProvider(ResourcesProvider.loadFromTable(pfd, null))
+            pfd.close()
             return loader
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create color ResourcesLoader", e)

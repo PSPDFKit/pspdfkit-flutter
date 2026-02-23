@@ -266,18 +266,11 @@ class AdapterBridge {
   /// Returns null if the view controller is not registered or FFI fails.
   PSPDFViewController? _getPSPDFViewControllerFromNative() {
     try {
-      // Load the iOS bindings to access the nutrient_get_view_controller function.
+      // Call the FFI function to get the view controller pointer.
       // This function is defined in nutrient_flutter's PspdfPlatformView.m
       // and declared in nutrient_flutter_ios's NutrientFFI.h header.
-      final iosBindings = ios_bindings.NutrientIOSBindings(
-        ffi.DynamicLibrary.process(),
-      );
-
-      // Call the FFI function to get the view controller pointer.
-      // Note: This requires the iOS FFI bindings to be regenerated after
-      // the nutrient_get_view_controller function was added to NutrientFFI.h.
       final viewControllerPointer =
-          iosBindings.nutrient_get_view_controller(_viewId);
+          ios_bindings.nutrient_get_view_controller(_viewId);
 
       if (viewControllerPointer == ffi.nullptr) {
         debugPrint(
