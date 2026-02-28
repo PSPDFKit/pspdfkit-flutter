@@ -92,7 +92,7 @@ You can include the Nutrient Web SDK using either CDN or local installation:
 Add the following script to your `web/index.html` file:
 
 ```html
-<script src="https://cdn.cloud.pspdfkit.com/pspdfkit-web@1.10.0/nutrient-viewer.js"></script>
+<script src="https://cdn.cloud.nutrient.io/pspdfkit-web@1.10.0/nutrient-viewer.js"></script>
 ```
 
 **Note:** Replace `1.10.0` with the latest version of Nutrient Web SDK. Check the [latest releases][web changelog] for the current version.
