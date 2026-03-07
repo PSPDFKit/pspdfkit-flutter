@@ -38,7 +38,7 @@ if (nutrientMavenUrl == null || nutrientMavenUrl == '') {
 
 ext.nutrientVersion = localProperties.getProperty('pspdfkit.version')
 if (nutrientVersion == null || nutrientVersion == '') {
-    ext.nutrientVersion = '10.10.1'
+    ext.nutrientVersion = '11.1.1'
 }
 
 ext.nutrientMavenModuleName = 'nutrient'

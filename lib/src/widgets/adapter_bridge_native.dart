@@ -267,8 +267,8 @@ class AdapterBridge {
   PSPDFViewController? _getPSPDFViewControllerFromNative() {
     try {
       // Call the FFI function to get the view controller pointer.
-      // This function is defined in nutrient_flutter's PspdfPlatformView.m
-      // and declared in nutrient_flutter_ios's NutrientFFI.h header.
+      // Implemented in nutrient_flutter_ios's NutrientFFI.mm, compiled into
+      // nutrient_flutter_ios.dylib by the native-assets hook (hook/build.dart).
       final viewControllerPointer =
           ios_bindings.nutrient_get_view_controller(_viewId);
 
