@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 
 /// Extension to convert Color to hex string
 extension ColorToHex on Color? {
-  /// Convert Color to hex string
+  /// Converts a [Color] to a hex string in `#AARRGGBB` format.
+  ///
+  /// Fully opaque colors (alpha = 0xFF) are emitted as `#RRGGBB` for
+  /// backwards compatibility with platform parsers that accept both forms.
   String toHex() {
     if (this == null) return '';
+    final alpha = (this!.a * 255).round();
     final red = (this!.r * 255).round();
     final green = (this!.g * 255).round();
     final blue = (this!.b * 255).round();
-    return '#${red.toRadixString(16).padLeft(2, '0')}'
+    final rgb = '#${red.toRadixString(16).padLeft(2, '0')}'
         '${green.toRadixString(16).padLeft(2, '0')}'
         '${blue.toRadixString(16).padLeft(2, '0')}';
+    if (alpha == 0xFF) return rgb;
+    return '#${alpha.toRadixString(16).padLeft(2, '0')}${rgb.substring(1)}';
   }
 }
 

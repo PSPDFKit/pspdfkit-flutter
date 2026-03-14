@@ -1,3 +1,8 @@
+## Next version
+
+- Updates to Nutrient Android SDK 11.1.1. (J#HYB-986)
+- Updates `kotlinVersion` to 2.1.20 and `androidCompileSdkVersion`/`androidTargetSdkVersion` to 36. (J#HYB-986)
+
 ## 5.4.1 - 22 Feb 2026
 
 - Updates to Nutrient iOS SDK 26.5.0. (#50888)

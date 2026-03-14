@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -24,11 +23,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.graphics.toColorInt
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
@@ -41,7 +37,7 @@ import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule
 
-class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
+class FlutterPdfUiFragment : PdfUiFragment(),
     ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener {
 
     // Maps identifier strings to menu item IDs to track custom toolbar items
@@ -63,8 +59,6 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
 //        Check if back button was set;
         (activity as AppCompatActivity).supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -119,8 +113,6 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
@@ -253,7 +245,6 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     fun setCustomToolbarItems(items: List<Map<String, Any>>, callbacks: CustomToolbarCallbacks) {
         this.customToolbarCallbacks = callbacks
         // Clear existing custom items
-        activity?.invalidateOptionsMenu()
         customToolbarItemIds.clear()
         androidBackButtons.clear()
 
@@ -320,8 +311,10 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
      */
     fun setHideAnnotationCreationButton(hide: Boolean) {
         this.hideAnnotationCreationButton = hide
-        // Invalidate options menu to trigger onPrepareOptionsMenu
-        activity?.invalidateOptionsMenu()
+        // Invalidate menu to trigger onGenerateMenuItemIds (only if view is ready)
+        if (view != null) {
+            invalidateMenu()
+        }
     }
 
     /**
@@ -383,7 +376,7 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
                     iconColorHex,
                 )
                 setAndroidBackButton(identifier, backButtonIcon)
-                return
+                continue
             }
 
             // Store the title for this item
@@ -400,8 +393,10 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
                 customToolbarItemDrawables[identifier] = drawable
             }
         }
-        // Update the menu
-        activity.invalidateOptionsMenu()
+        // Update the menu using v11 API (only if view is ready)
+        if (view != null) {
+            invalidateMenu()
+        }
     }
 
     /**
@@ -488,55 +483,60 @@ class FlutterPdfUiFragment : PdfUiFragment(), MenuProvider,
     }
 
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        // Add all registered custom toolbar items
-        for ((identifier, itemId) in customToolbarItemIds) {
-            // Only add it if it's not already in the menu
-            if (menu.findItem(itemId) == null) {
-                // Get the stored configuration for this item
-                val title = getCustomToolbarItemTitle(identifier)
-                val drawable = getCustomToolbarItemDrawable(identifier)
-                menu.add(Menu.NONE, itemId, Menu.NONE, title)
-                    .setIcon(drawable)
-                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-            }
-        }
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        // Check custom toolbar items
-        val matchingIdentifier =
-            customToolbarItemIds.entries.find { it.value == menuItem.itemId }?.key
-        if (matchingIdentifier != null) {
-            // Notify Flutter about the tap
-            customToolbarCallbacks?.onCustomToolbarItemTapped(matchingIdentifier) {
-            }
-            return true
-        }
-        return false
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        // Hide annotation creation button if configured
+    /**
+     * v11 menu hook: controls which menu item IDs appear in the toolbar.
+     * Add custom toolbar item IDs and remove hidden defaults here.
+     */
+    override fun onGenerateMenuItemIds(menuItems: MutableList<Int>): List<Int> {
+        // Remove annotation creation button if configured
         if (hideAnnotationCreationButton) {
-            hideAnnotationCreationButtonFromMenu(menu)
+            menuItems.remove(R.id.pspdf__menu_option_edit_annotations)
         }
+
+        // Add custom toolbar item IDs
+        for ((_, itemId) in customToolbarItemIds) {
+            if (!menuItems.contains(itemId)) {
+                menuItems.add(itemId)
+            }
+        }
+
+        // Schedule custom item configuration after the toolbar menu is built
+        if (customToolbarItemIds.isNotEmpty()) {
+            view?.post { configureCustomMenuItems() }
+        }
+
+        return menuItems
     }
 
-    private fun hideAnnotationCreationButtonFromMenu(menu: Menu) {
-        // First try the options menu approach
-        try {
-            val resourceId = R.id.pspdf__menu_option_edit_annotations
-            if (resourceId != 0) {
-                val menuItem = menu.findItem(resourceId)
-                if (menuItem != null) {
-                    menuItem.isVisible = false
-                    return
-                }
+    /**
+     * Configures custom toolbar items directly on the toolbar's menu.
+     * Called after the SDK builds the menu from onGenerateMenuItemIds.
+     */
+    private fun configureCustomMenuItems() {
+        val toolbar = view?.findViewById<Toolbar>(R.id.pspdf__toolbar_main) ?: return
+        val menu = toolbar.menu ?: return
+
+        for ((identifier, itemId) in customToolbarItemIds) {
+            var menuItem = menu.findItem(itemId)
+            if (menuItem == null) {
+                // Item not yet in menu - add it directly
+                menuItem = menu.add(Menu.NONE, itemId, Menu.NONE, getCustomToolbarItemTitle(identifier))
             }
-        } catch (e: Exception) {
-            Log.e("FlutterPdfUiFragment", "Error hiding annotation button from menu", e)
+            menuItem.title = getCustomToolbarItemTitle(identifier)
+            menuItem.icon = getCustomToolbarItemDrawable(identifier)
+            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        }
+
+        // Set up click listener for custom items
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            val matchingIdentifier =
+                customToolbarItemIds.entries.find { it.value == menuItem.itemId }?.key
+            if (matchingIdentifier != null) {
+                customToolbarCallbacks?.onCustomToolbarItemTapped(matchingIdentifier) {}
+                true
+            } else {
+                false
+            }
         }
     }
 

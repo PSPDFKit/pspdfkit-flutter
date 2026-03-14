@@ -36,6 +36,10 @@ import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.ui.PdfUiFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -50,6 +54,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     private var pdfUiFragment: PdfUiFragment? = null
     private var disposable: Disposable? = null
     private var eventDispatcher: FlutterEventsHelper? = null
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Sets the PdfFragment to be used by the controller.
@@ -349,66 +354,85 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         callback: (Result<Boolean?>) -> Unit
     ) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        disposable =
-            document.annotationProvider.createAnnotationFromInstantJsonAsync(jsonAnnotation)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        callback(Result.success(true))
-                    }
-                ) { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while creating annotation",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    document.annotationProvider.createAnnotationFromInstantJson(jsonAnnotation)
+                }
+                callback(Result.success(true))
+            } catch (throwable: Throwable) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while creating annotation",
+                            throwable.message ?: "",
                         )
                     )
-                }
+                )
+            }
+        }
     }
 
     override fun removeAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        //Annotation from JSON.
-        val annotation = document.annotationProvider.createAnnotationFromInstantJson(jsonAnnotation)
-        document.annotationProvider.removeAnnotationFromPage(annotation)
-        callback(Result.success(true))
+        scope.launch {
+            try {
+                val annotationJson = org.json.JSONObject(jsonAnnotation)
+                val pageIndex = annotationJson.optInt("pageIndex", -1)
+                val name = annotationJson.optString("name", null)
+                val instantId = annotationJson.optString("id", null)
+
+                if (pageIndex < 0) {
+                    callback(Result.failure(NutrientApiError("InvalidAnnotation", "Annotation JSON missing pageIndex")))
+                    return@launch
+                }
+
+                val annotation = withContext(Dispatchers.IO) {
+                    val allAnnotations = document.annotationProvider.getAnnotations(pageIndex)
+                    allAnnotations.firstOrNull { !name.isNullOrEmpty() && it.name == name }
+                        ?: allAnnotations.firstOrNull { !instantId.isNullOrEmpty() && it.uuid == instantId }
+                }
+
+                if (annotation == null) {
+                    callback(Result.failure(NutrientApiError("AnnotationNotFound", "Annotation not found")))
+                    return@launch
+                }
+                withContext(Dispatchers.IO) {
+                    document.annotationProvider.removeAnnotationFromPage(annotation)
+                }
+                callback(Result.success(true))
+            } catch (e: Exception) {
+                callback(Result.failure(NutrientApiError("RemoveAnnotationError", e.message ?: "")))
+            }
+        }
     }
 
     override fun getAnnotationsJson(pageIndex: Long, type: String, callback: (Result<String>) -> Unit) {
         checkNotNull(pdfUiFragment) { "PdfFragment is not set" }
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
 
-        val jsonArray = org.json.JSONArray()
-        // noinspection checkResult
-        document.annotationProvider.getAllAnnotationsOfTypeAsync(
-            AnnotationTypeAdapter.fromString(
-                type
-            ),
-            pageIndex.toInt(), 1
-        )
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { annotation ->
-                    jsonArray.put(org.json.JSONObject(annotation.toInstantJson()))
-                },
-                { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while retrieving annotation of type $type",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            try {
+                val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
+                val annotations = withContext(Dispatchers.IO) {
+                    document.annotationProvider.getAnnotations(pageIndex.toInt())
+                }
+                val filterAll = annotationTypeSet.contains(com.pspdfkit.annotations.AnnotationType.NONE)
+                val filtered = if (filterAll) annotations else annotations.filter { annotationTypeSet.contains(it.type) }
+                val jsonArray = org.json.JSONArray()
+                filtered.forEach { annotation -> jsonArray.put(org.json.JSONObject(annotation.toInstantJson())) }
+                callback(Result.success(jsonArray.toString()))
+            } catch (throwable: Throwable) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while retrieving annotation of type $type",
+                            throwable.message ?: "",
                         )
                     )
-                },
-                {
-                    callback(Result.success(jsonArray.toString()))
-                }
-            )
+                )
+            }
+        }
     }
 
     override fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit) {
@@ -493,16 +517,23 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     override fun importXfdf(xfdfString: String, callback: (Result<Boolean>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         val dataProvider = DocumentJsonDataProvider(xfdfString)
-        // The async parse method is recommended (so you can easily offload parsing from the UI thread).
-        disposable = XfdfFormatter.parseXfdfAsync(document, dataProvider)
-            .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.
-            .subscribe { annotations ->
-                // Annotations parsed from XFDF aren't added to the document automatically.
-                // You need to add them manually.
-                for (annotation in annotations) {
-                    document.annotationProvider.addAnnotationToPage(annotation)
+        scope.launch {
+            try {
+                val annotations: List<com.pspdfkit.annotations.Annotation> = withContext(Dispatchers.IO) {
+                    XfdfFormatter.parseXfdfAsync(document, dataProvider)
+                        .subscribeOn(Schedulers.io())
+                        .blockingGet()
                 }
+                withContext(Dispatchers.IO) {
+                    for (annotation in annotations) {
+                        document.annotationProvider.addAnnotationToPage(annotation)
+                    }
+                }
+                callback(Result.success(true))
+            } catch (e: Exception) {
+                callback(Result.failure(NutrientApiError("Error importing XFDF", e.message ?: "")))
             }
+        }
     }
 
     override fun exportXfdf(xfdfPath: String, callback: (Result<Boolean>) -> Unit) {

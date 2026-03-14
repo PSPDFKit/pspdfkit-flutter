@@ -10,6 +10,7 @@ package com.pspdfkit.flutter.pspdfkit.document
 import com.pspdfkit.annotations.Annotation as PspdfkitAnnotation
 import com.pspdfkit.annotations.*
 import com.pspdfkit.annotations.AnnotationFlags
+import kotlinx.coroutines.runBlocking
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationManagerApi
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProperties
@@ -43,7 +44,6 @@ class AnnotationManagerImpl(
                 withContext(Dispatchers.IO) {
                     val annotations = document.annotationProvider
                         .getAnnotations(pageIndex.toInt())
-                        .toList()
 
                     val annotation = annotations.firstOrNull {
                         it.uuid == annotationId || it.name == annotationId
@@ -96,7 +96,6 @@ class AnnotationManagerImpl(
                 withContext(Dispatchers.IO) {
                     val annotations = document.annotationProvider
                         .getAnnotations(pageIndex.toInt())
-                        .toList()
 
                     val annotation = annotations.firstOrNull {
                         it.uuid == annotationId || it.name == annotationId
@@ -172,7 +171,6 @@ class AnnotationManagerImpl(
                 withContext(Dispatchers.IO) {
                     val annotations = document.annotationProvider
                         .getAnnotations(pageIndex.toInt())
-                        .toList()
 
                     // Filter by type if specified
                     val filtered = if (annotationType != "all") {
@@ -204,24 +202,14 @@ class AnnotationManagerImpl(
     ) {
         scope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    // Parse and create the annotation
-                    pdfDocument.annotationProvider.createAnnotationFromInstantJsonAsync(jsonAnnotation)
-                        .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                            { annotation ->
-                                // Return the annotation ID
-                                val annotationId = annotation.uuid ?: annotation.name ?: UUID.randomUUID().toString()
-                                callback(Result.success(annotationId))
-                            },
-                            { throwable ->
-                                callback(Result.failure(Exception("Failed to add annotation: ${throwable.message}")))
-                            }
-                        )
+                val annotation = withContext(Dispatchers.IO) {
+                    pdfDocument.annotationProvider.createAnnotationFromInstantJson(jsonAnnotation)
                 }
+                // Return the annotation ID
+                val annotationId = annotation.uuid ?: annotation.name ?: UUID.randomUUID().toString()
+                callback(Result.success(annotationId))
             } catch (e: Exception) {
-                callback(Result.failure(e))
+                callback(Result.failure(Exception("Failed to add annotation: ${e.message}")))
             }
         }
     }
@@ -233,11 +221,9 @@ class AnnotationManagerImpl(
     ) {
         scope.launch {
             try {
-
                 withContext(Dispatchers.IO) {
                     val annotations = pdfDocument.annotationProvider
                         .getAnnotations(pageIndex.toInt())
-                        .toList()
 
                     val annotation = annotations.firstOrNull {
                         it.uuid == annotationId || it.name == annotationId
@@ -276,7 +262,6 @@ class AnnotationManagerImpl(
                     for (page in pages) {
                         val annotations = pdfDocument.annotationProvider
                             .getAnnotations(page)
-                            .toList()
 
                         val matching = annotations.filter { annotation ->
                             annotation.contents?.contains(query, ignoreCase = true) == true ||
@@ -305,7 +290,7 @@ class AnnotationManagerImpl(
 
                     // If pageIndex is specified, export only annotations from that page
                     val annotationsToExport = if (pageIndex != null) {
-                        pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt()).toList()
+                        pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
                     } else {
                         // Export all annotations from all pages
                         emptyList()
@@ -347,8 +332,10 @@ class AnnotationManagerImpl(
                         .subscribe(
                             { annotations ->
                                 // Add parsed annotations to the document
-                                for (annotation in annotations) {
-                                    pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                                runBlocking {
+                                    for (annotation in annotations) {
+                                        pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                                    }
                                 }
                                 callback(Result.success(true))
                             },
@@ -372,7 +359,6 @@ class AnnotationManagerImpl(
                     for (pageIndex in 0 until pdfDocument.pageCount) {
                         val annotations = pdfDocument.annotationProvider
                             .getAnnotations(pageIndex)
-                            .toList()
 
                         val unsaved = annotations.filter { annotation ->
                             annotation.isModified

@@ -33,6 +33,7 @@ import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import io.flutter.plugin.common.BinaryMessenger
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.runBlocking
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subscribers.DisposableSubscriber
@@ -416,71 +417,61 @@ class FlutterPdfDocument(
             jsonAnnotation
         }
 
-        disposable =
-            pdfDocument.annotationProvider.createAnnotationFromInstantJsonAsync(processedJson)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { annotation ->
-                        // For stamp/image annotations, set title IMMEDIATELY after creation.
-                        // This is needed because PSPDFKit fires onAnnotationCreated synchronously
-                        // during createAnnotationFromInstantJsonAsync(), and the title from JSON
-                        // may not be applied for image annotations (title is not in the image spec).
-                        if (annotation is com.pspdfkit.annotations.StampAnnotation) {
-                            if (annotation.title.isNullOrEmpty()) {
-                                val type = try {
-                                    JSONObject(processedJson).optString("type", "")
-                                } catch (e: Exception) { "" }
-                                annotation.title = if (type == "pspdfkit/image") "Image" else "Stamp"
-                            }
-                        }
+        try {
+            val annotation = runBlocking { pdfDocument.annotationProvider.createAnnotationFromInstantJson(processedJson) }
 
-                        // Handle attachment if provided
-                        if (attachment != null && attachment is String) {
-                            try {
-                                val attachmentJson = JSONObject(attachment)
-                                val binary = attachmentJson.optString("binary")
-                                val contentType = attachmentJson.optString("contentType", "application/octet-stream")
-
-                                if (binary.isNotEmpty()) {
-                                    val binaryData = Base64.decode(binary, Base64.DEFAULT)
-                                    val dataProvider = BinaryDataProvider(binaryData)
-                                    annotation.attachBinaryInstantJsonAttachment(dataProvider, contentType)
-
-                                    // Generate the appearance stream to render the attached image.
-                                    annotation.generateAppearanceStreamAsync()
-                                        .subscribeOn(Schedulers.computation())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(
-                                            {
-                                                callback(Result.success(true))
-                                            },
-                                            { appearanceError ->
-                                                // Log but don't fail - the annotation was created successfully,
-                                                // just the appearance generation failed
-                                                android.util.Log.w("FlutterPdfDocument", "Failed to generate appearance stream: ${appearanceError.message}")
-                                                callback(Result.success(true))
-                                            }
-                                        )
-                                    return@subscribe
-                                }
-                            } catch (e: Exception) {
-                                // Log but don't fail - annotation was created successfully
-                                android.util.Log.w("FlutterPdfDocument", "Failed to attach binary: ${e.message}")
-                            }
-                        }
-                        callback(Result.success(true))
-                    }
-                ) { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while creating annotation",
-                                throwable.message ?: "",
-                            )
-                        )
-                    )
+            // For stamp/image annotations, set title IMMEDIATELY after creation.
+            if (annotation is com.pspdfkit.annotations.StampAnnotation) {
+                if (annotation.title.isNullOrEmpty()) {
+                    val type = try {
+                        JSONObject(processedJson).optString("type", "")
+                    } catch (e: Exception) { "" }
+                    annotation.title = if (type == "pspdfkit/image") "Image" else "Stamp"
                 }
+            }
+
+            // Handle attachment if provided
+            if (attachment != null && attachment is String) {
+                try {
+                    val attachmentJson = JSONObject(attachment)
+                    val binary = attachmentJson.optString("binary")
+                    val contentType = attachmentJson.optString("contentType", "application/octet-stream")
+
+                    if (binary.isNotEmpty()) {
+                        val binaryData = Base64.decode(binary, Base64.DEFAULT)
+                        val dataProvider = BinaryDataProvider(binaryData)
+                        annotation.attachBinaryInstantJsonAttachment(dataProvider, contentType)
+
+                        // Generate the appearance stream to render the attached image.
+                        disposable = annotation.generateAppearanceStreamAsync()
+                            .subscribeOn(Schedulers.computation())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                {
+                                    callback(Result.success(true))
+                                },
+                                { appearanceError ->
+                                    android.util.Log.w("FlutterPdfDocument", "Failed to generate appearance stream: ${appearanceError.message}")
+                                    callback(Result.success(true))
+                                }
+                            )
+                        return
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("FlutterPdfDocument", "Failed to attach binary: ${e.message}")
+                }
+            }
+            callback(Result.success(true))
+        } catch (throwable: Throwable) {
+            callback(
+                Result.failure(
+                    NutrientApiError(
+                        "Error while creating annotation",
+                        throwable.message ?: "",
+                    )
+                )
+            )
+        }
     }
 
     override fun updateAnnotation(jsonAnnotation: String, callback: (Result<Boolean?>) -> Unit) {
@@ -512,7 +503,7 @@ class FlutterPdfDocument(
             }
 
             val pageIndex = annotationObject.getInt("pageIndex")
-            val allAnnotations = pdfDocument.annotationProvider.getAnnotations(pageIndex)
+            val allAnnotations = runBlocking { pdfDocument.annotationProvider.getAnnotations(pageIndex) }
 
             // Try to find the annotation using multiple strategies:
             // 1. First try by name (most reliable for user-created annotations)
@@ -551,7 +542,7 @@ class FlutterPdfDocument(
                 callback(Result.failure(Exception("Annotation not found")))
                 return
             }
-            pdfDocument.annotationProvider.removeAnnotationFromPage(annotation)
+            runBlocking { pdfDocument.annotationProvider.removeAnnotationFromPage(annotation) }
             callback(Result.success(true))
         } catch (e: Exception) {
             callback(Result.failure(e))
@@ -563,7 +554,7 @@ class FlutterPdfDocument(
             val jsonArray = JSONArray()
 
             // Get annotations directly from the annotation provider
-            val annotations = pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
+            val annotations = runBlocking { pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt()) }
             val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
             val filterAll = annotationTypeSet.size == com.pspdfkit.annotations.AnnotationType.values().size
 
@@ -702,8 +693,10 @@ class FlutterPdfDocument(
                 { annotations ->
                     // Annotations parsed from XFDF aren't added to the document automatically.
                     // You need to add them manually.
-                    for (annotation in annotations) {
-                        pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                    runBlocking {
+                        for (annotation in annotations) {
+                            pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                        }
                     }
                     callback(Result.success(true))
                 },
