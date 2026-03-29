@@ -56,6 +56,11 @@ import com.pspdfkit.preferences.PSPDFKitPreferences
 import com.pspdfkit.ui.PdfActivity
 import com.pspdfkit.ui.PdfActivityIntentBuilder
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -72,6 +77,7 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
 
     private var disposable: Disposable? = null
     private var analyticsEventClient: FlutterAnalyticsClient? = null
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     fun dispose() {
         disposable?.dispose()
@@ -358,22 +364,23 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.exportInstantJson()"
         )
 
-        disposable =
-            document.annotationProvider.createAnnotationFromInstantJsonAsync(annotation)
-                .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ result ->
-                    document.annotationProvider.addAnnotationToPage(result)
-                    callback(Result.success(true))
-                }) { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while creating annotation",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    document.annotationProvider.createAnnotationFromInstantJson(annotation)
+                }
+                callback(Result.success(true))
+            } catch (throwable: Throwable) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while creating annotation",
+                            throwable.message ?: "",
                         )
                     )
-                }
+                )
+            }
+        }
     }
 
     override fun removeAnnotation(annotation: String, callback: (Result<Boolean?>) -> Unit) {
@@ -381,10 +388,36 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.exportInstantJson()"
         )
-        //Annotation from JSON.
-        val annotationObject = document.annotationProvider.createAnnotationFromInstantJson(annotation)
-        document.annotationProvider.removeAnnotationFromPage(annotationObject)
-        callback(Result.success(true))
+        scope.launch {
+            try {
+                val annotationJson = org.json.JSONObject(annotation)
+                val pageIndex = annotationJson.optInt("pageIndex", -1)
+                val name = annotationJson.optString("name", null)
+                val instantId = annotationJson.optString("id", null)
+
+                if (pageIndex < 0) {
+                    callback(Result.failure(NutrientApiError("InvalidAnnotation", "Annotation JSON missing pageIndex")))
+                    return@launch
+                }
+
+                val annotationObject = withContext(Dispatchers.IO) {
+                    val allAnnotations = document.annotationProvider.getAnnotations(pageIndex)
+                    allAnnotations.firstOrNull { !name.isNullOrEmpty() && it.name == name }
+                        ?: allAnnotations.firstOrNull { !instantId.isNullOrEmpty() && it.uuid == instantId }
+                }
+
+                if (annotationObject == null) {
+                    callback(Result.failure(NutrientApiError("AnnotationNotFound", "Annotation not found")))
+                    return@launch
+                }
+                withContext(Dispatchers.IO) {
+                    document.annotationProvider.removeAnnotationFromPage(annotationObject)
+                }
+                callback(Result.success(true))
+            } catch (e: Exception) {
+                callback(Result.failure(NutrientApiError("RemoveAnnotationError", e.message ?: "")))
+            }
+        }
     }
 
     override fun getAnnotationsJson(
@@ -397,16 +430,18 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.getAnnotationsJson()"
         )
 
-        val jsonArray = org.json.JSONArray()
-        // noinspection checkResult
-        document.annotationProvider.getAllAnnotationsOfTypeAsync(
-            AnnotationTypeAdapter.fromString(
-                type
-            ), pageIndex.toInt(), 1
-        ).subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ annotation ->
-                jsonArray.put(org.json.JSONObject(annotation.toInstantJson()))
-            }, { throwable ->
+        scope.launch {
+            try {
+                val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
+                val annotations = withContext(Dispatchers.IO) {
+                    document.annotationProvider.getAnnotations(pageIndex.toInt())
+                }
+                val filterAll = annotationTypeSet.contains(com.pspdfkit.annotations.AnnotationType.NONE)
+                val filtered = if (filterAll) annotations else annotations.filter { annotationTypeSet.contains(it.type) }
+                val jsonArray = org.json.JSONArray()
+                filtered.forEach { annotation -> jsonArray.put(org.json.JSONObject(annotation.toInstantJson())) }
+                callback(Result.success(jsonArray.toString()))
+            } catch (throwable: Throwable) {
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -415,9 +450,8 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            }, {
-                callback(Result.success(jsonArray.toString()))
-            })
+            }
+        }
     }
 
     override fun getAllUnsavedAnnotationsJson(callback: (Result<String?>) -> Unit) {
@@ -450,38 +484,38 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.updateAnnotation()"
         )
 
-        try {
-            val annotationObject:Map<String, *>  = Json.parseToJsonElement(annotation).jsonObject.toMap()
-            //  Remove escaped backslashes from the JSON string.
-            val pageIndex = annotationObject["pageIndex"] as Int
-            val uid = annotationObject["uid"] as String
-
-            val allAnnotations = document.annotationProvider.getAnnotations(pageIndex)
-            val annotationInstance = allAnnotations.firstOrNull { it.uuid == uid }
-            if (annotationInstance == null) {
-                callback(Result.failure(Exception("Annotation not found")))
-                return
-            }
-            document.annotationProvider.removeAnnotationFromPage(annotationInstance)
-            disposable = document.annotationProvider.createAnnotationFromInstantJsonAsync(annotation)
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        callback(Result.success(Unit))
+        scope.launch {
+            try {
+                val annotationObject:Map<String, *>  = Json.parseToJsonElement(annotation).jsonObject.toMap()
+                //  Remove escaped backslashes from the JSON string.
+                val pageIndex = (annotationObject["pageIndex"] as? kotlinx.serialization.json.JsonPrimitive)?.content?.toIntOrNull()
+                    ?: (annotationObject["pageIndex"] as? Int)
+                    ?: run {
+                        callback(Result.failure(NutrientApiError("InvalidAnnotation", "Annotation JSON missing pageIndex")))
+                        return@launch
                     }
-                ) { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while updating annotation",
-                                throwable.message ?: "",
-                            )
-                        )
-                    )
+                val uid = (annotationObject["uid"] as? kotlinx.serialization.json.JsonPrimitive)?.content
+                    ?: annotationObject["uid"] as? String
+                    ?: run {
+                        callback(Result.failure(NutrientApiError("InvalidAnnotation", "Annotation JSON missing uid")))
+                        return@launch
+                    }
+
+                val annotationInstance = withContext(Dispatchers.IO) {
+                    document.annotationProvider.getAnnotations(pageIndex).firstOrNull { it.uuid == uid }
                 }
-        } catch (e: Exception) {
-            callback(Result.failure(e))
+                if (annotationInstance == null) {
+                    callback(Result.failure(Exception("Annotation not found")))
+                    return@launch
+                }
+                withContext(Dispatchers.IO) {
+                    document.annotationProvider.removeAnnotationFromPage(annotationInstance)
+                    document.annotationProvider.createAnnotationFromInstantJson(annotation)
+                }
+                callback(Result.success(Unit))
+            } catch (e: Exception) {
+                callback(Result.failure(e))
+            }
         }
     }
 
@@ -538,14 +572,22 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         // The async parse method is recommended (so you can easily offload parsing from the UI thread).
         disposable = XfdfFormatter.parseXfdfAsync(document, dataProvider)
             .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.
-            .subscribe { annotations ->
-                // Annotations parsed from XFDF aren't added to the document automatically.
-                // You need to add them manually.
-                for (annotation in annotations) {
-                    document.annotationProvider.addAnnotationToPage(annotation)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { annotations ->
+                    // Annotations parsed from XFDF aren't added to the document automatically.
+                    // You need to add them manually.
+                    runBlocking {
+                        for (annotation in annotations) {
+                            document.annotationProvider.addAnnotationToPage(annotation)
+                        }
+                    }
+                    callback(Result.success(true))
+                },
+                { throwable ->
+                    callback(Result.failure(NutrientApiError("Error importing XFDF", throwable.message ?: "")))
                 }
-            }
-
+            )
     }
 
     override fun exportXfdf(xfdfPath: String, callback: (Result<Boolean?>) -> Unit) {
@@ -604,7 +646,18 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             instantActivity, "Pspdfkit.setListenToServerChanges()"
         )
-        (document as InstantPdfDocument).setListenToServerChanges(listen)
+        val instantDoc = document as InstantPdfDocument
+        // SDK v11 renamed setListenToServerChanges → setListeningToServerChanges
+        try {
+            try {
+                InstantPdfDocument::class.java.getMethod("setListeningToServerChanges", Boolean::class.javaPrimitiveType).invoke(instantDoc, listen)
+            } catch (_: NoSuchMethodException) {
+                InstantPdfDocument::class.java.getMethod("setListenToServerChanges", Boolean::class.javaPrimitiveType).invoke(instantDoc, listen)
+            }
+        } catch (e: Exception) {
+            callback(Result.failure(NutrientApiError("SetListenToServerChangesError", e.cause?.message ?: e.message ?: "")))
+            return
+        }
         callback(Result.success(true))
     }
 

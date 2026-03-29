@@ -14,12 +14,24 @@ export 'src/widgets/pspdfkit_widget.dart'
 export 'src/widgets/nutrient_view.dart'
     if (dart.library.io) 'src/widgets/nutrient_view.dart'
     if (dart.library.js_interop) 'src/widgets/nutrient_view_web.dart';
+export 'src/widgets/nutrient_instant_view.dart'
+    if (dart.library.js_interop) 'src/widgets/nutrient_instant_view_web.dart';
 
 // All other exports.
+export 'src/configuration/web_view_configuration.dart';
 export 'src/pdf_configuration.dart';
 export 'src/web/nutrient_web_configuration.dart';
 export 'src/web/office_conversion_settings.dart';
-export 'src/types.dart';
+export 'src/types.dart'
+    hide
+        ScrollDirection,
+        PageLayoutMode,
+        PageTransition,
+        SpreadFitting,
+        UserInterfaceViewMode,
+        AppearanceMode,
+        ThumbnailBarMode,
+        IOSBookmarkIndicatorMode;
 export 'src/web/models/models.dart';
 export 'src/configuration_options.dart';
 export 'src/toolbar/toolbar.dart';
@@ -54,7 +66,31 @@ export 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_in
         NutrientController,
         NutrientViewHandle,
         NativeInstanceRegistry,
-        NutrientPlatformAdapter;
+        NutrientPlatformAdapter,
+        // Typed view configuration
+        NutrientViewConfiguration,
+        AndroidViewConfiguration,
+        IOSViewConfiguration,
+        // Shared configuration enums
+        ScrollDirection,
+        PageLayoutMode,
+        PageTransition,
+        SpreadFitting,
+        UserInterfaceViewMode,
+        AppearanceMode,
+        ThumbnailBarMode,
+        IOSBookmarkIndicatorMode;
+// Export the enums file directly so its extensions (webName etc.) are visible.
+// A `show` export only re-exports named declarations, not extensions.
+export 'package:nutrient_flutter_platform_interface/src/configuration/view_configuration_enums.dart'
+    hide
+        ScrollDirection,
+        PageLayoutMode,
+        PageTransition,
+        SpreadFitting,
+        UserInterfaceViewMode,
+        AppearanceMode,
+        ThumbnailBarMode;
 
 // Platform adapters - conditional exports per platform
 export 'src/adapters/adapters_stub.dart'

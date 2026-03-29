@@ -594,6 +594,25 @@ abstract class NutrientViewControllerApi {
   @async
   bool? setAnnotationMenuConfiguration(
       AnnotationMenuConfigurationData configuration);
+
+  /// Converts a point from the page view's coordinate space to PDF page coordinates.
+  ///
+  /// [point] must be in logical view coordinates (UIKit points on iOS /
+  /// Flutter logical pixels on Android), relative to the top-left corner of
+  /// the page view that renders [pageIndex]. This corresponds to the coordinates
+  /// reported by gesture or tap callbacks on the page view widget.
+  /// [pageIndex] is zero-based.
+  @async
+  PointF convertViewPointToPdfPoint(int pageIndex, PointF point);
+
+  /// Converts a point from PDF page coordinates to the page view's coordinate space.
+  ///
+  /// The returned [PointF] is in logical view coordinates (UIKit points on iOS /
+  /// Flutter logical pixels on Android), relative to the top-left corner of
+  /// the page view that renders [pageIndex].
+  /// [pageIndex] is zero-based.
+  @async
+  PointF convertPdfPointToViewPoint(int pageIndex, PointF point);
 }
 
 @HostApi()

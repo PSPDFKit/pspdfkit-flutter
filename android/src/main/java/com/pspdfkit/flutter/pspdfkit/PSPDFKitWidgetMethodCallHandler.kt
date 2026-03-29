@@ -25,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subscribers.DisposableSubscriber
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -260,48 +261,35 @@ class PSPDFKitWidgetMethodCallHandler(
                         return
                     }
                 }
-                // noinspection checkResult
-                document.annotationProvider.createAnnotationFromInstantJsonAsync(jsonString)
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { result.success(true) }
-                    ) { throwable ->
-                        result.error(
-                            LOG_TAG,
-                            "Error while creating annotation from Instant JSON",
-                            throwable.message
-                        )
-                    }
+                try {
+                    runBlocking { document.annotationProvider.createAnnotationFromInstantJson(jsonString) }
+                    result.success(true)
+                } catch (throwable: Throwable) {
+                    result.error(
+                        LOG_TAG,
+                        "Error while creating annotation from Instant JSON",
+                        throwable.message
+                    )
+                }
             }
 
             "getAnnotations" -> {
                 val pageIndex: Int = requireNotNull(call.argument("pageIndex"))
                 val type: String = requireNotNull(call.argument("type"))
 
-                val annotationJsonList = ArrayList<String>()
-                // noinspection checkResult
-                document.annotationProvider.getAllAnnotationsOfTypeAsync(
-                    AnnotationTypeAdapter.fromString(
-                        type
-                    ),
-                    pageIndex, 1
-                )
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { annotation ->
-                            annotationJsonList.add(annotation.toInstantJson())
-                        },
-                        { throwable ->
-                            result.error(
-                                LOG_TAG,
-                                "Error while retrieving annotation of type $type",
-                                throwable.message
-                            )
-                        },
-                        { result.success(annotationJsonList) }
+                try {
+                    val annotationTypeSet = AnnotationTypeAdapter.fromString(type)
+                    val annotations = runBlocking { document.annotationProvider.getAnnotations(pageIndex) }
+                    val filterAll = annotationTypeSet.contains(com.pspdfkit.annotations.AnnotationType.NONE)
+                    val filtered = if (filterAll) annotations else annotations.filter { annotationTypeSet.contains(it.type) }
+                    result.success(filtered.map { it.toInstantJson() })
+                } catch (throwable: Throwable) {
+                    result.error(
+                        LOG_TAG,
+                        "Error while retrieving annotation of type $type",
+                        throwable.message
                     )
+                }
             }
 
             "getAllUnsavedAnnotations" -> {

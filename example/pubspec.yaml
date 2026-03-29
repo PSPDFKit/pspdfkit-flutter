@@ -21,11 +21,9 @@ dependencies:
   # Platform packages for custom adapter implementations
   # The bindings are accessed via implementation_imports in adapter examples
   # Platform interface is needed for NutrientViewHandle and NutrientPlatformAdapter
-  nutrient_flutter_platform_interface:
-    path: ../../nutrient_flutter_platform_interface
+  nutrient_flutter_platform_interface: ^1.0.0
   # Web package is needed for web adapter example (uses dart:js_interop)
-  nutrient_flutter_web:
-    path: ../../nutrient_flutter_web
+  nutrient_flutter_web: ^1.0.0
 
 dev_dependencies:
   flutter_lints: ^2.0.1
@@ -55,12 +53,14 @@ false_secrets:
   - lib/utils/jwt_util.dart
 
 # For local development until packages are published to pub.dev
+
 dependency_overrides:
   nutrient_flutter_platform_interface:
-    path: ../../nutrient_flutter_platform_interface
+    path: ../packages/nutrient_flutter_platform_interface
   nutrient_flutter_android:
-    path: ../../nutrient_flutter_android
+    path: ../packages/nutrient_flutter_android
   nutrient_flutter_ios:
-    path: ../../nutrient_flutter_ios
+    path: ../packages/nutrient_flutter_ios
   nutrient_flutter_web:
-    path: ../../nutrient_flutter_web
+    path: ../packages/nutrient_flutter_web
+

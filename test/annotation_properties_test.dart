@@ -529,8 +529,8 @@ void main() {
 
       final updated = properties.withIcon(NoteIcon.key);
 
-      // NoteIcon.key.name returns 'Key' (capitalized per NoteIconExtension)
-      expect(updated.iconName, 'Key');
+      // NoteIcon.key.name returns 'key' (camelCase per Instant JSON spec)
+      expect(updated.iconName, 'key');
     });
   });
 }

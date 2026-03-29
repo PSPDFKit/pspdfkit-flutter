@@ -491,6 +491,66 @@ void main() {
     });
   });
 
+  group('NoteIcon', () {
+    test('instantJsonName returns camelCase values matching Instant JSON spec',
+        () {
+      expect(NoteIcon.comment.instantJsonName, 'comment');
+      expect(NoteIcon.rightPointer.instantJsonName, 'rightPointer');
+      expect(NoteIcon.rightArrow.instantJsonName, 'rightArrow');
+      expect(NoteIcon.check.instantJsonName, 'check');
+      expect(NoteIcon.circle.instantJsonName, 'circle');
+      expect(NoteIcon.cross.instantJsonName, 'cross');
+      expect(NoteIcon.insert.instantJsonName, 'insert');
+      expect(NoteIcon.newParagraph.instantJsonName, 'newParagraph');
+      expect(NoteIcon.note.instantJsonName, 'note');
+      expect(NoteIcon.paragraph.instantJsonName, 'paragraph');
+      expect(NoteIcon.help.instantJsonName, 'help');
+      expect(NoteIcon.star.instantJsonName, 'star');
+      expect(NoteIcon.key.instantJsonName, 'key');
+    });
+  });
+
+  group('SquareAnnotation', () {
+    test('serializes with null strokeColor and strokeWidth', () {
+      final annotation = SquareAnnotation(
+        id: 'test_square_minimal',
+        bbox: [10.0, 20.0, 100.0, 80.0],
+        createdAt: testTime,
+        pageIndex: 0,
+        strokeColor: null,
+        strokeWidth: null,
+      );
+
+      final json = annotation.toJson();
+      expect(json['type'], 'pspdfkit/shape/rectangle');
+      expect(json['bbox'], [10.0, 20.0, 100.0, 80.0]);
+      expect(json.containsKey('strokeColor'), false); // strokeColor still omitted when null
+      expect(json['strokeWidth'], 1); // strokeWidth defaults to 1 for Android compat
+    });
+
+    test('roundtrip serialization preserves all fields', () {
+      final annotation = SquareAnnotation(
+        id: 'test_square_rt',
+        bbox: [0.0, 0.0, 50.0, 50.0],
+        createdAt: testTime,
+        pageIndex: 1,
+        strokeColor: const Color(0xFFFF0000),
+        strokeWidth: 3.0,
+        fillColor: const Color(0xFF0000FF),
+      );
+
+      final json = annotation.toJson();
+      final deserialized = SquareAnnotation.fromJson(json);
+
+      expect(deserialized.id, annotation.id);
+      expect(deserialized.bbox, annotation.bbox);
+      expect(deserialized.pageIndex, annotation.pageIndex);
+      expect(deserialized.strokeColor, annotation.strokeColor);
+      expect(deserialized.strokeWidth, annotation.strokeWidth);
+      expect(deserialized.fillColor, annotation.fillColor);
+    });
+  });
+
   group('EmbeddedFile', () {
     test('toJson() includes all properties', () {
       final embeddedFile = EmbeddedFile(

@@ -89,4 +89,22 @@ abstract class NutrientViewController {
 
   /// Exits annotation creation mode and returns to normal viewer interaction.
   Future<bool?> exitAnnotationCreationMode();
+
+  /// Converts a point from the page view's coordinate space to PDF page coordinates.
+  ///
+  /// [point] must be in logical pixel coordinates (device-independent pixels),
+  /// relative to the top-left corner of the rendered page within the viewer.
+  /// This corresponds to the position reported by gesture or tap callbacks on
+  /// the page view widget.
+  /// [pageIndex] is zero-based.
+  Future<Offset> convertViewPointToPdfPoint(int pageIndex, Offset point);
+
+  /// Converts a point from PDF page coordinates to the page view's coordinate space.
+  ///
+  /// The returned [Offset] is in logical pixel coordinates (device-independent
+  /// pixels), relative to the top-left corner of the rendered page within the
+  /// viewer. These are the same coordinates reported by gesture or tap callbacks
+  /// on the page view widget.
+  /// [pageIndex] is zero-based.
+  Future<Offset> convertPdfPointToViewPoint(int pageIndex, Offset point);
 }

@@ -13,7 +13,7 @@ abstract class Annotation {
   final String? name;
   final String? subject;
   final bool hidden;
-  final int v;
+  final int v = 2;
   final String? updatedAt;
   final int pageIndex;
   final double opacity;
@@ -34,7 +34,6 @@ abstract class Annotation {
     this.name,
     this.subject,
     this.hidden = false,
-    this.v = 2,
     this.customData,
   });
 
@@ -177,7 +176,7 @@ class InkAnnotation extends Annotation {
     required this.lines,
     required this.lineWidth,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     this.isDrawnNaturally = false,
     this.isSignature,
@@ -214,7 +213,7 @@ class InkAnnotation extends Annotation {
           : null,
       note: json['note'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       creatorName: json['creatorName'] as String?,
       opacity:
@@ -285,7 +284,7 @@ class HighlightAnnotation extends TextMarkupAnnotation {
   HighlightAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required super.color,
     required super.rects,
@@ -297,7 +296,6 @@ class HighlightAnnotation extends TextMarkupAnnotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.highlight);
 
@@ -305,7 +303,7 @@ class HighlightAnnotation extends TextMarkupAnnotation {
     return HighlightAnnotation(
         id: json['id'] as String?,
         bbox: Annotation._toDoubleList(json['bbox'] as List),
-        createdAt: json['createdAt'] as String,
+        createdAt: json['createdAt'] as String?,
         creatorName: json['creatorName'] as String?,
         color: Annotation._hexToColor(json['color'] as String?),
         rects: (json['rects'] as List)
@@ -321,7 +319,7 @@ class HighlightAnnotation extends TextMarkupAnnotation {
         name: json['name'] as String?,
         subject: json['subject'] as String?,
         hidden: json['hidden'] as bool? ?? false,
-        v: json['v'] as int? ?? 2,
+  
         customData: json['customData'] != null
             ? Map<String, dynamic>.from(json['customData'])
             : null);
@@ -340,7 +338,7 @@ class HighlightAnnotation extends TextMarkupAnnotation {
 /// Represents a note annotation in PSPDFKit
 class NoteAnnotation extends Annotation {
   final TextContent text;
-  final NoteIcon? icon;
+  final NoteIcon icon;
   final Color? color;
 
   NoteAnnotation({
@@ -348,7 +346,7 @@ class NoteAnnotation extends Annotation {
     required this.text,
     this.color,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     this.icon = NoteIcon.note,
     super.creatorName,
@@ -368,12 +366,12 @@ class NoteAnnotation extends Annotation {
       text:
           TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
       icon: NoteIcon.values.firstWhere(
-        (e) => e.toString().split('.').last == json['icon'],
+        (e) => e.name == json['icon'],
         orElse: () => NoteIcon.note,
       ),
       color: Annotation._hexToColor(json['color'] as String?),
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       creatorName: json['creatorName'] as String?,
       opacity:
@@ -395,7 +393,7 @@ class NoteAnnotation extends Annotation {
     return {
       ...super.toJson(),
       'text': text.toJson(),
-      'icon': icon.toString().split('.').last,
+      'icon': icon.instantJsonName,
       'color': Annotation._colorToHex(color),
     };
   }
@@ -444,34 +442,34 @@ enum NoteIcon {
 }
 
 extension NoteIconExtension on NoteIcon {
-  String get name {
+  String get instantJsonName {
     switch (this) {
       case NoteIcon.comment:
-        return 'Comment';
+        return 'comment';
       case NoteIcon.rightPointer:
-        return 'RightPointer';
+        return 'rightPointer';
       case NoteIcon.rightArrow:
-        return 'RightArrow';
+        return 'rightArrow';
       case NoteIcon.check:
-        return 'Check';
+        return 'check';
       case NoteIcon.circle:
-        return 'Circle';
+        return 'circle';
       case NoteIcon.cross:
-        return 'Cross';
+        return 'cross';
       case NoteIcon.insert:
-        return 'Insert';
+        return 'insert';
       case NoteIcon.newParagraph:
-        return 'NewParagraph';
+        return 'newParagraph';
       case NoteIcon.note:
-        return 'Note';
+        return 'note';
       case NoteIcon.paragraph:
-        return 'Paragraph';
+        return 'paragraph';
       case NoteIcon.help:
-        return 'Help';
+        return 'help';
       case NoteIcon.star:
-        return 'Star';
+        return 'star';
       case NoteIcon.key:
-        return 'Key';
+        return 'key';
     }
   }
 }
@@ -495,7 +493,7 @@ abstract class ShapeAnnotation extends Annotation {
     required this.strokeColor,
     required this.strokeWidth,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     required AnnotationType type,
     this.fillColor,
@@ -524,7 +522,7 @@ abstract class ShapeAnnotation extends Annotation {
       ...super.toJson(),
       if (strokeColor != null)
         'strokeColor': Annotation._colorToHex(strokeColor),
-      if (strokeWidth != null) 'strokeWidth': strokeWidth,
+      'strokeWidth': strokeWidth ?? 1,
       if (fillColor != null) 'fillColor': Annotation._colorToHex(fillColor!),
       if (borderStyle != null) 'borderStyle': borderStyle!.name,
       if (borderDashArray != null) 'borderDashArray': borderDashArray,
@@ -547,8 +545,8 @@ class SquareAnnotation extends ShapeAnnotation {
     required super.bbox,
     super.createdAt,
     required super.pageIndex,
-    super.strokeColor,
-    super.strokeWidth,
+    required super.strokeColor,
+    required super.strokeWidth,
     super.fillColor,
     super.borderStyle,
     super.borderDashArray,
@@ -573,7 +571,7 @@ class SquareAnnotation extends ShapeAnnotation {
     return SquareAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       strokeColor: Annotation._hexToColor(json['strokeColor'] as String?),
       strokeWidth: Annotation._toDouble(json['strokeWidth']),
@@ -618,7 +616,7 @@ class CircleAnnotation extends ShapeAnnotation {
   CircleAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     required super.strokeColor,
     required super.strokeWidth,
@@ -646,7 +644,7 @@ class CircleAnnotation extends ShapeAnnotation {
     return CircleAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       strokeColor: Annotation._hexToColor(json['strokeColor'] as String?),
       strokeWidth: Annotation._toDouble(json['strokeWidth']),
@@ -764,7 +762,7 @@ class LineAnnotation extends ShapeAnnotation {
   LineAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     required super.strokeColor,
     required super.strokeWidth,
@@ -795,7 +793,7 @@ class LineAnnotation extends ShapeAnnotation {
     return LineAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       strokeColor: Annotation._hexToColor(json['strokeColor'] as String?),
       strokeWidth: Annotation._toDouble(json['strokeWidth']),
@@ -933,7 +931,7 @@ class FreeTextAnnotation extends Annotation {
   FreeTextAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.text,
     required this.fontSize,
@@ -959,7 +957,6 @@ class FreeTextAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.freeText);
 
@@ -967,7 +964,7 @@ class FreeTextAnnotation extends Annotation {
     return FreeTextAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       text:
           TextContent.fromJson(Map<String, dynamic>.from(json['text'] as Map)),
@@ -1020,7 +1017,7 @@ class FreeTextAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1066,7 +1063,7 @@ class StampAnnotation extends Annotation {
   StampAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.stampType,
     this.attachment,
@@ -1082,7 +1079,6 @@ class StampAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.stamp);
 
@@ -1102,7 +1098,7 @@ class StampAnnotation extends Annotation {
     return StampAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       stampType: StampType.values.firstWhere(
         (e) => e.name == json['stampType'] as String,
@@ -1122,7 +1118,7 @@ class StampAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1158,7 +1154,7 @@ class ImageAnnotation extends Annotation with HasAttachment {
   ImageAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     super.creatorName,
     this.attachment,
@@ -1176,7 +1172,6 @@ class ImageAnnotation extends Annotation with HasAttachment {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.image);
 
@@ -1208,7 +1203,7 @@ class ImageAnnotation extends Annotation with HasAttachment {
     return ImageAnnotation(
         id: json['id'] as String?,
         bbox: Annotation._toDoubleList(json['bbox'] as List),
-        createdAt: json['createdAt'] as String,
+        createdAt: json['createdAt'] as String?,
         creatorName: json['creatorName'] as String?,
         rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
         description: json['description'] as String?,
@@ -1226,7 +1221,7 @@ class ImageAnnotation extends Annotation with HasAttachment {
         name: json['name'] as String?,
         subject: json['subject'] as String?,
         hidden: json['hidden'] as bool? ?? false,
-        v: json['v'] as int? ?? 2,
+  
         isSignature: json['isSignature'] as bool?,
         customData: json['customData'] != null
             ? Map<String, dynamic>.from(json['customData'])
@@ -1327,7 +1322,7 @@ class FileAnnotation extends Annotation {
   FileAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     this.iconName,
     this.embeddedFile,
@@ -1339,7 +1334,6 @@ class FileAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     this.attachment,
     super.customData,
   }) : super(type: AnnotationType.file);
@@ -1361,7 +1355,7 @@ class FileAnnotation extends Annotation {
     return FileAnnotation(
       id: json['id'] as String?,
       bbox: List<double>.from(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       iconName: json['iconName'] != null
           ? FileIconName.values.firstWhere(
@@ -1414,7 +1408,7 @@ class RedactionAnnotation extends Annotation {
   RedactionAnnotation({
     super.id,
     required this.rects,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     this.fillColor,
     this.overlayText,
@@ -1429,7 +1423,6 @@ class RedactionAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     this.outlineColor,
     this.repeatOverlayText,
     this.rotation = 0.0,
@@ -1442,7 +1435,7 @@ class RedactionAnnotation extends Annotation {
       rects: (json['rects'] as List<dynamic>)
           .map((rect) => Annotation._toDoubleList(rect as List<dynamic>))
           .toList(),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       fillColor: Annotation._hexToColor(json['fillColor'] as String?),
       overlayText: json['overlayText'] as String?,
@@ -1458,7 +1451,7 @@ class RedactionAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       outlineColor: Annotation._hexToColor(json['outlineColor'] as String?),
       repeatOverlayText: json['repeatOverlayText'] as bool?,
       rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
@@ -1499,7 +1492,7 @@ class WidgetAnnotation extends Annotation {
   WidgetAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.fieldType,
     this.fieldName,
@@ -1516,7 +1509,6 @@ class WidgetAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.widget);
 
@@ -1524,7 +1516,7 @@ class WidgetAnnotation extends Annotation {
     return WidgetAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       fieldType: (json['fieldType'] as String?) ?? '',
       fieldName: json['fieldName'] as String?,
@@ -1542,7 +1534,7 @@ class WidgetAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1572,7 +1564,7 @@ class SoundAnnotation extends Annotation {
   SoundAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.soundUrl,
     this.icon,
@@ -1584,7 +1576,6 @@ class SoundAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.sound);
 
@@ -1592,7 +1583,7 @@ class SoundAnnotation extends Annotation {
     return SoundAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       soundUrl: json['soundUrl'] as String,
       icon: json['icon'] as String?,
@@ -1605,7 +1596,7 @@ class SoundAnnotation extends Annotation {
       updatedAt: json['updatedAt'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1637,7 +1628,7 @@ abstract class TextMarkupAnnotation extends Annotation {
     super.id,
     required super.type,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.rects,
     this.blendMode,
@@ -1651,7 +1642,6 @@ abstract class TextMarkupAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   });
 
@@ -1672,7 +1662,7 @@ class StrikeoutAnnotation extends TextMarkupAnnotation {
   StrikeoutAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required super.rects,
     super.blendMode,
@@ -1686,7 +1676,6 @@ class StrikeoutAnnotation extends TextMarkupAnnotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.strikeout);
 
@@ -1694,7 +1683,7 @@ class StrikeoutAnnotation extends TextMarkupAnnotation {
     return StrikeoutAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       rects: (json['rects'] as List)
           .map((e) => Annotation._toDoubleList(e as List))
@@ -1716,7 +1705,7 @@ class StrikeoutAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1729,7 +1718,7 @@ class UnderlineAnnotation extends TextMarkupAnnotation {
   UnderlineAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required super.rects,
     super.blendMode,
@@ -1743,7 +1732,6 @@ class UnderlineAnnotation extends TextMarkupAnnotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.underline);
 
@@ -1751,7 +1739,7 @@ class UnderlineAnnotation extends TextMarkupAnnotation {
     return UnderlineAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       rects: (json['rects'] as List)
           .map((e) => Annotation._toDoubleList(e as List))
@@ -1773,7 +1761,7 @@ class UnderlineAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1786,7 +1774,7 @@ class SquigglyAnnotation extends TextMarkupAnnotation {
   SquigglyAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required super.rects,
     super.blendMode,
@@ -1800,7 +1788,6 @@ class SquigglyAnnotation extends TextMarkupAnnotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.squiggly);
 
@@ -1808,7 +1795,7 @@ class SquigglyAnnotation extends TextMarkupAnnotation {
     return SquigglyAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       rects: (json['rects'] as List)
           .map((e) => Annotation._toDoubleList(e as List))
@@ -1830,7 +1817,7 @@ class SquigglyAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1850,7 +1837,7 @@ class LinkAnnotation extends Annotation {
     super.id,
     required this.action,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     this.note,
     this.borderStyle,
@@ -1883,7 +1870,7 @@ class LinkAnnotation extends Annotation {
           : null,
       borderColor: Annotation._hexToColor(json['borderColor'] as String?),
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       creatorName: json['creatorName'] as String?,
       opacity:
@@ -1921,7 +1908,7 @@ class PolygonAnnotation extends ShapeAnnotation {
   PolygonAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     required super.strokeColor,
     required super.strokeWidth,
@@ -1950,7 +1937,7 @@ class PolygonAnnotation extends ShapeAnnotation {
     return PolygonAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       strokeColor: Annotation._hexToColor(json['strokeColor'] as String?),
       strokeWidth: Annotation._toDouble(json['strokeWidth']),
@@ -2013,7 +2000,7 @@ class PolylineAnnotation extends ShapeAnnotation {
   PolylineAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     required super.pageIndex,
     required super.strokeColor,
     required super.strokeWidth,
@@ -2044,7 +2031,7 @@ class PolylineAnnotation extends ShapeAnnotation {
     return PolylineAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       pageIndex: json['pageIndex'] as int,
       strokeColor: Annotation._hexToColor(json['strokeColor'] as String?),
       strokeWidth: Annotation._toDouble(json['strokeWidth']),
@@ -2111,7 +2098,7 @@ class PopupAnnotation extends Annotation {
   PopupAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     this.contents,
     this.open = false,
@@ -2124,7 +2111,6 @@ class PopupAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.popup);
 
@@ -2132,7 +2118,7 @@ class PopupAnnotation extends Annotation {
     return PopupAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       contents: json['contents'] as String?,
       open: json['open'] as bool? ?? false,
@@ -2149,7 +2135,7 @@ class PopupAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
     );
   }
 
@@ -2173,7 +2159,7 @@ class CaretAnnotation extends Annotation {
   CaretAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     this.contents,
     required this.color,
@@ -2186,7 +2172,6 @@ class CaretAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.caret);
 
@@ -2194,7 +2179,7 @@ class CaretAnnotation extends Annotation {
     return CaretAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2211,7 +2196,7 @@ class CaretAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
     );
   }
 
@@ -2244,7 +2229,7 @@ class RichMediaAnnotation extends Annotation with HasAttachment {
   RichMediaAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     this.contentType,
     this.fileName,
@@ -2265,7 +2250,6 @@ class RichMediaAnnotation extends Annotation with HasAttachment {
     super.subject,
     super.hidden,
     super.customData,
-    super.v,
   }) : super(type: AnnotationType.media);
 
   factory RichMediaAnnotation.fromJson(Map<String, dynamic> json,
@@ -2275,7 +2259,7 @@ class RichMediaAnnotation extends Annotation with HasAttachment {
     return RichMediaAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       contentType: json['contentType'] as String?,
       fileName: json['fileName'] as String?,
@@ -2299,7 +2283,7 @@ class RichMediaAnnotation extends Annotation with HasAttachment {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2341,7 +2325,7 @@ class ScreenAnnotation extends Annotation {
   ScreenAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.mediaType,
     required this.source,
@@ -2355,7 +2339,6 @@ class ScreenAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.screen);
 
@@ -2363,7 +2346,7 @@ class ScreenAnnotation extends Annotation {
     return ScreenAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       mediaType: json['mediaType'] as String,
       source: json['source'] as String,
@@ -2378,7 +2361,7 @@ class ScreenAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2408,7 +2391,7 @@ class WatermarkAnnotation extends Annotation {
   WatermarkAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.text,
     required this.rotation,
@@ -2423,7 +2406,6 @@ class WatermarkAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.watermark);
 
@@ -2431,7 +2413,7 @@ class WatermarkAnnotation extends Annotation {
     return WatermarkAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       text: json['text'] as String,
       opacity: (json['opacity'] as num).toDouble(),
@@ -2446,7 +2428,7 @@ class WatermarkAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2476,7 +2458,7 @@ class Type3DAnnotation extends Annotation {
   Type3DAnnotation({
     super.id,
     required super.bbox,
-    required super.createdAt,
+    super.createdAt,
     super.creatorName,
     required this.source,
     this.poster,
@@ -2489,7 +2471,6 @@ class Type3DAnnotation extends Annotation {
     super.name,
     super.subject,
     super.hidden,
-    super.v,
     super.customData,
   }) : super(type: AnnotationType.type3d);
 
@@ -2497,7 +2478,7 @@ class Type3DAnnotation extends Annotation {
     return Type3DAnnotation(
       id: json['id'] as String?,
       bbox: Annotation._toDoubleList(json['bbox'] as List),
-      createdAt: json['createdAt'] as String,
+      createdAt: json['createdAt'] as String?,
       creatorName: json['creatorName'] as String?,
       source: json['source'] as String,
       poster: json['poster'] as String?,
@@ -2511,7 +2492,7 @@ class Type3DAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
-      v: json['v'] as int? ?? 2,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,

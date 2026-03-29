@@ -2106,6 +2106,25 @@ interface NutrientViewControllerApi {
    * @return True if the configuration was set successfully, false otherwise.
    */
   fun setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, callback: (Result<Boolean?>) -> Unit)
+  /**
+   * Converts a point from the page view's coordinate space to PDF page coordinates.
+   *
+   * [point] must be in logical view coordinates (UIKit points on iOS /
+   * Flutter logical pixels on Android), relative to the top-left corner of
+   * the page view that renders [pageIndex]. This corresponds to the coordinates
+   * reported by gesture or tap callbacks on the page view widget.
+   * [pageIndex] is zero-based.
+   */
+  fun convertViewPointToPdfPoint(pageIndex: Long, point: PointF, callback: (Result<PointF>) -> Unit)
+  /**
+   * Converts a point from PDF page coordinates to the page view's coordinate space.
+   *
+   * The returned [PointF] is in logical view coordinates (UIKit points on iOS /
+   * Flutter logical pixels on Android), relative to the top-left corner of
+   * the page view that renders [pageIndex].
+   * [pageIndex] is zero-based.
+   */
+  fun convertPdfPointToViewPoint(pageIndex: Long, point: PointF, callback: (Result<PointF>) -> Unit)
 
   companion object {
     /** The codec used by NutrientViewControllerApi. */
@@ -2518,6 +2537,48 @@ interface NutrientViewControllerApi {
             val args = message as List<Any?>
             val configurationArg = args[0] as AnnotationMenuConfigurationData
             api.setAnnotationMenuConfiguration(configurationArg) { result: Result<Boolean?> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.convertViewPointToPdfPoint$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val pointArg = args[1] as PointF
+            api.convertViewPointToPdfPoint(pageIndexArg, pointArg) { result: Result<PointF> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.convertPdfPointToViewPoint$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val pageIndexArg = args[0] as Long
+            val pointArg = args[1] as PointF
+            api.convertPdfPointToViewPoint(pageIndexArg, pointArg) { result: Result<PointF> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

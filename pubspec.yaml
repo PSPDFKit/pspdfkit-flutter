@@ -46,3 +46,14 @@ dev_dependencies:
 
 false_secrets:
   - example/lib/utils/jwt_util.dart
+
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ./packages/nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ./packages/nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ./packages/nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ./packages/nutrient_flutter_web
+
