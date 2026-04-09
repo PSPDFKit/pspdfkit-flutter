@@ -472,6 +472,42 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
     /// - Parameters:
     ///   - configuration: The new annotation menu configuration
     ///   - completion: Completion callback with success/failure result
+    func convertViewPointToPdfPoint(pageIndex: Int64, point: PointF, completion: @escaping (Result<PointF, Error>) -> Void) {
+        guard let pdfVC = pdfViewController else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -1, userInfo: [NSLocalizedDescriptionKey: "PDFViewController not available."])))
+            return
+        }
+        guard pageIndex >= 0 else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid page index."])))
+            return
+        }
+        guard let pageView = pdfVC.pageViewForPage(at: UInt(pageIndex)) else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -1, userInfo: [NSLocalizedDescriptionKey: "Page view not available."])))
+            return
+        }
+        let viewPoint = CGPoint(x: point.x, y: point.y)
+        let pdfPoint = pageView.convert(viewPoint, to: pageView.pdfCoordinateSpace)
+        completion(.success(PointF(x: pdfPoint.x, y: pdfPoint.y)))
+    }
+
+    func convertPdfPointToViewPoint(pageIndex: Int64, point: PointF, completion: @escaping (Result<PointF, Error>) -> Void) {
+        guard let pdfVC = pdfViewController else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -1, userInfo: [NSLocalizedDescriptionKey: "PDFViewController not available."])))
+            return
+        }
+        guard pageIndex >= 0 else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid page index."])))
+            return
+        }
+        guard let pageView = pdfVC.pageViewForPage(at: UInt(pageIndex)) else {
+            completion(.failure(NSError(domain: "PspdfkitPlatformViewImpl", code: -1, userInfo: [NSLocalizedDescriptionKey: "Page view not available."])))
+            return
+        }
+        let pdfPoint = CGPoint(x: point.x, y: point.y)
+        let viewPoint = pageView.convert(pdfPoint, from: pageView.pdfCoordinateSpace)
+        completion(.success(PointF(x: viewPoint.x, y: viewPoint.y)))
+    }
+
     func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void) {
         // Update the stored configuration - this will be applied when the menu is actually shown
         self.annotationMenuConfiguration = configuration

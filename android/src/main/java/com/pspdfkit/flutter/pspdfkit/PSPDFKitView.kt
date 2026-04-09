@@ -166,20 +166,13 @@ internal class PSPDFKitView(
                     f: Fragment,
                     context: Context
                 ) {
-                    if (f.tag?.contains("Nutrient.Fragment") == true && pdfUiFragment is FlutterPdfUiFragment) {
+                    if (f.tag == "Nutrient.Fragment.$id" && pdfUiFragment is FlutterPdfUiFragment) {
                         // Set up toolbar grouping rule if available
                         if (toolbarGroupingItems != null) {
                             val groupingRule =
                                 FlutterMenuGroupingRule(context, toolbarGroupingItems)
                             val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
                             flutterFragment?.setToolbarGroupingRule(groupingRule)
-                        }
-
-                        // Always set FlutterPdfUiFragment as the contextual toolbar listener
-                        // It can handle both toolbar grouping and annotation menu customization
-                        val flutterFragment = pdfUiFragment as? FlutterPdfUiFragment
-                        flutterFragment?.let { fragment ->
-                            fragment.setOnContextualToolbarLifecycleListener(fragment)
                         }
 
                         // Pass theme colors to the fragment
@@ -228,7 +221,7 @@ internal class PSPDFKitView(
                 override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
                     // Set up method call handler when fragment is resumed
                     // This ensures pdfFragment is fully initialized
-                    if (f.tag?.contains("Nutrient.Fragment") == true && methodCallHandler == null) {
+                    if (f.tag == "Nutrient.Fragment.$id" && methodCallHandler == null) {
                         try {
                             val pdfFragment = pdfUiFragment.pdfFragment
                             if (pdfFragment != null) {
@@ -254,7 +247,7 @@ internal class PSPDFKitView(
                         val fragmentActivity = getFragmentActivity(context)
                         if (!isFragmentAttached && fragmentActivity.supportFragmentManager.isDestroyed.not()) {
                             fragmentActivity.supportFragmentManager.commitNow {
-                                add(it.id, pdfUiFragment)
+                                add(it.id, pdfUiFragment, "Nutrient.Fragment.$id")
                                 pspdfkitViewImpl.setPdfFragment(pdfUiFragment)
                                 setReorderingAllowed(true)
                             }

@@ -26,8 +26,24 @@ class PdfWebConfiguration {
   /// The base URL for the PSPDFKit Core library.
   final String? baseCoreUrl;
 
-  /// The base URL for the PSPDFKit server.
+  /// The base URL for all Nutrient Web SDK assets (WASM binaries, workers,
+  /// CSS, localization files).
+  ///
+  /// Set this when self-hosting the SDK assets instead of using the CDN.
+  /// If your assets are served from a different origin, ensure proper
+  /// CORS headers are configured.
+  ///
+  /// When [baseUrl] is set, [useCDN] has no effect.
   final String? baseUrl;
+
+  /// Whether to load SDK assets from the Nutrient CDN.
+  ///
+  /// When `true`, assets are loaded from the CDN. When `false` or `null`,
+  /// the SDK auto-detects the asset path from the script tag (deprecated
+  /// behavior as of Web SDK 1.9.0).
+  ///
+  /// Has no effect when [baseUrl] is provided.
+  final bool? useCDN;
 
   /// The ID of the container element for the viewer.
   final String? container;
@@ -233,6 +249,7 @@ class PdfWebConfiguration {
       this.autoSaveMode,
       this.baseCoreUrl,
       this.baseUrl,
+      this.useCDN,
       this.container,
       this.customFonts,
       this.disableHighQualityPrinting,
@@ -302,6 +319,7 @@ class PdfWebConfiguration {
       'autoCloseThreshold': autoCloseThreshold,
       'baseCoreUrl': baseCoreUrl,
       'baseUrl': baseUrl,
+      'useCDN': useCDN,
       'container': container,
       'customFonts': customFonts,
       'disableHighQualityPrinting': disableHighQualityPrinting,

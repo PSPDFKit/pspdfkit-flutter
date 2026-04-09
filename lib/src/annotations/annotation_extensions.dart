@@ -409,7 +409,6 @@ extension FreeTextAnnotationExtensions on FreeTextAnnotation {
     String? name,
     String? subject,
     bool? hidden,
-    int? v,
   }) {
     return FreeTextAnnotation(
       id: id ?? this.id,
@@ -441,7 +440,6 @@ extension FreeTextAnnotationExtensions on FreeTextAnnotation {
       name: name ?? this.name,
       subject: subject ?? this.subject,
       hidden: hidden ?? this.hidden,
-      v: v ?? this.v,
     );
   }
 }

@@ -30,6 +30,7 @@ import 'utils/file_utils.dart';
 import 'utils/platform_utils.dart';
 import 'package:nutrient_example/configuration_example.dart';
 import 'package:nutrient_example/instant_collaboration_example.dart';
+import 'package:nutrient_example/nutrient_instant_view_example.dart';
 import 'package:nutrient_example/measurement_tools.dart';
 import 'package:nutrient_example/pdf_generation_example.dart';
 import 'package:nutrient_example/save_as_example.dart';
@@ -50,6 +51,7 @@ import 'nutrient_annotation_creation_mode_example.dart';
 import 'nutrient_annotation_properties_example.dart';
 import 'custom_data_example.dart';
 import 'dirty_state_example.dart';
+import 'coordinate_conversion_example.dart';
 
 // Platform Adapter examples
 import 'platform_adapters/platform_adapter_example.dart';
@@ -279,6 +281,17 @@ List<NutrientExampleItem> examples(BuildContext context) => [
           description: 'Instant Synchronization Web Example',
           onTap: () => goTo(const InstantCollaborationWeb(), context),
         ),
+      if (!kIsWeb)
+        NutrientExampleItem(
+          title: 'Nutrient Instant View',
+          description:
+              'Embeds a live Instant document as a widget using NutrientInstantView.',
+          onTap: () => Navigator.of(context).push<dynamic>(
+            MaterialPageRoute<dynamic>(
+              builder: (_) => const NutrientInstantViewExample(),
+            ),
+          ),
+        ),
       NutrientExampleItem(
           title: 'Zoom to Rect',
           description: 'Zoom and restore page zoom example ',
@@ -286,6 +299,16 @@ List<NutrientExampleItem> examples(BuildContext context) => [
             await extractAsset(context, _documentPath).then((value) =>
                 goTo(ZoomExample(documentPath: value.path), context));
           }),
+      if (!kIsWeb)
+        NutrientExampleItem(
+            title: 'Coordinate Conversion',
+            description:
+                'Tap anywhere on the page to convert between view and PDF coordinate spaces. iOS and Android only.',
+            onTap: () async {
+              await extractAsset(context, _documentPath).then((value) => goTo(
+                  CoordinateConversionExample(documentPath: value.path),
+                  context));
+            }),
       NutrientExampleItem(
           title: 'Annotation Creation Mode',
           description: 'Shows how to use annotation creation mode.',

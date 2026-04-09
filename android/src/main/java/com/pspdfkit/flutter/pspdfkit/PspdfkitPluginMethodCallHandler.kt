@@ -490,7 +490,12 @@ class PspdfkitPluginMethodCallHandler(private val context: Activity,
                         getInstantActivity(),
                         "Pspdfkit.setListenToServerChanges()"
                     )
-                    (document as InstantPdfDocument).setListenToServerChanges(listen)
+                    val instantDoc = document as InstantPdfDocument
+                    try {
+                        InstantPdfDocument::class.java.getMethod("setListeningToServerChanges", Boolean::class.javaPrimitiveType).invoke(instantDoc, listen)
+                    } catch (_: NoSuchMethodException) {
+                        InstantPdfDocument::class.java.getMethod("setListenToServerChanges", Boolean::class.javaPrimitiveType).invoke(instantDoc, listen)
+                    }
                     result.success(true)
                 } catch (e: Exception) {
                     result.error("InstantException", e.message, null)

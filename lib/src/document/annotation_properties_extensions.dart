@@ -559,7 +559,7 @@ extension NoteAnnotationProperties on AnnotationProperties {
       inkLinesJson: inkLinesJson,
       fontName: fontName,
       fontSize: fontSize,
-      iconName: iconName.name,
+      iconName: iconName.instantJsonName,
     );
   }
 }

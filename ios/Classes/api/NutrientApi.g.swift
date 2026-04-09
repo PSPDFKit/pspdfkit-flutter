@@ -1987,6 +1987,21 @@ protocol NutrientViewControllerApi {
   /// @param configuration The annotation menu configuration to apply.
   /// @return True if the configuration was set successfully, false otherwise.
   func setAnnotationMenuConfiguration(configuration: AnnotationMenuConfigurationData, completion: @escaping (Result<Bool?, Error>) -> Void)
+  /// Converts a point from the page view's coordinate space to PDF page coordinates.
+  ///
+  /// [point] must be in logical view coordinates (UIKit points on iOS /
+  /// Flutter logical pixels on Android), relative to the top-left corner of
+  /// the page view that renders [pageIndex]. This corresponds to the coordinates
+  /// reported by gesture or tap callbacks on the page view widget.
+  /// [pageIndex] is zero-based.
+  func convertViewPointToPdfPoint(pageIndex: Int64, point: PointF, completion: @escaping (Result<PointF, Error>) -> Void)
+  /// Converts a point from PDF page coordinates to the page view's coordinate space.
+  ///
+  /// The returned [PointF] is in logical view coordinates (UIKit points on iOS /
+  /// Flutter logical pixels on Android), relative to the top-left corner of
+  /// the page view that renders [pageIndex].
+  /// [pageIndex] is zero-based.
+  func convertPdfPointToViewPoint(pageIndex: Int64, point: PointF, completion: @escaping (Result<PointF, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2397,6 +2412,55 @@ class NutrientViewControllerApiSetup {
       }
     } else {
       setAnnotationMenuConfigurationChannel.setMessageHandler(nil)
+    }
+    /// Converts a point from the page view's coordinate space to PDF page coordinates.
+    ///
+    /// [point] must be in logical view coordinates (UIKit points on iOS /
+    /// Flutter logical pixels on Android), relative to the top-left corner of
+    /// the page view that renders [pageIndex]. This corresponds to the coordinates
+    /// reported by gesture or tap callbacks on the page view widget.
+    /// [pageIndex] is zero-based.
+    let convertViewPointToPdfPointChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.convertViewPointToPdfPoint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      convertViewPointToPdfPointChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let pointArg = args[1] as! PointF
+        api.convertViewPointToPdfPoint(pageIndex: pageIndexArg, point: pointArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      convertViewPointToPdfPointChannel.setMessageHandler(nil)
+    }
+    /// Converts a point from PDF page coordinates to the page view's coordinate space.
+    ///
+    /// The returned [PointF] is in logical view coordinates (UIKit points on iOS /
+    /// Flutter logical pixels on Android), relative to the top-left corner of
+    /// the page view that renders [pageIndex].
+    /// [pageIndex] is zero-based.
+    let convertPdfPointToViewPointChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.nutrient_flutter.NutrientViewControllerApi.convertPdfPointToViewPoint\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      convertPdfPointToViewPointChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let pageIndexArg = args[0] as! Int64
+        let pointArg = args[1] as! PointF
+        api.convertPdfPointToViewPoint(pageIndex: pageIndexArg, point: pointArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      convertPdfPointToViewPointChannel.setMessageHandler(nil)
     }
   }
 }

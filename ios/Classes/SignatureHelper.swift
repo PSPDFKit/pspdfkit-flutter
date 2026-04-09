@@ -51,6 +51,7 @@ public class SignatureHelper: NSObject {
         let signatureConfig = SignatureCreationViewController.Configuration(
             availableModes: availableModes,
             colors: colors,
+            usePencilKit: false,
             isNaturalDrawingEnabled: true,
             fonts: signatureFonts,
             signingAreaAspectRatio: signatureAspectRatio

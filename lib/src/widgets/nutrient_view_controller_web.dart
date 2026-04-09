@@ -290,6 +290,16 @@ class NutrientViewControllerWeb extends NutrientViewController
   }
 
   @override
+  Future<Offset> convertViewPointToPdfPoint(int pageIndex, Offset point) {
+    throw UnimplementedError('This method is not supported on web!');
+  }
+
+  @override
+  Future<Offset> convertPdfPointToViewPoint(int pageIndex, Offset point) {
+    throw UnimplementedError('This method is not supported on web!');
+  }
+
+  @override
   Future<void> zoomToRect(int pageIndex, Rect rect) async {
     try {
       // Create a PSPDFKit.Geometry.Rect object using the SDK constructor

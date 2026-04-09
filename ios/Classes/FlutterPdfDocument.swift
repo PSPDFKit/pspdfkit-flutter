@@ -52,18 +52,26 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     }
     
     func exportPdf(options: DocumentSaveOptions?, completion: @escaping (Result<FlutterStandardTypedData, any Error>) -> Void) {
-        do {
-            let filePath = self.document?.fileURL?.path
-            if ((filePath) == nil){
-                completion(.failure(NutrientApiError(code: "Error while exporting document.", message: "Filed path is null", details: "")))
+        guard let document = document else {
+            completion(.failure(NutrientApiError(code: "", message: "Document is nil.", details: nil)))
+            return
+        }
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                guard let configuration = Processor.Configuration(document: document) else {
+                    throw NutrientApiError(code: "", message: "Failed to create processor configuration.", details: nil)
+                }
+                self.applyAnnotationOptions(to: configuration, options: options)
+                let processor = Processor(configuration: configuration, securityOptions: try self.makeSecurityOptions(options))
+                let data = try processor.data()
+                DispatchQueue.main.async {
+                    completion(.success(FlutterStandardTypedData(bytes: data)))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(NutrientApiError(code: "Error while exporting document.", message: error.localizedDescription, details: "")))
+                }
             }
-            
-            let data = try Data(contentsOf: URL(fileURLWithPath: filePath!))
-            let flutterStandardTypedData = FlutterStandardTypedData(bytes: data)
-            
-            completion(.success(flutterStandardTypedData))
-        } catch let error {
-            completion(.failure(NutrientApiError(code: "Error while exporting document.", message: error.localizedDescription, details: "")))
         }
     }
     
@@ -273,6 +281,47 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         }
     }
     
+    // MARK: - Save Option Helpers
+
+    private func makeSecurityOptions(_ options: DocumentSaveOptions?) throws -> PSPDFKit.Document.SecurityOptions? {
+        guard let options = options,
+              options.userPassword != nil || options.ownerPassword != nil else { return nil }
+        let permissions = iosDocumentPermissions(options.permissions)
+        return try PSPDFKit.Document.SecurityOptions(
+            ownerPassword: options.ownerPassword,
+            userPassword: options.userPassword,
+            keyLength: PSPDFKit.Document.SecurityOptionsKeyLengthAutomatic,
+            permissions: permissions
+        )
+    }
+
+    private func iosDocumentPermissions(_ permissions: [DocumentPermissions?]?) -> PSPDFKit.DocumentPermissions {
+        guard let permissions = permissions else { return [] }
+        var result: PSPDFKit.DocumentPermissions = []
+        for p in permissions {
+            switch p {
+            case .printing: result.insert(.printing)
+            case .modification: result.insert(.modification)
+            case .extract: result.insert(.extract)
+            case .annotationsAndForms: result.insert(.annotationsAndForms)
+            case .fillForms: result.insert(.fillForms)
+            case .extractAccessibility: result.insert(.extractAccessibility)
+            case .assemble: result.insert(.assemble)
+            case .printHighQuality: result.insert(.printHighQuality)
+            default: break
+            }
+        }
+        return result
+    }
+
+    private func applyAnnotationOptions(to configuration: Processor.Configuration, options: DocumentSaveOptions?) {
+        if options?.flatten == true {
+            configuration.modifyAnnotations(ofTypes: .all, change: .flatten)
+        } else if options?.excludeAnnotations == true {
+            configuration.modifyAnnotations(ofTypes: .all, change: .remove)
+        }
+    }
+
     func save(outputPath: String?, options: DocumentSaveOptions?, completion: @escaping (Result<Bool, any Error>) -> Void) {
         guard let document = document else {
             let error = NutrientApiError(code: "", message: "Document is nil.", details: nil)
@@ -294,7 +343,8 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
                     throw NutrientApiError(code: "", message: "Failed to create processor configuration.", details: nil)
                 }
 
-                let processor = Processor(configuration: configuration, securityOptions: nil)
+                applyAnnotationOptions(to: configuration, options: options)
+                let processor = Processor(configuration: configuration, securityOptions: try makeSecurityOptions(options))
                 try processor.write(toFileURL: outputURL)
 
                 completion(.success(true))
@@ -303,8 +353,23 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
                 completion(.failure(error))
             }
         } else {
-            // Save in place
-            document.save() { result in
+            // Save in place with options
+            var saveOptions: Set<Document.SaveOption> = []
+            if let opts = options {
+                if let incremental = opts.incremental {
+                    saveOptions.insert(.strategy(incremental ? .append : .rewrite))
+                }
+                do {
+                    if let securityOptions = try makeSecurityOptions(opts) {
+                        saveOptions.insert(.security(securityOptions))
+                    }
+                } catch {
+                    let apiError = NutrientApiError(code: "", message: "Failed to create security options: \(error.localizedDescription)", details: nil)
+                    completion(.failure(apiError))
+                    return
+                }
+            }
+            document.save(options: saveOptions) { result in
                 if case .success = result {
                     completion(.success(true))
                 } else {
