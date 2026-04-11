@@ -1,0 +1,168 @@
+# ============================================================================
+# Nutrient iOS SDK FFI Bindings Configuration
+# ============================================================================
+#
+# This configuration generates comprehensive Dart FFI bindings for the complete
+# Nutrient (PSPDFKit) iOS SDK, enabling full API access from Dart/Flutter.
+#
+# Usage: dart run ffigen --config ffigen_ios.yaml
+#
+# Requirements:
+# - PSPDFKit 26.5.0 must be cached via CocoaPods
+# - Run: cd ios && pod install (if not already done)
+#
+name: NutrientIOSBindings
+description: "Complete FFI bindings for Nutrient iOS SDK (PSPDFKit 26.5.0)"
+language: objc
+output: "lib/src/bindings/nutrient_ios_bindings.dart"
+
+# Native assets hook provides the dylib containing the protocol trampolines
+ffi-native:
+  asset-id: 'package:nutrient_flutter_ios/nutrient_flutter_ios.dylib'
+
+# Use the CocoaPods cached framework which has all Objective-C headers
+headers:
+  entry-points:
+    # Main PSPDFKit umbrella header (includes all public APIs)
+    - "example/ios/Pods/PSPDFKit/PSPDFKit.xcframework/ios-arm64_x86_64-simulator/PSPDFKit.framework/Headers/PSPDFKit.h"
+    # PSPDFKitUI umbrella header (UI components)
+    - "example/ios/Pods/PSPDFKit/PSPDFKitUI.xcframework/ios-arm64_x86_64-simulator/PSPDFKitUI.framework/Headers/PSPDFKitUI.h"
+    # Nutrient Flutter companion bridging header
+    - "ios/Classes/NutrientFFI.h"
+
+compiler-opts:
+  # Target iOS simulator (Apple Silicon-friendly)
+  - "-target"
+  - "arm64-apple-ios16.0-simulator"
+  # PSPDFKit framework paths (for framework-style imports)
+  - "-Fexample/ios/Pods/PSPDFKit/PSPDFKit.xcframework/ios-arm64_x86_64-simulator"
+  - "-Fexample/ios/Pods/PSPDFKit/PSPDFKitUI.xcframework/ios-arm64_x86_64-simulator"
+  # Header search paths
+  - "-Iexample/ios/Pods/PSPDFKit/PSPDFKit.xcframework/ios-arm64_x86_64-simulator/PSPDFKit.framework/Headers"
+  - "-Iexample/ios/Pods/PSPDFKit/PSPDFKitUI.xcframework/ios-arm64_x86_64-simulator/PSPDFKitUI.framework/Headers"
+  - "-Iios/Classes"
+
+# Include all PSPDF classes and types
+objc-interfaces:
+  include:
+    # All PSPDFKit classes (PSPDF* prefix)
+    - "PSPDF.*"
+    - "UIResponder"
+    # NSTextLocation is needed by some block types (TextKit 2)
+    - "NSTextLocation"
+
+  exclude: []
+    # PDF classes
+    # - 'PDF.*'
+    # Exclude problematic classes if any compilation errors occur
+    # (Will be determined during generation)
+  member-rename:
+    '.*':
+      '^([^:]+):([^:]+):$': '$1_$2'
+      '^([^:]+):([^:]+):([^:]+):$': '$1_$2_$3'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5_$6'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5_$6_$7'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$':
+        '$1_$2_$3_$4_$5_$6_$7_$8'
+    'UIResponder':
+      '^copy:$': 'copyAction'
+    # Rename setDelegate: to avoid conflict with delegate getter
+    'PSPDFGalleryView':
+      '^setDelegate:$': 'setDelegate_'
+    'PSPDFImagePickerController':
+      '^setDelegate:$': 'setDelegate_'
+    'PSPDFNavigationController':
+      '^setDelegate:$': 'setDelegate_'
+  member-filter:
+    PSPDFCoordinatedFileDataProvider:
+      exclude:
+        - 'replaceContentsWithDataSink:error:'
+    UIResponder:
+      exclude:
+        - 'copy:'
+    # Exclude setDelegate: methods that conflict with delegate getter
+    # (the delegate property setter is available via the `set delegate` syntax)
+    PSPDFGalleryView:
+      exclude:
+        - 'setDelegate:'
+    PSPDFImagePickerController:
+      exclude:
+        - 'setDelegate:'
+    PSPDFNavigationController:
+      exclude:
+        - 'setDelegate:'
+
+objc-protocols:
+  include:
+    - "PSPDF.*"
+    # NSTextLocation is needed by block types (TextKit 2 protocol)
+    - "NSTextLocation"
+  member-rename:
+    '.*':
+      '^([^:]+):([^:]+):$': '$1_$2'
+      '^([^:]+):([^:]+):([^:]+):$': '$1_$2_$3'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5_$6'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$': '$1_$2_$3_$4_$5_$6_$7'
+      '^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):$':
+        '$1_$2_$3_$4_$5_$6_$7_$8'
+
+# Include all PSPDFKit enums and constants
+enums:
+  include:
+    - "PSPDF.*"
+    # - 'PDF.*'
+  rename:
+    'AVAssetReferenceRestrictions': 'AVAssetReferenceRestrictionsEnum'
+
+# Include relevant global functions
+functions:
+  include:
+    - "PSPDF.*"
+    - "nutrient_.*"
+
+# Exclude system globals with opaque struct types invalid in ffi-native mode
+globals:
+  exclude:
+    - "_xpc_.*"
+    - "kDNSService.*"
+    - "_dispatch_.*"
+    - "__dispatch_.*"
+
+
+preamble: |
+  // AUTO-GENERATED FILE. DO NOT EDIT.
+  //
+  // Generated by FFIgen for Nutrient iOS SDK (PSPDFKit 26.5.0).
+  // Provides complete Dart FFI bindings for the Nutrient iOS PDF SDK.
+  //
+  // To regenerate:
+  //   1. Ensure PSPDFKit 26.5.0 is cached: cd ios && pod install
+  //   2. Run: dart run ffigen --config ffigen_ios.yaml
+  //
+  // Nutrient iOS SDK Documentation: https://www.nutrient.io/guides/ios/
+  // API Reference: https://www.nutrient.io/api/ios/
+
+  // ignore_for_file: always_specify_types
+  // ignore_for_file: camel_case_types
+  // ignore_for_file: non_constant_identifier_names
+  // ignore_for_file: unnecessary_non_null_assertion
+  // ignore_for_file: unused_element
+  // ignore_for_file: unused_field
+  // ignore_for_file: return_of_invalid_type
+  // ignore_for_file: void_checks
+  // ignore_for_file: annotate_overrides
+  // ignore_for_file: no_leading_underscores_for_local_identifiers
+  // ignore_for_file: library_private_types_in_public_api
+  // ignore_for_file: constant_identifier_names
+  // coverage:ignore-file
+
+comments:
+  style: any
+  length: full
+
+# Sort output for consistency
+sort: true

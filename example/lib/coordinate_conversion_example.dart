@@ -37,8 +37,8 @@ class _CoordinateConversionExampleState
   int _pageIndex = 0;
   bool _converting = false;
 
-  Future<void> _onPageClicked(String documentId, int pageIndex, PointF? point,
-      dynamic annotation) async {
+  Future<void> _onPageClicked(
+      String documentId, int pageIndex, PointF? point, dynamic annotation) async {
     if (point == null || _controller == null) return;
 
     final tappedViewPoint = Offset(point.x, point.y);
@@ -161,8 +161,10 @@ class _ResultPanel extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _Row('Page', 'page $pageIndex'),
-                      _Row('View point (tap)', _fmt(viewPoint)),
-                      if (pdfPoint != null) _Row('PDF point', _fmt(pdfPoint)),
+                      _Row('View point (tap)',
+                          _fmt(viewPoint)),
+                      if (pdfPoint != null)
+                        _Row('PDF point', _fmt(pdfPoint)),
                       if (roundTripViewPoint != null)
                         _Row('Round-trip view point', _fmt(roundTripViewPoint)),
                     ],

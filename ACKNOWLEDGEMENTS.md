@@ -2315,8 +2315,8 @@ COPYRIGHT NOTICE, DISCLAIMER, and LICENSE
 PNG Reference Library License version 2
 ---------------------------------------
 
- * Copyright (c) 1995-2018 The PNG Reference Library Authors.
- * Copyright (c) 2018 Cosmin Truta.
+ * Copyright (c) 1995-2026 The PNG Reference Library Authors.
+ * Copyright (c) 2018-2026 Cosmin Truta.
  * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  * Copyright (c) 1996-1997 Andreas Dilger.
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -2324,7 +2324,7 @@ PNG Reference Library License version 2
 The software is supplied "as is", without warranty of any kind,
 express or implied, including, without limitation, the warranties
 of merchantability, fitness for a particular purpose, title, and
-non-infringement.  In no even shall the Copyright owners, or
+non-infringement.  In no event shall the Copyright owners, or
 anyone distributing the software, be liable for any damages or
 other liability, whether in contract, tort or otherwise, arising
 from, out of, or in connection with the software, or the use or

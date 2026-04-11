@@ -13,10 +13,11 @@ import 'package:nutrient_flutter/nutrient_flutter.dart';
 // Default connection values for the bundled test Document Engine server.
 // Use your machine's local IP so both iOS (physical/simulator) and Android
 // emulators can reach the server on the same network.
-const String _defaultServerUrl = 'http://192.168.1.66:5001';
-const String _defaultDocumentId = 'instant-test-doc';
+const String _defaultServerUrl = 'http://192.168.1.65:5001';
+const String _defaultDocumentId = '7KPT3CCM4NMSAJ2QT7JWM54DRT';
 const String _defaultJwt =
-    'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9.eyJkb2N1bWVudF9pZCI6ICJpbnN0YW50LXRlc3QtZG9jIiwgInBlcm1pc3Npb25zIjogWyJyZWFkLWRvY3VtZW50IiwgIndyaXRlIiwgImRvd25sb2FkIl0sICJpYXQiOiAxNzc1NTUzMTQ5LCAiZXhwIjogMTgwNzA4OTE0OX0.EVjHuhuR18KQ22H6-nbx1chHrGR6Sygdtt1FlQsHKnzBiJlNg_u74rTJyGh3cqNYLk98mF_Y9WrpQTRviJzEd3SezgsrSMQrfH7JXQOnaITvK-Vr4fb4Jio0LE18_aS9Xt3jjS481E-QBolereLwB2z5o3FuulPtIQRJeCBYjhzY4kUf0hqUeObiNEF2Yhu8Xiw9aCtp3BdfZ1EmWPhmpojMaGalmnZrrbU3IZ0OlxW7Fe219I4MOC9ioKxXPqnT3JnERMrWFWaKvPMT1Pp1meGur9Fmusl7t-BNqawSOo3z6zMLvddMa5KSExs5wwV4YD0WoPK_39l-vosDNJ0WMFjcfQsOEw47Ez0Jq8OotHMRa3l6H_9FRrsJNyR7XX6VN-WaEIhiyGOYEQMJS9aTeaGV6kpBxYqSYzbw505utt2iFnSBjDQeujh2dRQNb_uvmLtTDD0gAF7aDU7gY70Qj8UHvwhv0lyUEFBezDyuXIUv7MJm_wcHA23Oi5NK4fdAidQYkx8Sfi52b3iud3ONoPdc2mFA4UgQ5RmXSmGDOyfNeD8dwZS1vJuR3OJhiT4Nj4NhmeLEMRCaIvYihfGvvFgFEgTaG5nwBQ_1NrdFUviHO5Ea-N9TeGAlcmVKwECs8wbPTzVXJXCSm55bZcPBGXcXDCJpRIuskaVV3zr1H9A';
+    'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJkb2N1bWVudF9pZCI6IjdLUFQzQ0NNNE5NU0FKMlFUN0pXTTU0RFJUIiwicGVybWlzc2lvbnMiOlsicmVhZC1kb2N1bWVudCIsIndyaXRlIiwiZG93bmxvYWQiXSwiaWF0IjoxNzczNzc5ODY4LCJleHAiOjIwODkzNTU4Njh9.WfbPXCc9stJ2f7jR47veV44RDuqIRxvfJE-09Ei3L3i3be5JMpEYDPBV6R667BmX3ioe_F6dmtDZJ3hppjrlepFd6suvBLLoqtYPxZRlkvFZIYsleLC0rdxT-HqAPpJkesNXoT_YOlT-fR_sm2JoiT6mSabvCRDDQySQRD_l87T5kuWzDL7q4GFIPMy-c2aGsertW5N6w7gPD1TESvvl7OqStffsAyHSBtKKtIZZoPeXch18TfNYpkeclpJ3Kb_UbcE35dIoKY3-ql0VmDpj1jKP-g252mGwemnKx4jpqwlQumBCCPITzNGUkJZnif5LveaaVbX_H_xBLdIOX9ckWeBc-EF3-4FKWKbeU-aj6H6x2UVW2h8u-xyMQ_QjblcAv4TkXb2wl_hI6CIuojMkuOIxKBpmTNzeuyLCAlWslww_xMPzuSe-a0-JS6XroN_ONOTY-rJvp0uyHUeCwHLrDrLB28hbLXXIi-IYsV2dutJwTeTWns6etUGX0JhPAq9zn7P1YBIkis3m_h7BaY3Qy6HoJytT1pAjIq0zIH2w4vvjL23blpq1wtkmlUaCA3Aur2TYS2DtNv0JXIUiSrW02-YjXfowVEUPkHegKB8IsT3-2qEmBYgHdSw_m11kY-XGzD4jvcCcCnP013uS25w8KIJRMReiX0CVIpNWHQwlFSU';
+
 
 /// Demonstrates embedding a live Instant document as a widget using
 /// [NutrientInstantView].
@@ -201,7 +202,8 @@ class _ConnectionSheetState extends State<_ConnectionSheet> {
   @override
   void initState() {
     super.initState();
-    _serverUrlController = TextEditingController(text: widget.initialServerUrl);
+    _serverUrlController =
+        TextEditingController(text: widget.initialServerUrl);
     _documentIdController =
         TextEditingController(text: widget.initialDocumentId);
     _jwtController = TextEditingController(text: widget.initialJwt);

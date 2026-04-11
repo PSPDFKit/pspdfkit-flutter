@@ -408,6 +408,7 @@ class _PspdfkitAnnotationsExampleWidgetState
                 ElevatedButton(
                     onPressed: _removeAnnotations,
                     child: const Text('Remove Annotations')),
+
               ],
             ),
           ),
@@ -516,4 +517,5 @@ class _PspdfkitAnnotationsExampleWidgetState
       await document?.removeAnnotation(annotation);
     }
   }
+
 }

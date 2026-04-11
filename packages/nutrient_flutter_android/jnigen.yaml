@@ -1,0 +1,240 @@
+# JNIgen configuration for comprehensive Nutrient Android SDK bindings
+output:
+  bindings_type: dart_only
+  dart:
+    path: 'lib/src/bindings/nutrient_android_sdk_bindings.dart'
+    structure: single_file
+
+# Comprehensive Nutrient Android SDK bindings
+# Note: Binding specific packages to avoid R classes and problematic classes
+classes:
+  # Flutter plugin native classes
+  - 'com.nutrient.nutrient_flutter_android.FragmentContainerPlatformView'
+
+  # nutrient_flutter native classes (for adapter bridge access)
+  - 'com.pspdfkit.flutter.pspdfkit.PSPDFKitView'
+
+  # Android framework classes
+  - 'android.net.Uri'
+  - 'android.content.Context'
+  - 'android.view.MotionEvent'
+  - 'android.graphics.PointF'
+  - 'java.lang.Throwable'
+
+  # Core Nutrient SDK classes
+  - 'com.pspdfkit.Nutrient'
+  - 'com.pspdfkit.PSPDFKit'
+
+  # ============================================================================
+  # COM.PSPDFKIT.* PACKAGES (Complete API Surface from v10.9.0)
+  # ============================================================================
+
+  # Core packages
+  - 'com.pspdfkit.ai'
+  - 'com.pspdfkit.analytics'
+  - 'com.pspdfkit.bookmarks'
+  - 'com.pspdfkit.datastructures'
+  - 'com.pspdfkit.exceptions'
+  - 'com.pspdfkit.initialization'
+  - 'com.pspdfkit.javascript'
+  - 'com.pspdfkit.listeners'
+  - 'com.pspdfkit.listeners.scrolling'
+  - 'com.pspdfkit.media'
+  - 'com.pspdfkit.preferences'
+  - 'com.pspdfkit.projection'
+  - 'com.pspdfkit.utils'
+
+  # Annotations
+  - 'com.pspdfkit.annotations'
+  - 'com.pspdfkit.annotations.actions'
+  - 'com.pspdfkit.annotations.appearance'
+  - 'com.pspdfkit.annotations.configuration'
+  - 'com.pspdfkit.annotations.defaults'
+  - 'com.pspdfkit.annotations.links'
+  - 'com.pspdfkit.annotations.measurements'
+  - 'com.pspdfkit.annotations.note'
+  - 'com.pspdfkit.annotations.sound'
+
+  # Compose (Jetpack Compose support)
+  - 'com.pspdfkit.compose.theme'
+  - 'com.pspdfkit.jetpack.compose.components'
+  - 'com.pspdfkit.jetpack.compose.interactors'
+  - 'com.pspdfkit.jetpack.compose.views'
+
+  # Configuration
+  - 'com.pspdfkit.configuration'
+  - 'com.pspdfkit.configuration.activity'
+  - 'com.pspdfkit.configuration.annotations'
+  - 'com.pspdfkit.configuration.forms'
+  - 'com.pspdfkit.configuration.page'
+  - 'com.pspdfkit.configuration.policy'
+  - 'com.pspdfkit.configuration.rendering'
+  - 'com.pspdfkit.configuration.search'
+  - 'com.pspdfkit.configuration.settings'
+  - 'com.pspdfkit.configuration.sharing'
+  - 'com.pspdfkit.configuration.signatures'
+  - 'com.pspdfkit.configuration.theming'
+
+  # Content Editing
+  - 'com.pspdfkit.contentediting'
+  - 'com.pspdfkit.contentediting.inspector'
+  - 'com.pspdfkit.contentediting.inspector.defaults'
+  - 'com.pspdfkit.contentediting.models'
+  - 'com.pspdfkit.contentediting.models.serializer'
+
+  # Document
+  - 'com.pspdfkit.document'
+  - 'com.pspdfkit.document.checkpoint'
+  - 'com.pspdfkit.document.download'
+  - 'com.pspdfkit.document.download.exceptions'
+  - 'com.pspdfkit.document.download.source'
+  - 'com.pspdfkit.document.editor'
+  - 'com.pspdfkit.document.editor.page'
+  - 'com.pspdfkit.document.files'
+  - 'com.pspdfkit.document.formatters'
+  - 'com.pspdfkit.document.html'
+  - 'com.pspdfkit.document.image'
+  - 'com.pspdfkit.document.library'
+  - 'com.pspdfkit.document.metadata'
+  - 'com.pspdfkit.document.office'
+  - 'com.pspdfkit.document.printing'
+  - 'com.pspdfkit.document.processor'
+  - 'com.pspdfkit.document.processor.ocr'
+  - 'com.pspdfkit.document.providers'
+  - 'com.pspdfkit.document.search'
+  - 'com.pspdfkit.document.sharing'
+
+  # Forms
+  - 'com.pspdfkit.forms'
+  - 'com.pspdfkit.forms.exceptions'
+
+  # Instant (Collaboration)
+  - 'com.pspdfkit.instant.annotations'
+  - 'com.pspdfkit.instant.client'
+  - 'com.pspdfkit.instant.document'
+  - 'com.pspdfkit.instant.exceptions'
+  - 'com.pspdfkit.instant.listeners'
+  - 'com.pspdfkit.instant.ui'
+
+  # Signatures
+  - 'com.pspdfkit.signatures'
+  - 'com.pspdfkit.signatures.listeners'
+  - 'com.pspdfkit.signatures.storage'
+  - 'com.pspdfkit.signatures.timestamp'
+
+  # UI
+  - 'com.pspdfkit.ui'
+  - 'com.pspdfkit.ui.actionmenu'
+  - 'com.pspdfkit.ui.annotations'
+  - 'com.pspdfkit.ui.audio'
+  - 'com.pspdfkit.ui.contentediting'
+  - 'com.pspdfkit.ui.dialog'
+  - 'com.pspdfkit.ui.document.editor'
+  - 'com.pspdfkit.ui.documentinfo'
+  - 'com.pspdfkit.ui.drawable'
+  - 'com.pspdfkit.ui.editor'
+  - 'com.pspdfkit.ui.fonts'
+  - 'com.pspdfkit.ui.forms'
+  - 'com.pspdfkit.ui.inspector'
+  - 'com.pspdfkit.ui.inspector.annotation'
+  - 'com.pspdfkit.ui.inspector.contentediting'
+  - 'com.pspdfkit.ui.inspector.forms'
+  - 'com.pspdfkit.ui.inspector.views'
+  - 'com.pspdfkit.ui.navigation'
+  - 'com.pspdfkit.ui.note'
+  - 'com.pspdfkit.ui.outline'
+  - 'com.pspdfkit.ui.overlay'
+  - 'com.pspdfkit.ui.redaction'
+  - 'com.pspdfkit.ui.rendering'
+  - 'com.pspdfkit.ui.scale'
+  - 'com.pspdfkit.ui.scrollbar'
+  - 'com.pspdfkit.ui.search'
+  - 'com.pspdfkit.ui.settings'
+  - 'com.pspdfkit.ui.settings.components'
+  - 'com.pspdfkit.ui.signatures'
+  - 'com.pspdfkit.ui.special_mode.controller'
+  - 'com.pspdfkit.ui.special_mode.controller.base'
+  - 'com.pspdfkit.ui.special_mode.manager'
+  - 'com.pspdfkit.ui.tabs'
+  - 'com.pspdfkit.ui.thumbnail'
+  - 'com.pspdfkit.ui.toolbar'
+  - 'com.pspdfkit.ui.toolbar.grouping'
+  - 'com.pspdfkit.ui.toolbar.grouping.presets'
+  - 'com.pspdfkit.ui.toolbar.popup'
+  - 'com.pspdfkit.ui.toolbar.rx'
+  - 'com.pspdfkit.ui.transition'
+
+  # Undo
+  - 'com.pspdfkit.undo'
+  - 'com.pspdfkit.undo.edit'
+  - 'com.pspdfkit.undo.edit.annotations'
+  - 'com.pspdfkit.undo.edit.contentediting'
+  - 'com.pspdfkit.undo.exceptions'
+
+  # ============================================================================
+  # IO.NUTRIENT.* PACKAGES (Modern Domain-Driven Architecture - v10.6+)
+  # ============================================================================
+  # Note: Only packages that exist in Nutrient SDK 10.8.0
+
+  # Data layer
+  - 'io.nutrient.data.models'
+
+  # Domain layer
+  - 'io.nutrient.domain'
+  - 'io.nutrient.domain.ai'
+
+  # UI layer
+  - 'io.nutrient.ui.settings'
+  - 'io.nutrient.ui.theme'
+
+# Exclude classes with known jnigen bugs
+# Note: These classes are generated but have issues that are fixed by scripts/fix_bindings.sh
+exclude:
+  classes:
+    # These exclusions don't work properly, so we generate and fix in post-processing
+    # - LongTermValidationExceptionKt: method name conflicts with return type
+    # - Response classes: generic parent fromReference parameter issues
+
+# Classpath Configuration
+# These paths must be configured before generating bindings.
+# See generate_bindings.sh for automatic setup, or set manually:
+#
+# 1. Build the example app to generate plugin classes:
+#    cd ../nutrient_flutter/example/android && ./gradlew assembleDebug
+#
+# 2. Extract AndroidX JARs to /tmp/:
+#    cp ~/.gradle/caches/.../fragment-*.aar /tmp/ && unzip -q /tmp/fragment-*.aar classes.jar -d /tmp/fragment
+#    cp ~/.gradle/caches/.../appcompat-*.aar /tmp/ && unzip -q /tmp/appcompat-*.aar classes.jar -d /tmp/appcompat
+#
+# 3. Set ANDROID_HOME or use default Android SDK location
+#
+class_path:
+  # NOTE: This file is a template. Run ./generate_bindings.sh which will:
+  # 1. Auto-detect Nutrient SDK JARs from your Gradle cache
+  # 2. Auto-detect ANDROID_HOME from common locations
+  # 3. Create a temporary config with actual paths
+  # 4. Run jnigen with the resolved paths
+  #
+  # Do not edit the paths below - they are placeholders replaced by the script
+  - 'NUTRIENT_API_JAR_PLACEHOLDER'
+  - 'NUTRIENT_RUNTIME_JAR_PLACEHOLDER'
+
+  # Android platform package classes (compiled)
+  - 'ANDROID_PLATFORM_CLASSES_PLACEHOLDER'
+
+  # nutrient_flutter classes (for PSPDFKitView adapter bridge access)
+  - 'NUTRIENT_FLUTTER_JAR_PLACEHOLDER'
+
+  # Android SDK platform JAR
+  - 'ANDROID_HOME_PLACEHOLDER/platforms/android-35/android.jar'
+
+preamble: |
+  // AUTO-GENERATED FILE. DO NOT EDIT.
+  //
+  // Generated by JNIgen for comprehensive Nutrient Android SDK bindings.
+  // This file provides Dart bindings for the entire Nutrient Android SDK v10.8.0.
+  //
+  // Nutrient SDK Documentation: https://www.nutrient.io/guides/android/
+  // JNI Package: package:jni/jni.dart
+
+log_level: info

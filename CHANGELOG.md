@@ -1,17 +1,13 @@
-## 5.5.0 — 09 Apr 2026
 
-- Adds `NutrientInstantView`, a widget that embeds a live Instant document directly in the Flutter widget tree with real-time collaboration support on Android and iOS. (J#HYB-988)
-- Adds `NutrientViewConfiguration`, a typed cross-platform viewer configuration for bindings-based views, with `IOSViewConfiguration` and `AndroidViewConfiguration` sub-configurations. Intended to replace the legacy `PdfConfiguration` in a future release. (J#HYB-988)
+- Fixes a Web assertion error when setting `baseUrl` via `PdfWebConfiguration`. (J#HYB-910)
+- Adds `useCDN` option to `PdfWebConfiguration` and `WebViewConfiguration` for explicit control over CDN vs self-hosted asset loading on Web. (J#HYB-910)
+- Fixes an Android issue where interactions were incorrectly routed when multiple `NutrientView` instances were shown simultaneously. (J#HYB-136)
 - Adds `DocumentSaveOptions` in `PdfDocument.save()` and `PdfDocument.exportPdf()` on Android and iOS. (J#HYB-352)
 - Adds coordinate conversion APIs to `NutrientViewController` for mapping between view and PDF coordinate spaces. (J#HYB-642)
-- Adds the `useCDN` option to `PdfWebConfiguration` and `WebViewConfiguration` for explicit control over CDN vs. self-hosted asset loading on Web. (J#HYB-910)
-- Updates to Nutrient iOS SDK 26.6.0.
-- Updates to Nutrient Android SDK 11.2.1. (J#HYB-986)
-- Updates to Nutrient Web SDK 1.13.0.
-- Updates `kotlinVersion` to 2.3.10 and `androidCompileSdkVersion`/`androidTargetSdkVersion` to 36. (J#HYB-986)
-- Fixes Instant sync not working on subsequent document opens on iOS.
-- Fixes a Web assertion error when setting `baseUrl` via `PdfWebConfiguration`. (J#HYB-910)
-- Fixes an Android issue where interactions were incorrectly routed when multiple `NutrientView` instances were shown simultaneously. (J#HYB-136)
+- Adds `NutrientInstantView`, a widget that embeds a live Instant document directly in the Flutter widget tree with real-time collaboration support on Android and iOS. (J#HYB-988)
+- Adds `NutrientViewConfiguration`, a typed cross-platform viewer configuration for bindings-based views, with `IOSViewConfiguration` and `AndroidViewConfiguration` sub-configs. Intended to replace the legacy `PdfConfiguration` in a future release. (J#HYB-988)
+- Updates to Nutrient Android SDK 11.1.1. (J#HYB-986)
+- Updates `kotlinVersion` to 2.1.20 and `androidCompileSdkVersion`/`androidTargetSdkVersion` to 36. (J#HYB-986)
 - Fixes annotation model validation and serialization issues. (J#HYB-821)
 
 ## 5.4.1 - 22 Feb 2026
