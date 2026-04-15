@@ -1,0 +1,85 @@
+/*
+ *   Copyright © 2018-2026 PSPDFKit GmbH. All rights reserved.
+ *
+ *   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+ *   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+ *   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+ *   This notice may not be removed from this file.
+ */
+
+def nutrientVersion = '10.10.1'
+def nutrientMavenUrl = 'https://my.nutrient.io/maven/'
+def nutrientMavenModuleName = 'nutrient'
+
+group 'com.nutrient.nutrient_flutter_android'
+version '1.0.0'
+
+buildscript {
+    ext.kotlin_version = '1.9.10'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        maven {
+            url nutrientMavenUrl
+        }
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace 'com.nutrient.nutrient_flutter_android'
+    compileSdkVersion 34
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 34
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation "io.nutrient:$nutrientMavenModuleName:$nutrientVersion"
+    implementation 'androidx.fragment:fragment-ktx:1.8.9'
+
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    // Fragment support for FFI-based platform views
+    implementation "androidx.fragment:fragment-ktx:1.8.9"
+    implementation "androidx.compose.material:material:1.8.3"
+    implementation "androidx.constraintlayout:constraintlayout:2.2.1"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.1"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.2") // Use the latest stable version
+    implementation "androidx.compose.foundation:foundation:1.8.3"
+    implementation "androidx.compose.ui:ui:1.8.3"
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:html:4.6.2")
+    implementation("io.noties.markwon:linkify:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
+    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+    implementation("io.socket:socket.io-client:2.1.1")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3") // 
+    
+}

@@ -1,0 +1,40 @@
+name: nutrient_flutter_ios
+description: iOS implementation of the nutrient_flutter plugin.
+version: 1.0.2
+homepage: https://nutrient.io/
+repository: https://github.com/PSPDFKit/pspdfkit-flutter
+issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
+documentation: https://nutrient.io/guides/flutter/
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  nutrient_flutter_platform_interface: ^1.0.0
+  objective_c: ^9.3.0
+  ffi: ^2.2.0
+  code_assets: ^1.0.0
+  hooks: ^1.0.0
+  logging: ^1.3.0
+  native_toolchain_c: ^0.17.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  ffigen: ^20.1.1
+
+flutter:
+  plugin:
+    implements: nutrient_flutter_bindings
+    platforms:
+      ios:
+        pluginClass: NutrientFlutterPlugin
+        dartPluginClass: NutrientFlutterIOS
+
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface

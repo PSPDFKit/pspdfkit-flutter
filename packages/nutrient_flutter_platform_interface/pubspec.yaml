@@ -1,0 +1,23 @@
+name: nutrient_flutter_platform_interface
+description: A common platform interface for the nutrient_flutter plugin.
+version: 1.0.0
+homepage: https://nutrient.io/
+repository: https://github.com/PSPDFKit/pspdfkit-flutter
+issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
+documentation: https://nutrient.io/guides/flutter/
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.0
+  meta: ^1.8.0
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1

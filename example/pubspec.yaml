@@ -1,11 +1,11 @@
 name: nutrient_example
 description: Demonstrates how to use the Nutrient Flutter plugin.
-version: 5.5.0
+version: 5.4.1
 homepage: https://nutrient.io/
 publish_to: 'none'  # Remove this line if you wish to publish to pub.dev
 environment:
   sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.41.1'
+  flutter: '>=3.27.0'
 
 dependencies:
   flutter:
@@ -21,9 +21,9 @@ dependencies:
   # Platform packages for custom adapter implementations
   # The bindings are accessed via implementation_imports in adapter examples
   # Platform interface is needed for NutrientViewHandle and NutrientPlatformAdapter
-  nutrient_flutter_platform_interface: ^1.1.0
+  nutrient_flutter_platform_interface: ^1.0.0
   # Web package is needed for web adapter example (uses dart:js_interop)
-  nutrient_flutter_web: ^1.1.0
+  nutrient_flutter_web: ^1.0.0
 
 dev_dependencies:
   flutter_lints: ^2.0.1
@@ -51,3 +51,16 @@ flutter:
 # Ignore false positives for security scanning
 false_secrets:
   - lib/utils/jwt_util.dart
+
+# For local development until packages are published to pub.dev
+
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../packages/nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../packages/nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../packages/nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../packages/nutrient_flutter_web
+

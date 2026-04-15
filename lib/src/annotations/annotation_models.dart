@@ -319,6 +319,7 @@ class HighlightAnnotation extends TextMarkupAnnotation {
         name: json['name'] as String?,
         subject: json['subject'] as String?,
         hidden: json['hidden'] as bool? ?? false,
+  
         customData: json['customData'] != null
             ? Map<String, dynamic>.from(json['customData'])
             : null);
@@ -1016,6 +1017,7 @@ class FreeTextAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1116,6 +1118,7 @@ class StampAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1218,6 +1221,7 @@ class ImageAnnotation extends Annotation with HasAttachment {
         name: json['name'] as String?,
         subject: json['subject'] as String?,
         hidden: json['hidden'] as bool? ?? false,
+  
         isSignature: json['isSignature'] as bool?,
         customData: json['customData'] != null
             ? Map<String, dynamic>.from(json['customData'])
@@ -1447,6 +1451,7 @@ class RedactionAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       outlineColor: Annotation._hexToColor(json['outlineColor'] as String?),
       repeatOverlayText: json['repeatOverlayText'] as bool?,
       rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
@@ -1529,6 +1534,7 @@ class WidgetAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1590,6 +1596,7 @@ class SoundAnnotation extends Annotation {
       updatedAt: json['updatedAt'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1698,6 +1705,7 @@ class StrikeoutAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1753,6 +1761,7 @@ class UnderlineAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -1808,6 +1817,7 @@ class SquigglyAnnotation extends TextMarkupAnnotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2125,6 +2135,7 @@ class PopupAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
     );
   }
 
@@ -2185,6 +2196,7 @@ class CaretAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
     );
   }
 
@@ -2271,6 +2283,7 @@ class RichMediaAnnotation extends Annotation with HasAttachment {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2348,6 +2361,7 @@ class ScreenAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2414,6 +2428,7 @@ class WatermarkAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,
@@ -2477,6 +2492,7 @@ class Type3DAnnotation extends Annotation {
       name: json['name'] as String?,
       subject: json['subject'] as String?,
       hidden: json['hidden'] as bool? ?? false,
+
       customData: json['customData'] != null
           ? Map<String, dynamic>.from(json['customData'])
           : null,

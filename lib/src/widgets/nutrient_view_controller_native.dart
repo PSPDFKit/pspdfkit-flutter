@@ -134,17 +134,15 @@ class NutrientViewControllerNative
 
   @override
   Future<Offset> convertViewPointToPdfPoint(int pageIndex, Offset point) async {
-    final result =
-        await _pspdfkitWidgetControllerApi.convertViewPointToPdfPoint(
-            pageIndex, PointF(x: point.dx, y: point.dy));
+    final result = await _pspdfkitWidgetControllerApi
+        .convertViewPointToPdfPoint(pageIndex, PointF(x: point.dx, y: point.dy));
     return Offset(result.x, result.y);
   }
 
   @override
   Future<Offset> convertPdfPointToViewPoint(int pageIndex, Offset point) async {
-    final result =
-        await _pspdfkitWidgetControllerApi.convertPdfPointToViewPoint(
-            pageIndex, PointF(x: point.dx, y: point.dy));
+    final result = await _pspdfkitWidgetControllerApi
+        .convertPdfPointToViewPoint(pageIndex, PointF(x: point.dx, y: point.dy));
     return Offset(result.x, result.y);
   }
 

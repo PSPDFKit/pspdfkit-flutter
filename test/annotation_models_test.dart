@@ -524,10 +524,8 @@ void main() {
       final json = annotation.toJson();
       expect(json['type'], 'pspdfkit/shape/rectangle');
       expect(json['bbox'], [10.0, 20.0, 100.0, 80.0]);
-      expect(json.containsKey('strokeColor'),
-          false); // strokeColor still omitted when null
-      expect(json['strokeWidth'],
-          1); // strokeWidth defaults to 1 for Android compat
+      expect(json.containsKey('strokeColor'), false); // strokeColor still omitted when null
+      expect(json['strokeWidth'], 1); // strokeWidth defaults to 1 for Android compat
     });
 
     test('roundtrip serialization preserves all fields', () {

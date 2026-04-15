@@ -21,14 +21,8 @@ import 'package:nutrient_flutter_android/src/bindings/nutrient_android_sdk_bindi
 
 // ignore: depend_on_referenced_packages
 import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart'
-    hide
-        PageLayoutMode,
-        ThumbnailBarMode,
-        UserInterfaceViewMode,
-        ScrollDirection,
-        PageTransition,
-        SpreadFitting,
-        AppearanceMode;
+    hide PageLayoutMode, ThumbnailBarMode, UserInterfaceViewMode,
+        ScrollDirection, PageTransition, SpreadFitting, AppearanceMode;
 
 import 'example_adapter_controller.dart';
 

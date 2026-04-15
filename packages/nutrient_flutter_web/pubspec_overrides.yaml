@@ -1,0 +1,3 @@
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface
