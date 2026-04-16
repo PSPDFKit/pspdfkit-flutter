@@ -1,3 +1,7 @@
+## 5.5.1 - 16 Apr 2026
+
+- Fixes `Nutrient.present(...)` failing on iOS apps using the `UIScene` lifecycle. (J#HYB-992)
+
 ## 5.5.0 — 09 Apr 2026
 
 - Adds `NutrientInstantView`, a widget that embeds a live Instant document directly in the Flutter widget tree with real-time collaboration support on Android and iOS. (J#HYB-988)
@@ -14,10 +18,10 @@
 - Fixes an Android issue where interactions were incorrectly routed when multiple `NutrientView` instances were shown simultaneously. (J#HYB-136)
 - Fixes annotation model validation and serialization issues. (J#HYB-821)
 
-## 5.4.1 - 22 Feb 2026
+## 5.4.1 — 22 Feb 2026
 
 - Updates to Nutrient iOS SDK 26.5.0. (#50888)
-- Fixes an iOS issue where the `AdapterBridge` couldn't retrieve the `PSPDFViewController` via FFI when using `NutrientView` with a platform adapter. (#50888)
+- Fixes an iOS issue where the `AdapterBridge` couldn’t retrieve the `PSPDFViewController` via FFI when using `NutrientView` with a platform adapter. (#50888)
 
 ## 5.4.0 — 18 Feb 2026
 

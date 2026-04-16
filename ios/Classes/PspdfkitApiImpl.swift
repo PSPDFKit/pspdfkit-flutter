@@ -607,7 +607,7 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
 
         let navigationController = PDFNavigationController(rootViewController: pdfViewController)
         navigationController.modalPresentationStyle = .fullScreen
-        if let presentingViewController = UIApplication.shared.delegate?.window??.rootViewController {
+        if let presentingViewController = Self.topmostPresentedViewController() {
             presentingViewController.present(navigationController, animated: true) {
                 completion(.success(true))
             }
@@ -615,6 +615,29 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Presenting view controller is not available."])
             completion(.failure(error))
         }
+    }
+
+    /// Resolves the topmost view controller suitable for modal presentation. Prefers the
+    /// foreground-active `UIWindowScene` path used by modern (scene-based) apps and falls
+    /// back to the legacy `UIApplication.delegate.window` path for apps that still own
+    /// their window on the app delegate. Walks through any already-presented controllers
+    /// so we never try to present on a controller that is itself presenting.
+    private static func topmostPresentedViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes
+        let activeScene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first
+        var rootViewController: UIViewController?
+        if let windowScene = activeScene as? UIWindowScene {
+            let keyWindow = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first
+            rootViewController = keyWindow?.rootViewController
+        }
+        if rootViewController == nil {
+            rootViewController = UIApplication.shared.delegate?.window??.rootViewController
+        }
+        var topController = rootViewController
+        while let presented = topController?.presentedViewController {
+            topController = presented
+        }
+        return topController
     }
     
     func checkAndroidWriteExternalStoragePermission(completion: @escaping (Result<Bool?, any Error>) -> Void) {
