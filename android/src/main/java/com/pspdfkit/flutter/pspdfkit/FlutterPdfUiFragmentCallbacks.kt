@@ -55,6 +55,11 @@ class FlutterPdfUiFragmentCallbacks(
     private val measurementConfigurations: List<Map<String, Any>>?,
     private val binaryMessenger: BinaryMessenger,
     private val flutterWidgetCallback: FlutterWidgetCallback,
+    // Invoked after the document is loaded. The PSPDFKitView uses this to
+    // build the AiAssistant from the now-available PdfDocument — at PSPDFKitView
+    // init time the document isn't loaded yet, so the AI Assistant factory
+    // gets an empty DocumentDescriptor list and throws.
+    private val onDocumentLoadedExtra: ((PdfDocument) -> Unit)? = null,
 
 ) : FragmentManager.FragmentLifecycleCallbacks(), DocumentListener {
 
@@ -144,6 +149,12 @@ class FlutterPdfUiFragmentCallbacks(
             EventDispatcher.getInstance().notifyDocumentLoaded(document)
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Error sending direct event notification", e)
+        }
+
+        try {
+            onDocumentLoadedExtra?.invoke(document)
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error in onDocumentLoadedExtra", e)
         }
     }
 

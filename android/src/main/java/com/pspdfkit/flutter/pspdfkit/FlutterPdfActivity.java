@@ -44,20 +44,20 @@ public class FlutterPdfActivity extends PdfActivity {
     }
 
     @Override
-    protected void onCreate(Bundle bundle) {
+    public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         bindActivity();
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         // Notify the Flutter PSPDFKit plugin that the activity is going to enter the onPause state.
         EventDispatcher.getInstance().notifyActivityOnPause();
         super.onPause();
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
         releaseActivity();
     }

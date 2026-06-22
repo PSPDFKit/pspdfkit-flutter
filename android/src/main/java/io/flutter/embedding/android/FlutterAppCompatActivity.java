@@ -41,6 +41,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.pspdfkit.flutter.pspdfkit.PSPDFKitView;
+import com.pspdfkit.flutter.pspdfkit.ai.FlutterAiAssistantRegistry;
+import com.pspdfkit.ui.PdfFragment;
 
 import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode;
@@ -97,12 +99,37 @@ public class FlutterAppCompatActivity extends AppCompatActivity
     @Nullable
     @Override
     public AiAssistant getAiAssistant() {
+        // Prefer the registry-managed assistant (used by both the embedded
+        // PSPDFKitView and the NutrientInstantView paths). Fall back to the
+        // legacy static slot on PSPDFKitView for compatibility with any code
+        // still writing there directly.
+        AiAssistant registryAssistant = FlutterAiAssistantRegistry.getActive();
+        if (registryAssistant != null) {
+            return registryAssistant;
+        }
         return PSPDFKitView.Companion.getAiAssistant();
     }
 
     @Override
-    public void navigateTo(@NonNull List<? extends RectF> list, int i, int i1) {
-
+    public void navigateTo(@NonNull List<? extends RectF> rects, int pageIndex, int documentIndex) {
+        // Citation taps in the AI Assistant dialog call back here so the host
+        // can scroll + highlight. The Nutrient Android getting-started guide
+        // makes navigation the developer's responsibility — for the Flutter
+        // single-document case we resolve the active PdfFragment via the
+        // existing registry and call into the SDK's highlighting API.
+        PdfFragment fragment = PSPDFKitView.Companion.getActivePdfFragment();
+        if (fragment == null) {
+            Log.w(TAG, "AI Assistant navigateTo: no active PdfFragment registered");
+            return;
+        }
+        try {
+            fragment.setPageIndex(pageIndex, true);
+            @SuppressWarnings("unchecked")
+            List<RectF> rectF = (List<RectF>) rects;
+            fragment.highlight(this, rectF, pageIndex);
+        } catch (Throwable t) {
+            Log.e(TAG, "AI Assistant navigateTo: failed to scroll/highlight: " + t.getMessage());
+        }
     }
 
     /**

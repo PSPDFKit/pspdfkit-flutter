@@ -21,6 +21,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import com.pspdfkit.ai.createAiAssistant
+import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.flutter.pspdfkit.ai.FlutterAiAssistantRegistry
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.api.NutrientEventsCallbacks
@@ -32,6 +34,7 @@ import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.signatures.storage.DatabaseSignatureStorage
 import com.pspdfkit.signatures.storage.SignatureStorage
+import com.pspdfkit.ui.DocumentDescriptor
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.PdfUiFragment
 import com.pspdfkit.ui.PdfUiFragmentBuilder
@@ -66,6 +69,9 @@ internal class PSPDFKitView(
     private var annotationMenuHandler: AnnotationMenuHandler? = null
     private var isFragmentAttached = false
     private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
+    // Held until the document loads — the AI Assistant factory needs a real
+    // DocumentDescriptor, so we can't build the assistant until onDocumentLoaded.
+    private var aiAssistantConfigurationMap: Map<String, Any>? = null
 
     init {
         fragmentContainerView?.id = View.generateViewId()
@@ -78,7 +84,7 @@ internal class PSPDFKitView(
             configurationMap?.get("toolbarItemGrouping") as List<Any>?
         val measurementValueConfigurations =
             configurationMap?.get("measurementValueConfigurations") as List<Map<String, Any>>?
-        val aiAssistantConfigurationMap = configurationMap?.get("aiAssistant") as Map<String, Any>?
+        aiAssistantConfigurationMap = configurationMap?.get("aiAssistant") as Map<String, Any>?
         val annotationMenuConfiguration = configurationAdapter.getAnnotationMenuConfiguration()
 
         // Initialize annotation menu handler if configuration is provided
@@ -136,13 +142,14 @@ internal class PSPDFKitView(
                 (pdfUiFragment as? FlutterPdfUiFragment)?.setThemeColors(themeColors)
             }
 
-            aiAssistantConfigurationMap?.let {
-                setupAiAssistant(context, it)
-            }
-
+            // AI Assistant construction is deferred to onDocumentLoaded — the
+            // Nutrient Android SDK's createAiAssistant requires a real
+            // DocumentDescriptor and rejects an empty list with
+            // IllegalArgumentException("DocumentIdentifiers are empty").
             fragmentCallbacks = FlutterPdfUiFragmentCallbacks(
                 id, methodChannel, measurementValueConfigurations,
-                messenger, FlutterWidgetCallback(widgetCallbacks)
+                messenger, FlutterWidgetCallback(widgetCallbacks),
+                onDocumentLoadedExtra = { document -> setupAiAssistant(context, document) }
             )
 
             fragmentCallbacks?.let { callbacks ->
@@ -235,6 +242,19 @@ internal class PSPDFKitView(
                             Log.e(LOG_TAG, "Error setting up method call handler in onFragmentResumed", e)
                         }
                     }
+                    // Foreground this view in the AI Assistant registry so
+                    // `getActive()` returns the assistant tied to whichever
+                    // view the user is actually looking at (relevant when
+                    // multiple AI-enabled views coexist).
+                    if (f.tag == "Nutrient.Fragment.$id") {
+                        FlutterAiAssistantRegistry.setActive(id)
+                    }
+                }
+
+                override fun onFragmentPaused(fm: FragmentManager, f: Fragment) {
+                    if (f.tag == "Nutrient.Fragment.$id") {
+                        FlutterAiAssistantRegistry.setActive(null)
+                    }
                 }
             },
             true
@@ -322,6 +342,9 @@ internal class PSPDFKitView(
             // Null out references
             fragmentCallbacks = null
             fragmentContainerView = null
+            // Release the AI Assistant socket/session if one was created for
+            // this view. The registry handles terminate() internally.
+            FlutterAiAssistantRegistry.unregister(id)
             aiAssistant = null
 
             // Unregister method channel
@@ -394,29 +417,33 @@ internal class PSPDFKitView(
 
     private fun setupAiAssistant(
         context: Context,
-        configuration: Map<String, Any>?
+        document: PdfDocument
     ) {
-        // Initialize the AiAssistant with the provided parameters
-        val serverUrl = configuration?.get("serverUrl") as String?
-        val jwt = configuration?.get("jwt") as String?
-        val sessionId = configuration?.get("sessionId") as String?
-        val userId = configuration?.get("userId") as String?
-        
-        if (serverUrl != null && jwt != null && sessionId != null) {
-            try {
-                // Create AI Assistant with new 10.10+ API and store in companion object
-                aiAssistant = createAiAssistant(
-                    context = context,
-                    documentsDescriptors = emptyList(),
-                    serverUrl = serverUrl,
-                    sessionId = sessionId,
-                    jwtToken = { _ -> jwt }
-                )
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, "Error creating AI Assistant", e)
-            }
-        } else {
+        val configuration = aiAssistantConfigurationMap ?: return
+        val serverUrl = configuration["serverUrl"] as String?
+        val jwt = configuration["jwt"] as String?
+        val sessionId = configuration["sessionId"] as String?
+
+        if (serverUrl == null || jwt == null || sessionId == null) {
             Log.e(LOG_TAG, "Invalid AI Assistant configuration - serverUrl, jwt, and sessionId are required")
+            return
+        }
+
+        try {
+            val assistant = createAiAssistant(
+                context = context,
+                documentsDescriptors = listOf(DocumentDescriptor.fromDocument(document)),
+                serverUrl = serverUrl,
+                sessionId = sessionId,
+                jwtToken = { _ -> jwt }
+            )
+            FlutterAiAssistantRegistry.register(id, assistant)
+            // Legacy slot kept populated for back-compat with any caller still
+            // reading PSPDFKitView.Companion.aiAssistant directly.
+            aiAssistant = assistant
+            Log.d(LOG_TAG, "AI Assistant created for document ${document.uid}")
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error creating AI Assistant", e)
         }
     }
 
@@ -459,6 +486,15 @@ internal class PSPDFKitView(
         fun getPdfFragment(viewId: Int): PdfFragment? {
             return pdfFragmentRegistry[viewId]
         }
+
+        /**
+         * Returns the most recently registered [PdfFragment], or null if
+         * none is attached. Used by [FlutterAppCompatActivity.navigateTo]
+         * to resolve which fragment should scroll + highlight when the user
+         * taps a citation in the AI Assistant chat.
+         */
+        @JvmStatic
+        fun getActivePdfFragment(): PdfFragment? = pdfFragmentRegistry.values.lastOrNull()
     }
 }
 

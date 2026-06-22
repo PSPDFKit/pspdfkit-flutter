@@ -7,16 +7,39 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:nutrient_example/utils/jwt_util.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
 // Default connection values for the bundled test Document Engine server.
 // Use your machine's local IP so both iOS (physical/simulator) and Android
 // emulators can reach the server on the same network.
-const String _defaultServerUrl = 'http://192.168.1.66:5001';
-const String _defaultDocumentId = 'instant-test-doc';
-const String _defaultJwt =
-    'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9.eyJkb2N1bWVudF9pZCI6ICJpbnN0YW50LXRlc3QtZG9jIiwgInBlcm1pc3Npb25zIjogWyJyZWFkLWRvY3VtZW50IiwgIndyaXRlIiwgImRvd25sb2FkIl0sICJpYXQiOiAxNzc1NTUzMTQ5LCAiZXhwIjogMTgwNzA4OTE0OX0.EVjHuhuR18KQ22H6-nbx1chHrGR6Sygdtt1FlQsHKnzBiJlNg_u74rTJyGh3cqNYLk98mF_Y9WrpQTRviJzEd3SezgsrSMQrfH7JXQOnaITvK-Vr4fb4Jio0LE18_aS9Xt3jjS481E-QBolereLwB2z5o3FuulPtIQRJeCBYjhzY4kUf0hqUeObiNEF2Yhu8Xiw9aCtp3BdfZ1EmWPhmpojMaGalmnZrrbU3IZ0OlxW7Fe219I4MOC9ioKxXPqnT3JnERMrWFWaKvPMT1Pp1meGur9Fmusl7t-BNqawSOo3z6zMLvddMa5KSExs5wwV4YD0WoPK_39l-vosDNJ0WMFjcfQsOEw47Ez0Jq8OotHMRa3l6H_9FRrsJNyR7XX6VN-WaEIhiyGOYEQMJS9aTeaGV6kpBxYqSYzbw505utt2iFnSBjDQeujh2dRQNb_uvmLtTDD0gAF7aDU7gY70Qj8UHvwhv0lyUEFBezDyuXIUv7MJm_wcHA23Oi5NK4fdAidQYkx8Sfi52b3iud3ONoPdc2mFA4UgQ5RmXSmGDOyfNeD8dwZS1vJuR3OJhiT4Nj4NhmeLEMRCaIvYihfGvvFgFEgTaG5nwBQ_1NrdFUviHO5Ea-N9TeGAlcmVKwECs8wbPTzVXJXCSm55bZcPBGXcXDCJpRIuskaVV3zr1H9A';
+// Returns the AI Assistant config that targets the local docker compose
+// from `ai-assistant-demo/document-engine`. Android emulators reach the
+// host via 10.0.2.2; iOS simulator shares localhost with the host.
+Map<String, String> _aiAssistantConfig() {
+  final aiServerUrl = defaultTargetPlatform == TargetPlatform.android
+      ? 'http://10.0.2.2:4000'
+      : 'http://localhost:4000';
+  return {
+    'serverUrl': aiServerUrl,
+    'jwt': JwtUtil.generateToken(userId: 'instant-view-example'),
+    'sessionId': 'instant-view-session',
+  };
+}
+
+// 10.0.2.2 is the Android emulator's loopback to host. iOS simulator
+// shares localhost with the host.
+String get _defaultServerUrl => defaultTargetPlatform == TargetPlatform.android
+    ? 'http://10.0.2.2:5001'
+    : 'http://localhost:5001';
+const String _defaultDocumentId = 'simple-test-doc';
+// Minted at runtime so the signature always matches the demo keypair
+// configured in `ai-assistant-demo/docker-compose.yml` (`JWT_PUBLIC_KEY`).
+String get _defaultJwt =>
+    JwtUtil.generateInstantToken(documentId: _defaultDocumentId);
 
 /// Demonstrates embedding a live Instant document as a widget using
 /// [NutrientInstantView].
@@ -111,18 +134,23 @@ class _NutrientInstantViewExampleState
                     key: ValueKey(_viewKey),
                     serverUrl: serverUrl,
                     jwt: jwt,
-                    configuration: const NutrientViewConfiguration(
+                    configuration: NutrientViewConfiguration(
                       pageLayoutMode: PageLayoutMode.single,
                       thumbnailBarMode: ThumbnailBarMode.floating,
                       enableAnnotationEditing: true,
                       enableFormEditing: true,
-                      androidConfig: AndroidViewConfiguration(
+                      enableInstantComments: true,
+                      androidConfig: const AndroidViewConfiguration(
                         showSearchAction: true,
                         showOutlineAction: true,
                       ),
-                      iosConfig: IOSViewConfiguration(
+                      iosConfig: const IOSViewConfiguration(
                         spreadFitting: SpreadFitting.adaptive,
                       ),
+                      // Wire AI Assistant if a local AI Assistant container
+                      // is running. The default points at the docker compose
+                      // bundled with `ai-assistant-demo/document-engine`.
+                      aiAssistantConfiguration: _aiAssistantConfig(),
                     ),
                     onViewCreated: (handle) {
                       debugPrint(

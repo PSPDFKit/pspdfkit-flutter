@@ -2,6 +2,8 @@
 
 Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SDK. View, annotate, and edit PDFs seamlessly across Android, iOS, and Web platforms.
 
+![Nutrient Flutter SDK](screenshots/flutter.png)
+
 ## Requirements
 
 - Flutter SDK (latest stable version)
@@ -11,7 +13,7 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
   - Android Virtual Device or physical device
 - For iOS:
   - Xcode 16 or later
-  - iOS 16.0 or later
+  - iOS 17.0 or later
 - For Web:
   - Modern web browser with WebAssembly support
 
@@ -77,10 +79,10 @@ class MainActivity: FlutterAppCompatActivity() {
 
 ### iOS Setup
 
-Make sure to set the minimum iOS version to 16.0 in your `ios/Podfile`:
+Make sure to set the minimum iOS version to 17.0 in your `ios/Podfile`:
 
 ```ruby
-platform :ios, '16.0'
+platform :ios, '17.0'
 ```
 
 ### Web Setup

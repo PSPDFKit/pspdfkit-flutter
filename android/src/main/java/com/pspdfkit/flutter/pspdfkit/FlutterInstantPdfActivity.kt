@@ -9,21 +9,47 @@
 
 package com.pspdfkit.flutter.pspdfkit
 
+import android.graphics.RectF
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
+import com.pspdfkit.ai.createAiAssistantForInstant
 import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.flutter.pspdfkit.ai.FlutterAiAssistantRegistry
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.instant.document.InstantPdfDocument
 import com.pspdfkit.instant.exceptions.InstantException
 import com.pspdfkit.instant.ui.InstantPdfActivity
 import io.flutter.plugin.common.MethodChannel
+import io.nutrient.domain.ai.AiAssistant
+import io.nutrient.domain.ai.AiAssistantProvider
 import java.util.concurrent.atomic.AtomicReference
+
+// Activities don't have a meaningful "view id" the way platform views do. We
+// pick a sentinel that won't collide with real Flutter platform view ids
+// (those start at 0 and grow positive).
+private const val INSTANT_ACTIVITY_VIEW_ID = -1
 
 /**
  * For communication with the PSPDFKit plugin, we keep a static reference to the current
  * activity.
  */
-class FlutterInstantPdfActivity : InstantPdfActivity() {
+class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
+
+    override fun getAiAssistant(): AiAssistant? =
+        FlutterAiAssistantRegistry.get(INSTANT_ACTIVITY_VIEW_ID)
+            ?: FlutterAiAssistantRegistry.getActive()
+
+    override fun navigateTo(documentRect: List<RectF>, pageIndex: Int, documentIndex: Int) {
+        try {
+            pdfFragment?.let { fragment ->
+                fragment.setPageIndex(pageIndex, true)
+                fragment.highlight(this, documentRect, pageIndex)
+            }
+        } catch (t: Throwable) {
+            Log.e(LOG_TAG, "AI Assistant navigateTo failed", t)
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +66,10 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
     override fun onDestroy() {
         super.onDestroy()
         releaseActivity()
+        // Release the AI Assistant socket so it doesn't outlive the activity.
+        FlutterAiAssistantRegistry.unregister(INSTANT_ACTIVITY_VIEW_ID)
+        // No static state to clear — config now lives in this activity's
+        // Intent extras and is garbage-collected with the activity instance.
     }
     
     override fun onDocumentLoaded(pdfDocument: PdfDocument) {
@@ -50,6 +80,40 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
             pdfFragment.let { fragment ->
                 MeasurementHelper.addMeasurementConfiguration(fragment, it)
             }
+        }
+        setupAiAssistantForInstant(pdfDocument)
+    }
+
+    private fun setupAiAssistantForInstant(pdfDocument: PdfDocument) {
+        val aiServerUrl = intent.getStringExtra(EXTRA_AI_SERVER_URL) ?: return
+        val aiJwt = intent.getStringExtra(EXTRA_AI_JWT) ?: return
+        val sessionId = intent.getStringExtra(EXTRA_AI_SESSION_ID) ?: return
+        val instantServerUrl = intent.getStringExtra(EXTRA_INSTANT_SERVER_URL) ?: run {
+            Log.e(LOG_TAG, "AI Assistant: missing Instant server URL in Intent extras")
+            return
+        }
+        val instantDoc = pdfDocument as? InstantPdfDocument ?: run {
+            Log.w(LOG_TAG, "AI Assistant: expected InstantPdfDocument, got ${pdfDocument::class.java.simpleName}")
+            return
+        }
+        val layerJwt = instantDoc.instantDocumentDescriptor.jwt
+        if (layerJwt == null) {
+            Log.e(LOG_TAG, "AI Assistant: missing Instant layer JWT")
+            return
+        }
+        try {
+            val assistant = createAiAssistantForInstant(
+                context = this,
+                instantServerUrl = instantServerUrl,
+                documentLayerJwts = listOf(layerJwt),
+                aiAssistantServerUrl = aiServerUrl,
+                sessionId = sessionId,
+                jwtToken = { _ -> aiJwt }
+            )
+            FlutterAiAssistantRegistry.register(INSTANT_ACTIVITY_VIEW_ID, assistant)
+            Log.d(LOG_TAG, "AI Assistant (Instant) created for document ${instantDoc.uid}")
+        } catch (e: Exception) {
+            Log.e(LOG_TAG, "Error creating AI Assistant for Instant document", e)
         }
     }
 
@@ -116,7 +180,17 @@ class FlutterInstantPdfActivity : InstantPdfActivity() {
     }
 
     companion object {
+        private const val LOG_TAG = "PSPDFKitPlugin"
         private  var measurementValueConfigurations:List<Map<String,Any>>? = null
+
+        // Intent extras: each FlutterInstantPdfActivity instance owns its own
+        // AI Assistant configuration via these keys, so a rapid sequence of
+        // presentInstant() calls can no longer race on a shared static slot.
+        // See PR #53248 review comment on the static-config race.
+        const val EXTRA_AI_SERVER_URL = "com.pspdfkit.flutter.AI_SERVER_URL"
+        const val EXTRA_AI_JWT = "com.pspdfkit.flutter.AI_JWT"
+        const val EXTRA_AI_SESSION_ID = "com.pspdfkit.flutter.AI_SESSION_ID"
+        const val EXTRA_INSTANT_SERVER_URL = "com.pspdfkit.flutter.INSTANT_SERVER_URL"
 
         @JvmStatic
         var currentActivity: FlutterInstantPdfActivity? = null

@@ -1,3 +1,17 @@
+## 5.6.0 — 22 Jun 2026
+
+- Adds AI Assistant support to `NutrientInstantView` on Android and iOS via the new `aiAssistantConfiguration` field on `NutrientViewConfiguration`. (#53210)
+- Adds `enableInstantComments` to `NutrientViewConfiguration` to enable Instant Comments on `NutrientInstantView` on Android and iOS. (#53271)
+- Updates the minimum iOS deployment target to iOS 17. (J#IOS-1103)
+- Updates Nutrient iOS SDK to 26.7.0. (#54611)
+- Updates Nutrient Android SDK to 11.5.1. (#54079)
+- Fixes an Android issue where AI Assistant citations didn’t navigate to the referenced page. (#53210)
+- Fixes an Android crash that occurred when opening AI Assistant before the document finished loading. (#53210)
+- Fixes an issue where calling `Nutrient.presentInstant(...)` with a `PdfConfiguration` caused a crash. (#53271)
+- Fixes an Android crash that occurred when opening a `NutrientView` with `startPage` set. (#54611)
+- Fixes an iOS issue where the “Add Comment” item was missing from Instant document menus when `enableInstantComments` was set. (#53271)
+- Fixes an iOS issue where the signature editor could get stuck after adding an image to a signature from the camera. (J#HYB-1001)
+
 ## 5.5.1 - 16 Apr 2026
 
 - Fixes `Nutrient.present(...)` failing on iOS apps using the `UIScene` lifecycle. (J#HYB-992)

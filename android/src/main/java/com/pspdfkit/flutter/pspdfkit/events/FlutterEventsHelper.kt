@@ -124,7 +124,7 @@ class FlutterEventsHelper(
                     }
 
                     override fun onAnnotationDeselected(
-                        annotation: Annotation?,
+                        annotation: Annotation,
                         reselected: Boolean
                     ) {
                         super.onAnnotationDeselected(annotation, reselected)
@@ -149,7 +149,7 @@ class FlutterEventsHelper(
                     }
 
                     override fun onAnnotationDeselected(
-                        annotation: Annotation?,
+                        annotation: Annotation,
                         reselected: Boolean
                     ) {
                         super.onAnnotationDeselected(annotation, reselected)

@@ -47,9 +47,9 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
             }
         }
         // Add colour picker, undo and redo to the end of the list, as iOS always include these items.
-        items.add(MenuItem(R.id.pspdf__annotation_creation_toolbar_item_picker))
-        items.add(MenuItem(R.id.pspdf__annotation_creation_toolbar_item_undo))
-        items.add(MenuItem(R.id.pspdf__annotation_creation_toolbar_item_redo))
+        items.add(MenuItem(R.id.pspdf__annotation_toolbar_item_picker))
+        items.add(MenuItem(R.id.pspdf__annotation_toolbar_item_undo))
+        items.add(MenuItem(R.id.pspdf__annotation_toolbar_item_redo))
     }
 
     private fun collectItemIds(items: List<Any>): IntArray {
@@ -71,58 +71,58 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
     @IdRes
     private fun getIdFromName(name: String): Int {
         when (name) {
-            "markup" -> return R.id.pspdf__annotation_creation_toolbar_group_markup
-            "writing" -> return R.id.pspdf__annotation_creation_toolbar_group_writing
-            "highlight" -> return R.id.pspdf__annotation_creation_toolbar_item_highlight
-            "squiggly" -> return R.id.pspdf__annotation_creation_toolbar_item_squiggly
-            "strikeout" -> return R.id.pspdf__annotation_creation_toolbar_item_strikeout
-            "underline" -> return R.id.pspdf__annotation_creation_toolbar_item_underline
-            "freeText" -> return R.id.pspdf__annotation_creation_toolbar_item_freetext
-            "freeTextCallout" -> return R.id.pspdf__annotation_creation_toolbar_item_freetext_callout
-            "signature" -> return R.id.pspdf__annotation_creation_toolbar_item_signature
-            "pen" -> return R.id.pspdf__annotation_creation_toolbar_item_ink_pen
-            "highlighter" -> return R.id.pspdf__annotation_creation_toolbar_item_ink_highlighter
-            "note" -> return R.id.pspdf__annotation_creation_toolbar_item_note
-            "drawing" -> return R.id.pspdf__annotation_creation_toolbar_group_drawing
-            "multimedia" -> return R.id.pspdf__annotation_creation_toolbar_group_multimedia
-            "image" -> return R.id.pspdf__annotation_creation_toolbar_item_image
-            "camera" -> return R.id.pspdf__annotation_creation_toolbar_item_camera
-            "stamp" -> return R.id.pspdf__annotation_creation_toolbar_item_stamp
-            "line" -> return R.id.pspdf__annotation_creation_toolbar_item_line
-            "arrow" -> return R.id.pspdf__annotation_creation_toolbar_item_line_arrow
-            "square" -> return R.id.pspdf__annotation_creation_toolbar_item_square
-            "circle" -> return R.id.pspdf__annotation_creation_toolbar_item_circle
-            "polygon" -> return R.id.pspdf__annotation_creation_toolbar_item_polygon
-            "polyline" -> return R.id.pspdf__annotation_creation_toolbar_item_polyline
-            "eraser" -> return R.id.pspdf__annotation_creation_toolbar_item_eraser
-            "redaction" -> return R.id.pspdf__annotation_creation_toolbar_item_redaction
-            "magicInk" -> return R.id.pspdf__annotation_creation_toolbar_item_magic_ink
-            "undoRedo" -> return R.id.pspdf__annotation_creation_toolbar_group_undo_redo
-            "undo" -> return R.id.pspdf__annotation_creation_toolbar_item_undo
-            "redo" -> return R.id.pspdf__annotation_creation_toolbar_item_redo
-            "measurement" -> return R.id.pspdf__annotation_creation_toolbar_group_measurement
-            "measurementTool" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement
-            "distance" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_distance
-            "perimeter" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_perimeter
-            "areaPolygon" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_area_polygon
-            "areaSquare" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_area_rect
-            "areaCircle" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_area_ellipse
-            "scaleCalibration" -> return R.id.pspdf__annotation_creation_toolbar_item_measurement_scale_calibration
-            "cloudy" -> return R.id.pspdf__annotation_creation_toolbar_item_cloudy
-            "cloudyCircle" -> return R.id.pspdf__annotation_creation_toolbar_item_cloudy_circle
-            "cloudySquare" -> return R.id.pspdf__annotation_creation_toolbar_item_cloudy_square
-            "cloudyPolygon" -> return R.id.pspdf__annotation_creation_toolbar_item_cloudy_polygon
-            "dashedCircle" -> return R.id.pspdf__annotation_creation_toolbar_item_dashed_circle
-            "dashedSquare" -> return R.id.pspdf__annotation_creation_toolbar_item_dashed_square
-            "dashedPolygon" -> return R.id.pspdf__annotation_creation_toolbar_item_dashed_polygon
-            "sound" -> return R.id.pspdf__annotation_creation_toolbar_item_sound
-            "instantCommentMarker" -> return R.id.pspdf__annotation_creation_toolbar_item_instant_comment_marker
-            "instantHighlightComment" -> return R.id.pspdf__annotation_creation_toolbar_item_instant_highlight_comment
-            "markupTool" -> return R.id.pspdf__annotation_creation_toolbar_group_markup
-            "multimediaTool" -> return R.id.pspdf__annotation_creation_toolbar_group_multimedia
-            "undoRedoTool" -> return R.id.pspdf__annotation_creation_toolbar_group_undo_redo
-            "writingTool" -> return R.id.pspdf__annotation_creation_toolbar_group_writing
-            "drawingTool" -> return R.id.pspdf__annotation_creation_toolbar_group_drawing
+            "markup" -> return R.id.pspdf__annotation_toolbar_group_markup
+            "writing" -> return R.id.pspdf__annotation_toolbar_group_writing
+            "highlight" -> return R.id.pspdf__annotation_toolbar_item_highlight
+            "squiggly" -> return R.id.pspdf__annotation_toolbar_item_squiggly
+            "strikeout" -> return R.id.pspdf__annotation_toolbar_item_strikeout
+            "underline" -> return R.id.pspdf__annotation_toolbar_item_underline
+            "freeText" -> return R.id.pspdf__annotation_toolbar_item_freetext
+            "freeTextCallout" -> return R.id.pspdf__annotation_toolbar_item_freetext_callout
+            "signature" -> return R.id.pspdf__annotation_toolbar_item_signature
+            "pen" -> return R.id.pspdf__annotation_toolbar_item_ink_pen
+            "highlighter" -> return R.id.pspdf__annotation_toolbar_item_ink_highlighter
+            "note" -> return R.id.pspdf__annotation_toolbar_item_note
+            "drawing" -> return R.id.pspdf__annotation_toolbar_group_drawing
+            "multimedia" -> return R.id.pspdf__annotation_toolbar_group_multimedia
+            "image" -> return R.id.pspdf__annotation_toolbar_item_image
+            "camera" -> return R.id.pspdf__annotation_toolbar_item_camera
+            "stamp" -> return R.id.pspdf__annotation_toolbar_item_stamp
+            "line" -> return R.id.pspdf__annotation_toolbar_item_line
+            "arrow" -> return R.id.pspdf__annotation_toolbar_item_line_arrow
+            "square" -> return R.id.pspdf__annotation_toolbar_item_square
+            "circle" -> return R.id.pspdf__annotation_toolbar_item_circle
+            "polygon" -> return R.id.pspdf__annotation_toolbar_item_polygon
+            "polyline" -> return R.id.pspdf__annotation_toolbar_item_polyline
+            "eraser" -> return R.id.pspdf__annotation_toolbar_item_eraser
+            "redaction" -> return R.id.pspdf__annotation_toolbar_item_redaction
+            "magicInk" -> return R.id.pspdf__annotation_toolbar_item_magic_ink
+            "undoRedo" -> return R.id.pspdf__annotation_toolbar_group_undo_redo
+            "undo" -> return R.id.pspdf__annotation_toolbar_item_undo
+            "redo" -> return R.id.pspdf__annotation_toolbar_item_redo
+            "measurement" -> return R.id.pspdf__annotation_toolbar_group_measurement
+            "measurementTool" -> return R.id.pspdf__annotation_toolbar_item_measurement
+            "distance" -> return R.id.pspdf__annotation_toolbar_item_measurement_distance
+            "perimeter" -> return R.id.pspdf__annotation_toolbar_item_measurement_perimeter
+            "areaPolygon" -> return R.id.pspdf__annotation_toolbar_item_measurement_area_polygon
+            "areaSquare" -> return R.id.pspdf__annotation_toolbar_item_measurement_area_rect
+            "areaCircle" -> return R.id.pspdf__annotation_toolbar_item_measurement_area_ellipse
+            "scaleCalibration" -> return R.id.pspdf__annotation_toolbar_item_measurement_scale_calibration
+            "cloudy" -> return R.id.pspdf__annotation_toolbar_item_cloudy
+            "cloudyCircle" -> return R.id.pspdf__annotation_toolbar_item_cloudy_circle
+            "cloudySquare" -> return R.id.pspdf__annotation_toolbar_item_cloudy_square
+            "cloudyPolygon" -> return R.id.pspdf__annotation_toolbar_item_cloudy_polygon
+            "dashedCircle" -> return R.id.pspdf__annotation_toolbar_item_dashed_circle
+            "dashedSquare" -> return R.id.pspdf__annotation_toolbar_item_dashed_square
+            "dashedPolygon" -> return R.id.pspdf__annotation_toolbar_item_dashed_polygon
+            "sound" -> return R.id.pspdf__annotation_toolbar_item_sound
+            "instantCommentMarker" -> return R.id.pspdf__annotation_toolbar_item_instant_comment_marker
+            "instantHighlightComment" -> return R.id.pspdf__annotation_toolbar_item_instant_highlight_comment
+            "markupTool" -> return R.id.pspdf__annotation_toolbar_group_markup
+            "multimediaTool" -> return R.id.pspdf__annotation_toolbar_group_multimedia
+            "undoRedoTool" -> return R.id.pspdf__annotation_toolbar_group_undo_redo
+            "writingTool" -> return R.id.pspdf__annotation_toolbar_group_writing
+            "drawingTool" -> return R.id.pspdf__annotation_toolbar_group_drawing
             "link" -> return R.id.pspdf__link_creator_dialog_edit_text
         }
         Log.i(TAG, String.format("Received unknown menu item %s.", name))

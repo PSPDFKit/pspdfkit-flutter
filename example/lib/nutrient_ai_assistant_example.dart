@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:nutrient_example/utils/jwt_util.dart';
 import 'package:nutrient_example/widgets/pdf_viewer_scaffold.dart';
@@ -19,7 +21,11 @@ class _NutrientAiAssistantExampleState
   final _uuid = const Uuid();
 
   // Configuration values
-  final String _serverUrl = '<your-server-url>';
+  // The Android emulator reaches the host machine via 10.0.2.2; the iOS
+  // simulator and Flutter web share localhost with the host.
+  final String _serverUrl = defaultTargetPlatform == TargetPlatform.android
+      ? 'http://10.0.2.2:4000'
+      : 'http://localhost:4000';
   String _jwt = '';
   String _sessionId = 'random-session';
   final String _userId = 'random-user';
@@ -113,7 +119,7 @@ class _NutrientAiAssistantExampleState
               // Enable AI Assistant on iOS
               iOSLeftBarButtonItems: ['aiAssistantButtonItem'],
               webConfiguration: PdfWebConfiguration(
-                instant: true,
+                instant: false,
                 toolbarItems: [
                   // Add AI Assistant button to the toolbar on web
                   NutrientWebToolbarItem(

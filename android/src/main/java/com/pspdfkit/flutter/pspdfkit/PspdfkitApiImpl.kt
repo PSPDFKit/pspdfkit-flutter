@@ -116,31 +116,41 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
     override fun present(
         document: String, configuration: Map<String, Any>?, callback: (Result<Boolean?>) -> Unit
     ) {
-        checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
+        // The host may embed Flutter in a plain Activity or in a FragmentActivity
+        // subclass. PSPDFKit's PdfActivityIntentBuilder requires a FragmentActivity,
+        // so fail loudly with a clear error instead of a raw ClassCastException.
+        val activity = activityPluginBinding?.activity as? FragmentActivity
+        if (activity == null) {
+            callback(Result.failure(NutrientApiError("InvalidHost",
+                "present() requires the host Activity to be a FragmentActivity.")))
+            return
+        }
         try {
-            var documentPath = document
-            documentPath = addFileSchemeIfMissing(documentPath)
-            val configurationMap = configuration as HashMap<String, Any>?
-            val configurationAdapter = ConfigurationAdapter(
-                activityPluginBinding?.activity as FragmentActivity, configurationMap
-            )
+            val documentPath = addFileSchemeIfMissing(document)
+            // Pigeon delivers Map<String, Any>; the adapter expects HashMap. Convert
+            // defensively so a future codec change can't crash this method with a
+            // ClassCastException from a raw downcast.
+            val configurationMap = configuration?.let { HashMap(it) }
+            val configurationAdapter = ConfigurationAdapter(activity, configurationMap)
             val imageDocument = isImageDocument(documentPath)
             val intent = if (imageDocument) {
-                PdfActivityIntentBuilder.fromImageUri(
-                    activityPluginBinding?.activity as FragmentActivity, Uri.parse(documentPath)
-                ).activityClass(FlutterPdfActivity::class.java)
+                PdfActivityIntentBuilder.fromImageUri(activity, Uri.parse(documentPath))
+                    .activityClass(FlutterPdfActivity::class.java)
                     .configuration(configurationAdapter.build()).build()
             } else {
-                PdfActivityIntentBuilder.fromUri(
-                    activityPluginBinding?.activity as FragmentActivity, Uri.parse(documentPath)
-                ).activityClass(FlutterPdfActivity::class.java)
+                PdfActivityIntentBuilder.fromUri(activity, Uri.parse(documentPath))
+                    .activityClass(FlutterPdfActivity::class.java)
                     .configuration(configurationAdapter.build())
                     .passwords(configurationAdapter.password).build()
             }
-            activityPluginBinding?.activity?.startActivity(intent)
-            callback(Result.success(activityPluginBinding?.activity != null))
-        } catch (e: NutrientException) {
-            callback(Result.failure(NutrientApiError("Error", e.message)))
+            activity.startActivity(intent)
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            // Previously only NutrientException was caught, so IllegalArgumentException
+            // from Uri.parse, SecurityException from content:// access, and other
+            // RuntimeExceptions leaked out — landing in Dart as generic
+            // PlatformExceptions or (worse) hanging the await indefinitely.
+            callback(Result.failure(NutrientApiError(e::class.java.simpleName, e.message)))
         }
     }
 
@@ -150,20 +160,49 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         configuration: Map<String, Any>?,
         callback: (Result<Boolean?>) -> Unit
     ) {
-        checkNotNull(activityPluginBinding) { "ActivityPluginBinding is null" }
+        val activity = activityPluginBinding?.activity as? FragmentActivity
+        if (activity == null) {
+            callback(Result.failure(NutrientApiError("InvalidHost",
+                "presentInstant() requires the host Activity to be a FragmentActivity.")))
+            return
+        }
         try {
-            val configurationMapInstant = configuration as HashMap<String, Any>
-            val configurationAdapterInstant = ConfigurationAdapter(
-                activityPluginBinding?.activity as FragmentActivity, configurationMapInstant
-            )
+            // Previously this cast asserted non-null and crashed with NPE when
+            // callers omitted the optional configuration argument.
+            val configurationMap = configuration?.let { HashMap(it) }
+            val configurationAdapterInstant = ConfigurationAdapter(activity, configurationMap)
             val intentInstant = InstantPdfActivityIntentBuilder.fromInstantDocument(
-                activityPluginBinding?.activity as FragmentActivity, serverUrl, jwt
+                activity, serverUrl, jwt
             ).activityClass(FlutterInstantPdfActivity::class.java)
                 .configuration(configurationAdapterInstant.build()).build()
-            activityPluginBinding?.activity?.startActivity(intentInstant)
-            callback(Result.success(activityPluginBinding?.activity != null))
-        } catch (e: NutrientException) {
-            callback(Result.failure(NutrientApiError("Error", e.message)))
+            // Attach AI Assistant config + Instant server URL via Intent
+            // extras so each activity instance owns its own configuration.
+            // Previously these were shared statics that raced when callers
+            // issued back-to-back presentInstant() calls (review #53248).
+            @Suppress("UNCHECKED_CAST")
+            val aiConfig = configurationMap?.get("aiAssistant") as Map<String, Any>?
+            if (aiConfig != null) {
+                intentInstant.putExtra(
+                    FlutterInstantPdfActivity.EXTRA_AI_SERVER_URL,
+                    aiConfig["serverUrl"] as String?
+                )
+                intentInstant.putExtra(
+                    FlutterInstantPdfActivity.EXTRA_AI_JWT,
+                    aiConfig["jwt"] as String?
+                )
+                intentInstant.putExtra(
+                    FlutterInstantPdfActivity.EXTRA_AI_SESSION_ID,
+                    aiConfig["sessionId"] as String?
+                )
+                intentInstant.putExtra(
+                    FlutterInstantPdfActivity.EXTRA_INSTANT_SERVER_URL,
+                    serverUrl
+                )
+            }
+            activity.startActivity(intentInstant)
+            callback(Result.success(true))
+        } catch (e: Exception) {
+            callback(Result.failure(NutrientApiError(e::class.java.simpleName, e.message)))
         }
     }
 

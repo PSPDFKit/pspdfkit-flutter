@@ -108,7 +108,7 @@ class ExampleAndroidAdapter extends AndroidAdapter
             .autosaveEnabled(true)
             .build();
 
-    builder.configuration(configuration);
+    builder.configuration$1(configuration);
   }
 
   // — Fragment lifecycle
@@ -125,7 +125,7 @@ class ExampleAndroidAdapter extends AndroidAdapter
   Future<void> onPdfFragmentReady(PdfFragment pdfFragment) async {
     _pdfFragment = pdfFragment;
 
-    final document = pdfFragment.getDocument();
+    final document = pdfFragment.document;
     if (document != null) {
       _handleDocumentLoaded(document);
     }
@@ -204,13 +204,13 @@ class ExampleAndroidAdapter extends AndroidAdapter
         AnnotationProvider$OnAnnotationUpdatedListener.implement(
       $AnnotationProvider$OnAnnotationUpdatedListener(
         onAnnotationCreated: (Annotation annotation) {
-          _log('[Event] Annotation created: ${annotation.getType()}');
+          _log('[Event] Annotation created: ${annotation.type$1}');
         },
         onAnnotationUpdated: (Annotation annotation) {
-          _log('[Event] Annotation updated: ${annotation.getType()}');
+          _log('[Event] Annotation updated: ${annotation.type$1}');
         },
         onAnnotationRemoved: (Annotation annotation) {
-          _log('[Event] Annotation removed: ${annotation.getType()}');
+          _log('[Event] Annotation removed: ${annotation.type$1}');
         },
         onAnnotationZOrderChanged: (
           int pageIndex,
@@ -234,7 +234,7 @@ class ExampleAndroidAdapter extends AndroidAdapter
         ToolbarCoordinatorLayout$OnContextualToolbarLifecycleListener.implement(
       $ToolbarCoordinatorLayout$OnContextualToolbarLifecycleListener(
         onPrepareContextualToolbar: (ContextualToolbar<jni.JObject?> toolbar) {
-          final itemCount = toolbar.getMenuItems().length;
+          final itemCount = toolbar.menuItems.size();
           _log('[UI] Contextual toolbar preparing: $itemCount items');
         },
         onDisplayContextualToolbar: (ContextualToolbar<jni.JObject?> toolbar) {

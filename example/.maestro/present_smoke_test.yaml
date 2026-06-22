@@ -1,0 +1,80 @@
+appId: com.pspdfkit.flutter.pspdfkitExample
+---
+# Smoke test for Nutrient.present() after the config / crash-class fixes on
+# kato/fix-nutrient-present-config-bugs. Exercises a few common example
+# entries and asserts a PDF viewer actually opens each time.
+#
+# Notes on the example app's accessibility tree (observed via
+# inspect_view_hierarchy): each list item exposes `title\ndescription` as a
+# single accessibilityText node. We match on the title as a substring via
+# regex so the description suffix doesn't cause misses.
+
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd
+
+# Golden path 1: Basic Example — plain Nutrient.present(documentPath)
+- scrollUntilVisible:
+    element:
+      text: "Basic Example\n.*"
+    direction: UP
+    timeout: 10000
+- tapOn:
+    text: "Basic Example\n.*"
+- waitForAnimationToEnd
+# The PSPDFKit modal viewer exposes a stable "PDF Document View" accessibility
+# id when the document finishes loading, and a "Back" nav-bar button to dismiss.
+- extendedWaitUntil:
+    visible:
+      id: "PDF Document View"
+    timeout: 15000
+- takeScreenshot: present_smoke_basic_example
+- tapOn: "Back"
+- waitForAnimationToEnd
+
+# Golden path 2: Custom configuration options — present() with a configuration
+# map. Touches the config-parsing path that #4 and #5 fix.
+- scrollUntilVisible:
+    element:
+      text: "Custom configuration options\n.*"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Custom configuration options\n.*"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "PDF Document View"
+    timeout: 15000
+- takeScreenshot: present_smoke_custom_configuration
+- tapOn: "Back"
+- waitForAnimationToEnd
+
+# Golden path 3: Password-protected document — exercises the unlock path.
+- scrollUntilVisible:
+    element:
+      text: "Opens and unlocks a password protected document\n.*"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Opens and unlocks a password protected document\n.*"
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "PDF Document View"
+    timeout: 15000
+- takeScreenshot: present_smoke_password_protected
+- tapOn: "Back"
+- waitForAnimationToEnd
+
+# Regression check: make sure we landed back on the example list rather than
+# a crash screen or blank view. Scroll back up so the smoke test ends in a
+# predictable state for any follow-on flow.
+- scrollUntilVisible:
+    element:
+      text: "Basic Example\n.*"
+    direction: UP
+    timeout: 10000
+- assertVisible:
+    text: "Basic Example\n.*"

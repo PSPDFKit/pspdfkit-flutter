@@ -101,6 +101,7 @@ class NutrientInstantView extends StatelessWidget {
         iosConfig: resolvedConfig.iosConfig,
         webConfig:
             (resolvedConfig.webConfig as WebViewConfiguration).toBuilderMap(),
+        aiAssistantConfiguration: resolvedConfig.aiAssistantConfiguration,
       );
     }
 

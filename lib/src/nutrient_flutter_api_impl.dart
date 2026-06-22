@@ -224,7 +224,7 @@ class NutrientFlutterApiImpl
       configurationMap = {};
     }
     return _nutrientApi.presentInstant(serverUrl, jwt,
-        configuration: configurationMap as Map<String, Object>?);
+        configuration: configurationMap.cast<String, Object>());
   }
 
   @override

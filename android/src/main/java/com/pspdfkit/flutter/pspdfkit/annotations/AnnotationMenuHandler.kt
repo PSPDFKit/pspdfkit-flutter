@@ -10,13 +10,12 @@
 package com.pspdfkit.flutter.pspdfkit.annotations
 
 import android.content.Context
-import android.view.View
 import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuAction
 import com.pspdfkit.flutter.pspdfkit.GlobalAnnotationMenuConfiguration
 import com.pspdfkit.R
-import com.pspdfkit.ui.toolbar.ContextualToolbar
+import com.pspdfkit.ui.toolbar.popup.AnnotationPopupToolbar
 import java.util.Locale
 
 /**
@@ -39,13 +38,13 @@ class AnnotationMenuHandler(
          */
         private fun getResourceIdForMenuAction(action: AnnotationMenuAction): Int? {
             return when (action) {
-                AnnotationMenuAction.DELETE -> R.id.pspdf__annotation_editing_toolbar_item_delete
-                AnnotationMenuAction.COPY -> R.id.pspdf__annotation_editing_toolbar_item_copy
-                AnnotationMenuAction.CUT -> R.id.pspdf__annotation_editing_toolbar_item_cut
-                AnnotationMenuAction.COLOR -> R.id.pspdf__annotation_editing_toolbar_item_picker
-                AnnotationMenuAction.NOTE -> R.id.pspdf__annotation_editing_toolbar_item_annotation_note 
-                AnnotationMenuAction.UNDO -> R.id.pspdf__annotation_editing_toolbar_item_undo
-                AnnotationMenuAction.REDO -> R.id.pspdf__annotation_editing_toolbar_item_redo
+                AnnotationMenuAction.DELETE -> R.id.pspdf__annotation_popup_toolbar_item_delete
+                AnnotationMenuAction.COPY -> R.id.pspdf__annotation_popup_toolbar_item_copy
+                AnnotationMenuAction.CUT -> R.id.pspdf__annotation_popup_toolbar_item_cut
+                AnnotationMenuAction.COLOR -> R.id.pspdf__annotation_popup_toolbar_item_picker
+                AnnotationMenuAction.NOTE -> R.id.pspdf__annotation_popup_toolbar_item_annotation_note
+                AnnotationMenuAction.UNDO -> R.id.pspdf__annotation_popup_toolbar_item_undo
+                AnnotationMenuAction.REDO -> R.id.pspdf__annotation_popup_toolbar_item_redo
             }
         }
         
@@ -83,19 +82,24 @@ class AnnotationMenuHandler(
     }
 
     /**
-     * Called when a contextual toolbar is being prepared. This is where we customize
-     * the annotation editing toolbar.
+     * Called when the annotation popup toolbar is being prepared. This is where we
+     * customize the annotation editing menu shown when an annotation is selected.
      *
-     * @param toolbar The contextual toolbar being prepared
+     * As of Nutrient Android 11.5, the annotation editing toolbar was replaced by the
+     * [AnnotationPopupToolbar], so customization happens here via the
+     * `OnPreparePopupToolbarListener.onPrepareAnnotationPopupToolbar` callback rather
+     * than the contextual toolbar lifecycle.
+     *
+     * @param toolbar The annotation popup toolbar being prepared
      */
-    fun onPrepareContextualToolbar(toolbar: ContextualToolbar<*>) {
-        // Try to customize any contextual toolbar with configuration
+    fun onPrepareAnnotationPopupToolbar(toolbar: AnnotationPopupToolbar) {
+        // Try to customize the popup toolbar with configuration
         if (configuration != null) {
             try {
                 // Apply menu customizations directly to the toolbar
                 removeMenuItems(toolbar, configuration.itemsToRemove)
                 disableMenuItems(toolbar, configuration.itemsToDisable)
-                
+
                 // Apply style picker visibility configuration
                 if (!configuration.showStylePicker) {
                     removeStylePickerItems(toolbar)
@@ -109,104 +113,70 @@ class AnnotationMenuHandler(
 
 
     /**
-     * Removes menu items from the toolbar based on their action types.
-     * Uses PSPDFKit's setMenuItemVisibility API to properly hide items.
+     * Removes menu items from the popup toolbar based on their action types.
+     * The popup toolbar exposes its items as an immutable list, so removal is done
+     * by filtering the items by resource ID.
      *
-     * @param toolbar The contextual toolbar to modify
+     * @param toolbar The annotation popup toolbar to modify
      * @param itemsToRemove List of menu actions to remove
      */
     private fun removeMenuItems(
-        toolbar: ContextualToolbar<*>,
+        toolbar: AnnotationPopupToolbar,
         itemsToRemove: List<AnnotationMenuAction>
     ) {
         if (itemsToRemove.isEmpty()) {
             return
         }
-        
-        itemsToRemove.forEach { action ->
-            val resourceId = getResourceIdForMenuAction(action)
-            
-            if (resourceId != null) {
-                try {
-                    toolbar.setMenuItemVisibility(resourceId, View.GONE)
-                } catch (e: Exception) {
-                    // Silently skip items that cannot be hidden
-                }
-            }
+
+        val removeIds = itemsToRemove.mapNotNull { getResourceIdForMenuAction(it) }.toSet()
+        if (removeIds.isEmpty()) {
+            return
         }
+        toolbar.menuItems = toolbar.menuItems.filterNot { it.id in removeIds }
     }
 
     /**
      * Disables menu items based on their action types.
-     * Properly disables items by setting isEnabled to false.
+     * Popup toolbar menu items are immutable, so a disabled copy is substituted for
+     * each matching item.
      *
-     * @param toolbar The contextual toolbar to modify  
+     * @param toolbar The annotation popup toolbar to modify
      * @param itemsToDisable List of menu actions to disable
      */
     private fun disableMenuItems(
-        toolbar: ContextualToolbar<*>,
+        toolbar: AnnotationPopupToolbar,
         itemsToDisable: List<AnnotationMenuAction>
     ) {
         if (itemsToDisable.isEmpty()) {
             return
         }
-        
-        val menuItems = toolbar.menuItems.toMutableList()
-        var modified = false
-        
-        itemsToDisable.forEach { action ->
-            val resourceId = getResourceIdForMenuAction(action)
-            if (resourceId != null) {
-                // Find the menu item by its resource ID
-                val menuItem = menuItems.find { it.id == resourceId }
-                if (menuItem != null) {
-                    // Disable the menu item by setting isEnabled to false
-                    menuItem.isEnabled = false
-                    modified = true
-                }
-            }
+
+        val disableIds = itemsToDisable.mapNotNull { getResourceIdForMenuAction(it) }.toSet()
+        if (disableIds.isEmpty()) {
+            return
         }
-        
-        // Apply the modified menu items back to the toolbar if any changes were made
-        if (modified) {
-            toolbar.setMenuItems(menuItems)
+        toolbar.menuItems = toolbar.menuItems.map { item ->
+            if (item.id in disableIds) item.copy(isEnabled = false) else item
         }
     }
 
 
     /**
      * Removes style picker related items from the menu if configured to do so.
-     * 
-     * @param toolbar The contextual toolbar to modify
+     *
+     * @param toolbar The annotation popup toolbar to modify
      */
-    private fun removeStylePickerItems(toolbar: ContextualToolbar<*>) {
-        // Hide the picker item (color/style picker)
-        try {
-            toolbar.setMenuItemVisibility(R.id.pspdf__annotation_editing_toolbar_item_picker, View.GONE)
-        } catch (e: Exception) {
-            // Silently skip if item cannot be hidden
-        }
-        
-        // Also try to hide other potential style-related items if they exist
-        val potentialStyleItems = listOf(
-            "style", "color", "thickness", "picker"
-        )
-        
-        toolbar.menuItems.forEach { item ->
-            val itemTitle = item.title?.toString()?.lowercase(Locale.getDefault())
+    private fun removeStylePickerItems(toolbar: AnnotationPopupToolbar) {
+        val pickerId = R.id.pspdf__annotation_popup_toolbar_item_picker
+        // Style-related keywords used to catch any additional style/color items.
+        val potentialStyleItems = listOf("style", "color", "thickness", "picker")
+
+        toolbar.menuItems = toolbar.menuItems.filterNot { item ->
+            if (item.id == pickerId) {
+                return@filterNot true
+            }
             val resourceName = getResourceName(item.id)?.lowercase(Locale.getDefault())
-            
-            val isStylePickerItem = potentialStyleItems.any { keyword ->
-                itemTitle?.contains(keyword) == true || resourceName?.contains(keyword) == true
-            }
-            
-            if (isStylePickerItem) {
-                try {
-                    toolbar.setMenuItemVisibility(item.id, View.GONE)
-                } catch (e: Exception) {
-                    // Silently skip if item cannot be hidden
-                }
-            }
+            potentialStyleItems.any { keyword -> resourceName?.contains(keyword) == true }
         }
     }
 

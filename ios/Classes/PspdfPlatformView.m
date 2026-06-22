@@ -19,13 +19,89 @@
 // Forward declaration for Swift class - actual implementation in PspdfkitApiImpl.swift
 @class AutomaticConflictResolutionManager;
 
+/// Container view handed to Flutter as the platform view.
+///
+/// Flutter inserts this view deep inside its own platform-view hierarchy
+/// (`FlutterTouchInterceptingView`, clipping/masking views, …). We must therefore
+/// establish UIKit view-controller containment against the view controller that
+/// *actually* hosts this view in the live hierarchy — not against the window's
+/// root view controller, and not before the view is in a window.
+///
+/// Doing it eagerly against the root view controller (as we did previously) leaves
+/// the containment chain inconsistent with the view hierarchy, which breaks
+/// trait-collection and presentation-context propagation. That surfaces when a
+/// full-screen modal is presented from the embedded controller and then dismissed
+/// (e.g. the camera image picker during signature/image annotation creation): on
+/// return the SwiftUI signature view re-lays out with a corrupted context and drops
+/// its navigation bar items. See React Native's `RCTPSPDFKitView` for the same
+/// pattern done correctly.
+@interface PspdfPlatformContainerView : UIView
+/// The navigation controller embedded in this container. Held weakly: ownership
+/// stays with `PspdfPlatformView`.
+@property (nonatomic, weak) UIViewController *embeddedController;
+/// Tears down the parent-child containment relationship. Safe to call multiple times.
+- (void)detachEmbeddedController;
+@end
+
+@implementation PspdfPlatformContainerView
+
+/// Walks the responder chain to find the view controller currently hosting this view.
+- (UIViewController *)pspdf_parentViewController {
+    UIResponder *responder = self;
+    while ((responder = responder.nextResponder)) {
+        if ([responder isKindOfClass:UIViewController.class]) {
+            return (UIViewController *)responder;
+        }
+    }
+    return nil;
+}
+
+- (void)didMoveToWindow {
+    [super didMoveToWindow];
+
+    UIViewController *embeddedController = self.embeddedController;
+    // Only establish containment once we are in a window and not already attached.
+    if (self.window == nil || embeddedController == nil || embeddedController.parentViewController != nil) {
+        return;
+    }
+
+    UIViewController *parentController = [self pspdf_parentViewController];
+    if (parentController == nil) {
+        return;
+    }
+
+    UIView *controllerView = embeddedController.view;
+    controllerView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:controllerView];
+    [parentController addChildViewController:embeddedController];
+    [embeddedController didMoveToParentViewController:parentController];
+
+    [NSLayoutConstraint activateConstraints:@[
+        [controllerView.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [controllerView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [controllerView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+        [controllerView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    ]];
+}
+
+- (void)detachEmbeddedController {
+    UIViewController *embeddedController = self.embeddedController;
+    if (embeddedController.parentViewController != nil) {
+        [embeddedController willMoveToParentViewController:nil];
+        [embeddedController.view removeFromSuperview];
+        [embeddedController removeFromParentViewController];
+    }
+}
+
+@end
+
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
 @property (nonatomic) FlutterMethodChannel *broadcastChannel;
-@property (nonatomic, weak) UIViewController *flutterViewController;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
+@property (nonatomic) PspdfPlatformContainerView *containerView;
 @property (nonatomic) FlutterPdfDocument *flutterPdfDocument;
 @property (nonatomic) AnnotationManagerImpl *annotationManager;
 @property (nonatomic) BookmarkManagerImpl *bookmarkManager;
@@ -111,7 +187,7 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
 #pragma mark - FlutterPlatformView
 
 - (nonnull UIView *)view {
-    return self.navigationController.view ?: [UIView new];
+    return self.containerView ?: [UIView new];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
@@ -122,20 +198,24 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
         _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:messenger];
         _binaryMessenger = messenger;
         _navigationController = [PSPDFNavigationController new];
-        _navigationController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _navigationController.view.frame = frame;
         _platformViewImpl = [[PspdfkitPlatformViewImpl alloc] init];
         // Get the list of custom toolbar items as an array of dictionaries
         NSArray<NSDictionary *> *customToolbarItems = args[@"customToolbarItems"];
       
         [_platformViewImpl registerWithBinaryMessenger:messenger viewId:[NSString stringWithFormat:@"%lld",viewId] customToolbarItems: customToolbarItems];
         
-        // View controller containment
-        _flutterViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-        if (_flutterViewController != nil) {
-            [_flutterViewController addChildViewController:_navigationController];
-            [_navigationController didMoveToParentViewController:_flutterViewController];
-        }
+        // View controller containment.
+        //
+        // The container view establishes the parent-child relationship lazily in
+        // `-didMoveToWindow`, against the view controller that actually hosts this
+        // view in the live hierarchy. This keeps the containment chain consistent
+        // with the view hierarchy so trait-collection and presentation-context
+        // propagation work correctly for modals presented from the embedded
+        // controller (e.g. the full-screen camera image picker). See
+        // `PspdfPlatformContainerView` for details.
+        _containerView = [[PspdfPlatformContainerView alloc] initWithFrame:frame];
+        _containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _containerView.embeddedController = _navigationController;
 
         NSString *documentPath = args[@"document"];
         if ([documentPath isKindOfClass:[NSString class]] == NO || [documentPath length] == 0) {
@@ -488,8 +568,9 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
     [self.pdfViewController.view removeFromSuperview];
     [self.pdfViewController removeFromParentViewController];
     [self.navigationController.navigationBar removeFromSuperview];
-    [self.navigationController.view removeFromSuperview];
-    [self.navigationController removeFromParentViewController];
+    // Tears down the navigation controller's containment relationship with its
+    // host view controller and removes its view from the container.
+    [self.containerView detachEmbeddedController];
 }
 
 - (void)applyStoredThemeColors {

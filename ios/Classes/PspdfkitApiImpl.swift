@@ -88,27 +88,42 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
             completion(.failure(error))
             return
         }
-        
+
+        // Reject overlapping present() calls. Without this, the second call
+        // overwrites `self.pdfViewController` and then tries to present on a
+        // controller that UIKit is still animating in, raising:
+        // "Application tried to present modally an active controller".
+        if let current = self.pdfViewController, current.presentingViewController != nil || current.isBeingPresented {
+            let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "A document is already being presented. Dismiss it before calling present() again."])
+            completion(.failure(error))
+            return
+        }
+
         let configurationDictionary = PspdfkitFlutterConverter.processConfigurationOptionsDictionary(forPrefix: configuration ?? [:])
-        
+
         guard let document = PspdfkitFlutterHelper.document(fromPath: documentPath) else {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Document is missing or invalid."])
             completion(.failure(error))
             return
         }
-        
+
         // Unlock password protected document.
         PspdfkitFlutterHelper.unlock( document:document, dictionary: configuration)
-        
+
         let isImageDocument = PspdfkitFlutterHelper.isImageDocument(documentPath)
         let pdfConfiguration = PspdfkitFlutterConverter.configuration(configurationDictionary, isImageDocument: isImageDocument)
-        
-        self.pdfViewController = PDFViewController(document: document, configuration: pdfConfiguration)
+
+        let newViewController = PDFViewController(document: document, configuration: pdfConfiguration)
+        self.pdfViewController = newViewController
         self.setupViewController(configurationDictionary: configurationDictionary) { result in
-            // Set measurements value configurations
-            if let measurementsValue = configurationDictionary["measurementValueConfigurations"] as? [[String: Any]] {
+            // Capture the view controller locally so measurement-config application
+            // can't crash if `self.pdfViewController` is later reassigned or the
+            // document is nilled out by the SDK. Any crash here would also swallow
+            // the outer `completion` call, hanging Dart's await forever.
+            if let measurementsValue = configurationDictionary["measurementValueConfigurations"] as? [[String: Any]],
+               let document = newViewController.document {
                 for measurementValue in measurementsValue {
-                    _ = PspdfkitMeasurementConvertor.addMeasurementValueConfiguration(document: self.pdfViewController!.document!, configuration: measurementValue as NSDictionary)
+                    _ = PspdfkitMeasurementConvertor.addMeasurementValueConfiguration(document: document, configuration: measurementValue as NSDictionary)
                 }
             }
             completion(result)
@@ -131,27 +146,46 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
         let configurationDictionary = PspdfkitFlutterConverter.processConfigurationOptionsDictionary(forPrefix: configuration ?? [:])
         let enableInstantComments = configurationDictionary["enableInstantComments"] as? Bool ?? false
         let pdfConfiguration = PspdfkitFlutterConverter.configuration(configurationDictionary, isImageDocument: false)
-        let documentInfo = InstantDocumentInfo(serverURL: URL(string: serverUrl)!, url: URL(string: serverUrl)!, jwt: jwt)
-        
+
+        // `URL(string:)` returns nil for URLs with spaces or other unencoded
+        // characters; force-unwrapping crashed the app instead of returning a
+        // FlutterError to Dart.
+        guard let parsedServerURL = URL(string: serverUrl) else {
+            let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Server URL is not a valid URL: \(serverUrl)"])
+            completion(.failure(error))
+            return
+        }
+        let documentInfo = InstantDocumentInfo(serverURL: parsedServerURL, url: parsedServerURL, jwt: jwt)
+
         do {
-            let instantViewController = try InstantDocumentViewController(documentInfo: documentInfo, configurations: pdfConfiguration.configurationUpdated { builder in
-                if enableInstantComments {
-                    var editableAnnotationTypes = builder.editableAnnotationTypes
-                    editableAnnotationTypes!.insert(Annotation.Tool.instantCommentMarker)
+            let instantViewController = try InstantDocumentViewController(documentInfo: documentInfo, configurations: pdfConfiguration)
+
+            if enableInstantComments {
+                // Apply this after init so it survives the Instant subclass swap
+                // performed inside `PSPDFInstantViewController.commonInit`. The
+                // default `PSPDFConfigurationBuilder` doesn't whitelist
+                // `.instantCommentMarker`, so calling `.insert` on the pre-init
+                // builder is silently dropped and the comment menu items stay
+                // hidden. The Instant subclass installed by `instant_adjustClass`
+                // does include it, so the same insert sticks after init.
+                instantViewController.updateConfigurationWithoutReloading { builder in
+                    var editableAnnotationTypes = builder.editableAnnotationTypes ?? Set<Annotation.Tool>()
+                    editableAnnotationTypes.insert(Annotation.Tool.instantCommentMarker)
                     builder.editableAnnotationTypes = editableAnnotationTypes
                 }
-            })
+            }
             self.pdfViewController = instantViewController
-            
+
             let client = instantViewController.client
             client.delegate = self
-            
-            self.pdfViewController = instantViewController
+
             self.setupViewController(configurationDictionary: configurationDictionary) { result in
-                // Set measurements value configuration
-                if let measurementsValue = configurationDictionary["measurementValueConfigurations"] as? [[String: Any]] {
+                // Capture the view controller locally — see equivalent note in
+                // present() for why this must not force-unwrap self.pdfViewController.
+                if let measurementsValue = configurationDictionary["measurementValueConfigurations"] as? [[String: Any]],
+                   let document = instantViewController.document {
                     for measurementValue in measurementsValue {
-                        _ = PspdfkitMeasurementConvertor.addMeasurementValueConfiguration(document: self.pdfViewController!.document!,
+                        _ = PspdfkitMeasurementConvertor.addMeasurementValueConfiguration(document: document,
                                                                                           configuration: measurementValue as NSDictionary)
                     }
                 }
@@ -597,8 +631,12 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
             if let rightBarButtonItems = configurationDictionary["rightBarButtonItems"] as? [String] {
                 PspdfkitFlutterHelper.setRightBarButtonItems(rightBarButtonItems, for: pdfViewController)
             }
-            if let invertColors = configurationDictionary["invertColors"] as? Bool {
-                pdfViewController.appearanceModeManager.appearanceMode = invertColors ? .night : []
+            // Only apply `invertColors` when true. Applying `[]` on `false` would
+            // overwrite the `appearanceMode` that was already set above, effectively
+            // ignoring any user-provided `appearanceMode` whenever `invertColors` is
+            // present in the configuration.
+            if let invertColors = configurationDictionary["invertColors"] as? Bool, invertColors {
+                pdfViewController.appearanceModeManager.appearanceMode = .night
             }
             if let toolbarTitle = configurationDictionary["toolbarTitle"] as? String {
                 PspdfkitFlutterHelper.setToolbarTitle(toolbarTitle, for: pdfViewController)

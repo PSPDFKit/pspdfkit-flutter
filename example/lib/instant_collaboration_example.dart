@@ -221,8 +221,14 @@ class _InstantCollaborationExampleState
   /// The server returns a JWT token that is used to authenticate the user.
   Future<InstantDocumentDescriptor> _getDocument(String url) async {
     // The header is necessary to receive valid json response.
-    http.Response response = await client.get(Uri.parse(url),
+    // The public demo backend now requires POST; older builds used GET, so
+    // try POST first and fall back to GET to keep both working.
+    http.Response response = await client.post(Uri.parse(url),
         headers: {'Accept': 'application/vnd.instant-example+json'});
+    if (response.statusCode == 404 || response.statusCode == 405) {
+      response = await client.get(Uri.parse(url),
+          headers: {'Accept': 'application/vnd.instant-example+json'});
+    }
     final data = json.decode(response.body) as Map<String, dynamic>;
     final document = InstantDocumentDescriptor.fromJson(data);
     return document;

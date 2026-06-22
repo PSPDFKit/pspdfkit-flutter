@@ -326,6 +326,7 @@ class PdfConfiguration {
       'pageTransition': pageTransition?.name,
       'enableTextSelection': enableTextSelection,
       'disableAutosave': disableAutosave,
+      'pageMode': pageLayoutMode?.name,
       'pageLayoutMode': pageLayoutMode?.name,
       'spreadFitting': spreadFitting?.name,
       'showPageLabels': showPageLabels,

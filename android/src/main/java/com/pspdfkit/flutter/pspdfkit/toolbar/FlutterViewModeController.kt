@@ -12,7 +12,7 @@
  */
 package com.pspdfkit.flutter.pspdfkit.toolbar
 
-import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
+import com.pspdfkit.ui.toolbar.AnnotationToolbar
 import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener
 import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule
@@ -24,7 +24,7 @@ internal class FlutterViewModeController(private val itemGroupingRule: MenuItemG
     OnContextualToolbarLifecycleListener {
 
     override fun onPrepareContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        if (contextualToolbar is AnnotationCreationToolbar) {
+        if (contextualToolbar is AnnotationToolbar) {
             if (itemGroupingRule != null) {
                 contextualToolbar.setMenuItemGroupingRule(itemGroupingRule)
             }

@@ -276,9 +276,14 @@ class ConfigurationAdapter {
             if (key != null) {
                 configureUserInterfaceViewMode((String) configurationMap.get(key));
             }
-            key = getKeyOfType(configurationMap, START_PAGE, Long.class);
-            if (key != null) {
-                configureStartPage(((Long) configurationMap.get(key)).intValue());
+            // Flutter's StandardMessageCodec encodes small ints as Integer and large
+            // ones as Long, so accept any Number rather than strictly Long.
+            Object startPageValue = configurationMap.get(START_PAGE);
+            if (startPageValue == null) {
+                startPageValue = configurationMap.get(addAndroidPrefix(START_PAGE));
+            }
+            if (startPageValue instanceof Number) {
+                configureStartPage(((Number) startPageValue).intValue());
             }
             key = getKeyOfType(configurationMap, SHOW_SEARCH_ACTION, Boolean.class);
             if (key != null) {
@@ -1058,27 +1063,27 @@ class ConfigurationAdapter {
     private static <T> String javaToDartTypeConverted(Class<T> clazz) {
         if (clazz == null) {
             return "null";
-        } else if (clazz.isInstance(Boolean.class)) {
+        } else if (Boolean.class.isAssignableFrom(clazz)) {
             return "bool";
-        } else if (clazz.isInstance(Integer.class)) {
+        } else if (Integer.class.isAssignableFrom(clazz)) {
             return "int";
-        } else if (clazz.isInstance(Long.class)) {
+        } else if (Long.class.isAssignableFrom(clazz)) {
             return "int";
-        } else if (clazz.isInstance(Double.class)) {
+        } else if (Double.class.isAssignableFrom(clazz)) {
             return "double";
-        } else if (clazz.isInstance(String.class)) {
+        } else if (String.class.isAssignableFrom(clazz)) {
             return "String";
-        } else if (clazz.isInstance(byte[].class)) {
+        } else if (byte[].class.isAssignableFrom(clazz)) {
             return "Uint8List";
-        } else if (clazz.isInstance(int[].class)) {
+        } else if (int[].class.isAssignableFrom(clazz)) {
             return "Int32List";
-        } else if (clazz.isInstance(long[].class)) {
+        } else if (long[].class.isAssignableFrom(clazz)) {
             return "Int64List";
-        } else if (clazz.isInstance(double[].class)) {
+        } else if (double[].class.isAssignableFrom(clazz)) {
             return "Float64List";
-        } else if (clazz.isInstance(ArrayList.class)) {
+        } else if (ArrayList.class.isAssignableFrom(clazz)) {
             return "List";
-        } else if (clazz.isInstance(HashMap.class)) {
+        } else if (HashMap.class.isAssignableFrom(clazz)) {
             return "Map";
         }
         throw new IllegalArgumentException("Undefined dart type conversion for " + clazz.getName());

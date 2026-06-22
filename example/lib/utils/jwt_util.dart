@@ -94,6 +94,41 @@ a4GXoAxqU44w4Mckg2E19b2MrcNkV9eWAyTACbEO4oFcZcSZOCKj8Fw=
     return token;
   }
 
+  /// Generate a Document Engine / Instant JWT.
+  ///
+  /// Signed with the same demo keypair as [generateToken] so it validates
+  /// against the bundled `ai-assistant-demo` Docker compose, which puts the
+  /// matching public key in `JWT_PUBLIC_KEY` for both Document Engine and
+  /// the AI Assistant container.
+  ///
+  /// Claims:
+  /// - `document_id` — the Instant document this token authorises.
+  /// - `permissions` — Instant permissions: `read-document`, `write`,
+  ///   `download`.
+  /// - `iat`, `exp`, `jti` — standard.
+  static String generateInstantToken({
+    required String documentId,
+    int expiresInMinutes = 60,
+    String privateKey = _demoPrivateKey,
+  }) {
+    const uuid = Uuid();
+    final now = DateTime.now();
+    final claims = <String, dynamic>{
+      'iat': now.millisecondsSinceEpoch ~/ 1000,
+      'exp':
+          now.add(Duration(minutes: expiresInMinutes)).millisecondsSinceEpoch ~/
+              1000,
+      'jti': uuid.v4(),
+      'document_id': documentId,
+      'permissions': ['read-document', 'write', 'download'],
+    };
+    final jwt = JWT(claims);
+    return jwt.sign(
+      RSAPrivateKey(privateKey),
+      algorithm: JWTAlgorithm.RS256,
+    );
+  }
+
   /// Verify a JWT token
   ///
   /// [token] - JWT token to verify

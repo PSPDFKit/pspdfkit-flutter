@@ -38,7 +38,11 @@ if (nutrientMavenUrl == null || nutrientMavenUrl == '') {
 
 ext.nutrientVersion = localProperties.getProperty('pspdfkit.version')
 if (nutrientVersion == null || nutrientVersion == '') {
-    ext.nutrientVersion = '11.2.1'
+    // Pinned to the released Nutrient Android SDK for this release. The plugin uses
+    // 11.5 APIs (AnnotationToolbar / AnnotationPopupToolbar /
+    // OnPreparePopupToolbarListener). Override via pspdfkit.version in
+    // local.properties to build against a nightly/SNAPSHOT.
+    ext.nutrientVersion = '11.5.1'
 }
 
 ext.nutrientMavenModuleName = 'nutrient'

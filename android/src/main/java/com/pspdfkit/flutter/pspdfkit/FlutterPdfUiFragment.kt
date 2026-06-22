@@ -30,15 +30,17 @@ import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
 import com.pspdfkit.flutter.pspdfkit.util.DynamicColorResourcesHelper
 import com.pspdfkit.R
+import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
-import com.pspdfkit.ui.toolbar.AnnotationEditingToolbar
+import com.pspdfkit.ui.toolbar.AnnotationToolbar
 import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule
+import com.pspdfkit.ui.toolbar.popup.AnnotationPopupToolbar
 
 class FlutterPdfUiFragment : PdfUiFragment(),
-    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener {
+    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener,
+    OnPreparePopupToolbarListener {
 
     // Maps identifier strings to menu item IDs to track custom toolbar items
     private val customToolbarItemIds = HashMap<String, Int>()
@@ -233,6 +235,9 @@ class FlutterPdfUiFragment : PdfUiFragment(),
         // Re-apply theme colors now that the document view is fully initialized.
         // PdfFragment.setBackgroundColor() requires the document to be loaded.
         applyImmediateThemeColors()
+        // As of Nutrient Android 11.5 annotation editing moved from a contextual
+        // toolbar to the AnnotationPopupToolbar, prepared via this listener.
+        pdfFragment?.setOnPreparePopupToolbarListener(this)
         // Notify the Nutrient Flutter plugin that the document has been loaded.
         EventDispatcher.getInstance().notifyDocumentLoaded(document)
     }
@@ -575,51 +580,52 @@ class FlutterPdfUiFragment : PdfUiFragment(),
     // Contextual toolbar lifecycle methods for annotation menu customization
 
     override fun onPrepareContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        // Handle annotation creation toolbar grouping (existing functionality)
-        if (contextualToolbar is AnnotationCreationToolbar && toolbarGroupingRule != null) {
-            contextualToolbar.setMenuItemGroupingRule(toolbarGroupingRule)
-            Log.d(
-                "FlutterPdfUiFragment",
-                "Applied toolbar grouping rule to annotation creation toolbar"
-            )
-        }
-
-        // Apply annotation toolbar theme colors for both annotation toolbars
-        if (contextualToolbar is AnnotationCreationToolbar || contextualToolbar is AnnotationEditingToolbar) {
-            applyAnnotationToolbarThemeColors(contextualToolbar)
-        }
-
-        // For annotation editing toolbar, use only static configuration from GlobalAnnotationMenuConfiguration
-        if (contextualToolbar is AnnotationEditingToolbar) {
-            val selectedAnnotations = pdfFragment?.selectedAnnotations
-            if (!selectedAnnotations.isNullOrEmpty()) {
-                val selectedAnnotation = selectedAnnotations.first()
+        // As of Nutrient Android 11.5 the annotation creation + editing toolbars were
+        // merged into a single AnnotationToolbar (a ContextualToolbar). Annotation
+        // editing customization now happens on the AnnotationPopupToolbar — see
+        // onPrepareAnnotationPopupToolbar below.
+        if (contextualToolbar is AnnotationToolbar) {
+            // Handle annotation toolbar grouping (existing functionality)
+            if (toolbarGroupingRule != null) {
+                contextualToolbar.setMenuItemGroupingRule(toolbarGroupingRule)
                 Log.d(
                     "FlutterPdfUiFragment",
-                    "Preparing toolbar for annotation: ${selectedAnnotation.type.name}, UUID: ${selectedAnnotation.uuid}"
+                    "Applied toolbar grouping rule to annotation toolbar"
                 )
-
-                // Use only static configuration from GlobalAnnotationMenuConfiguration
-                getEffectiveAnnotationMenuHandler()?.let { handler ->
-                    handler.onAnnotationSelected(
-                        selectedAnnotation,
-                        selectedAnnotations.size > 1
-                    )
-                    handler.onPrepareContextualToolbar(contextualToolbar)
-                    Log.d("FlutterPdfUiFragment", "Applied static annotation menu configuration to toolbar")
-                }
-                return
             }
+            applyAnnotationToolbarThemeColors(contextualToolbar)
         }
-
-        // Handle annotation editing toolbar customization (fallback)
-        getEffectiveAnnotationMenuHandler()?.onPrepareContextualToolbar(contextualToolbar)
     }
 
     override fun onDisplayContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
         // Apply annotation toolbar theme colors when toolbar is displayed
-        if (contextualToolbar is AnnotationCreationToolbar || contextualToolbar is AnnotationEditingToolbar) {
+        if (contextualToolbar is AnnotationToolbar) {
             applyAnnotationToolbarThemeColors(contextualToolbar)
+        }
+    }
+
+    /**
+     * Called when the annotation popup toolbar is being prepared (shown when an
+     * annotation is selected). This is where annotation editing menu customization
+     * is applied, replacing the pre-11.5 AnnotationEditingToolbar contextual flow.
+     */
+    override fun onPrepareAnnotationPopupToolbar(popupToolbar: AnnotationPopupToolbar) {
+        val selectedAnnotation = popupToolbar.annotations.firstOrNull()
+        if (selectedAnnotation != null) {
+            Log.d(
+                "FlutterPdfUiFragment",
+                "Preparing popup toolbar for annotation: ${selectedAnnotation.type.name}, UUID: ${selectedAnnotation.uuid}"
+            )
+            getEffectiveAnnotationMenuHandler()?.let { handler ->
+                handler.onAnnotationSelected(
+                    selectedAnnotation,
+                    popupToolbar.annotations.size > 1
+                )
+                handler.onPrepareAnnotationPopupToolbar(popupToolbar)
+                Log.d("FlutterPdfUiFragment", "Applied annotation menu configuration to popup toolbar")
+            }
+        } else {
+            getEffectiveAnnotationMenuHandler()?.onPrepareAnnotationPopupToolbar(popupToolbar)
         }
     }
 

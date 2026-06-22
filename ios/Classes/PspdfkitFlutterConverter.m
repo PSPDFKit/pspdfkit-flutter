@@ -114,8 +114,11 @@
             builder.userInterfaceViewMode = [PspdfkitFlutterConverter userInterfaceViewMode:dictionary forKey:key];
         }
 
+        // `immersiveMode` is a convenience toggle; an explicit `userInterfaceViewMode`
+        // must win when both are provided. Without this guard, iteration order
+        // silently decides the outcome because both keys write the same property.
         key = @"immersiveMode";
-        if (dictionary[key]) {
+        if (dictionary[key] && !dictionary[@"userInterfaceViewMode"]) {
             builder.userInterfaceViewMode = [dictionary[key] boolValue] ? PSPDFUserInterfaceViewModeNever : PSPDFUserInterfaceViewModeAutomatic;
         }
 
