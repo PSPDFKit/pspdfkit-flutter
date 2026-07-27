@@ -1,3 +1,10 @@
+## 5.6.1 - 27 Jul 2026
+
+- Fixes an Android build failure (`Cannot access 'AiAssistantProvider' which is a supertype of 'MainActivity'`) in apps extending `FlutterAppCompatActivity`. (J#HYB-1017)
+- Fixes an issue where setting `showThumbnailBar` to `ThumbnailBarMode.defaultStyle` threw an error on Android and was silently ignored on iOS. (J#HYB-655)
+- Fixes `androidEnableDocumentEditor` and `androidEnableContentEditor` in `PdfConfiguration` having no effect on Android. (J#HYB-803)
+- Fixes an Android issue where setting `appearanceMode` to `AppearanceMode.defaultMode` or `allCustomColors`, or `pageTransition` to an iOS-only value such as `slideHorizontal` or `fade`, threw an error. (J#HYB-655)
+
 ## 5.6.0 — 22 Jun 2026
 
 - Adds AI Assistant support to `NutrientInstantView` on Android and iOS via the new `aiAssistantConfiguration` field on `NutrientViewConfiguration`. (#53210)

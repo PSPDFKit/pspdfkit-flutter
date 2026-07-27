@@ -60,8 +60,12 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation "io.nutrient:$nutrientMavenModuleName:$nutrientVersion"
+    // `api` (not `implementation`) so these land on the app module's compile classpath:
+    // FlutterAppCompatActivity extends AppCompatActivity and implements
+    // io.nutrient.domain.ai.AiAssistantProvider, so any app MainActivity subclassing it
+    // (the documented integration) needs both supertypes resolvable at compile time.
+    api 'androidx.appcompat:appcompat:1.7.1'
+    api "io.nutrient:$nutrientMavenModuleName:$nutrientVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     // Fragment support for FFI-based platform views

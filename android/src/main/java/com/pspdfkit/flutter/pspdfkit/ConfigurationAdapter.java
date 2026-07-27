@@ -82,6 +82,9 @@ class ConfigurationAdapter {
     private static final String SHOW_DOCUMENT_INFO_VIEW = "showDocumentInfoView";
     private static final String ENABLE_DOCUMENT_EDITOR = "enableDocumentEditor";
     private static final String ENABLE_CONTENT_EDITOR = "enableContentEditor";
+    // Legacy PdfConfiguration serializes these under Android-prefixed keys.
+    private static final String ANDROID_ENABLE_DOCUMENT_EDITOR = "androidEnableDocumentEditor";
+    private static final String ANDROID_ENABLE_CONTENT_EDITOR = "androidEnableContentEditor";
     private static final String DARK_THEME_RESOURCE = "darkThemeResource";
     private static final String DEFAULT_THEME_RESOURCE = "defaultThemeResource";
 
@@ -155,6 +158,12 @@ class ConfigurationAdapter {
     private static final String PAGE_TRANSITION_SCROLL_PER_SPREAD = "scrollPerSpread";
     private static final String PAGE_TRANSITION_SCROLL_CONTINUOUS = "scrollContinuous";
     private static final String PAGE_TRANSITION_CURL = "curl";
+    // iOS-only PageTransition members; must not crash Android (see the Dart enum).
+    private static final String PAGE_TRANSITION_SLIDE_HORIZONTAL = "slideHorizontal";
+    private static final String PAGE_TRANSITION_SLIDE_VERTICAL = "slideVertical";
+    private static final String PAGE_TRANSITION_COVER = "cover";
+    private static final String PAGE_TRANSITION_FADE = "fade";
+    private static final String PAGE_TRANSITION_SCROLL_CONTINUOUS_PER_PAGE = "scrollContinuousPerPage";
 
     // Document Presentation Values
     private static final String PAGE_MODE_AUTOMATIC = "automatic";
@@ -173,8 +182,11 @@ class ConfigurationAdapter {
     private static final String USER_INTERFACE_VIEW_MODE_ALWAYS_HIDDEN = "alwaysHidden";
     private static final String USER_INTERFACE_VIEW_MODE_NEVER = "never";
     private static final String APPEARANCE_MODE_DEFAULT = "default";
+    // Dart's AppearanceMode.defaultMode serializes via `.name`, so both spellings arrive here.
+    private static final String APPEARANCE_MODE_DEFAULT_MODE = "defaultMode";
     private static final String APPEARANCE_MODE_NIGHT = "night";
     private static final String APPEARANCE_MODE_SEPIA = "sepia";
+    private static final String APPEARANCE_MODE_ALL_CUSTOM_COLORS = "allCustomColors";
     private static final String SETTINGS_MENU_ITEM_THEME = "theme";
     private static final String SETTINGS_MENU_ITEM_ANDROID_THEME = "androidTheme";
     private static final String SETTINGS_MENU_ITEM_SCREEN_AWAKE = "screenAwake";
@@ -191,6 +203,8 @@ class ConfigurationAdapter {
     // Thumbnail Options
     private static final String SHOW_THUMBNAIL_BAR_NONE = "none";
     private static final String SHOW_THUMBNAIL_BAR_DEFAULT = "default";
+    // Dart's ThumbnailBarMode.defaultStyle serializes via `.name`, so both spellings arrive here.
+    private static final String SHOW_THUMBNAIL_BAR_DEFAULT_STYLE = "defaultStyle";
     private static final String SHOW_THUMBNAIL_BAR_FLOATING = "floating";
     private static final String SHOW_THUMBNAIL_BAR_PINNED = "pinned";
     private static final String SHOW_THUMBNAIL_BAR_SCRUBBER_BAR = "scrubberBar";
@@ -369,7 +383,15 @@ class ConfigurationAdapter {
             if (key != null) {
                 configureEnableDocumentEditor((Boolean) configurationMap.get(key));
             }
+            key = getKeyOfType(configurationMap, ANDROID_ENABLE_DOCUMENT_EDITOR, Boolean.class);
+            if (key != null) {
+                configureEnableDocumentEditor((Boolean) configurationMap.get(key));
+            }
             key = getKeyOfType(configurationMap, ENABLE_CONTENT_EDITOR, Boolean.class);
+            if (key != null) {
+                configureEnableContentEditor((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, ANDROID_ENABLE_CONTENT_EDITOR, Boolean.class);
             if (key != null) {
                 configureEnableContentEditor((Boolean) configurationMap.get(key));
             }
@@ -576,6 +598,11 @@ class ConfigurationAdapter {
                 configuration.scrollMode(PageScrollMode.CONTINUOUS);
                 break;
             case PAGE_TRANSITION_CURL:
+            case PAGE_TRANSITION_SLIDE_HORIZONTAL:
+            case PAGE_TRANSITION_SLIDE_VERTICAL:
+            case PAGE_TRANSITION_COVER:
+            case PAGE_TRANSITION_FADE:
+            case PAGE_TRANSITION_SCROLL_CONTINUOUS_PER_PAGE:
                 // NO-OP. Only supported on iOS.
                 break;
             default:
@@ -685,6 +712,7 @@ class ConfigurationAdapter {
                 configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_NONE);
                 break;
             case SHOW_THUMBNAIL_BAR_DEFAULT:
+            case SHOW_THUMBNAIL_BAR_DEFAULT_STYLE:
             case SHOW_THUMBNAIL_BAR_FLOATING:
                 configuration.setThumbnailBarMode(ThumbnailBarMode.THUMBNAIL_BAR_MODE_FLOATING);
                 break;
@@ -789,7 +817,12 @@ class ConfigurationAdapter {
     private void configureAppearanceMode(@NonNull String appearanceMode) {
         switch (appearanceMode) {
             case APPEARANCE_MODE_DEFAULT:
+            // Dart's AppearanceMode.defaultMode serializes via `.name`.
+            case APPEARANCE_MODE_DEFAULT_MODE:
                 configuration.themeMode(ThemeMode.DEFAULT);
+                break;
+            case APPEARANCE_MODE_ALL_CUSTOM_COLORS:
+                // NO-OP. Only supported on iOS.
                 break;
             case APPEARANCE_MODE_NIGHT:
                 configuration.themeMode(ThemeMode.NIGHT);

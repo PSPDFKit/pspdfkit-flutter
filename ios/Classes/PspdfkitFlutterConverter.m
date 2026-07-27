@@ -305,7 +305,8 @@
     PSPDFThumbnailBarMode thumbnailBarMode = PSPDFConfiguration.defaultConfiguration.thumbnailBarMode;
     NSString *value = dictionary[key];
     if (value) {
-        if ([value isEqualToString:@"default"] || [value isEqualToString:@"floating"]) {
+        // "defaultStyle" is how Dart's ThumbnailBarMode.defaultStyle serializes via `.name`.
+        if ([value isEqualToString:@"default"] || [value isEqualToString:@"defaultStyle"] || [value isEqualToString:@"floating"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeFloatingScrubberBar;
         } else if ([value isEqualToString:@"scrollable"]) {
             thumbnailBarMode = PSPDFThumbnailBarModeScrollable;
