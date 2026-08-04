@@ -2,6 +2,8 @@
 
 Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SDK. View, annotate, and edit PDFs seamlessly across Android, iOS, and Web platforms.
 
+> **Note:** This branch tracks Nutrient Flutter SDK **5.6.x** and is no longer updated for newer releases. Nutrient Flutter SDK 6.0 and later are published to [pub.dev](https://pub.dev/packages/nutrient_flutter), where the native SDK APIs are available through the bindings API. See the [changelog](https://www.nutrient.io/changelog/flutter/) and the [Flutter SDK 6 migration guide](https://www.nutrient.io/guides/flutter/migration-guides/flutter-6-migration-guide/). The `nightly` branch continues to receive updates.
+
 ![Nutrient Flutter SDK](screenshots/flutter.png)
 
 ## Requirements
@@ -23,8 +25,12 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
 
 ```yaml
 dependencies:
-  nutrient_flutter: any
+  nutrient_flutter: ^5.6.0
 ```
+
+The instructions in this README apply to 5.6.x. Pin the dependency as shown so
+that `pub get` does not resolve to 6.0.0, whose setup requirements differ. For
+6.0 and later, follow the [getting started guide](https://www.nutrient.io/guides/flutter/getting-started/).
 
 2. Run the following command:
 
