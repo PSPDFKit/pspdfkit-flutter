@@ -36,7 +36,48 @@ NutrientInstantView(
 | `jwt` | `String` | Yes | Signed JWT with at least `read-document` and `write` permissions |
 | `configuration` | `NutrientViewConfiguration?` | No | Viewer appearance and behaviour options. See [view-configuration-guide.md](view-configuration-guide.md) |
 | `onViewCreated` | `void Function(NutrientViewHandle)?` | No | Called once the native view is initialised and ready |
+| `onControllerReady` | `void Function(T)?` | No | Surfaces the [Instant controller](#the-instant-controller) once ready (Android & iOS) |
+| `adapter` | `T?` | No | Per-view controller instance you own; see [Custom controllers](#custom-controllers) |
 | `key` | `Key?` | No | Standard Flutter widget key |
+
+## The Instant controller
+
+`onControllerReady` surfaces a `NutrientInstantController` — the regular
+controller surface (`document`, `events`, …) plus the Instant sync controls:
+
+```dart
+NutrientInstantView(
+  serverUrl: serverUrl,
+  jwt: jwt,
+  onControllerReady: (controller) async {
+    // Instant sync controls (Android & iOS):
+    await controller.setDelayForSyncingLocalChanges(2); // seconds
+    await controller.setListenToServerChanges(true);
+    await controller.syncAnnotations();
+
+    // Typed Instant events (buffered — no events are missed):
+    controller.events.instantSyncFinished.listen((e) {
+      debugPrint('In sync: ${e.documentId}');
+    });
+  },
+)
+```
+
+On Web these controls are not available — Instant sync is configured at load
+time and managed by the Web SDK; `onControllerReady` is not called there.
+
+## Custom controllers
+
+`NutrientInstantView` follows the same adapter model as `NutrientDocumentView`:
+
+- **Bare** `NutrientInstantView(...)` — the platform's default Instant
+  controller is built fresh for this view and disposed with it.
+- **Typed** `NutrientInstantView<MyInstantController>(...)` — a fresh instance
+  from the factory registered with
+  `Nutrient.addAdapterClass<MyInstantController>(...)`; the view owns its
+  lifecycle. `MyInstantController` must implement `NutrientInstantController`.
+- **Per-view instance** via `adapter:` — you allocate and dispose it; the view
+  attaches and detaches only.
 
 ## Applying configuration
 

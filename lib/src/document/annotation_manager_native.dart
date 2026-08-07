@@ -9,14 +9,14 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart' as pigeon;
 
 /// Native implementation of AnnotationManager for iOS and Android platforms.
 class AnnotationManagerNative extends AnnotationManager {
-  late final AnnotationManagerApi _api;
+  late final pigeon.AnnotationManagerApi _api;
 
   AnnotationManagerNative({required super.documentId}) {
-    // Create API instance with channel based on documentId
-    _api = AnnotationManagerApi(
+    _api = pigeon.AnnotationManagerApi(
       binaryMessenger: ServicesBinding.instance.defaultBinaryMessenger,
       messageChannelSuffix: '${documentId}_annotation_manager',
     );
@@ -28,12 +28,13 @@ class AnnotationManagerNative extends AnnotationManager {
     int pageIndex,
     String annotationId,
   ) async {
-    return _api.getAnnotationProperties(pageIndex, annotationId);
+    final dto = await _api.getAnnotationProperties(pageIndex, annotationId);
+    return dto == null ? null : _fromDto(dto);
   }
 
   @override
   Future<bool> saveAnnotationProperties(AnnotationProperties properties) async {
-    return _api.saveAnnotationProperties(properties);
+    return _api.saveAnnotationProperties(_toDto(properties));
   }
 
   @override
@@ -67,7 +68,6 @@ class AnnotationManagerNative extends AnnotationManager {
   Future<String> addAnnotation(Annotation annotation) async {
     String? attachmentJson;
 
-    // Handle attachments for annotations that support them
     if (annotation is FileAnnotation && annotation.attachment != null) {
       attachmentJson = jsonEncode(annotation.attachment!.toJson());
     } else if (annotation is ImageAnnotation && annotation.attachment != null) {
@@ -131,4 +131,46 @@ class AnnotationManagerNative extends AnnotationManager {
     }
     return annotations;
   }
+
+  static AnnotationProperties _fromDto(pigeon.AnnotationProperties dto) =>
+      AnnotationProperties(
+        annotationId: dto.annotationId,
+        pageIndex: dto.pageIndex,
+        strokeColor: dto.strokeColor,
+        fillColor: dto.fillColor,
+        opacity: dto.opacity,
+        lineWidth: dto.lineWidth,
+        flagsJson: dto.flagsJson,
+        customDataJson: dto.customDataJson,
+        contents: dto.contents,
+        subject: dto.subject,
+        creator: dto.creator,
+        bboxJson: dto.bboxJson,
+        note: dto.note,
+        inkLinesJson: dto.inkLinesJson,
+        fontName: dto.fontName,
+        fontSize: dto.fontSize,
+        iconName: dto.iconName,
+      );
+
+  static pigeon.AnnotationProperties _toDto(AnnotationProperties p) =>
+      pigeon.AnnotationProperties(
+        annotationId: p.annotationId ?? '',
+        pageIndex: p.pageIndex ?? 0,
+        strokeColor: p.strokeColor,
+        fillColor: p.fillColor,
+        opacity: p.opacity,
+        lineWidth: p.lineWidth,
+        flagsJson: p.flagsJson,
+        customDataJson: p.customDataJson,
+        contents: p.contents,
+        subject: p.subject,
+        creator: p.creator,
+        bboxJson: p.bboxJson,
+        note: p.note,
+        inkLinesJson: p.inkLinesJson,
+        fontName: p.fontName,
+        fontSize: p.fontSize,
+        iconName: p.iconName,
+      );
 }

@@ -77,6 +77,14 @@ class PdfConfiguration {
   /// to true.
   final bool? androidShowSearchAction;
 
+  /// Sets whether to show the stylus tool button in the Android annotation
+  /// creation toolbar. Defaults to true.
+  ///
+  /// Applies to [PSPDFKitView] as well as `Nutrient.present()` and
+  /// `Nutrient.presentInstant()`. Read each time the annotation toolbar is
+  /// prepared, so it does not affect a toolbar that is already on screen.
+  final bool? androidShowStylusButton;
+
   /// Sets whether to show the outline action in the Android toolbar. Defaults
   /// to true.
   final bool? androidShowOutlineAction;
@@ -277,6 +285,7 @@ class PdfConfiguration {
     this.appearanceMode,
     this.settingsMenuItems,
     this.androidShowSearchAction,
+    this.androidShowStylusButton,
     this.androidShowOutlineAction,
     this.androidShowBookmarksAction,
     this.androidEnableDocumentEditor,
@@ -344,6 +353,7 @@ class PdfConfiguration {
       'appearanceMode': appearanceMode?.name,
       'settingsMenuItems': settingsMenuItems,
       'androidShowSearchAction': androidShowSearchAction,
+      'androidShowStylusButton': androidShowStylusButton,
       'androidShowOutlineAction': androidShowOutlineAction,
       'androidShowBookmarksAction': androidShowBookmarksAction,
       'androidEnableDocumentEditor': androidEnableDocumentEditor,

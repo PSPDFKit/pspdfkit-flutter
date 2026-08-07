@@ -9,17 +9,20 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart' as pigeon;
 import 'package:nutrient_flutter/src/annotations/annotation_utils.dart';
 import 'package:nutrient_flutter/src/bookmarks/bookmark_manager_native.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter/src/document/annotation_manager_native.dart';
+import 'package:nutrient_flutter/src/document/save_options_mapper.dart';
 
 class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
-  late final PdfDocumentApi _api;
+  late final pigeon.PdfDocumentApi _api;
   AnnotationManagerNative? _annotationManagerInstance;
   BookmarkManagerNative? _bookmarkManagerInstance;
 
-  PdfDocumentNative({required super.documentId, required PdfDocumentApi api}) {
+  PdfDocumentNative(
+      {required super.documentId, required pigeon.PdfDocumentApi api}) {
     _api = api;
   }
 
@@ -35,9 +38,16 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   }
 
   @override
-  Future<PageInfo> getPageInfo(int pageIndex) {
+  Future<PageInfo> getPageInfo(int pageIndex) async {
     try {
-      return _api.getPageInfo(pageIndex);
+      final dto = await _api.getPageInfo(pageIndex);
+      return PageInfo(
+        pageIndex: dto.pageIndex,
+        width: dto.width,
+        height: dto.height,
+        rotation: dto.rotation,
+        label: dto.label.isEmpty ? null : dto.label,
+      );
     } catch (e) {
       debugPrint('Error getting page info: $e');
       throw Exception('Error getting page info: $e');
@@ -47,7 +57,7 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
   @override
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) {
     try {
-      return _api.exportPdf(options);
+      return _api.exportPdf(toPigeonSaveOptions(options));
     } catch (e) {
       debugPrint('Error exporting PDF: $e');
       throw Exception('Error exporting PDF: $e');
@@ -144,7 +154,7 @@ class PdfDocumentNative extends PdfDocument with AnnotationJsonConverter {
 
   @override
   Future<bool> save({String? outputPath, DocumentSaveOptions? options}) {
-    return _api.save(outputPath, options);
+    return _api.save(outputPath, toPigeonSaveOptions(options));
   }
 
   @override

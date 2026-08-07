@@ -217,8 +217,13 @@ class MyApp extends StatelessWidget {
 - [Release Notes][release notes]
 - [Customization][customization]
 - [Migration Guide][migration guide]
+- [Working with Annotations](documentation/annotations-api-guide.md) - Read, create, search, and remove annotations with typed models
+- [Working with Forms](documentation/forms-api-guide.md) - Read AcroForm fields as typed models and fill them in
+- [Working with Events](documentation/events-api-guide.md) - React to document, annotation, and form changes through one typed stream
+- [Customizing the Toolbars](documentation/toolbar-customization-guide.md) - Reorder, group, and extend the main and annotation toolbars from Dart
 - [Headless Document API](documentation/headless-document-api-guide.md) - Open documents without a viewer for batch processing
 - [Dirty State Tracking](documentation/dirty-state-tracking-guide.md) - Track unsaved changes across platforms
+- [Configuring Signatures](documentation/signature-configuration-guide.md) - Customize the signature creation UI and saving strategy
 
 ## Support
 

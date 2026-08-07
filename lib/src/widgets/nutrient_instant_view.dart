@@ -7,6 +7,8 @@
 ///  This notice may not be removed from this file.
 ///
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart';
@@ -15,7 +17,7 @@ import 'package:nutrient_flutter_android/nutrient_flutter_android.dart'
 import 'package:nutrient_flutter_ios/nutrient_flutter_ios.dart'
     show NutrientInstantViewIOS;
 
-import '../configuration/web_view_configuration.dart';
+import '../configuration/web_config_resolution.dart';
 
 /// A cross-platform widget that opens a Nutrient Instant document.
 ///
@@ -23,14 +25,21 @@ import '../configuration/web_view_configuration.dart';
 /// provided [serverUrl] and [jwt] credentials and renders the resulting
 /// document with real-time collaboration support.
 ///
-/// On Android the widget delegates to [NutrientInstantViewAndroid]; on iOS it
-/// delegates to [NutrientInstantViewIOS]. Both share the same callback
-/// contract: [onViewCreated] receives a [NutrientViewHandle] once the
-/// underlying platform view is ready.
+/// The controller surfaced by [onControllerReady] is a
+/// [NutrientInstantController] — the regular controller surface plus the
+/// Instant sync controls (`syncAnnotations`,
+/// `setDelayForSyncingLocalChanges`, `setListenToServerChanges`).
 ///
-/// Pass an optional [configuration] to customise the viewer appearance and
-/// behaviour. Set [NutrientViewConfiguration.webConfig] to a
-/// [WebViewConfiguration] instance for web-specific options.
+/// Controller resolution mirrors [NutrientDocumentView]:
+///
+/// - **Bare** `NutrientInstantView(...)` — the platform's default Instant
+///   controller is built fresh for this view (and disposed with it).
+/// - **Typed** `NutrientInstantView<MyInstantController>(...)` — a fresh
+///   instance from the factory registered with
+///   `Nutrient.addAdapterClass<MyInstantController>(...)`; the view owns its
+///   lifecycle.
+/// - **Per-view instance** via [adapter] — you allocate and dispose it; the
+///   view only attaches/detaches.
 ///
 /// Example:
 /// ```dart
@@ -39,20 +48,15 @@ import '../configuration/web_view_configuration.dart';
 ///   jwt: 'eyJhbGci...',
 ///   configuration: NutrientViewConfiguration(
 ///     pageLayoutMode: PageLayoutMode.single,
-///     appearanceMode: AppearanceMode.night,
-///     iosConfig: IOSViewConfiguration(
-///       spreadFitting: SpreadFitting.adaptive,
-///     ),
-///     webConfig: WebViewConfiguration(
-///       locale: 'de',
-///     ),
 ///   ),
-///   onViewCreated: (handle) {
-///     // The view is ready — store the handle for later use.
+///   onControllerReady: (controller) async {
+///     await controller.setDelayForSyncingLocalChanges(2);
+///     await controller.syncAnnotations();
 ///   },
 /// )
 /// ```
-class NutrientInstantView extends StatelessWidget {
+class NutrientInstantView<T extends NutrientInstantController>
+    extends StatefulWidget {
   /// The Document Engine server URL for the Instant document to open.
   final String serverUrl;
 
@@ -65,6 +69,39 @@ class NutrientInstantView extends StatelessWidget {
   /// Called when the platform view has been created and is ready to use.
   final void Function(NutrientViewHandle handle)? onViewCreated;
 
+  /// Optional per-view controller instance you own.
+  ///
+  /// When supplied, this widget uses [adapter] as its controller — the
+  /// Instant view dispatches its lifecycle hooks and the typed Instant events
+  /// to it, and [onControllerReady] surfaces it. Ownership stays with the
+  /// caller: dispose it yourself (the view calls `detachView()` on teardown,
+  /// never `dispose()`).
+  ///
+  /// If `null`, the controller is resolved via [Nutrient.buildAdapter] for
+  /// [T]: a fresh instance from a factory registered with
+  /// [Nutrient.addAdapterClass], or — for a bare view — the platform's
+  /// default Instant controller. Controllers this view builds are owned and
+  /// disposed by the view.
+  ///
+  /// On web the Instant view manages its own adapter, so this is ignored.
+  final T? adapter;
+
+  /// Called when the Instant controller is ready.
+  ///
+  /// ```dart
+  /// NutrientInstantView(
+  ///   serverUrl: url,
+  ///   jwt: jwt,
+  ///   onControllerReady: (controller) async {
+  ///     await controller.setListenToServerChanges(true);
+  ///     await controller.syncAnnotations();
+  ///   },
+  /// )
+  /// ```
+  ///
+  /// Not called on Web, where Instant sync is configured at load time.
+  final void Function(T controller)? onControllerReady;
+
   /// Creates a [NutrientInstantView].
   const NutrientInstantView({
     super.key,
@@ -72,52 +109,123 @@ class NutrientInstantView extends StatelessWidget {
     required this.jwt,
     this.configuration,
     this.onViewCreated,
+    this.adapter,
+    this.onControllerReady,
   });
+
+  @override
+  State<NutrientInstantView<T>> createState() => _NutrientInstantViewState<T>();
+}
+
+class _NutrientInstantViewState<T extends NutrientInstantController>
+    extends State<NutrientInstantView<T>> {
+  T? _controller;
+  bool _readyFired = false;
+
+  /// Whether this view built [_controller] itself — via a factory registered
+  /// with [Nutrient.addAdapterClass] or the platform default Instant
+  /// controller — and is therefore responsible for disposing it. False when
+  /// the controller was supplied through [NutrientInstantView.adapter] (the
+  /// caller owns it) or resolved from the shared global slot.
+  bool _ownsController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveController();
+  }
+
+  @override
+  void dispose() {
+    if (_ownsController) {
+      // We built this controller for this view, so we own its lifecycle. The
+      // platform view has already detached it in its own dispose (children
+      // dispose before their ancestors).
+      unawaited(_controller?.dispose());
+    }
+    super.dispose();
+  }
+
+  /// Resolve the controller for this view — same order as
+  /// [NutrientDocumentView]: the per-view [NutrientInstantView.adapter] when
+  /// supplied (caller-owned), otherwise [Nutrient.buildAdapter] for [T] (a
+  /// registered factory's fresh instance, or the platform default Instant
+  /// controller for a bare view — both view-owned).
+  void _resolveController() {
+    final widgetAdapter = widget.adapter;
+    if (widgetAdapter != null) {
+      _controller = widgetAdapter;
+      _ownsController = false;
+      return;
+    }
+
+    try {
+      final built = Nutrient.buildAdapter<T>();
+      _controller = built;
+      _ownsController = !Nutrient.isSharedAdapter(built);
+    } on StateError catch (error) {
+      // No factory and no platform Instant default — surface the actionable
+      // message but let the view render (the platform side may still resolve
+      // its own default).
+      debugPrint('[NutrientInstantView] $error');
+      _controller = null;
+      _ownsController = false;
+    }
+  }
+
+  /// Forwards the platform view's ready callback to the widget's typed
+  /// [NutrientInstantView.onControllerReady] exactly once.
+  ///
+  /// The platform views surface the same instance this State resolved and
+  /// passed down as `adapter:` — the `is T` check only filters the fallback
+  /// case where resolution failed here and the platform built its own
+  /// (platform-typed) default.
+  void _onPlatformControllerReady(NutrientInstantController controller) {
+    if (_readyFired) return;
+    if (controller is T) {
+      _readyFired = true;
+      widget.onControllerReady?.call(controller);
+    } else {
+      debugPrint(
+        '[NutrientInstantView] Platform controller ${controller.runtimeType} '
+        'is not a $T — onControllerReady will not fire. Register a factory '
+        'with Nutrient.addAdapterClass<$T>(() => ...) or pass `adapter:`.',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Resolve webConfig: if it is a WebViewConfiguration, pre-serialize it
     // into the builder-map format so nutrient_flutter_web can consume it
     // without importing nutrient_flutter.
-    NutrientViewConfiguration? resolvedConfig = configuration;
-    if (resolvedConfig != null &&
-        resolvedConfig.webConfig is WebViewConfiguration) {
-      resolvedConfig = NutrientViewConfiguration(
-        scrollDirection: resolvedConfig.scrollDirection,
-        pageLayoutMode: resolvedConfig.pageLayoutMode,
-        pageTransition: resolvedConfig.pageTransition,
-        firstPageAlwaysSingle: resolvedConfig.firstPageAlwaysSingle,
-        userInterfaceViewMode: resolvedConfig.userInterfaceViewMode,
-        thumbnailBarMode: resolvedConfig.thumbnailBarMode,
-        appearanceMode: resolvedConfig.appearanceMode,
-        startPage: resolvedConfig.startPage,
-        enableTextSelection: resolvedConfig.enableTextSelection,
-        enableAnnotationEditing: resolvedConfig.enableAnnotationEditing,
-        enableFormEditing: resolvedConfig.enableFormEditing,
-        disableAutosave: resolvedConfig.disableAutosave,
-        minimumZoomScale: resolvedConfig.minimumZoomScale,
-        maximumZoomScale: resolvedConfig.maximumZoomScale,
-        androidConfig: resolvedConfig.androidConfig,
-        iosConfig: resolvedConfig.iosConfig,
-        webConfig:
-            (resolvedConfig.webConfig as WebViewConfiguration).toBuilderMap(),
-        aiAssistantConfiguration: resolvedConfig.aiAssistantConfiguration,
-      );
-    }
+    final resolvedConfig = resolveWebConfig(widget.configuration);
+
+    // Hand the platform view the exact instance this State resolved (every
+    // bundled controller also implements NutrientPlatformAdapter). A failed
+    // resolution falls through to null and the platform view builds its own
+    // default. Typed loosely so flow analysis can narrow (`T?` won't).
+    final Object? controller = _controller;
+    final NutrientPlatformAdapter? platformAdapter =
+        controller is NutrientPlatformAdapter ? controller : null;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       return NutrientInstantViewAndroid(
-        serverUrl: serverUrl,
-        jwt: jwt,
+        serverUrl: widget.serverUrl,
+        jwt: widget.jwt,
         configuration: resolvedConfig,
-        onViewCreated: onViewCreated,
+        onViewCreated: widget.onViewCreated,
+        adapter: platformAdapter,
+        onControllerReady: _onPlatformControllerReady,
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return NutrientInstantViewIOS(
-        serverUrl: serverUrl,
-        jwt: jwt,
+        serverUrl: widget.serverUrl,
+        jwt: widget.jwt,
         configuration: resolvedConfig,
-        onViewCreated: onViewCreated,
+        onViewCreated: widget.onViewCreated,
+        adapter: platformAdapter,
+        onControllerReady: _onPlatformControllerReady,
       );
     }
     return Text(

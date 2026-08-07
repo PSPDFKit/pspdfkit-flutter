@@ -1,5 +1,11 @@
 # Custom Toolbar Items Guide for PSPDFKit Flutter
 
+> **Note:** This guide covers the **deprecated Pigeon-based widgets**
+> (`PSPDFKitWidget` / `NutrientView`) and their `customToolbarItems` API. For
+> the modern `NutrientDocumentView` / bindings SDK — including custom buttons
+> with Dart `onPressed` callbacks and annotation-toolbar customization — see
+> [Customizing the Toolbars](toolbar-customization-guide.md).
+
 This guide explains how to implement and customize toolbar items in the PSPDFKit Flutter plugin, including creating custom toolbar items, handling interactions, and adding custom icons.
 
 ## Quick Start Example

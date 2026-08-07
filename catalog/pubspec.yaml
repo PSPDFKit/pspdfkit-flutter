@@ -1,0 +1,77 @@
+name: nutrient_flutter_catalog
+description: "Showcase catalog for the Nutrient Flutter SDK."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.41.1'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  path_provider: ^2.1.5
+  # JWT minting for the AI Assistant / Instant examples (demo key, local
+  # Document Engine + ai-assistant-demo backends).
+  dart_jsonwebtoken: ^2.12.1
+  uuid: ^4.3.3
+
+  # Direct deps on the federated platform packages alongside the wrapper.
+  # See `documentation/bindings-federation-cleanup.md` — once raw
+  # method-channel routing is removed and `PspdfkitPlugin` no longer needs
+  # to be the registered Android plugin, we can drop these to match the
+  # "only nutrient_flutter as a direct dep" shape that the bindings
+  # migration guide describes as the future target.
+  nutrient_flutter:
+    path: ../
+  nutrient_flutter_platform_interface:
+    path: ../../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../../nutrient_flutter_web
+  jni: ^1.0.0
+  objective_c: ^9.2.1
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_test:
+    sdk: flutter
+
+# App icon generation across Android, iOS, and web. The 1024x1024 source
+# combines the Nutrient symbol on Warm Black with the Flutter mark in
+# Nutrient-coral colors in the top-right corner.
+flutter_launcher_icons:
+  image_path: "assets/brand/app_icon.png"
+  android: "ic_launcher"
+  adaptive_icon_background: "#1A1414"
+  adaptive_icon_foreground: "assets/brand/app_icon_foreground.png"
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/brand/app_icon.png"
+    background_color: "#1A1414"
+    theme_color: "#F25E45"
+
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../../nutrient_flutter_web
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/brand/
+    - assets/documents/

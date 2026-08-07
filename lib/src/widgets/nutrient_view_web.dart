@@ -10,6 +10,7 @@ library nutrient_viewer_web;
 
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -22,27 +23,30 @@ import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as web
     show
         NutrientViewWeb,
         NutrientWebAdapter,
-        NutrientWebInstance,
-        NutrientWebInstanceExtension,
         NutrientAnnotationOperations,
         NutrientDocumentOperations,
         NutrientFormOperations,
         NutrientBookmarkOperations,
         WebColorUtils;
-// Import extension types without prefix so extension methods are accessible
-import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
-    show NutrientViewStateExtension, NutrientPageInfoExtension;
+import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as nutrient_web
+    show Instance;
 
 /// Callback type for when the web instance is loaded.
 /// This allows adapters to receive the NutrientWebInstance for direct SDK access.
 typedef OnWebInstanceLoadedCallback = Future<void> Function(
-    web.NutrientWebInstance instance);
+    nutrient_web.Instance instance);
 
 /// A widget that displays a PDF document using Nutrient on the web.
 ///
 /// This widget delegates to [NutrientViewWeb] from `nutrient_flutter_web`
 /// internally while providing the standard `nutrient_flutter` API surface
 /// including callbacks, configuration, and adapter support.
+///
+/// **Deprecated** — use [NutrientDocumentView] instead. See the migration
+/// notes on the Android [NutrientView] for details.
+@Deprecated(
+    'Use NutrientDocumentView<T> with a NutrientPlatformAdapter registered '
+    'via Nutrient.initialize(). See NutrientDocumentView for migration notes.')
 class NutrientView extends StatefulWidget {
   /// The path to the document to display.
   final String documentPath;
@@ -127,7 +131,7 @@ class NutrientView extends StatefulWidget {
 
 class _NutrientViewState extends State<NutrientView> {
   _CallbackBridgeAdapter? _bridgeAdapter;
-  web.NutrientWebInstance? _webInstance;
+  nutrient_web.Instance? _webInstance;
   final Map<String, JSFunction> _eventListeners = {};
 
   @override
@@ -166,7 +170,7 @@ class _NutrientViewState extends State<NutrientView> {
       // Get the new NutrientWebInstance from the registry
       final instance =
           platform.NativeInstanceRegistry.get(handle.viewId, 'instance')
-              as web.NutrientWebInstance?;
+              as nutrient_web.Instance?;
 
       if (instance == null) {
         debugPrint('[NutrientView Web] Instance not found in registry');
@@ -212,17 +216,21 @@ class _NutrientViewState extends State<NutrientView> {
     }
   }
 
-  void _attachEventListeners(web.NutrientWebInstance instance) {
+  void _attachEventListeners(nutrient_web.Instance instance) {
     // Page change event listener
     if (widget.onPageChanged != null) {
       final JSFunction listener = ((JSAny? event) {
         if (!mounted) return;
-        // currentPageIndex is on viewState, not the instance directly
-        final pageIndex = instance.viewState.currentPageIndex;
+        // viewState is `JSAny` on the generated Instance because the
+        // generator can't see through the Immutable.Record factory.
+        // Read currentPageIndex off the JS object directly.
+        final vs = instance.viewState as JSObject;
+        final pageIndex = (vs['currentPageIndex'] as JSNumber?)?.toDartInt ?? 0;
         widget.onPageChanged?.call(pageIndex);
       }).toJS;
 
-      instance.addEventListener('viewState.currentPageIndex.change', listener);
+      instance.addEventListener<JSString>(
+          'viewState.currentPageIndex.change'.toJS, listener);
       _eventListeners['viewState.currentPageIndex.change'] = listener;
     }
 
@@ -256,7 +264,7 @@ class _NutrientViewState extends State<NutrientView> {
         }
       }).toJS;
 
-      instance.addEventListener('page.press', listener);
+      instance.addEventListener<JSString>('page.press'.toJS, listener);
       _eventListeners['page.press'] = listener;
     }
 
@@ -277,7 +285,8 @@ class _NutrientViewState extends State<NutrientView> {
         }
       }).toJS;
 
-      instance.addEventListener('document.saveStateChange', listener);
+      instance.addEventListener<JSString>(
+          'document.saveStateChange'.toJS, listener);
       _eventListeners['document.saveStateChange'] = listener;
     }
   }
@@ -286,7 +295,8 @@ class _NutrientViewState extends State<NutrientView> {
     if (_webInstance != null) {
       for (final entry in _eventListeners.entries) {
         try {
-          _webInstance!.removeEventListener(entry.key, entry.value);
+          _webInstance!
+              .removeEventListener<JSString>(entry.key.toJS, entry.value);
         } catch (e) {
           debugPrint('Error removing event listener: $e');
         }
@@ -338,7 +348,7 @@ class _CallbackBridgeAdapter extends web.NutrientWebAdapter {
   }
 
   @override
-  Future<void> onInstanceLoaded(web.NutrientWebInstance instance) async {
+  Future<void> onInstanceLoaded(nutrient_web.Instance instance) async {
     // Call super to set _instance property (needed for bridge functionality)
     await super.onInstanceLoaded(instance);
 
@@ -379,7 +389,7 @@ class _WebPdfDocumentStub implements PdfDocument {
   @override
   final String documentId;
 
-  final web.NutrientWebInstance? _instance;
+  final nutrient_web.Instance? _instance;
   final web.NutrientAnnotationOperations? _annotationOps;
   final web.NutrientDocumentOperations? _documentOps;
   final web.NutrientFormOperations? _formOps;
@@ -387,7 +397,7 @@ class _WebPdfDocumentStub implements PdfDocument {
 
   _WebPdfDocumentStub({
     required this.documentId,
-    web.NutrientWebInstance? instance,
+    nutrient_web.Instance? instance,
     web.NutrientAnnotationOperations? annotationOps,
     web.NutrientDocumentOperations? documentOps,
     web.NutrientFormOperations? formOps,
@@ -458,7 +468,7 @@ class _WebPdfDocumentStub implements PdfDocument {
   Future<int> getPageCount() async {
     final inst = _instance;
     if (inst == null) return 0;
-    return inst.totalPageCount ?? inst.pageCount ?? 0;
+    return inst.totalPageCount.toInt();
   }
 
   @override
@@ -469,14 +479,14 @@ class _WebPdfDocumentStub implements PdfDocument {
           pageIndex: pageIndex, width: 0, height: 0, rotation: 0, label: '');
     }
     try {
-      final jsPageInfo = inst.pageInfoForIndex(pageIndex);
+      final jsPageInfo = inst.pageInfoForIndex(pageIndex.toDouble());
       if (jsPageInfo != null) {
         return PageInfo(
           pageIndex: pageIndex,
           width: jsPageInfo.width.toDouble(),
           height: jsPageInfo.height.toDouble(),
-          rotation: jsPageInfo.rotation,
-          label: jsPageInfo.label ?? '',
+          rotation: jsPageInfo.rotation.toInt(),
+          label: jsPageInfo.label,
         );
       }
     } catch (e) {
@@ -819,8 +829,9 @@ class _WebPdfDocumentStub implements PdfDocument {
         final c = Color(properties.fillColor!);
         propsMap['fillColor'] = {'r': c.red, 'g': c.green, 'b': c.blue};
       }
-      if (properties.contents != null)
+      if (properties.contents != null) {
         propsMap['contents'] = properties.contents;
+      }
       if (properties.creator != null) propsMap['creator'] = properties.creator;
       final customData = properties.customData;
       if (customData != null) propsMap['customData'] = customData;
@@ -843,7 +854,7 @@ class _WebPdfDocumentStub implements PdfDocument {
     try {
       final inst = _instance;
       if (inst == null) return [];
-      final pageCount = inst.totalPageCount ?? inst.pageCount ?? 0;
+      final pageCount = inst.totalPageCount.toInt();
       final result = <Annotation>[];
       final queryLower = query.toLowerCase();
 

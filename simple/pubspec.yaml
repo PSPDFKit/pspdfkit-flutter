@@ -1,0 +1,57 @@
+name: nutrient_flutter_simple
+description: "The most basic Nutrient Flutter SDK setup — load and display a PDF with the bindings API."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.41.1'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Used to extract the bundled PDF asset to a real file path on disk for the
+  # native (Android/iOS) SDK. Not needed on web.
+  path_provider: ^2.1.5
+
+  # Nutrient Flutter SDK — the wrapper package plus the federated platform
+  # implementations. The platform packages are non-endorsed federated impls,
+  # so they must be listed as *direct* dependencies for their native plugins to
+  # register — and that native registration is what makes the SDK's built-in
+  # default adapter available, so `Nutrient.initialize()` works with no adapter.
+  # App code itself only imports `package:nutrient_flutter/bindings.dart`.
+  nutrient_flutter:
+    path: ../
+  nutrient_flutter_platform_interface:
+    path: ../../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../../nutrient_flutter_web
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+# Rewrite the internal package -> package edges (which resolve to hosted
+# versions) onto the local checkout. Without these, `pub get` rejects the
+# path deps above with "from path is forbidden".
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../../nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ../../nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ../../nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ../../nutrient_flutter_web
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

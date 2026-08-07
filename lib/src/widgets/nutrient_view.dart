@@ -16,6 +16,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 import 'nutrient_view_controller_native.dart';
 
 // Conditional imports for platform-specific adapter bridging
@@ -23,6 +24,27 @@ import 'adapter_bridge_stub.dart'
     if (dart.library.io) 'adapter_bridge_native.dart';
 
 /// A widget that displays a PDF document using Nutrient.
+///
+/// **Deprecated** — use [NutrientDocumentView] instead.
+///
+/// [NutrientDocumentView] is the modern replacement that builds the native
+/// fragment / view controller from Dart via platform adapter bindings (JNI/
+/// FFI/JS), giving you full extensibility via [NutrientPlatformAdapter]
+/// without Pigeon. Migration guide:
+///
+/// - Move `configuration:` into your adapter's `configureFragment` /
+///   `configureView` / `configureLoad` override.
+/// - Move `onDocumentLoaded`, `onPageChanged`, `onPageClicked`, and
+///   `onDocumentSaved` into adapter lifecycle callbacks (Android:
+///   `DocumentListener` via `onPdfFragmentReady`; iOS:
+///   `PSPDFViewControllerDelegate` via `onViewControllerReady`).
+/// - Move `customToolbarItems` into your adapter's configuration builder.
+/// - Replace `onViewCreated: (c) => c.doSomething()` with
+///   `onControllerReady: (c) async { await c.document.doSomething(); }`
+///   on [NutrientDocumentView].
+@Deprecated(
+    'Use NutrientDocumentView<T> with a NutrientPlatformAdapter registered '
+    'via Nutrient.initialize(). See NutrientDocumentView for migration notes.')
 class NutrientView extends StatefulWidget {
   /// The path to the document to display.
   final String documentPath;

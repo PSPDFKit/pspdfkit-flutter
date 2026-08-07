@@ -1,0 +1,44 @@
+name: nutrient_flutter_web
+description: Web implementation of the nutrient_flutter plugin.
+version: 1.1.0
+homepage: https://nutrient.io/
+repository: https://github.com/PSPDFKit/pspdfkit-flutter
+issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
+documentation: https://nutrient.io/guides/flutter/
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  nutrient_flutter_platform_interface: ^1.1.0
+  web: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  plugin:
+    # `implements: nutrient_flutter` — kept for consistency with the Android/iOS
+    # federated impls, which REQUIRE it: dropping it links both the legacy and
+    # federated native modules and breaks the build (duplicate symbols / classes,
+    # CI build #2892). Web has no native link step, but matching the federation
+    # pattern keeps registration behaviour uniform. The cost: bindings apps list
+    # this package as a DIRECT dependency. See
+    # documentation/bindings-federation-cleanup.md.
+    implements: nutrient_flutter
+    platforms:
+      web:
+        pluginClass: NutrientFlutterWeb
+        fileName: src/nutrient_flutter_web.dart
+
+# For local development until packages are published to pub.dev
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ../nutrient_flutter_platform_interface

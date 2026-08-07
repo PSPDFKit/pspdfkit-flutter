@@ -18,6 +18,9 @@ import androidx.fragment.app.Fragment;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
 import com.pspdfkit.ui.PdfActivity;
+import com.pspdfkit.ui.toolbar.AnnotationToolbar;
+import com.pspdfkit.ui.toolbar.ContextualToolbar;
+import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout;
 
 import java.util.List;
 import java.util.Map;
@@ -28,12 +31,22 @@ import io.flutter.plugin.common.MethodChannel.Result;
  * For communication with the PSPDFKit plugin, we keep a static reference to the current
  * activity.
  */
-public class FlutterPdfActivity extends PdfActivity {
+public class FlutterPdfActivity extends PdfActivity
+        implements ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener {
+
+    /**
+     * Intent extra carrying the stylus button visibility. Passed per intent rather than through a
+     * static so back-to-back present() calls can't race each other.
+     */
+    public static final String EXTRA_SHOW_STYLUS_BUTTON =
+            "com.pspdfkit.flutter.SHOW_STYLUS_BUTTON";
 
     @Nullable private static FlutterPdfActivity currentActivity;
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
     @Nullable private  static List<Map<String,Object>> measurementValueConfigurations;
+
+    private boolean showStylusButton = true;
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
@@ -46,7 +59,30 @@ public class FlutterPdfActivity extends PdfActivity {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        if (getIntent() != null) {
+            showStylusButton = getIntent().getBooleanExtra(EXTRA_SHOW_STYLUS_BUTTON, true);
+        }
+        // The stylus button isn't a PdfActivityConfiguration property, so it has to be applied on
+        // the live AnnotationToolbar each time one is prepared.
+        setOnContextualToolbarLifecycleListener(this);
         bindActivity();
+    }
+
+    @Override
+    public void onPrepareContextualToolbar(@NonNull ContextualToolbar toolbar) {
+        if (toolbar instanceof AnnotationToolbar) {
+            ((AnnotationToolbar) toolbar).setShouldShowStylusButton(showStylusButton);
+        }
+    }
+
+    @Override
+    public void onDisplayContextualToolbar(@NonNull ContextualToolbar toolbar) {
+        // No-op, required by OnContextualToolbarLifecycleListener.
+    }
+
+    @Override
+    public void onRemoveContextualToolbar(@NonNull ContextualToolbar toolbar) {
+        // No-op, required by OnContextualToolbarLifecycleListener.
     }
 
     @Override

@@ -9,9 +9,11 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart' as pigeon;
 import 'package:nutrient_flutter/src/annotations/annotation_utils.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter/src/document/annotation_manager_native.dart';
+import 'package:nutrient_flutter/src/document/save_options_mapper.dart';
 import 'package:nutrient_flutter/src/bookmarks/bookmark_manager_native.dart';
 
 /// A headless PDF document implementation that doesn't require a viewer.
@@ -27,14 +29,14 @@ import 'package:nutrient_flutter/src/bookmarks/bookmark_manager_native.dart';
 /// to release native resources.
 class HeadlessPdfDocumentNative extends PdfDocument
     with AnnotationJsonConverter {
-  final PdfDocumentApi _api;
+  final pigeon.PdfDocumentApi _api;
   AnnotationManagerNative? _annotationManagerInstance;
   BookmarkManagerNative? _bookmarkManagerInstance;
   bool _isClosed = false;
 
   HeadlessPdfDocumentNative({
     required super.documentId,
-    required PdfDocumentApi api,
+    required pigeon.PdfDocumentApi api,
   }) : _api = api;
 
   AnnotationManagerNative get _annotationManager {
@@ -59,10 +61,17 @@ class HeadlessPdfDocumentNative extends PdfDocument
   bool get isHeadless => true;
 
   @override
-  Future<PageInfo> getPageInfo(int pageIndex) {
+  Future<PageInfo> getPageInfo(int pageIndex) async {
     _ensureNotClosed();
     try {
-      return _api.getPageInfo(pageIndex);
+      final dto = await _api.getPageInfo(pageIndex);
+      return PageInfo(
+        pageIndex: dto.pageIndex,
+        width: dto.width,
+        height: dto.height,
+        rotation: dto.rotation,
+        label: dto.label.isEmpty ? null : dto.label,
+      );
     } catch (e) {
       debugPrint('Error getting page info: $e');
       throw Exception('Error getting page info: $e');
@@ -73,7 +82,7 @@ class HeadlessPdfDocumentNative extends PdfDocument
   Future<Uint8List> exportPdf({DocumentSaveOptions? options}) {
     _ensureNotClosed();
     try {
-      return _api.exportPdf(options);
+      return _api.exportPdf(toPigeonSaveOptions(options));
     } catch (e) {
       debugPrint('Error exporting PDF: $e');
       throw Exception('Error exporting PDF: $e');
@@ -187,7 +196,7 @@ class HeadlessPdfDocumentNative extends PdfDocument
   @override
   Future<bool> save({String? outputPath, DocumentSaveOptions? options}) {
     _ensureNotClosed();
-    return _api.save(outputPath, options);
+    return _api.save(outputPath, toPigeonSaveOptions(options));
   }
 
   @override

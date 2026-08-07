@@ -6,16 +6,16 @@
 ///  This notice may not be removed from this file.
 
 import 'package:flutter/services.dart';
-import 'package:nutrient_flutter/src/api/nutrient_api.g.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart' as pigeon;
+import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart';
 
 /// Native implementation of bookmark management for iOS and Android platforms.
 class BookmarkManagerNative {
-  late final BookmarkManagerApi _api;
+  late final pigeon.BookmarkManagerApi _api;
   final String documentId;
 
   BookmarkManagerNative({required this.documentId}) {
-    // Create API instance with channel based on documentId
-    _api = BookmarkManagerApi(
+    _api = pigeon.BookmarkManagerApi(
       binaryMessenger: ServicesBinding.instance.defaultBinaryMessenger,
       messageChannelSuffix: '${documentId}_bookmark_manager',
     );
@@ -24,31 +24,43 @@ class BookmarkManagerNative {
 
   /// Gets all bookmarks in the document.
   Future<List<Bookmark>> getBookmarks() async {
-    return _api.getBookmarks();
+    final dtos = await _api.getBookmarks();
+    return dtos.map(_fromDto).toList();
   }
 
   /// Adds a new bookmark to the document.
   Future<Bookmark> addBookmark(Bookmark bookmark) async {
-    return _api.addBookmark(bookmark);
+    final dto = await _api.addBookmark(_toDto(bookmark));
+    return _fromDto(dto);
   }
 
   /// Removes a bookmark from the document.
-  Future<bool> removeBookmark(Bookmark bookmark) async {
-    return _api.removeBookmark(bookmark);
-  }
+  Future<bool> removeBookmark(Bookmark bookmark) =>
+      _api.removeBookmark(_toDto(bookmark));
 
   /// Updates an existing bookmark.
-  Future<bool> updateBookmark(Bookmark bookmark) async {
-    return _api.updateBookmark(bookmark);
-  }
+  Future<bool> updateBookmark(Bookmark bookmark) =>
+      _api.updateBookmark(_toDto(bookmark));
 
   /// Gets bookmarks for a specific page.
   Future<List<Bookmark>> getBookmarksForPage(int pageIndex) async {
-    return _api.getBookmarksForPage(pageIndex);
+    final dtos = await _api.getBookmarksForPage(pageIndex);
+    return dtos.map(_fromDto).toList();
   }
 
   /// Checks if a bookmark exists for a specific page.
-  Future<bool> hasBookmarkForPage(int pageIndex) async {
-    return _api.hasBookmarkForPage(pageIndex);
-  }
+  Future<bool> hasBookmarkForPage(int pageIndex) =>
+      _api.hasBookmarkForPage(pageIndex);
+
+  static Bookmark _fromDto(pigeon.Bookmark dto) => Bookmark(
+        pdfBookmarkId: dto.pdfBookmarkId,
+        name: dto.name,
+        actionJson: dto.actionJson,
+      );
+
+  static pigeon.Bookmark _toDto(Bookmark b) => pigeon.Bookmark(
+        pdfBookmarkId: b.pdfBookmarkId,
+        name: b.name,
+        actionJson: b.actionJson,
+      );
 }

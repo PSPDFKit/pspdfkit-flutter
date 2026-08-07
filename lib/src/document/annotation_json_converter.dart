@@ -9,8 +9,10 @@
 
 import 'dart:convert';
 
-import '../annotations/annotation_attachment.dart';
-import '../annotations/annotation_models.dart';
+import 'package:nutrient_flutter_platform_interface/src/models/annotations/annotation_models.dart'
+    show Annotation;
+import 'package:nutrient_flutter_platform_interface/src/models/annotations/annotation_attachment.dart'
+    show HasAttachment;
 
 /// A mixin that provides JSON conversion functionality for annotations.
 mixin AnnotationJsonConverter {

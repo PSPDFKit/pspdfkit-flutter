@@ -24,12 +24,13 @@ export 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.io) 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.js_interop) 'src/widgets/pspdfkit_widget_web.dart';
 export 'src/widgets/pspdfkit_widget_controller.dart';
-export 'src/measurements/measurements.dart';
+export 'package:nutrient_flutter_platform_interface/src/measurements/measurements.dart';
 export 'src/processor/processor.dart';
 export 'src/document/pdf_document.dart';
-export 'src/forms/forms.dart';
+export 'package:nutrient_flutter_platform_interface/src/models/forms/forms.dart';
 
 export 'src/annotation_preset_configurations.dart';
+export 'package:nutrient_flutter_platform_interface/src/models/annotations/annotations.dart';
 export 'src/annotations/annotations.dart';
 export 'src/web/models/nutrient_web_events.dart';
 export 'src/ai/ai_assistant_configuration.dart';
@@ -37,8 +38,6 @@ export 'src/ai/ai_assistant_configuration.dart';
 /// Nutrient plugin to load PDF and image documents on both platform iOS and Android.
 @Deprecated('Use [Nutrient] instead.')
 class Pspdfkit {
-  static bool useLegacy = false;
-
   /// Gets the Nutrient framework version.
   static Future<String?> get frameworkVersion =>
       NutrientFlutterPlatform.instance.getFrameworkVersion();
@@ -47,9 +46,7 @@ class Pspdfkit {
     String? androidLicenseKey,
     String? iosLicenseKey,
     String? webLicenseKey,
-    bool? useLegacy,
   }) async {
-    Pspdfkit.useLegacy = useLegacy ?? false;
     await NutrientFlutterPlatform.instance
         .setLicenseKeys(androidLicenseKey, iosLicenseKey, webLicenseKey);
   }

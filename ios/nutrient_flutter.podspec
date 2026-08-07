@@ -5,7 +5,7 @@
 #
 Pod::Spec.new do |s|
   s.name                  = "nutrient_flutter"
-  s.version               = "5.6.1"
+  s.version               = "5.6.0"
   s.homepage              = "https://nutrient.io"
   s.documentation_url     = "https://nutrient.io/guides/flutter"
   s.license               = { type: "Commercial", file: "../LICENSE" }

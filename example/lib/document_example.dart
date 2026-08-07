@@ -33,7 +33,7 @@ class _DocumentExampleState extends State<DocumentExample> {
                 : () {
                     _document
                         ?.exportPdf(
-                            options: DocumentSaveOptions(
+                            options: const DocumentSaveOptions(
                                 flatten: true,
                                 excludeAnnotations: true,
                                 optimize: true))

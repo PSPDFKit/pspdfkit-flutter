@@ -1,0 +1,15 @@
+#   Copyright © 2019-2026 PSPDFKit GmbH. All rights reserved.
+#
+#   THIS SOURCE CODE AND ANY ACCOMPANYING DOCUMENTATION ARE PROTECTED BY INTERNATIONAL COPYRIGHT LAW
+#   AND MAY NOT BE RESOLD OR REDISTRIBUTED. USAGE IS BOUND TO THE PSPDFKIT LICENSE AGREEMENT.
+#   UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
+#   This notice may not be removed from this file.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    # Pigeon owns this file end-to-end; its generated boilerplate
+    # emits a few `unnecessary_cast` warnings we can't fix without
+    # patching the codegen. See lib/src/api/README.md.
+    - lib/src/api/nutrient_api.g.dart

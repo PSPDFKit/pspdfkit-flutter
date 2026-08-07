@@ -59,6 +59,9 @@ class FlutterPdfUiFragment : PdfUiFragment(),
     // Theme colors configuration
     private var themeColors: HashMap<String, Int>? = null
 
+    // Whether to show the stylus button on the annotation creation toolbar
+    private var showStylusButton: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        Check if back button was set;
@@ -321,6 +324,15 @@ class FlutterPdfUiFragment : PdfUiFragment(),
         if (view != null) {
             invalidateMenu()
         }
+    }
+
+    /**
+     * Sets whether to show the stylus button on the annotation creation toolbar.
+     *
+     * @param show True to show the stylus button, false to hide it.
+     */
+    fun setShowStylusButton(show: Boolean) {
+        this.showStylusButton = show
     }
 
     /**
@@ -593,6 +605,7 @@ class FlutterPdfUiFragment : PdfUiFragment(),
                     "Applied toolbar grouping rule to annotation toolbar"
                 )
             }
+            contextualToolbar.setShouldShowStylusButton(showStylusButton)
             applyAnnotationToolbarThemeColors(contextualToolbar)
         }
     }

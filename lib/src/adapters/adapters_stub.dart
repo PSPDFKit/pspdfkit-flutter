@@ -29,6 +29,15 @@ class AndroidAdapter extends NutrientPlatformAdapter {
   Future<void> onPlatformViewCreated(NutrientViewHandle handle) async {}
 
   @override
+  Future<NutrientDocumentInterface> openDocument(
+    String path, {
+    String? password,
+  }) async {
+    throw UnsupportedError(
+        'AndroidAdapter is not supported on the web platform.');
+  }
+
+  @override
   Future<void> dispose() async {}
 }
 
@@ -43,6 +52,14 @@ class IOSAdapter extends NutrientPlatformAdapter {
 
   @override
   Future<void> onPlatformViewCreated(NutrientViewHandle handle) async {}
+
+  @override
+  Future<NutrientDocumentInterface> openDocument(
+    String path, {
+    String? password,
+  }) async {
+    throw UnsupportedError('IOSAdapter is not supported on the web platform.');
+  }
 
   @override
   Future<void> dispose() async {}

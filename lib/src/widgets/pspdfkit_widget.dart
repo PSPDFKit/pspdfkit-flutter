@@ -18,9 +18,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
-import 'package:nutrient_flutter/pspdfkit_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 import 'pspdfkit_flutter_widget_controller_impl.dart';
-import 'pspdfkit_widget_controller_native.dart';
 
 /// A widget that displays a PDF document using Nutrient.
 ///
@@ -162,34 +161,23 @@ class _PspdfkitWidgetState extends State<PspdfkitWidget> {
       binaryMessenger: channel.binaryMessenger,
       messageChannelSuffix: '$id',
     );
-    controller = Pspdfkit.useLegacy
-        ? PspdfkitWidgetControllerNative(
-            channel,
-            onPageChanged: widget.onPageChanged,
-            onPdfDocumentLoadFailed: widget.onPdfDocumentError,
-            onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
-          )
-        : PspdfkitFlutterWidgetControllerImpl(
-            api,
-            onPdfPageChanged: widget.onPageChanged,
-            onPdfDocumentLoadFailed: widget.onPdfDocumentError,
-            onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
-            onPageClicked: widget.onPageClicked,
-            onPdfDocumentSaved: widget.onPdfDocumentSaved,
-            onCustomToolbarItemTappedListener: widget.onCustomToolbarItemTapped,
-          );
+    final widgetController = PspdfkitFlutterWidgetControllerImpl(
+      api,
+      onPdfPageChanged: widget.onPageChanged,
+      onPdfDocumentLoadFailed: widget.onPdfDocumentError,
+      onPdfDocumentLoaded: widget.onPdfDocumentLoaded,
+      onPageClicked: widget.onPageClicked,
+      onPdfDocumentSaved: widget.onPdfDocumentSaved,
+      onCustomToolbarItemTappedListener: widget.onCustomToolbarItemTapped,
+    );
+    controller = widgetController;
     widget.onPspdfkitWidgetCreated?.call(controller);
-    if (controller is PspdfkitFlutterWidgetControllerImpl) {
-      NutrientViewCallbacks.setUp(
-          controller as PspdfkitFlutterWidgetControllerImpl,
-          messageChannelSuffix: 'widget.callbacks.$id');
-      NutrientEventsCallbacks.setUp(
-          controller as PspdfkitFlutterWidgetControllerImpl,
-          messageChannelSuffix: 'events.callbacks.$id');
-      CustomToolbarCallbacks.setUp(
-          controller as PspdfkitFlutterWidgetControllerImpl,
-          messageChannelSuffix: 'customToolbar.callbacks.$id');
-    }
+    NutrientViewCallbacks.setUp(widgetController,
+        messageChannelSuffix: 'widget.callbacks.$id');
+    NutrientEventsCallbacks.setUp(widgetController,
+        messageChannelSuffix: 'events.callbacks.$id');
+    CustomToolbarCallbacks.setUp(widgetController,
+        messageChannelSuffix: 'customToolbar.callbacks.$id');
   }
 
   @override

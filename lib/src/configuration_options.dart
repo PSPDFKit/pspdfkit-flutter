@@ -37,6 +37,7 @@ const String immersiveMode = 'immersiveMode';
 const String appearanceMode = 'appearanceMode';
 const String settingsMenuItems = 'settingsMenuItems';
 const String androidShowSearchAction = 'androidShowSearchAction';
+const String androidShowStylusButton = 'androidShowStylusButton';
 const String androidShowOutlineAction = 'androidShowOutlineAction';
 const String androidShowBookmarksAction = 'androidShowBookmarksAction';
 const String androidEnableDocumentEditor = 'androidEnableDocumentEditor';

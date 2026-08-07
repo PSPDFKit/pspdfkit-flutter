@@ -20,6 +20,9 @@ import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.instant.document.InstantPdfDocument
 import com.pspdfkit.instant.exceptions.InstantException
 import com.pspdfkit.instant.ui.InstantPdfActivity
+import com.pspdfkit.ui.toolbar.AnnotationToolbar
+import com.pspdfkit.ui.toolbar.ContextualToolbar
+import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import io.flutter.plugin.common.MethodChannel
 import io.nutrient.domain.ai.AiAssistant
 import io.nutrient.domain.ai.AiAssistantProvider
@@ -34,7 +37,12 @@ private const val INSTANT_ACTIVITY_VIEW_ID = -1
  * For communication with the PSPDFKit plugin, we keep a static reference to the current
  * activity.
  */
-class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
+class FlutterInstantPdfActivity :
+    InstantPdfActivity(),
+    AiAssistantProvider,
+    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener {
+
+    private var showStylusButton: Boolean = true
 
     override fun getAiAssistant(): AiAssistant? =
         FlutterAiAssistantRegistry.get(INSTANT_ACTIVITY_VIEW_ID)
@@ -54,7 +62,25 @@ class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        showStylusButton = intent.getBooleanExtra(EXTRA_SHOW_STYLUS_BUTTON, true)
+        // The stylus button isn't a PdfActivityConfiguration property, so it has
+        // to be applied on the live AnnotationToolbar each time one is prepared.
+        setOnContextualToolbarLifecycleListener(this)
         bindActivity()
+    }
+
+    override fun onPrepareContextualToolbar(toolbar: ContextualToolbar<*>) {
+        if (toolbar is AnnotationToolbar) {
+            toolbar.setShouldShowStylusButton(showStylusButton)
+        }
+    }
+
+    override fun onDisplayContextualToolbar(toolbar: ContextualToolbar<*>) {
+        // No-op, required by OnContextualToolbarLifecycleListener.
+    }
+
+    override fun onRemoveContextualToolbar(toolbar: ContextualToolbar<*>) {
+        // No-op, required by OnContextualToolbarLifecycleListener.
     }
 
     override fun onPause() {
@@ -191,6 +217,9 @@ class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
         const val EXTRA_AI_JWT = "com.pspdfkit.flutter.AI_JWT"
         const val EXTRA_AI_SESSION_ID = "com.pspdfkit.flutter.AI_SESSION_ID"
         const val EXTRA_INSTANT_SERVER_URL = "com.pspdfkit.flutter.INSTANT_SERVER_URL"
+
+        /** Carries the stylus button visibility, per intent for the same reason. */
+        const val EXTRA_SHOW_STYLUS_BUTTON = "com.pspdfkit.flutter.SHOW_STYLUS_BUTTON"
 
         @JvmStatic
         var currentActivity: FlutterInstantPdfActivity? = null

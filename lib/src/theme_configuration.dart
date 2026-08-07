@@ -8,7 +8,8 @@
 ///
 
 import 'package:flutter/widgets.dart';
-import 'package:nutrient_flutter/src/annotations/annotation_colors.dart';
+import 'package:nutrient_flutter_platform_interface/src/models/annotations/annotation_colors.dart'
+    show ColorToHex;
 
 /// Configuration for customizing the main toolbar appearance.
 ///
