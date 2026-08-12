@@ -2,7 +2,9 @@
 
 Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SDK. View, annotate, and edit PDFs seamlessly across Android, iOS, and Web platforms.
 
-> **Note:** This branch tracks Nutrient Flutter SDK **5.6.x** and is no longer updated for newer releases. Nutrient Flutter SDK 6.0 and later are published to [pub.dev](https://pub.dev/packages/nutrient_flutter), where the native SDK APIs are available through the bindings API. See the [changelog](https://www.nutrient.io/changelog/flutter/) and the [Flutter SDK 6 migration guide](https://www.nutrient.io/guides/flutter/migration-guides/flutter-6-migration-guide/). The `nightly` branch continues to receive updates.
+> **Note:** This branch tracks Nutrient Flutter SDK **5.6.x** and does not track 6.0 and later. Nutrient Flutter SDK 6.0 and later are published to [pub.dev](https://pub.dev/packages/nutrient_flutter) only, where the native SDK APIs are available through the bindings API.
+>
+> 5.6.x continues to receive patch releases here through December 2026, for projects that aren't ready to adopt the bindings API. These patches are published to this repository only — pub.dev serves 5.6.1 and earlier — so depend on this repository directly to receive them. See the [changelog](https://www.nutrient.io/changelog/flutter/) and the [Flutter SDK 6 migration guide](https://www.nutrient.io/guides/flutter/migration-guides/flutter-6-migration-guide/). The `nightly` branch continues to receive updates.
 
 ![Nutrient Flutter SDK](screenshots/flutter.png)
 
@@ -25,12 +27,21 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
 
 ```yaml
 dependencies:
-  nutrient_flutter: ^5.6.0
+  nutrient_flutter:
+    git:
+      url: https://github.com/PSPDFKit/pspdfkit-flutter.git
+      ref: 5.6.1
 ```
 
-The instructions in this README apply to 5.6.x. Pin the dependency as shown so
-that `pub get` does not resolve to 6.0.0, whose setup requirements differ. For
-6.0 and later, follow the [getting started guide](https://www.nutrient.io/guides/flutter/getting-started/).
+The instructions in this README apply to 5.6.x. New 5.6.x patch releases are
+published to this repository only, so depend on it with a Git reference and bump
+`ref` to each new release tag to pick up a patch.
+
+If you don't need patches, `nutrient_flutter: ^5.6.0` also works and resolves
+from pub.dev, which serves 5.6.1 and earlier. Don't use `nutrient_flutter: any`
+— it resolves to 6.0.0, whose setup requirements differ from this README.
+
+For 6.0 and later, follow the [getting started guide](https://www.nutrient.io/guides/flutter/getting-started/).
 
 2. Run the following command:
 
