@@ -65,6 +65,23 @@ class NutrientInstantView extends StatelessWidget {
   /// Called when the platform view has been created and is ready to use.
   final void Function(NutrientViewHandle handle)? onViewCreated;
 
+  /// Called when the Instant document fails to open. Android only.
+  ///
+  /// Without this callback a failed open is only logged natively and the
+  /// widget stays on its loading indicator forever — most visibly offline,
+  /// opening a document the device has never downloaded. The failure is
+  /// terminal for this view: render your own error UI and remount the widget
+  /// (with a new `key`) to retry.
+  ///
+  /// The [DocumentLoadFailure] carries the native error message, exception
+  /// type, and — for Instant failures — the `InstantErrorCode` name, e.g.
+  /// `REQUEST_FAILED` (server unreachable, typically offline) or
+  /// `AUTHENTICATION_FAILED` (rejected or expired JWT).
+  ///
+  /// On iOS and Web this callback is not yet wired up in the 5.6.x line and
+  /// never fires.
+  final void Function(DocumentLoadFailure failure)? onDocumentLoadFailed;
+
   /// Creates a [NutrientInstantView].
   const NutrientInstantView({
     super.key,
@@ -72,6 +89,7 @@ class NutrientInstantView extends StatelessWidget {
     required this.jwt,
     this.configuration,
     this.onViewCreated,
+    this.onDocumentLoadFailed,
   });
 
   @override
@@ -111,6 +129,7 @@ class NutrientInstantView extends StatelessWidget {
         jwt: jwt,
         configuration: resolvedConfig,
         onViewCreated: onViewCreated,
+        onDocumentLoadFailed: onDocumentLoadFailed,
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return NutrientInstantViewIOS(

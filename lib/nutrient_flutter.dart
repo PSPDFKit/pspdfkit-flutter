@@ -67,6 +67,8 @@ export 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_in
         NutrientViewHandle,
         NativeInstanceRegistry,
         NutrientPlatformAdapter,
+        // Document load failure reporting
+        DocumentLoadFailure,
         // Typed view configuration
         NutrientViewConfiguration,
         AndroidViewConfiguration,

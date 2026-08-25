@@ -1,3 +1,7 @@
+## Unreleased
+
+- Adds `NutrientInstantView.onDocumentLoadFailed` (Android), reporting Instant document open failures — for example an offline download of a document the device has never cached, or a rejected JWT — that previously left the view on its loading indicator forever. Requires `nutrient_flutter_platform_interface` and `nutrient_flutter_android` 1.3.0. (J#HYB-1050)
+
 ## 5.6.1 - 27 Jul 2026
 
 - Fixes an Android build failure (`Cannot access 'AiAssistantProvider' which is a supertype of 'MainActivity'`) in apps extending `FlutterAppCompatActivity`. (J#HYB-1017)
