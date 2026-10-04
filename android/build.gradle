@@ -39,6 +39,7 @@ android {
     namespace "io.nutrient.nutrient_flutter"
 
     compileSdk androidCompileSdkVersion
+    compileSdkMinor androidCompileSdkMinorVersion
     
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

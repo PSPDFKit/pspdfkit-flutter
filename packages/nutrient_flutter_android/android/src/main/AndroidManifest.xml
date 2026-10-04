@@ -1,0 +1,20 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nutrient.nutrient_flutter_android">
+
+    <application>
+        <!-- Opt out of the native SDK's automatic initialization. Without this the
+             SDK initializes itself as the *Android* product before Dart `main()`
+             runs, so the later licensed initialize from
+             `NutrientFlutterAndroid.activateLicense` (technology = Flutter) throws
+             `InvalidNutrientLicenseException: Current product is Nutrient Android
+             SDK. License is for product Nutrient Flutter SDK (Android)` and the app
+             silently stays in watermarked trial mode.
+
+             `nutrient_flutter` carries the same flag, but bindings apps never see
+             it: this package declares `implements: nutrient_flutter`, which
+             suppresses that package's native module — and its manifest with it. -->
+        <meta-data
+            android:name="nutrient_automatic_initialize"
+            android:value="false" />
+    </application>
+</manifest>

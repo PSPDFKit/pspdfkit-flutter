@@ -7,7 +7,7 @@
 ///  This notice may not be removed from this file.
 ///
 
-import 'package:nutrient_flutter/src/api/nutrient_api.g.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 
 /// Configuration for annotation contextual menu customization.
 class AnnotationMenuConfiguration {

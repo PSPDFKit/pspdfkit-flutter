@@ -53,9 +53,6 @@ import 'custom_data_example.dart';
 import 'dirty_state_example.dart';
 import 'coordinate_conversion_example.dart';
 
-// Platform Adapter examples
-import 'platform_adapters/platform_adapter_example.dart';
-
 const String _documentPath = 'PDFs/PSPDFKit.pdf';
 const String _measurementsDocs = 'PDFs/Measurements.pdf';
 const String _lockedDocumentPath = 'PDFs/protected.pdf';
@@ -331,22 +328,6 @@ List<NutrientExampleItem> examples(BuildContext context) => [
               'Convert Excel, Word, and PowerPoint documents to PDF format.',
           onTap: () => goTo(const OfficeToPdfExample(), context),
         ),
-    ];
-
-/// Platform Adapter Examples - Native SDK access via JNI (Android), FFI (iOS), and JS interop (Web).
-///
-/// These examples demonstrate how to use platform adapters to access native SDK
-/// functionality directly, enabling advanced customization and event handling.
-List<NutrientExampleItem> platformAdapterExamples(BuildContext context) => [
-      NutrientExampleItem(
-        title: 'Comprehensive Platform Adapter',
-        description:
-            'Complete adapter implementation combining configuration, event listeners, and UI customization using native SDK APIs.',
-        onTap: () async {
-          await extractAsset(context, _documentPath).then((value) =>
-              goTo(PlatformAdapterExample(documentPath: value.path), context));
-        },
-      ),
     ];
 
 List<NutrientExampleItem> globalExamples(BuildContext context) => [

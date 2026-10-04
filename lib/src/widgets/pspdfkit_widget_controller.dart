@@ -46,7 +46,7 @@ abstract class PspdfkitWidgetController {
   Future<dynamic> getAnnotations(int pageIndex, String type);
 
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-  @Deprecated('Use [PdfDocument.getAllUnsavedAnnotations] instead.')
+  @Deprecated('Use [PdfDocument.getUnsavedAnnotations] instead.')
   Future<dynamic> getAllUnsavedAnnotations();
 
   /// Processes annotations of the given type with the provided processing

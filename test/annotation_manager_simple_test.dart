@@ -32,7 +32,7 @@ void main() {
     });
 
     test('Extension methods with Color work correctly', () {
-      final properties = AnnotationProperties(
+      const properties = AnnotationProperties(
         annotationId: 'test-2',
         pageIndex: 1,
       );
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('Complex property updates maintain immutability', () {
-      final original = AnnotationProperties(
+      const original = AnnotationProperties(
         annotationId: 'test-4',
         pageIndex: 0,
         contents: 'Original content',
@@ -146,7 +146,7 @@ void main() {
     });
 
     test('Null handling in properties', () {
-      final properties = AnnotationProperties(
+      const properties = AnnotationProperties(
         annotationId: 'test-5',
         pageIndex: 0,
         // All optional properties are null
@@ -172,7 +172,7 @@ void main() {
     });
 
     test('Edge cases in opacity values', () {
-      final properties = AnnotationProperties(
+      const properties = AnnotationProperties(
         annotationId: 'test-6',
         pageIndex: 0,
       );
@@ -201,7 +201,7 @@ void main() {
     });
 
     test('Note property updates', () {
-      final properties = AnnotationProperties(
+      const properties = AnnotationProperties(
         annotationId: 'test-7',
         pageIndex: 0,
         note: 'Original note',
@@ -213,7 +213,7 @@ void main() {
     });
 
     test('Font size property updates', () {
-      final properties = AnnotationProperties(
+      const properties = AnnotationProperties(
         annotationId: 'test-8',
         pageIndex: 0,
         fontSize: 12.0,

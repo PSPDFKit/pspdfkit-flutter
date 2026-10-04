@@ -12,9 +12,7 @@ package com.pspdfkit.flutter.pspdfkit.toolbar
 import android.content.Context
 import android.util.Log
 import androidx.annotation.IdRes
-import androidx.annotation.IntRange
 import com.pspdfkit.R
-import com.pspdfkit.ui.toolbar.ContextualToolbar
 import com.pspdfkit.ui.toolbar.grouping.presets.MenuItem
 import com.pspdfkit.ui.toolbar.grouping.presets.PresetMenuItemGroupingRule
 
@@ -130,7 +128,7 @@ class FlutterMenuGroupingRule(context: Context, menuItems: List<Any>) :
     }
 
     override fun getGroupPreset(
-        @IntRange(from = ContextualToolbar.MIN_TOOLBAR_CAPACITY.toLong()) capacity: Int,
+        capacity: Int,
         itemsCount: Int
     ): List<MenuItem> {
         return items

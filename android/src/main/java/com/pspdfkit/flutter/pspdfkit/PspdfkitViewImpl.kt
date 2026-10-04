@@ -808,7 +808,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         point: com.pspdfkit.flutter.pspdfkit.api.PointF,
         callback: (Result<com.pspdfkit.flutter.pspdfkit.api.PointF>) -> Unit
     ) {
-        val viewProjection = pdfUiFragment?.pdfFragment?.getViewProjection()
+        val viewProjection = pdfUiFragment?.pdfFragment?.viewProjection
         if (viewProjection == null) {
             callback(Result.failure(NutrientApiError("Coordinate conversion failed", "PDF fragment or view projection not available")))
             return
@@ -823,7 +823,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         point: com.pspdfkit.flutter.pspdfkit.api.PointF,
         callback: (Result<com.pspdfkit.flutter.pspdfkit.api.PointF>) -> Unit
     ) {
-        val viewProjection = pdfUiFragment?.pdfFragment?.getViewProjection()
+        val viewProjection = pdfUiFragment?.pdfFragment?.viewProjection
         if (viewProjection == null) {
             callback(Result.failure(NutrientApiError("Coordinate conversion failed", "PDF fragment or view projection not available")))
             return

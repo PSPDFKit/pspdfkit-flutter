@@ -18,18 +18,14 @@ android {
     ndkVersion = "28.2.13676358"
 
     compileSdk androidCompileSdkVersion
+    compileSdkMinor androidCompileSdkMinorVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     defaultConfig {
-        compileSdk androidCompileSdkVersion
         applicationId "com.pspdfkit.flutter.example"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
@@ -47,6 +43,12 @@ android {
 
     lint {
         disable 'InvalidPackage', 'PSPDFKit-HandledConfigurationChanges-NoSupport'
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 

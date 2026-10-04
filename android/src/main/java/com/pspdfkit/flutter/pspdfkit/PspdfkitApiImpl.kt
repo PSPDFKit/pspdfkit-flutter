@@ -132,6 +132,13 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             // ClassCastException from a raw downcast.
             val configurationMap = configuration?.let { HashMap(it) }
             val configurationAdapter = ConfigurationAdapter(activity, configurationMap)
+            // Measurement value configurations are applied by FlutterPdfActivity once
+            // the document is loaded. This used to be wired up by the legacy plugin
+            // method-call handler; carry it over to the Pigeon path here.
+            @Suppress("UNCHECKED_CAST")
+            FlutterPdfActivity.setMeasurementValueConfigurations(
+                configurationMap?.get("measurementValueConfigurations") as? List<Map<String, Any>>
+            )
             val imageDocument = isImageDocument(documentPath)
             val intent = if (imageDocument) {
                 PdfActivityIntentBuilder.fromImageUri(activity, Uri.parse(documentPath))
@@ -143,6 +150,12 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     .configuration(configurationAdapter.build())
                     .passwords(configurationAdapter.password).build()
             }
+            // Not a PdfActivityConfiguration property: the activity applies it on the live
+            // AnnotationToolbar from this extra (see FlutterPdfActivity).
+            intent.putExtra(
+                FlutterPdfActivity.EXTRA_SHOW_STYLUS_BUTTON,
+                configurationAdapter.showStylusButton
+            )
             activity.startActivity(intent)
             callback(Result.success(true))
         } catch (e: Exception) {
@@ -171,10 +184,22 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             // callers omitted the optional configuration argument.
             val configurationMap = configuration?.let { HashMap(it) }
             val configurationAdapterInstant = ConfigurationAdapter(activity, configurationMap)
+            // Carry over measurement value configurations from the legacy handler:
+            // FlutterInstantPdfActivity applies them once the document is loaded.
+            @Suppress("UNCHECKED_CAST")
+            FlutterInstantPdfActivity.setMeasurementValueConfigurations(
+                configurationMap?.get("measurementValueConfigurations") as? List<Map<String, Any>>
+            )
             val intentInstant = InstantPdfActivityIntentBuilder.fromInstantDocument(
                 activity, serverUrl, jwt
             ).activityClass(FlutterInstantPdfActivity::class.java)
                 .configuration(configurationAdapterInstant.build()).build()
+            // Not a PdfActivityConfiguration property: the activity applies it on the live
+            // AnnotationToolbar from this extra (see FlutterInstantPdfActivity).
+            intentInstant.putExtra(
+                FlutterInstantPdfActivity.EXTRA_SHOW_STYLUS_BUTTON,
+                configurationAdapterInstant.showStylusButton
+            )
             // Attach AI Assistant config + Instant server URL via Intent
             // extras so each activity instance owns its own configuration.
             // Previously these were shared statics that raced when callers
@@ -974,7 +999,8 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         callback: (Result<Boolean?>) -> Unit
     ) {
         try {
-            // Store the configuration globally for use with PspdfkitPluginMethodCallHandler (deprecated)
+            // Store the configuration globally so the PDF view's AnnotationMenuHandler
+            // can pick it up when a fragment is created (see FlutterPdfUiFragment).
             GlobalAnnotationMenuConfiguration.setConfiguration(configuration)
             
             callback(Result.success(true))

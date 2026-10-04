@@ -125,9 +125,33 @@ class AdapterBridge {
       case 'onViewControllerReady':
         await _handleIOSViewControllerReady(call.arguments);
         break;
+      case 'onDocumentLoaded':
+        await _handleDocumentLoaded();
+        break;
       default:
         // Let other handlers process unknown methods
         break;
+    }
+  }
+
+  /// When the document finishes loading, register it in the instance
+  /// registry so the adapter's [NutrientDocumentInterface] (and its managers)
+  /// can access it via `nativePdfDocument` / JNI bindings. Without this,
+  /// calls like `controller.document.annotations.getAnnotationsJson(...)`
+  /// fail with `pdfDocument not registered in handle`.
+  Future<void> _handleDocumentLoaded() async {
+    if (!Platform.isAndroid) return;
+    final fragment = NativeInstanceRegistry.get(_viewId, 'pdfFragment');
+    if (fragment is PdfFragment) {
+      final pdfDocument = fragment.document;
+      if (pdfDocument != null) {
+        NativeInstanceRegistry.register(
+          _viewId,
+          'pdfDocument',
+          pdfDocument,
+        );
+        debugPrint('[AdapterBridge] pdfDocument registered after load');
+      }
     }
   }
 
@@ -152,6 +176,21 @@ class AdapterBridge {
       if (pdfFragment != null) {
         // Register in the native instance registry
         NativeInstanceRegistry.register(_viewId, 'pdfFragment', pdfFragment);
+
+        // Register the document if it's already loaded — needed so the
+        // adapter's NutrientDocumentInterface (and its managers) can access
+        // the native PdfDocument via `nativePdfDocument` / JNI bindings.
+        // The fragment may not have a document yet if onPdfFragmentReady
+        // fires before onDocumentLoaded, in which case this is a no-op and
+        // the adapter's document listener can re-register later.
+        final pdfDocument = pdfFragment.document;
+        if (pdfDocument != null) {
+          NativeInstanceRegistry.register(
+            _viewId,
+            'pdfDocument',
+            pdfDocument,
+          );
+        }
 
         // Notify the adapter with the actual fragment
         await androidAdapter.onPdfFragmentReady(pdfFragment);

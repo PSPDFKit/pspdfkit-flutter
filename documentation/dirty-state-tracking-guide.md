@@ -4,14 +4,17 @@ Track unsaved changes in PDF documents to prompt users before discarding modific
 
 ## Quick Start
 
-Use the cross-platform `hasUnsavedChanges()` method for simple dirty state checking:
+Use the cross-platform `hasUnsavedChanges()` method for simple dirty state
+checking. It is available on both API surfaces — the legacy `PdfDocument` and
+the bindings path's `controller.document`:
 
 ```dart
-final hasChanges = await document.hasUnsavedChanges();
+// Bindings path (NutrientDocumentView):
+final hasChanges = await controller.document.hasUnsavedChanges();
 if (hasChanges) {
   final shouldSave = await showSaveDialog();
   if (shouldSave) {
-    await document.save();
+    await controller.document.save();
   }
 }
 ```
@@ -24,9 +27,13 @@ if (hasChanges) {
 
 **Platform behavior:**
 
-- **iOS**: Checks `document.hasDirtyAnnotations`
-- **Android**: Checks annotation, form, and bookmark providers
-- **Web**: Checks `instance.hasUnsavedChanges()`
+- **iOS**: Checks `document.hasDirtyAnnotations` — covers annotation changes;
+  core-level form and bookmark changes may not be reflected (the iOS SDK has
+  no public document-level check for those). For exact tracking, combine with
+  event-based tracking on `controller.events` (see the manual-save example).
+- **Android**: Checks the annotation, form, and bookmark providers.
+- **Web**: Checks `instance.hasUnsavedChanges()` — annotations, forms,
+  bookmarks, and comments.
 
 ## Platform-Specific APIs
 

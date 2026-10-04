@@ -1,13 +1,13 @@
 name: nutrient_flutter
 description: A Flutter plugin providing a feature-rich PDF viewing and editing experience to your users with the powerful Nutrient PDF SDK.
-version: 5.6.1
+version: 6.0.0
 homepage: https://nutrient.io/
 repository: https://github.com/PSPDFKit/pspdfkit-flutter
 issue_tracker: https://support.nutrient.io/hc/en-us/requests/new
 documentation: https://nutrient.io/guides/flutter/
 environment:
   sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.41.1'
+  flutter: '>=3.44.6'
 
 dependencies:
   flutter:
@@ -17,10 +17,10 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   # Platform interface and adapters for native SDK access
-  nutrient_flutter_platform_interface: ^1.2.0
-  nutrient_flutter_android: ^1.2.0
-  nutrient_flutter_ios: ^1.2.0
-  nutrient_flutter_web: ^1.1.0
+  nutrient_flutter_platform_interface: ^2.0.0
+  nutrient_flutter_android: ^2.0.0
+  nutrient_flutter_ios: ^2.0.0
+  nutrient_flutter_web: ^2.0.0
 
 
 # For information on the generic Dart part of this file, see the
@@ -46,3 +46,18 @@ dev_dependencies:
 
 false_secrets:
   - example/lib/utils/jwt_util.dart
+
+# Local development only: resolve the federated packages from the workspace so
+# this package builds and tests against the in-tree sources rather than the
+# published releases. The release process strips these before publishing, since
+# path dependencies cannot be published.
+dependency_overrides:
+  nutrient_flutter_platform_interface:
+    path: ./packages/nutrient_flutter_platform_interface
+  nutrient_flutter_android:
+    path: ./packages/nutrient_flutter_android
+  nutrient_flutter_ios:
+    path: ./packages/nutrient_flutter_ios
+  nutrient_flutter_web:
+    path: ./packages/nutrient_flutter_web
+

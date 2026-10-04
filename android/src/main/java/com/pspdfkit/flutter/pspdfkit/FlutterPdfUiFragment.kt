@@ -10,37 +10,35 @@
 package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
+import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.pspdfkit.compose.toolbar.adapter.ToolbarSubscription
+import com.pspdfkit.compose.toolbar.state.ContextualToolbarKind
+import com.pspdfkit.compose.toolbar.state.ContextualToolbarState
+import com.pspdfkit.compose.toolbar.state.ToolbarIcon
+import com.pspdfkit.compose.toolbar.state.ToolbarItem
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationMenuHandler
 import com.pspdfkit.flutter.pspdfkit.api.CustomToolbarCallbacks
+import com.pspdfkit.flutter.pspdfkit.toolbar.StylusButtonVisibility
 import com.pspdfkit.flutter.pspdfkit.util.DynamicColorResourcesHelper
 import com.pspdfkit.R
 import com.pspdfkit.listeners.OnPreparePopupToolbarListener
+import com.pspdfkit.jetpack.compose.toolbar.nutrientToolbarCoordinator
+import com.pspdfkit.jetpack.compose.toolbar.setMenuItemGroupingRule
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.ui.toolbar.AnnotationToolbar
-import com.pspdfkit.ui.toolbar.ContextualToolbar
-import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import com.pspdfkit.ui.toolbar.grouping.MenuItemGroupingRule
 import com.pspdfkit.ui.toolbar.popup.AnnotationPopupToolbar
 
-class FlutterPdfUiFragment : PdfUiFragment(),
-    ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener,
-    OnPreparePopupToolbarListener {
+class FlutterPdfUiFragment : PdfUiFragment(), OnPreparePopupToolbarListener {
 
     // Maps identifier strings to menu item IDs to track custom toolbar items
     private val customToolbarItemIds = HashMap<String, Int>()
@@ -58,6 +56,16 @@ class FlutterPdfUiFragment : PdfUiFragment(),
 
     // Theme colors configuration
     private var themeColors: HashMap<String, Int>? = null
+
+    // Whether to show the stylus button on the annotation creation toolbar
+    private var showStylusButton: Boolean = true
+
+    // Watches the contextual toolbars: hides the stylus toggle, and clears the selected
+    // annotation when a contextual toolbar goes away.
+    private var contextualToolbarSubscription: ToolbarSubscription? = null
+
+    // The kind of contextual toolbar shown at the last change, to spot one going away.
+    private var shownContextualToolbarKind: ContextualToolbarKind? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,9 +128,18 @@ class FlutterPdfUiFragment : PdfUiFragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setOnContextualToolbarLifecycleListener(this)
+        applyToolbarGroupingRule()
+        installCustomToolbarItems()
+        contextualToolbarSubscription = nutrientToolbarCoordinator()
+            .addContextualToolbarChangeListener(::onContextualToolbarChanged)
         setupKeyboardInsetListener()
         applyImmediateThemeColors()
+    }
+
+    override fun onDestroyView() {
+        contextualToolbarSubscription?.close()
+        contextualToolbarSubscription = null
+        super.onDestroyView()
     }
 
     /**
@@ -166,33 +183,8 @@ class FlutterPdfUiFragment : PdfUiFragment(),
             // These calls handle the root view and PdfFragment's own background API.
             colors["backgroundColor"]?.let { color ->
                 view?.setBackgroundColor(color)
-                pdfFragment?.setBackgroundColor(color)
+                pdfFragment?.backgroundColor = color
                 Log.d("FlutterPdfUiFragment", "Applied background color")
-            }
-
-            // Apply toolbar colors
-            val toolbar = view?.findViewById<Toolbar>(R.id.pspdf__toolbar_main)
-            if (toolbar != null) {
-                colors["toolbar.backgroundColor"]?.let { color ->
-                    toolbar.setBackgroundColor(color)
-                    Log.d("FlutterPdfUiFragment", "Applied toolbar background color")
-                }
-
-                colors["toolbar.iconColor"]?.let { color ->
-                    toolbar.navigationIcon?.setTint(color)
-                    toolbar.overflowIcon?.setTint(color)
-                    toolbar.menu?.let { menu ->
-                        for (i in 0 until menu.size()) {
-                            menu.getItem(i).icon?.setTint(color)
-                        }
-                    }
-                    Log.d("FlutterPdfUiFragment", "Applied toolbar icon color")
-                }
-
-                colors["toolbar.titleColor"]?.let { color ->
-                    toolbar.setTitleTextColor(color)
-                    Log.d("FlutterPdfUiFragment", "Applied toolbar title color")
-                }
             }
 
             // Apply status bar color
@@ -204,7 +196,6 @@ class FlutterPdfUiFragment : PdfUiFragment(),
             // Apply thumbnail bar background
             colors["thumbnailBar.backgroundColor"]?.let { color ->
                 view?.findViewById<View>(R.id.pspdf__activity_thumbnail_bar)?.setBackgroundColor(color)
-                view?.findViewById<View>(R.id.pspdf__static_thumbnail_bar)?.setBackgroundColor(color)
                 Log.d("FlutterPdfUiFragment", "Applied thumbnail bar background color")
             }
 
@@ -307,7 +298,21 @@ class FlutterPdfUiFragment : PdfUiFragment(),
      */
     fun setToolbarGroupingRule(rule: MenuItemGroupingRule) {
         this.toolbarGroupingRule = rule
+        applyToolbarGroupingRule()
         Log.d("FlutterPdfUiFragment", "Toolbar grouping rule configured")
+    }
+
+    /**
+     * Registers the annotation creation toolbar's grouping rule with the toolbar coordinator, the
+     * Compose replacement for setting it on the View `AnnotationToolbar`.
+     */
+    private fun applyToolbarGroupingRule() {
+        if (view == null) return
+        nutrientToolbarCoordinator().setMenuItemGroupingRule(
+            requireContext(),
+            ContextualToolbarKind.Annotation,
+            toolbarGroupingRule,
+        )
     }
 
     /**
@@ -317,9 +322,22 @@ class FlutterPdfUiFragment : PdfUiFragment(),
      */
     fun setHideAnnotationCreationButton(hide: Boolean) {
         this.hideAnnotationCreationButton = hide
-        // Invalidate menu to trigger onGenerateMenuItemIds (only if view is ready)
+        // Re-run the toolbar items provider (only if view is ready)
         if (view != null) {
-            invalidateMenu()
+            invalidateToolbarItems()
+        }
+    }
+
+    /**
+     * Sets whether to show the stylus button on the annotation creation toolbar.
+     *
+     * @param show True to show the stylus button, false to hide it.
+     */
+    fun setShowStylusButton(show: Boolean) {
+        this.showStylusButton = show
+        if (!show && view != null) {
+            val coordinator = nutrientToolbarCoordinator()
+            StylusButtonVisibility.removeFrom(coordinator, coordinator.contextualToolbar.value)
         }
     }
 
@@ -331,6 +349,7 @@ class FlutterPdfUiFragment : PdfUiFragment(),
     fun setThemeColors(colors: HashMap<String, Int>?) {
         this.themeColors = colors
         Log.d("FlutterPdfUiFragment", "Theme colors configured with ${colors?.size ?: 0} colors")
+        warnAboutUnsupportedToolbarColors(colors)
         // If the view is already created, apply immediately
         if (view != null) {
             applyImmediateThemeColors()
@@ -340,16 +359,13 @@ class FlutterPdfUiFragment : PdfUiFragment(),
     // Store titles for custom toolbar items
     private val customToolbarItemTitles = HashMap<String, String>()
 
-    // Store drawables for custom toolbar items
-    private val customToolbarItemDrawables = HashMap<String, Drawable?>()
+    // Store icons for custom toolbar items
+    private val customToolbarItemIcons = HashMap<String, ToolbarIcon>()
 
     private fun getCustomToolbarItemTitle(identifier: String): String {
         return customToolbarItemTitles[identifier] ?: ""
     }
 
-    private fun getCustomToolbarItemDrawable(identifier: String): Drawable? {
-        return customToolbarItemDrawables[identifier]
-    }
 
     override fun onResume() {
         super.onResume()
@@ -374,14 +390,14 @@ class FlutterPdfUiFragment : PdfUiFragment(),
             val iconName = itemConfig["iconName"] as? String
             val iconColorHex = itemConfig["iconColor"] as? String
 
-            // Extract drawable from the icon name
+            // Resolve the icon from the icon name
             if (isAndroidBackButton(identifier)) {
-                val backButtonIcon = extractDrawableFromName(
+                val backButtonIcon = toolbarIconFromName(
                     activity.applicationContext,
                     iconName,
                     iconColorHex,
                 )
-                setAndroidBackButton(identifier, backButtonIcon)
+                setAndroidBackButton(identifier, title, backButtonIcon)
                 continue
             }
 
@@ -392,16 +408,16 @@ class FlutterPdfUiFragment : PdfUiFragment(),
             val itemId = identifier.hashCode()
             customToolbarItemIds[identifier] = itemId
 
-            // Load drawable if available
+            // Resolve the icon if available
             if (iconName != null) {
                 val fragmentContext = activity.applicationContext ?: continue
-                val drawable = extractDrawableFromName(fragmentContext, iconName, iconColorHex)
-                customToolbarItemDrawables[identifier] = drawable
+                customToolbarItemIcons[identifier] =
+                    toolbarIconFromName(fragmentContext, iconName, iconColorHex)
             }
         }
-        // Update the menu using v11 API (only if view is ready)
+        // Re-run the toolbar items provider (only if view is ready)
         if (view != null) {
-            invalidateMenu()
+            invalidateToolbarItems()
         }
     }
 
@@ -432,111 +448,77 @@ class FlutterPdfUiFragment : PdfUiFragment(),
         }
     }
 
-    private fun extractDrawableFromName(
+    /**
+     * Resolves a custom item's icon from a drawable or mipmap resource name in the app, tinted
+     * with [iconColorHex] when given. Falls back to a text-only item when there is no such
+     * resource.
+     */
+    private fun toolbarIconFromName(
         fragmentContext: Context,
         iconName: String?,
         iconColorHex: String?
-    ): Drawable? {
-
-        var drawable: Drawable? = null
-
-        // Check if the icon name is null
+    ): ToolbarIcon {
         if (iconName == null) {
             Log.w("FlutterPdfUiFragment", "Icon name is null")
-            return null
+            return ToolbarIcon.None
         }
 
-        try {
-            // Try to load from drawable resources (user's custom icons)
-            var resourceId = getResourceId(fragmentContext, iconName, "drawable")
+        // Try the drawable resources (the app's custom icons), then mipmap (app icons).
+        var resourceId = getResourceId(fragmentContext, iconName, "drawable")
+        if (resourceId == 0) {
+            resourceId = getResourceId(fragmentContext, iconName, "mipmap")
+        }
+        if (resourceId == 0) {
+            Log.w("FlutterPdfUiFragment", "Could not find icon resource for: $iconName")
+            return ToolbarIcon.None
+        }
 
-            // If not found in drawable, try to load from mipmap (for app icons)
-            if (resourceId == 0) {
-                resourceId = getResourceId(fragmentContext, iconName, "mipmap")
+        val tint = iconColorHex?.let { hex ->
+            try {
+                Color(hex.toColorInt())
+            } catch (e: IllegalArgumentException) {
+                Log.w("FlutterPdfUiFragment", "Invalid color format for icon $iconName: $hex", e)
+                null
             }
+        }
+        return ToolbarIcon.Resource(resourceId, tint)
+    }
 
-            // We no longer use predefined icon mappings
-            // Users must add their own drawable resources
 
-            if (resourceId != 0) {
-                drawable = ContextCompat.getDrawable(fragmentContext, resourceId)?.mutate()
-                Log.d("FlutterPdfUiFragment", "Successfully loaded icon: $iconName")
+    /**
+     * Publishes the custom items to the main toolbar and routes their taps, and drops the
+     * annotation creation button when it is hidden.
+     *
+     * The View menu hooks this used to rely on (`onGenerateMenuItemIds` plus a toolbar-wide
+     * `setOnMenuItemClickListener`) are gone with the Compose toolbars. The provider runs on
+     * every toolbar rebuild and reads the current items, so it only has to be installed once.
+     */
+    private fun installCustomToolbarItems() {
+        setToolbarItemsProvider { defaultItems ->
+            val items = if (hideAnnotationCreationButton) {
+                defaultItems.filterNot { it.id == R.id.pspdf__menu_option_edit_annotations }
             } else {
-                Log.w("FlutterPdfUiFragment", "Could not find icon resource for: $iconName")
+                defaultItems
             }
-
-            // Apply tint if specified
-            if (drawable != null && iconColorHex != null) {
-                try {
-                    val color = iconColorHex.toColorInt()
-                    DrawableCompat.setTint(drawable, color)
-                    Log.d(
-                        "FlutterPdfUiFragment",
-                        "Applied tint color $iconColorHex to icon: $iconName"
-                    )
-                } catch (e: Exception) {
-                    Log.w(
-                        "FlutterPdfUiFragment",
-                        "Invalid color format for icon $iconName: $iconColorHex",
-                        e
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("FlutterPdfUiFragment", "Error loading icon: $iconName", e)
-        }
-        return drawable
-    }
-
-
-    /**
-     * v11 menu hook: controls which menu item IDs appear in the toolbar.
-     * Add custom toolbar item IDs and remove hidden defaults here.
-     */
-    override fun onGenerateMenuItemIds(menuItems: MutableList<Int>): List<Int> {
-        // Remove annotation creation button if configured
-        if (hideAnnotationCreationButton) {
-            menuItems.remove(R.id.pspdf__menu_option_edit_annotations)
-        }
-
-        // Add custom toolbar item IDs
-        for ((_, itemId) in customToolbarItemIds) {
-            if (!menuItems.contains(itemId)) {
-                menuItems.add(itemId)
+            items + customToolbarItemIds.map { (identifier, itemId) ->
+                val icon = customToolbarItemIcons[identifier] ?: ToolbarIcon.None
+                ToolbarItem.Button(
+                    actionId = "$CUSTOM_ACTION_PREFIX$identifier",
+                    id = itemId,
+                    contentDescription = getCustomToolbarItemTitle(identifier),
+                    icon = icon,
+                    // Without an icon the button would render empty, so show its title instead.
+                    overflowBehavior = if (icon == ToolbarIcon.None) {
+                        ToolbarItem.OverflowBehavior.AlwaysAsText
+                    } else {
+                        ToolbarItem.OverflowBehavior.AlwaysShow
+                    },
+                )
             }
         }
-
-        // Schedule custom item configuration after the toolbar menu is built
-        if (customToolbarItemIds.isNotEmpty()) {
-            view?.post { configureCustomMenuItems() }
-        }
-
-        return menuItems
-    }
-
-    /**
-     * Configures custom toolbar items directly on the toolbar's menu.
-     * Called after the SDK builds the menu from onGenerateMenuItemIds.
-     */
-    private fun configureCustomMenuItems() {
-        val toolbar = view?.findViewById<Toolbar>(R.id.pspdf__toolbar_main) ?: return
-        val menu = toolbar.menu ?: return
-
-        for ((identifier, itemId) in customToolbarItemIds) {
-            var menuItem = menu.findItem(itemId)
-            if (menuItem == null) {
-                // Item not yet in menu - add it directly
-                menuItem = menu.add(Menu.NONE, itemId, Menu.NONE, getCustomToolbarItemTitle(identifier))
-            }
-            menuItem.title = getCustomToolbarItemTitle(identifier)
-            menuItem.icon = getCustomToolbarItemDrawable(identifier)
-            menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
-
-        // Set up click listener for custom items
-        toolbar.setOnMenuItemClickListener { menuItem ->
-            val matchingIdentifier =
-                customToolbarItemIds.entries.find { it.value == menuItem.itemId }?.key
+        setOnToolbarItemClickListener { itemId ->
+            // Returning false leaves every id we did not add to the SDK's own handling.
+            val matchingIdentifier = customToolbarItemIds.entries.find { it.value == itemId }?.key
             if (matchingIdentifier != null) {
                 customToolbarCallbacks?.onCustomToolbarItemTapped(matchingIdentifier) {}
                 true
@@ -563,45 +545,33 @@ class FlutterPdfUiFragment : PdfUiFragment(),
      * Sets the Android back button in the toolbar with the specified identifier and icon.
      *
      * @param identifier The identifier for the back button
-     * @param icon The drawable icon for the back button
+     * @param title The accessibility label of the back button
+     * @param icon The icon for the back button
      */
-    private fun setAndroidBackButton(identifier: String, icon: Drawable?) {
-        val toolbar = view?.findViewById<Toolbar>(R.id.pspdf__toolbar_main)
-        toolbar?.navigationIcon = icon
-        toolbar?.setNavigationOnClickListener {
-            // Handle Android back button action
-            customToolbarCallbacks?.onCustomToolbarItemTapped(identifier) {
-                // Handle the back button action here
-            }
+    private fun setAndroidBackButton(identifier: String, title: String, icon: ToolbarIcon) {
+        setToolbarNavigationIcon(icon, title)
+        setOnToolbarNavigationClickListener {
+            customToolbarCallbacks?.onCustomToolbarItemTapped(identifier) {}
         }
     }
 
 
-    // Contextual toolbar lifecycle methods for annotation menu customization
-
-    override fun onPrepareContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        // As of Nutrient Android 11.5 the annotation creation + editing toolbars were
-        // merged into a single AnnotationToolbar (a ContextualToolbar). Annotation
-        // editing customization now happens on the AnnotationPopupToolbar — see
-        // onPrepareAnnotationPopupToolbar below.
-        if (contextualToolbar is AnnotationToolbar) {
-            // Handle annotation toolbar grouping (existing functionality)
-            if (toolbarGroupingRule != null) {
-                contextualToolbar.setMenuItemGroupingRule(toolbarGroupingRule)
-                Log.d(
-                    "FlutterPdfUiFragment",
-                    "Applied toolbar grouping rule to annotation toolbar"
-                )
-            }
-            applyAnnotationToolbarThemeColors(contextualToolbar)
+    /**
+     * Reacts to the contextual toolbars the coordinator shows: takes the stylus toggle off the
+     * annotation toolbar when it is hidden, and clears the selected annotation once a contextual
+     * toolbar goes away, which the View toolbars reported through `onRemoveContextualToolbar`.
+     * One bar can replace another without a `null` state in between, so any change of kind
+     * counts as the previous bar going away.
+     */
+    private fun onContextualToolbarChanged(state: ContextualToolbarState?) {
+        if (!showStylusButton) {
+            StylusButtonVisibility.removeFrom(nutrientToolbarCoordinator(), state)
         }
-    }
-
-    override fun onDisplayContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        // Apply annotation toolbar theme colors when toolbar is displayed
-        if (contextualToolbar is AnnotationToolbar) {
-            applyAnnotationToolbarThemeColors(contextualToolbar)
+        val kind = state?.kind
+        if (shownContextualToolbarKind != null && kind != shownContextualToolbarKind) {
+            getEffectiveAnnotationMenuHandler()?.clearSelectedAnnotation()
         }
+        shownContextualToolbarKind = kind
     }
 
     /**
@@ -630,68 +600,33 @@ class FlutterPdfUiFragment : PdfUiFragment(),
     }
 
     /**
-     * Applies annotation toolbar theme colors to a contextual toolbar.
-     * This includes background color and icon colors for annotation toolbars.
+     * Logs the theme colors this view can no longer apply. The Compose toolbars take their colors
+     * from the theme (`pspdf__mainToolbarStyle`, `pspdf__contextualToolbarStyle`). The contextual
+     * toolbars have no runtime override. The main toolbar's, `ToolbarCoordinator.setMainToolbarColors`,
+     * needs a complete `UiColorScheme`, whose defaults can only be built inside a composition.
      */
-    private fun applyAnnotationToolbarThemeColors(contextualToolbar: ContextualToolbar<*>) {
-        val colors = themeColors ?: return
-
-        try {
-            Log.d("FlutterPdfUiFragment", "Applying annotation toolbar colors to ${contextualToolbar.javaClass.simpleName}")
-
-            // Apply annotation toolbar background color
-            // ContextualToolbar is a ViewGroup — setBackgroundColor works directly on the view
-            colors["annotationToolbar.backgroundColor"]?.let { color ->
-                (contextualToolbar as? View)?.setBackgroundColor(color)
-                Log.d("FlutterPdfUiFragment", "Applied annotation toolbar background color")
-            }
-
-            // Apply icon color tint to toolbar menu items
-            // ContextualToolbar has getMenuItems() to access items
-            colors["annotationToolbar.iconColor"]?.let { color ->
-                try {
-                    val menuItems = contextualToolbar.menuItems
-                    if (menuItems != null) {
-                        for (item in menuItems) {
-                            item.icon?.setTint(color)
-                        }
-                        Log.d("FlutterPdfUiFragment", "Applied annotation toolbar icon color to ${menuItems.size} items")
-                    }
-                } catch (e: Exception) {
-                    Log.w("FlutterPdfUiFragment", "Could not tint annotation toolbar icons via menuItems", e)
-                }
-                // Also traverse child views to tint any ImageViews
-                try {
-                    val viewGroup = contextualToolbar as? ViewGroup
-                    if (viewGroup != null) {
-                        tintAllIcons(viewGroup, color)
-                    }
-                } catch (e: Exception) {
-                    Log.w("FlutterPdfUiFragment", "Could not traverse annotation toolbar children", e)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("FlutterPdfUiFragment", "Error applying annotation toolbar theme colors", e)
-        }
+    private fun warnAboutUnsupportedToolbarColors(colors: Map<String, Int>?) {
+        val unsupported = colors?.keys?.filter { it in UNSUPPORTED_TOOLBAR_COLORS }.orEmpty()
+        if (unsupported.isEmpty()) return
+        Log.w(
+            "FlutterPdfUiFragment",
+            "Ignoring ${unsupported.sorted().joinToString()}: toolbar colors aren't applied at " +
+                "runtime on Android yet. Theme the toolbars with pspdf__mainToolbarStyle and " +
+                "pspdf__contextualToolbarStyle instead."
+        )
     }
 
-    /**
-     * Recursively tints all ImageView drawables within a ViewGroup.
-     */
-    private fun tintAllIcons(viewGroup: ViewGroup, color: Int) {
-        for (i in 0 until viewGroup.childCount) {
-            val child = viewGroup.getChildAt(i)
-            if (child is android.widget.ImageView) {
-                child.drawable?.setTint(color)
-                child.imageTintList = android.content.res.ColorStateList.valueOf(color)
-            } else if (child is ViewGroup) {
-                tintAllIcons(child, color)
-            }
-        }
-    }
+    private companion object {
+        /** Prefix for the action ids of custom items, so they can't collide with the SDK's. */
+        private const val CUSTOM_ACTION_PREFIX = "nutrient_flutter_custom_"
 
-    override fun onRemoveContextualToolbar(contextualToolbar: ContextualToolbar<*>) {
-        // Clear selected annotation when toolbar is removed
-        getEffectiveAnnotationMenuHandler()?.clearSelectedAnnotation()
+        /** Theme color keys for the toolbars, which have no runtime color API on Android. */
+        private val UNSUPPORTED_TOOLBAR_COLORS = setOf(
+            "toolbar.backgroundColor",
+            "toolbar.iconColor",
+            "toolbar.titleColor",
+            "annotationToolbar.backgroundColor",
+            "annotationToolbar.iconColor",
+        )
     }
 }

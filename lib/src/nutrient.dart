@@ -15,6 +15,15 @@ import 'dart:io';
 import 'package:nutrient_flutter/src/nutrient_flutter_platform_interface.dart';
 
 /// Nutrient plugin to load PDF and image documents on both platform iOS and Android.
+///
+/// Deprecated: this is the legacy (pre-bindings) entry point. Use the
+/// bindings-based `Nutrient` from `package:nutrient_flutter/bindings.dart`
+/// instead — it shares this name but lives in a separate library, so switch the
+/// import (or alias one with `as legacy` / `hide Nutrient` during migration).
+@Deprecated(
+  'Use the bindings-based Nutrient from package:nutrient_flutter/bindings.dart '
+  'instead. This legacy class will be removed in a future release.',
+)
 class Nutrient {
   /// Gets the Nutrient plugin version.
   static Future<String?> get frameworkVersion =>
