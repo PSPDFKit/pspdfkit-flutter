@@ -1,0 +1,12 @@
+# Exclude the machine-generated jnigen bindings from analysis.
+#
+# `nutrient_android_sdk_bindings.dart` is ~375k lines of generated code. The
+# analyzer (and the IDE language server, which shares this config) would
+# otherwise index and diagnose the whole file on every context — slow, and a
+# memory hog in the monorepo. Excluding it keeps everyday analysis/indexing
+# fast; consumers still resolve its symbols on demand, and it can still be
+# verified after regeneration with an explicit path:
+#   dart analyze lib/src/bindings/nutrient_android_sdk_bindings.dart
+analyzer:
+  exclude:
+    - lib/src/bindings/nutrient_android_sdk_bindings.dart

@@ -14,8 +14,10 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import com.pspdfkit.ai.createAiAssistantForInstant
+import com.pspdfkit.compose.toolbar.adapter.ToolbarSubscription
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.ai.FlutterAiAssistantRegistry
+import com.pspdfkit.flutter.pspdfkit.toolbar.StylusButtonVisibility
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper
 import com.pspdfkit.instant.document.InstantPdfDocument
 import com.pspdfkit.instant.exceptions.InstantException
@@ -34,7 +36,14 @@ private const val INSTANT_ACTIVITY_VIEW_ID = -1
  * For communication with the PSPDFKit plugin, we keep a static reference to the current
  * activity.
  */
-class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
+class FlutterInstantPdfActivity :
+    InstantPdfActivity(),
+    AiAssistantProvider {
+
+    private var showStylusButton: Boolean = true
+
+    /** Keeps the stylus toggle off the annotation toolbar while the button is hidden. */
+    private var stylusButtonSubscription: ToolbarSubscription? = null
 
     override fun getAiAssistant(): AiAssistant? =
         FlutterAiAssistantRegistry.get(INSTANT_ACTIVITY_VIEW_ID)
@@ -54,6 +63,12 @@ class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        showStylusButton = intent.getBooleanExtra(EXTRA_SHOW_STYLUS_BUTTON, true)
+        // The stylus button isn't a PdfActivityConfiguration property, so it has
+        // to be taken off the live annotation toolbar each time one is shown.
+        if (!showStylusButton) {
+            stylusButtonSubscription = StylusButtonVisibility.hideIn(this)
+        }
         bindActivity()
     }
 
@@ -64,6 +79,8 @@ class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
     }
 
     override fun onDestroy() {
+        stylusButtonSubscription?.close()
+        stylusButtonSubscription = null
         super.onDestroy()
         releaseActivity()
         // Release the AI Assistant socket so it doesn't outlive the activity.
@@ -191,6 +208,9 @@ class FlutterInstantPdfActivity : InstantPdfActivity(), AiAssistantProvider {
         const val EXTRA_AI_JWT = "com.pspdfkit.flutter.AI_JWT"
         const val EXTRA_AI_SESSION_ID = "com.pspdfkit.flutter.AI_SESSION_ID"
         const val EXTRA_INSTANT_SERVER_URL = "com.pspdfkit.flutter.INSTANT_SERVER_URL"
+
+        /** Carries the stylus button visibility, per intent for the same reason. */
+        const val EXTRA_SHOW_STYLUS_BUTTON = "com.pspdfkit.flutter.SHOW_STYLUS_BUTTON"
 
         @JvmStatic
         var currentActivity: FlutterInstantPdfActivity? = null

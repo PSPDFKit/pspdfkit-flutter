@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 import 'package:nutrient_flutter/src/widgets/nutrient_view_controller_native.dart';
 
 // We need to use a custom mock implementation since we're not using the mockito annotations

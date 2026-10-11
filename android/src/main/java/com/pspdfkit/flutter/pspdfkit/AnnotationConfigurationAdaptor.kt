@@ -67,6 +67,8 @@ const val MAX_ALPHA = "maxAlpha"
 const val MIN_ALPHA = "minAlpha"
 const val MAX_THICKNESS = "maxThickness"
 const val MIN_THICKNESS = "minThickness"
+// Maps to setRestrictToAvailableColors, which replaced setCustomColorPickerEnabled with the
+// meaning inverted: a disabled custom picker restricts the user to the configured colors.
 const val CUSTOM_COLOR_PICKER_ENABLED = "customColorPickerEnabled"
 const val Z_INDEX_EDITING_ENABLED = "zIndexEditingEnabled"
 const val AGGREGATION_STRATEGY = "aggregationStrategy"
@@ -285,8 +287,8 @@ class AnnotationConfigurationAdaptor {
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
                     MIN_THICKNESS -> builder.setMinThickness((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     PREVIEW_ENABLED -> builder.setPreviewEnabled(configuration[key] as Boolean)
@@ -338,8 +340,8 @@ class AnnotationConfigurationAdaptor {
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
                     MIN_THICKNESS -> builder.setMinThickness((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     PREVIEW_ENABLED -> builder.setPreviewEnabled(configuration[key] as Boolean)
@@ -403,8 +405,8 @@ class AnnotationConfigurationAdaptor {
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
                     MIN_THICKNESS -> builder.setMinThickness((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     PREVIEW_ENABLED -> builder.setPreviewEnabled(configuration[key] as Boolean)
@@ -497,8 +499,8 @@ class AnnotationConfigurationAdaptor {
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
                     MIN_THICKNESS -> builder.setMinThickness((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     Z_INDEX_EDITING_ENABLED -> builder.setZIndexEditingEnabled(
@@ -557,8 +559,8 @@ class AnnotationConfigurationAdaptor {
 
                     MAX_ALPHA -> builder.setMaxAlpha((configuration[key] as Double).toFloat())
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     Z_INDEX_EDITING_ENABLED -> builder.setZIndexEditingEnabled(
@@ -773,8 +775,8 @@ class AnnotationConfigurationAdaptor {
                         builder.setDefaultRepeatOverlayTextSetting(repeatOverlayText as Boolean)
                     }
 
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     PREVIEW_ENABLED -> builder.setPreviewEnabled(configuration[key] as Boolean)
@@ -821,8 +823,8 @@ class AnnotationConfigurationAdaptor {
                         )
                     }
 
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     AVAILABLE_ICON_NAMES -> (configuration[key] as List<*>?)?.let { names ->
@@ -888,8 +890,8 @@ class AnnotationConfigurationAdaptor {
                         )
                     }
 
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     DEFAULT_THICKNESS -> builder.setDefaultThickness(
@@ -1011,8 +1013,8 @@ class AnnotationConfigurationAdaptor {
                         (configuration[key] as Double).toFloat()
                     )
 
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
 
@@ -1109,8 +1111,8 @@ class AnnotationConfigurationAdaptor {
                     MIN_ALPHA -> builder.setMinAlpha((configuration[key] as Double).toFloat())
                     MAX_THICKNESS -> builder.setMaxThickness((configuration[key] as Double).toFloat())
                     MIN_THICKNESS -> builder.setMinThickness((configuration[key] as Double).toFloat())
-                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setCustomColorPickerEnabled(
-                        configuration[key] as Boolean
+                    CUSTOM_COLOR_PICKER_ENABLED -> builder.setRestrictToAvailableColors(
+                        !(configuration[key] as Boolean)
                     )
 
                     PREVIEW_ENABLED -> builder.setPreviewEnabled(configuration[key] as Boolean)

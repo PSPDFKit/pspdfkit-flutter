@@ -1,3 +1,41 @@
+## Next Version
+
+- Fixes saved signatures never being offered again on Android when `NutrientDocumentView` sets `signatureSavingStrategy`: the view now gives the fragment the signature database `PSPDFKitView` uses, so `alwaysSave` and `saveIfSelected` work as on iOS. (L#HYB-1099, Z#134231)
+- Moves the Android side of `PSPDFKitView`, `Nutrient.present()` and `Nutrient.presentInstant()` onto the Nutrient Android SDK's Compose toolbars. Annotation toolbar grouping, custom toolbar items, the custom back button, `androidShowStylusButton` and hiding the annotation creation button work as before. (L#HYB-1085)
+- `PSPDFKitView` on Android no longer applies the `ThemeConfiguration.toolbar` and `ThemeConfiguration.annotationToolbar` colors, apart from `toolbar.statusBarColor`: the Compose toolbars take their colors from the Android theme (`pspdf__mainToolbarStyle`, `pspdf__contextualToolbarStyle`), and the plugin doesn't recolor them at runtime yet. The viewer logs a warning naming the ignored colors. (L#HYB-1085)
+- Now requires compileSdk 37.1 and Android Gradle Plugin 9.2 or later (with Gradle 9.4.1 or later) on Android. Set `compileSdk = 37` and `compileSdkMinor = 1` in the app explicitly, because `flutter.compileSdkVersion` still reports 36. (L#HYB-1086)
+- Adds `controller.setSignatureInterceptor(...)`: a `SignatureInterceptor` is asked before the built-in signing UI opens, so the app can hand over the stroke thickness and opacity to start with (or cancel), and again before the created signature is added, so it can keep, move or drop it. Lets an app configure and persist the signature appearance from Flutter without changing the built-in UI. Android and iOS; see the *Signature Interceptor* catalog example. (L#HYB-1044, Z#134231)
+- Adds an `onDocumentLoadFailed` callback to `NutrientInstantView`, reporting a document that fails to open together with the failure's message and, on Android, the native error type and `InstantErrorCode`. Previously such a failure was dropped and the viewer stayed on its loading indicator with no way for an app to detect it — most visibly when opening a document offline that the device had not downloaded before. (L#HYB-1050, Z134164)
+- Adds `androidShowStylusButton` to `PdfConfiguration` and `AndroidViewConfiguration.showStylusButton` to `NutrientViewConfiguration` (bindings path), which shows or hides the stylus tool button on the Android annotation toolbar independently of stylus auto-detection. Applied by `PSPDFKitView`, `Nutrient.present()`, `Nutrient.presentInstant()`, and `NutrientView`; `NutrientInstantView` on the bindings path ignores it. (J#HYB-1023)
+
+## 6.0.0 - 04 Aug 2026
+
+- Removes the legacy `MethodChannel` bridge, including `Pspdfkit.useLegacy` and the `useLegacy:` parameter on `Pspdfkit.initialize(...)`. Refer to the [migration guide](https://www.nutrient.io/guides/flutter/migration-guides/flutter-6-migration-guide/) for details. (J#HYB-951)
+- Removes the Pigeon-generated `*Api` and `*Callbacks` proxy classes from the public API. (J#HYB-951)
+- Moves `FlutterAppCompatActivity` from `nutrient_flutter` to `nutrient_flutter_android` and removes its built-in `AiAssistantProvider` integration. (J#HYB-951)
+- Updates `AnnotationProperties.strokeColor` and `AnnotationProperties.fillColor` to use ARGB integers instead of hex strings. (J#HYB-951)
+- Updates Nutrient Android SDK to 11.6.1, which raises the minimum supported Android API level to 24.
+- Updates Nutrient iOS SDK to 26.11.0.
+- Updates Nutrient Web SDK to 1.17.0.
+- Now requires Flutter 3.44.6 or later.
+
+### Bindings API
+
+- Promotes the bindings API, beta since 5.4.0, to the recommended API for new applications, via the new `package:nutrient_flutter/bindings.dart` entry point. (J#HYB-951)
+- Adds a typed `controller.events` stream with 17 cross-platform events, plus platform-specific streams on each adapter. (J#HYB-957)
+- Adds escape-hatch accessors such as `AndroidAdapter.nativePdfDocument` for native APIs the bindings API doesn’t cover yet. (J#HYB-951)
+- Completes the bindings API across Android, iOS, and Web, covering document saving, signatures, XFDF, Instant JSON, annotation search, dirty-state tracking, and coordinate conversion. (J#HYB-951, J#HYB-959)
+- Now requires `nutrient_flutter_android`, `nutrient_flutter_ios`, and `nutrient_flutter_web` as direct dependencies. (J#HYB-951)
+- Updates `NutrientInstantView` to the `NutrientDocumentView` adapter model, moving the Instant sync methods to the new `NutrientInstantController`, now also on iOS. (J#HYB-951)
+- Moves `processAnnotations` from `NutrientDocumentInterface` to the static `Nutrient.processAnnotations(...)`. (J#HYB-951)
+- Updates `save(outputPath:)` on Web to throw `UnsupportedError` instead of ignoring the path; use `exportPdf()` instead. (J#HYB-951)
+- Fixes crashes on Android and iOS when deleting an annotation with a `controller.events` listener attached. (J#HYB-951)
+- Fixes events emitted before the first `controller.events` listener subscribed being dropped. (J#HYB-957)
+- Fixes `TextSelectionChangedEvent.selectedText` always being `null` on Web. (J#HYB-957)
+- Fixes `DocumentSavedEvent` being emitted on Web for save-state changes that didn’t save the document. (J#HYB-951)
+- Fixes `NutrientViewConfiguration.webConfig` being ignored on Web, and `NutrientInstantView` dropping `enableInstantComments`, signature options, and `password` when it was set. (J#HYB-951)
+- Fixes an iOS issue where the keychain signature store was installed even when `signatureSavingStrategy` was set to `neverSave`. (J#HYB-951)
+
 ## 5.6.1 - 27 Jul 2026
 
 - Fixes an Android build failure (`Cannot access 'AiAssistantProvider' which is a supertype of 'MainActivity'`) in apps extending `FlutterAppCompatActivity`. (J#HYB-1017)
@@ -19,7 +57,7 @@
 - Fixes an iOS issue where the “Add Comment” item was missing from Instant document menus when `enableInstantComments` was set. (#53271)
 - Fixes an iOS issue where the signature editor could get stuck after adding an image to a signature from the camera. (J#HYB-1001)
 
-## 5.5.1 - 16 Apr 2026
+## 5.5.1 — 16 Apr 2026
 
 - Fixes `Nutrient.present(...)` failing on iOS apps using the `UIScene` lifecycle. (J#HYB-992)
 

@@ -93,7 +93,9 @@ class FlutterPdfDocument(
     override fun getPageInfo(pageIndex: Long, callback: (Result<PageInfo>) -> Unit) {
         val width = pdfDocument.getPageSize(pageIndex.toInt()).width
         val height = pdfDocument.getPageSize(pageIndex.toInt()).height
-        val label = pdfDocument.getPageLabel(pageIndex.toInt(), true)
+        // Substituted labels fall back to the page number, so this is only null if the document
+        // is closed underneath us. PageInfo.label is not nullable, so give it the empty string.
+        val label = pdfDocument.getPageLabel(pageIndex.toInt(), true) ?: ""
         val rotation = pdfDocument.getPageRotation(pageIndex.toInt())
         val pageInfo =
             PageInfo(pageIndex, height.toDouble(), width.toDouble(), rotation.toLong(), label)

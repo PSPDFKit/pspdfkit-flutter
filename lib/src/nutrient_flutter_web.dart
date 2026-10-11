@@ -18,7 +18,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as web
-    show nutrient, pspdfkit, NutrientWebStaticExtension;
+    show NutrientNamespace;
 
 /// Creates the platform-specific instance for web.
 NutrientFlutterPlatform createPlatformInstance() => NutrientFlutterWeb();
@@ -74,7 +74,9 @@ class NutrientFlutterWeb extends NutrientFlutterPlatform {
   @override
   Future<String?> getFrameworkVersion() async {
     try {
-      return 'Web ${web.pspdfkit.version}';
+      final ns = web.NutrientNamespace.getAsJSObject();
+      final version = (ns['version'] as JSString?)?.toDart;
+      return 'Web ${version ?? 'unknown'}';
     } catch (e) {
       return 'Web unknown';
     }
@@ -193,10 +195,8 @@ class NutrientFlutterWeb extends NutrientFlutterPlatform {
   @override
   List<NutrientWebToolbarItem> get defaultWebToolbarItems {
     try {
-      // Try NutrientViewer namespace first, fall back to PSPDFKit
-      final sdk =
-          globalContext.has('NutrientViewer') ? web.nutrient : web.pspdfkit;
-      final jsItems = sdk.defaultToolbarItems;
+      final ns = web.NutrientNamespace.getAsJSObject();
+      final jsItems = ns['defaultToolbarItems'] as JSArray<JSAny?>;
       final dartItems = jsItems.toDart;
       return dartItems
           .map((jsItem) {
