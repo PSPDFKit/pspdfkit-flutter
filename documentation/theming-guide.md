@@ -64,6 +64,8 @@ PdfConfiguration(
 )
 ```
 
+On Android, the main and annotation toolbars take their colors only from the theme. The `toolbar` and `annotationToolbar` colors of `ThemeConfiguration` below aren't applied there (apart from `toolbar.statusBarColor`), and the viewer logs a warning naming the ones it ignores.
+
 To customize more components (search, thumbnails, dialogs), add additional `pspdf__` attributes. See the full list in the [Nutrient Android Appearance Styling guide](https://www.nutrient.io/guides/android/customizing-the-interface/appearance-styling/).
 
 A complete dark theme example ships with the SDK:

@@ -17,6 +17,7 @@ import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationTypeAdapter
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProcessingMode
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationType
+import com.pspdfkit.flutter.pspdfkit.api.BookmarkManagerApi
 import com.pspdfkit.flutter.pspdfkit.api.DocumentSaveOptions
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
 import com.pspdfkit.flutter.pspdfkit.api.PageInfo
@@ -31,12 +32,15 @@ import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import io.flutter.plugin.common.BinaryMessenger
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subscribers.DisposableSubscriber
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import org.json.JSONObject
@@ -51,7 +55,9 @@ import java.util.EnumSet
 class FlutterPdfDocument(
     val pdfDocument: PdfDocument,
     val documentId: String? = null,
-    private val binaryMessenger: BinaryMessenger? = null
+    private val binaryMessenger: BinaryMessenger? = null,
+    // Set for headless documents only; viewer documents get theirs from FlutterPdfUiFragmentCallbacks.
+    private val bookmarkManager: BookmarkManagerImpl? = null
 ) : PdfDocumentApi {
 
     companion object {
@@ -67,7 +73,9 @@ class FlutterPdfDocument(
         }
     }
 
-    private var disposable: Disposable? = null
+    // Results go to Flutter on the main thread. The SDK calls either dispatch their own work or are
+    // moved off the main thread here.
+    private val scope = MainScope()
     private val documentPermissionsMap = mapOf(
         "print" to com.pspdfkit.document.DocumentPermissions.PRINTING,
         "modification" to com.pspdfkit.document.DocumentPermissions.MODIFICATION,
@@ -93,7 +101,9 @@ class FlutterPdfDocument(
     override fun getPageInfo(pageIndex: Long, callback: (Result<PageInfo>) -> Unit) {
         val width = pdfDocument.getPageSize(pageIndex.toInt()).width
         val height = pdfDocument.getPageSize(pageIndex.toInt()).height
-        val label = pdfDocument.getPageLabel(pageIndex.toInt(), true)
+        // Substituted labels fall back to the page number, so this is only null if the document
+        // is closed underneath us. PageInfo.label is not nullable, so give it the empty string.
+        val label = pdfDocument.getPageLabel(pageIndex.toInt(), true) ?: ""
         val rotation = pdfDocument.getPageRotation(pageIndex.toInt())
         val pageInfo =
             PageInfo(pageIndex, height.toDouble(), width.toDouble(), rotation.toLong(), label)
@@ -107,49 +117,50 @@ class FlutterPdfDocument(
             applyAnnotationOptions(task, options)
             val saveOptions = options?.let { convertDocumentSaveOptions(it) }
                 ?: pdfDocument.defaultDocumentSaveOptions
-            disposable = PdfProcessor.processDocumentAsync(task, outputStream, saveOptions)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSubscriber<PdfProcessor.ProcessorProgress?>() {
-                    override fun onComplete() {
-                        callback(Result.success(outputStream.toByteArray()))
-                    }
-                    override fun onNext(progress: PdfProcessor.ProcessorProgress?) {}
-                    override fun onError(throwable: Throwable) {
-                        callback(Result.failure(NutrientApiError("Error while exporting document", throwable.message ?: "")))
-                    }
-                })
+            scope.launch {
+                runCatchingUnlessCancelled {
+                    PdfProcessor.processDocumentAsync(task, outputStream, saveOptions).flowOn(Dispatchers.IO).collect()
+                }.getOrElse { throwable ->
+                    callback(Result.failure(NutrientApiError("Error while exporting document", throwable.message ?: "")))
+                    return@launch
+                }
+                callback(Result.success(outputStream.toByteArray()))
+            }
         } catch (e: Exception) {
             callback(Result.failure(NutrientApiError("Error while exporting document", e.message ?: "")))
         }
     }
 
     override fun getFormFieldJson(fieldName: String, callback: (Result<String>) -> Unit) {
-        try {
-            val formField = pdfDocument.formProvider.getFormFieldWithFullyQualifiedName(fieldName)
+        scope.launch {
+            val formField = runCatchingUnlessCancelled {
+                pdfDocument.formProvider.getFormFieldWithFullyQualifiedName(fieldName)
+            }.getOrElse {
+                callback(Result.failure(it))
+                return@launch
+            }
             if (formField == null) {
                 callback(Result.failure(Exception("Form field not found")))
-                return
+                return@launch
             }
-            val formFieldData = FormHelper.formFieldPropertiesToMap(listOf(formField))
-            val jsonObject = JSONObject(formFieldData.first())
-            callback(Result.success(jsonObject.toString()))
-        } catch (e: Exception) {
-            callback(Result.failure(e))
+            callback(runCatchingUnlessCancelled {
+                val formFieldData = FormHelper.formFieldPropertiesToMap(listOf(formField))
+                JSONObject(formFieldData.first()).toString()
+            })
         }
     }
 
     override fun getFormFieldsJson(callback: (Result<String>) -> Unit) {
-        try {
-            val formFields = pdfDocument.formProvider.formFields
-            val formFieldData = FormHelper.formFieldPropertiesToMap(formFields)
-            val jsonArray = JSONArray()
-            for (field in formFieldData) {
-                jsonArray.put(JSONObject(field))
-            }
-            callback(Result.success(jsonArray.toString()))
-        } catch (e: Exception) {
-            callback(Result.failure(e))
+        scope.launch {
+            callback(runCatchingUnlessCancelled {
+                val formFields = pdfDocument.formProvider.getFormFields()
+                val formFieldData = FormHelper.formFieldPropertiesToMap(formFields)
+                val jsonArray = JSONArray()
+                for (field in formFieldData) {
+                    jsonArray.put(JSONObject(field))
+                }
+                jsonArray.toString()
+            })
         }
     }
 
@@ -158,163 +169,111 @@ class FlutterPdfDocument(
         fullyQualifiedName: String,
         callback: (Result<Boolean?>) -> Unit
     ) {
-        // noinspection checkResult
-        pdfDocument.formProvider
-            .getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { formElement ->
-                    if (formElement is TextFormElement) {
-                        formElement.setText(value)
-                        callback(Result.success(true))
-                    } else if (formElement is EditableButtonFormElement) {
-                        when (value) {
-                            "selected" -> {
-                                formElement.select()
-                                callback(Result.success(true))
-                            }
-
-                            "deselected" -> {
-                                formElement.deselect()
-                                callback(Result.success(true))
-                            }
-
-                            else -> {
-                                callback(
-                                    Result.failure(
-                                        NutrientApiError(
-                                            "Invalid value for editable button form element",
-                                            "Value must be either \"selected\" or \"deselected\""
-                                        )
-                                    )
-                                )
-                            }
-                        }
-                    } else if (formElement is ChoiceFormElement) {
-                        val selectedIndexes: List<Int> = java.util.ArrayList<Int>()
-                        if (areValidIndexes(value, selectedIndexes.toMutableList())) {
-                            formElement.selectedIndexes = selectedIndexes
-                            callback(Result.success(true))
-                        } else {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Invalid value for choice form element",
-                                        "\"value\" argument needs a list of " +
-                                                "integers to set selected indexes for a choice " +
-                                                "form element (e.g.: \"1, 3, 5\").",
-                                    )
-                                )
-                            )
-                        }
-                    } else if (formElement is SignatureFormElement) {
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "Signature form elements cannot be set programmatically",
-                                    "Signature form elements are not supported.",
-                                )
-                            )
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                pdfDocument.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while searching for a form element with name $fullyQualifiedName",
+                            throwable.message ?: "",
                         )
-                    } else {
+                    )
+                )
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
+                callback(Result.failure(NutrientApiError("Form element not found", "")))
+                return@launch
+            }
+            if (formElement is TextFormElement) {
+                formElement.setText(value)
+                callback(Result.success(true))
+            } else if (formElement is EditableButtonFormElement) {
+                when (value) {
+                    "selected" -> {
+                        formElement.select()
+                        callback(Result.success(true))
+                    }
+
+                    "deselected" -> {
+                        formElement.deselect()
+                        callback(Result.success(true))
+                    }
+
+                    else -> {
                         callback(
                             Result.failure(
                                 NutrientApiError(
-                                    "Invalid form element type",
-                                    "Form element with name $fullyQualifiedName is not a text, " +
-                                            "editable button, choice, or signature form element."
+                                    "Invalid value for editable button form element",
+                                    "Value must be either \"selected\" or \"deselected\""
                                 )
                             )
                         )
                     }
-                },
-                { throwable ->
+                }
+            } else if (formElement is ChoiceFormElement) {
+                val selectedIndexes: List<Int> = java.util.ArrayList<Int>()
+                if (areValidIndexes(value, selectedIndexes.toMutableList())) {
+                    formElement.selectedIndexes = selectedIndexes
+                    callback(Result.success(true))
+                } else {
                     callback(
                         Result.failure(
                             NutrientApiError(
-                                "Error while searching for a form element with name $fullyQualifiedName",
-                                throwable.message ?: "",
+                                "Invalid value for choice form element",
+                                "\"value\" argument needs a list of " +
+                                        "integers to set selected indexes for a choice " +
+                                        "form element (e.g.: \"1, 3, 5\").",
                             )
                         )
                     )
                 }
-            ) // Form element for the given name not found.
-            { callback(Result.failure(NutrientApiError("Form element not found", ""))) }
+            } else if (formElement is SignatureFormElement) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Signature form elements cannot be set programmatically",
+                            "Signature form elements are not supported.",
+                        )
+                    )
+                )
+            } else {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Invalid form element type",
+                            "Form element with name $fullyQualifiedName is not a text, " +
+                                    "editable button, choice, or signature form element."
+                        )
+                    )
+                )
+            }
+        }
     }
 
     override fun getFormFieldValue(
         fullyQualifiedName: String,
         callback: (Result<String?>) -> Unit
     ) {
-        disposable = pdfDocument.formProvider
-            .getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { formElement ->
-                    when (formElement) {
-                        is TextFormElement -> {
-                            val text: String = formElement.text ?: ""
-                            callback(Result.success(text))
-                        }
-
-                        is EditableButtonFormElement -> {
-                            val isSelected: Boolean =
-                                formElement.isSelected
-                            callback(Result.success(if (isSelected) "selected" else "deselected"))
-                        }
-
-                        is ChoiceFormElement -> {
-                            val selectedIndexes: List<Int> =
-                                formElement.selectedIndexes
-                            val stringBuilder = StringBuilder()
-                            val iterator = selectedIndexes.iterator()
-                            while (iterator.hasNext()) {
-                                stringBuilder.append(iterator.next())
-                                if (iterator.hasNext()) {
-                                    stringBuilder.append(",")
-                                }
-                            }
-                            callback(Result.success(stringBuilder.toString()))
-                        }
-
-                        is SignatureFormElement -> {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Signature form elements cannot be read programmatically",
-                                        "Signature form elements are not supported.",
-                                    )
-                                )
-                            )
-                        }
-
-                        else -> {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Invalid form element type",
-                                        "Form element with name $fullyQualifiedName is not a text, " +
-                                                "editable button, choice, or signature form element."
-                                    )
-                                )
-                            )
-                        }
-                    }
-                },
-                { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while searching for a form element with name $fullyQualifiedName",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                pdfDocument.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while searching for a form element with name $fullyQualifiedName",
+                            throwable.message ?: "",
                         )
                     )
-                }
-            ) // Form element for the given name not found.
-            {
+                )
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -323,7 +282,58 @@ class FlutterPdfDocument(
                         )
                     )
                 )
+                return@launch
             }
+            when (formElement) {
+                is TextFormElement -> {
+                    val text: String = formElement.text ?: ""
+                    callback(Result.success(text))
+                }
+
+                is EditableButtonFormElement -> {
+                    val isSelected: Boolean =
+                        formElement.isSelected
+                    callback(Result.success(if (isSelected) "selected" else "deselected"))
+                }
+
+                is ChoiceFormElement -> {
+                    val selectedIndexes: List<Int> =
+                        formElement.selectedIndexes
+                    val stringBuilder = StringBuilder()
+                    val iterator = selectedIndexes.iterator()
+                    while (iterator.hasNext()) {
+                        stringBuilder.append(iterator.next())
+                        if (iterator.hasNext()) {
+                            stringBuilder.append(",")
+                        }
+                    }
+                    callback(Result.success(stringBuilder.toString()))
+                }
+
+                is SignatureFormElement -> {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "Signature form elements cannot be read programmatically",
+                                "Signature form elements are not supported.",
+                            )
+                        )
+                    )
+                }
+
+                else -> {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "Invalid form element type",
+                                "Form element with name $fullyQualifiedName is not a text, " +
+                                        "editable button, choice, or signature form element."
+                            )
+                        )
+                    )
+                }
+            }
+        }
     }
 
     override fun applyInstantJson(annotationsJson: String, callback: (Result<Boolean?>) -> Unit) {
@@ -333,15 +343,11 @@ class FlutterPdfDocument(
                 "annotationsJson"
             )
         )
-        // noinspection checkResult
-        DocumentJsonFormatter.importDocumentJsonAsync(pdfDocument, documentJsonDataProvider)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    callback(Result.success(true))
-                }
-            ) { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter imports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.importDocumentJson(pdfDocument, documentJsonDataProvider) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -350,21 +356,20 @@ class FlutterPdfDocument(
                         )
                     )
                 )
+                return@launch
             }
+            callback(Result.success(true))
+        }
     }
 
     override fun exportInstantJson(callback: (Result<String?>) -> Unit) {
         val outputStream = ByteArrayOutputStream()
 
-        // noinspection checkResult
-        DocumentJsonFormatter.exportDocumentJsonAsync(pdfDocument, outputStream)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
-                }
-            ) { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(pdfDocument, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -373,7 +378,10 @@ class FlutterPdfDocument(
                         )
                     )
                 )
+                return@launch
             }
+            callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
+        }
     }
 
     override fun addAnnotation(
@@ -457,18 +465,12 @@ class FlutterPdfDocument(
                         annotation.attachBinaryInstantJsonAttachment(dataProvider, contentType)
 
                         // Generate the appearance stream to render the attached image.
-                        disposable = annotation.generateAppearanceStreamAsync()
-                            .subscribeOn(Schedulers.computation())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                {
-                                    callback(Result.success(true))
-                                },
-                                { appearanceError ->
-                                    android.util.Log.w("FlutterPdfDocument", "Failed to generate appearance stream: ${appearanceError.message}")
-                                    callback(Result.success(true))
-                                }
-                            )
+                        scope.launch {
+                            runCatchingUnlessCancelled { annotation.generateAppearanceStreamAsync() }.onFailure { appearanceError ->
+                                android.util.Log.w("FlutterPdfDocument", "Failed to generate appearance stream: ${appearanceError.message}")
+                            }
+                            callback(Result.success(true))
+                        }
                         return
                     }
                 } catch (e: Exception) {
@@ -679,13 +681,11 @@ class FlutterPdfDocument(
 
     override fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit) {
         val outputStream = ByteArrayOutputStream()
-        disposable = DocumentJsonFormatter.exportDocumentJsonAsync(pdfDocument, outputStream)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                val jsonString: String = outputStream.toString()
-                callback(Result.success(jsonString))
-            }, { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(pdfDocument, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -694,68 +694,69 @@ class FlutterPdfDocument(
                         )
                     )
                 )
-            })
+                return@launch
+            }
+            val jsonString: String = outputStream.toString()
+            callback(Result.success(jsonString))
+        }
     }
 
     override fun importXfdf(xfdfString: String, callback: (Result<Boolean>) -> Unit) {
         val dataProvider = DocumentJsonDataProvider(xfdfString)
-        // The async parse method is recommended (so you can easily offload parsing from the UI thread).
-        disposable = XfdfFormatter.parseXfdfAsync(pdfDocument, dataProvider)
-            .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { annotations ->
-                    // Annotations parsed from XFDF aren't added to the document automatically.
-                    // You need to add them manually.
-                    runBlocking {
-                        for (annotation in annotations) {
-                            pdfDocument.annotationProvider.addAnnotationToPage(annotation)
-                        }
-                    }
-                    callback(Result.success(true))
-                },
-                { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while importing XFDF",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter parses on the calling thread.
+                val annotations = withContext(Dispatchers.IO) { XfdfFormatter.parseXfdfAsync(pdfDocument, dataProvider) }
+                // Annotations parsed from XFDF aren't added to the document automatically.
+                // You need to add them manually.
+                for (annotation in annotations) {
+                    pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                }
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while importing XFDF",
+                            throwable.message ?: "",
                         )
                     )
-                }
-            )
+                )
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun exportXfdf(xfdfPath: String, callback: (Result<Boolean>) -> Unit) {
         // Output stream pointing to the XFDF file into which to write the data.
         val outputStream = FileOutputStream(xfdfPath)
 
-        // The async `write` method is recommended (so you can easily offload writing from the UI thread).
-        disposable = XfdfFormatter.writeXfdfAsync(
-            pdfDocument,
-            listOf(),
-            listOf(),
-            outputStream
-        )
-            .subscribeOn(Schedulers.io()) // Specify the thread on which to write XFDF.
-            .subscribe(
-                {
-                    // XFDF was successfully written.
-                    callback(Result.success(true))
-                },
-                { throwable ->
-                    // An error occurred while writing XFDF.
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while exporting XFDF",
-                                throwable.message ?: "",
-                            )
-                        )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter writes on the calling thread.
+                withContext(Dispatchers.IO) {
+                    XfdfFormatter.writeXfdfAsync(
+                        pdfDocument,
+                        listOf(),
+                        listOf(),
+                        outputStream
                     )
                 }
-            )
+            }.getOrElse { throwable ->
+                // An error occurred while writing XFDF.
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while exporting XFDF",
+                            throwable.message ?: "",
+                        )
+                    )
+                )
+                return@launch
+            }
+            // XFDF was successfully written.
+            callback(Result.success(true))
+        }
     }
 
     override fun save(
@@ -773,29 +774,22 @@ class FlutterPdfDocument(
                 val saveOptions = options?.let { convertDocumentSaveOptions(it) }
                     ?: pdfDocument.defaultDocumentSaveOptions
 
-                disposable = PdfProcessor.processDocumentAsync(task, File(outputPath), saveOptions)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableSubscriber<PdfProcessor.ProcessorProgress?>() {
-                        override fun onComplete() {
-                            callback(Result.success(true))
-                        }
-
-                        override fun onNext(progress: PdfProcessor.ProcessorProgress?) {
-                            // Progress updates
-                        }
-
-                        override fun onError(throwable: Throwable) {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Error while saving document",
-                                        throwable.message ?: "",
-                                    )
+                scope.launch {
+                    runCatchingUnlessCancelled {
+                        PdfProcessor.processDocumentAsync(task, File(outputPath), saveOptions).flowOn(Dispatchers.IO).collect()
+                    }.getOrElse { throwable ->
+                        callback(
+                            Result.failure(
+                                NutrientApiError(
+                                    "Error while saving document",
+                                    throwable.message ?: "",
                                 )
                             )
-                        }
-                    })
+                        )
+                        return@launch
+                    }
+                    callback(Result.success(true))
+                }
             } catch (e: Exception) {
                 callback(
                     Result.failure(
@@ -807,21 +801,15 @@ class FlutterPdfDocument(
                 )
             }
         } else {
-            // Save in place
-            val saveAsync = if (options != null) {
-                pdfDocument.saveIfModifiedAsync(convertDocumentSaveOptions(options))
-            } else {
-                pdfDocument.saveIfModifiedAsync()
-            }
-            // noinspection checkResult
-            saveAsync
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        callback(Result.success(true))
+            // Save in place; the document saves off the main thread.
+            scope.launch {
+                runCatchingUnlessCancelled {
+                    if (options != null) {
+                        pdfDocument.saveIfModifiedAsync(convertDocumentSaveOptions(options))
+                    } else {
+                        pdfDocument.saveIfModifiedAsync()
                     }
-                ) { throwable ->
+                }.getOrElse { throwable ->
                     callback(
                         Result.failure(
                             NutrientApiError(
@@ -830,7 +818,10 @@ class FlutterPdfDocument(
                             )
                         )
                     )
+                    return@launch
                 }
+                callback(Result.success(true))
+            }
         }
     }
 
@@ -894,30 +885,24 @@ class FlutterPdfDocument(
             }
 
             // Process document asynchronously
-            disposable = PdfProcessor.processDocumentAsync(task, File(destinationPath))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(object : DisposableSubscriber<PdfProcessor.ProcessorProgress?>() {
-                    override fun onComplete() {
-                        callback(Result.success(true))
-                    }
-
-                    override fun onNext(progress: PdfProcessor.ProcessorProgress?) {
-                        // Progress updates - could be exposed to Flutter in the future
-                    }
-
-                    override fun onError(throwable: Throwable) {
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "AnnotationProcessingError",
-                                    "Failed to process annotations: ${throwable.message}",
-                                    throwable.stackTraceToString()
-                                )
+            scope.launch {
+                runCatchingUnlessCancelled {
+                    // Progress updates could be exposed to Flutter in the future.
+                    PdfProcessor.processDocumentAsync(task, File(destinationPath)).flowOn(Dispatchers.IO).collect()
+                }.getOrElse { throwable ->
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "AnnotationProcessingError",
+                                "Failed to process annotations: ${throwable.message}",
+                                throwable.stackTraceToString()
                             )
                         )
-                    }
-                })
+                    )
+                    return@launch
+                }
+                callback(Result.success(true))
+            }
         } catch (e: Exception) {
             callback(
                 Result.failure(
@@ -933,18 +918,21 @@ class FlutterPdfDocument(
 
     override fun closeDocument(callback: (Result<Boolean>) -> Unit) {
         try {
-            // Dispose of any pending operations
-            dispose()
+            // Calls already in progress still finish and reply, since Flutter is waiting for them.
 
             // Clean up for headless documents: unregister from registry and message channels
             if (documentId != null) {
                 // Unregister from document registry
                 unregisterDocument(documentId)
 
-                // Clean up the PdfDocumentApi message channel
+                // Clean up the PdfDocumentApi and BookmarkManagerApi message channels
                 if (binaryMessenger != null) {
                     PdfDocumentApi.setUp(binaryMessenger, null, documentId)
+                    if (bookmarkManager != null) {
+                        BookmarkManagerApi.setUp(binaryMessenger, null, "${documentId}_bookmark_manager")
+                    }
                 }
+                bookmarkManager?.dispose()
             }
 
             callback(Result.success(true))
@@ -959,10 +947,6 @@ class FlutterPdfDocument(
                 )
             )
         }
-    }
-
-    fun dispose() {
-        disposable?.dispose()
     }
 
     private fun convertDocumentSaveOptions(options: DocumentSaveOptions): com.pspdfkit.document.DocumentSaveOptions {
@@ -1158,8 +1142,20 @@ class FlutterPdfDocument(
         fullyQualifiedName: String,
         callback: (Result<Boolean>) -> Unit
     ) {
-        try {
-            val formField = pdfDocument.formProvider.getFormFieldWithFullyQualifiedName(fullyQualifiedName)
+        scope.launch {
+            val formField = runCatchingUnlessCancelled {
+                pdfDocument.formProvider.getFormFieldWithFullyQualifiedName(fullyQualifiedName)
+            }.getOrElse { e ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "AndroidDirtyStateError",
+                            "Failed to get form field dirty state: ${e.message}"
+                        )
+                    )
+                )
+                return@launch
+            }
 
             if (formField == null) {
                 callback(
@@ -1170,19 +1166,10 @@ class FlutterPdfDocument(
                         )
                     )
                 )
-                return
+                return@launch
             }
 
             callback(Result.success(formField.isDirty))
-        } catch (e: Exception) {
-            callback(
-                Result.failure(
-                    NutrientApiError(
-                        "AndroidDirtyStateError",
-                        "Failed to get form field dirty state: ${e.message}"
-                    )
-                )
-            )
         }
     }
 

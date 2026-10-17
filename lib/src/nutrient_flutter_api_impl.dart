@@ -11,6 +11,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
 import 'package:nutrient_flutter/src/nutrient_flutter_platform_interface.dart';
 

@@ -13,7 +13,8 @@ library pspdfkit_widget_web;
 import 'package:flutter/material.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 
-@Deprecated('Use NutrientView instead')
+@Deprecated('Use NutrientDocumentView instead. '
+    'See NutrientDocumentView for migration notes.')
 class PspdfkitWidget extends StatelessWidget {
   final String documentPath;
   final dynamic configuration;
@@ -100,7 +101,7 @@ class _LegacyControllerWrapper extends PspdfkitWidgetController {
 
   @override
   Future<dynamic> getAllUnsavedAnnotations() => throw UnimplementedError(
-      'Use PdfDocument.getAllUnsavedAnnotations instead.');
+      'Use PdfDocument.getUnsavedAnnotations instead.');
 
   @override
   Future<bool?> processAnnotations(

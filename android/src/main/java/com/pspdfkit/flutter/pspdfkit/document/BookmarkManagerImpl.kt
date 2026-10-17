@@ -15,9 +15,9 @@ import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.Bookmark
 import com.pspdfkit.flutter.pspdfkit.api.BookmarkManagerApi
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.schedulers.Schedulers
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 /**
@@ -33,7 +33,7 @@ class BookmarkManagerImpl : BookmarkManagerApi {
     }
 
     private var documentId: String? = null
-    private val disposables = CompositeDisposable()
+    private val scope = MainScope()
 
     private val pdfDocument: PdfDocument?
         get() {
@@ -53,20 +53,14 @@ class BookmarkManagerImpl : BookmarkManagerApi {
             return
         }
 
-        val disposable = document.bookmarkProvider.getBookmarksAsync()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { bookmarks ->
-                    val bookmarkList = bookmarks.map { convertToBookmark(it) }
-                    callback(Result.success(bookmarkList))
-                },
-                { error ->
-                    Log.e(TAG, "Error getting bookmarks", error)
-                    callback(Result.failure(NutrientApiError("Failed to get bookmarks", error.message ?: "")))
-                }
-            )
-        disposables.add(disposable)
+        scope.launch {
+            val bookmarks = runCatchingUnlessCancelled { document.bookmarkProvider.getBookmarksAsync() }.getOrElse { error ->
+                Log.e(TAG, "Error getting bookmarks", error)
+                callback(Result.failure(NutrientApiError("Failed to get bookmarks", error.message ?: "")))
+                return@launch
+            }
+            callback(Result.success(bookmarks.map { convertToBookmark(it) }))
+        }
     }
 
     override fun addBookmark(bookmark: Bookmark, callback: (Result<Bookmark>) -> Unit) {
@@ -79,21 +73,15 @@ class BookmarkManagerImpl : BookmarkManagerApi {
         try {
             val nativeBookmark = convertToNativeBookmark(bookmark)
 
-            val disposable = document.bookmarkProvider.addBookmarkAsync(nativeBookmark)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        // Return the bookmark with the ID assigned
-                        val resultBookmark = convertToBookmark(nativeBookmark)
-                        callback(Result.success(resultBookmark))
-                    },
-                    { error ->
-                        Log.e(TAG, "Error adding bookmark", error)
-                        callback(Result.failure(NutrientApiError("Failed to add bookmark", error.message ?: "")))
-                    }
-                )
-            disposables.add(disposable)
+            scope.launch {
+                runCatchingUnlessCancelled { document.bookmarkProvider.addBookmarkAsync(nativeBookmark) }.getOrElse { error ->
+                    Log.e(TAG, "Error adding bookmark", error)
+                    callback(Result.failure(NutrientApiError("Failed to add bookmark", error.message ?: "")))
+                    return@launch
+                }
+                // Return the bookmark with the ID assigned
+                callback(Result.success(convertToBookmark(nativeBookmark)))
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error creating bookmark", e)
             callback(Result.failure(NutrientApiError("Failed to create bookmark", e.message ?: "")))
@@ -107,47 +95,36 @@ class BookmarkManagerImpl : BookmarkManagerApi {
             return
         }
 
-        val disposable = document.bookmarkProvider.getBookmarksAsync()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { bookmarks ->
-                    // Find the bookmark to remove by matching page index or name
-                    val pageIndex = parsePageIndexFromAction(bookmark.actionJson)
-                    val bookmarkToRemove = bookmarks.find { existingBookmark ->
-                        // Match by page index
-                        if (pageIndex != null && existingBookmark.pageIndex == pageIndex) {
-                            true
-                        } else {
-                            // Fallback to name matching
-                            bookmark.name != null && existingBookmark.name == bookmark.name
-                        }
-                    }
+        scope.launch {
+            val bookmarks = runCatchingUnlessCancelled { document.bookmarkProvider.getBookmarksAsync() }.getOrElse { error ->
+                Log.e(TAG, "Error finding bookmark to remove", error)
+                callback(Result.failure(NutrientApiError("Failed to find bookmark", error.message ?: "")))
+                return@launch
+            }
 
-                    if (bookmarkToRemove != null) {
-                        val removeDisposable = document.bookmarkProvider.removeBookmarkAsync(bookmarkToRemove)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                {
-                                    callback(Result.success(true))
-                                },
-                                { error ->
-                                    Log.e(TAG, "Error removing bookmark", error)
-                                    callback(Result.failure(NutrientApiError("Failed to remove bookmark", error.message ?: "")))
-                                }
-                            )
-                        disposables.add(removeDisposable)
-                    } else {
-                        callback(Result.success(false))
-                    }
-                },
-                { error ->
-                    Log.e(TAG, "Error finding bookmark to remove", error)
-                    callback(Result.failure(NutrientApiError("Failed to find bookmark", error.message ?: "")))
+            // Find the bookmark to remove by matching page index or name
+            val pageIndex = parsePageIndexFromAction(bookmark.actionJson)
+            val bookmarkToRemove = bookmarks.find { existingBookmark ->
+                // Match by page index
+                if (pageIndex != null && existingBookmark.pageIndex == pageIndex) {
+                    true
+                } else {
+                    // Fallback to name matching
+                    bookmark.name != null && existingBookmark.name == bookmark.name
                 }
-            )
-        disposables.add(disposable)
+            }
+            if (bookmarkToRemove == null) {
+                callback(Result.success(false))
+                return@launch
+            }
+
+            runCatchingUnlessCancelled { document.bookmarkProvider.removeBookmarkAsync(bookmarkToRemove) }.getOrElse { error ->
+                Log.e(TAG, "Error removing bookmark", error)
+                callback(Result.failure(NutrientApiError("Failed to remove bookmark", error.message ?: "")))
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun updateBookmark(bookmark: Bookmark, callback: (Result<Boolean>) -> Unit) {
@@ -187,22 +164,17 @@ class BookmarkManagerImpl : BookmarkManagerApi {
             return
         }
 
-        val disposable = document.bookmarkProvider.getBookmarksAsync()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { bookmarks ->
-                    val filteredBookmarks = bookmarks.filter { nativeBookmark ->
-                        nativeBookmark.pageIndex == pageIndex.toInt()
-                    }.map { convertToBookmark(it) }
-                    callback(Result.success(filteredBookmarks))
-                },
-                { error ->
-                    Log.e(TAG, "Error getting bookmarks for page", error)
-                    callback(Result.failure(NutrientApiError("Failed to get bookmarks", error.message ?: "")))
-                }
-            )
-        disposables.add(disposable)
+        scope.launch {
+            val bookmarks = runCatchingUnlessCancelled { document.bookmarkProvider.getBookmarksAsync() }.getOrElse { error ->
+                Log.e(TAG, "Error getting bookmarks for page", error)
+                callback(Result.failure(NutrientApiError("Failed to get bookmarks", error.message ?: "")))
+                return@launch
+            }
+            val filteredBookmarks = bookmarks.filter { nativeBookmark ->
+                nativeBookmark.pageIndex == pageIndex.toInt()
+            }.map { convertToBookmark(it) }
+            callback(Result.success(filteredBookmarks))
+        }
     }
 
     override fun hasBookmarkForPage(pageIndex: Long, callback: (Result<Boolean>) -> Unit) {
@@ -273,7 +245,7 @@ class BookmarkManagerImpl : BookmarkManagerApi {
      * Clean up resources.
      */
     fun dispose() {
-        disposables.clear()
+        // Calls already in progress hold their document, so they still finish and reply.
         documentId = null
     }
 }

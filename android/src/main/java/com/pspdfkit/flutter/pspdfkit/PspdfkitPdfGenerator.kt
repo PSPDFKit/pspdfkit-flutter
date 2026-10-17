@@ -13,16 +13,19 @@ import android.util.Log
 import com.pspdfkit.document.processor.PdfProcessor
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import io.flutter.plugin.common.MethodChannel
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 
 @Deprecated("This class is deprecated and will be removed in the future. Please use the new `PspdfkitViewImpl` class instead.")
 class PspdfkitPdfGenerator(private val pageAdaptor: PdfPageAdaptor) {
 
-    private var disposable: Disposable? = null
+    private val scope = MainScope()
 
     /**
      * Creates a new [PdfProcessorTask] that can be used to process a PDF document.
@@ -41,27 +44,30 @@ class PspdfkitPdfGenerator(private val pageAdaptor: PdfPageAdaptor) {
         }
 
         val outputFile = File(outputFilePath);
-        disposable = PdfProcessor
-            .processDocumentAsync(task, outputFile)
-            .subscribeOn(Schedulers.io())
-            // Publish results on the main thread so we can update the UI.
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                //Log progress
-                Log.d(
-                    "PDF Generation",
-                    "generatePdf: Processing page ${it.pagesProcessed + 1} of ${it.totalPages}"
-                )
-            }, {
+        // Collected on the main thread, so we can update the UI.
+        scope.launch {
+            runCatchingUnlessCancelled {
+                PdfProcessor
+                    .processDocumentAsync(task, outputFile)
+                    .flowOn(Dispatchers.IO)
+                    .collect {
+                        //Log progress
+                        Log.d(
+                            "PDF Generation",
+                            "generatePdf: Processing page ${it.pagesProcessed + 1} of ${it.totalPages}"
+                        )
+                    }
+            }.getOrElse {
                 // Handle the error.
                 result.error("Error generating PDF", it.message, null)
-            }, {
-                result.success(outputFilePath)
-            })
+                return@launch
+            }
+            result.success(outputFilePath)
+        }
     }
 
     fun dispose() {
-        disposable?.dispose()
+        scope.coroutineContext.cancelChildren()
         instance = null
     }
 

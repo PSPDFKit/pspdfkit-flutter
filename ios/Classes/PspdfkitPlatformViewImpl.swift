@@ -287,6 +287,14 @@ public class PspdfkitPlatformViewImpl: NSObject, NutrientViewControllerApi, PDFV
     
     func setAnnotationConfigurations(configurations: [String : [String : Any]], completion: @escaping (Result<Bool?, any Error>) -> Void) {
         AnnotationsPresetConfigurations.setConfigurations(annotationPreset: configurations)
+        // The signing UI takes its default stroke width and opacity from the signature creation
+        // configuration, not from the style manager, and reads it each time it opens.
+        if let signaturePreset = configurations[ANNOTATION_SIGNATURE] {
+            pdfViewController?.updateConfigurationWithoutReloading { builder in
+                PspdfkitFlutterConverter.applySignatureStyle(fromPreset: signaturePreset, to: builder)
+            }
+        }
+        completion(.success(true))
     }
     
     func getVisibleRect(pageIndex: Int64, completion: @escaping (Result<PdfRect, any Error>) -> Void) {

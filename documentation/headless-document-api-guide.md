@@ -134,15 +134,19 @@ if (annotations.isNotEmpty) {
 
 ## Processing Annotations
 
-Process annotations to flatten, embed, or remove them from the document.
+Process annotations to flatten, embed, or remove them. `Nutrient.processAnnotations`
+is a static operation: it opens the PDF at `sourcePath`, writes the processed
+result to `destinationPath`, and releases the source internally — no open document
+or viewer is required.
 
 **Flatten all annotations:**
 
 ```dart
-await document.processAnnotations(
-  AnnotationType.all,
-  AnnotationProcessingMode.flatten,
-  '/path/to/flattened.pdf',
+await Nutrient.processAnnotations(
+  sourcePath: '/path/to/source.pdf',
+  type: AnnotationType.all,
+  mode: AnnotationProcessingMode.flatten,
+  destinationPath: '/path/to/flattened.pdf',
 );
 ```
 
@@ -150,22 +154,29 @@ await document.processAnnotations(
 
 ```dart
 // Remove all ink annotations
-await document.processAnnotations(
-  AnnotationType.ink,
-  AnnotationProcessingMode.remove,
-  '/path/to/output.pdf',
+await Nutrient.processAnnotations(
+  sourcePath: '/path/to/source.pdf',
+  type: AnnotationType.ink,
+  mode: AnnotationProcessingMode.remove,
+  destinationPath: '/path/to/output.pdf',
 );
 ```
 
 **Embed annotations:**
 
 ```dart
-await document.processAnnotations(
-  AnnotationType.all,
-  AnnotationProcessingMode.embed,
-  '/path/to/embedded.pdf',
+await Nutrient.processAnnotations(
+  sourcePath: '/path/to/source.pdf',
+  type: AnnotationType.all,
+  mode: AnnotationProcessingMode.embed,
+  destinationPath: '/path/to/embedded.pdf',
 );
 ```
+
+> Supported on Android and iOS; on Web it throws `UnsupportedError`. On Android,
+> `embed` maps to the native processor's `keep` mode (there is no distinct embed
+> mode). Passing the same path for `sourcePath` and `destinationPath` processes
+> in place.
 
 ## Copying Annotations Between Documents
 
@@ -299,13 +310,9 @@ try {
 
   try {
     // Operations that might fail
-    await document.processAnnotations(
-      AnnotationType.all,
-      AnnotationProcessingMode.flatten,
-      '/path/to/output.pdf',
-    );
+    await document.save(outputPath: '/path/to/output.pdf');
   } catch (e) {
-    print('Processing failed: $e');
+    print('Operation failed: $e');
   } finally {
     await document.close();
   }
