@@ -208,7 +208,7 @@ class FlutterPdfUiFragmentCallbacks(
                     FlutterPdfDocument.unregisterDocument(doc.pdfDocument.uid)
                 }
 
-                // Cleanup bookmark manager to dispose RxJava subscriptions
+                // Detach the bookmark manager from the document
                 bookmarkManager?.dispose()
                 bookmarkManager = null
 

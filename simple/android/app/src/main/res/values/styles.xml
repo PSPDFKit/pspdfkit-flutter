@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LaunchTheme + NormalTheme extend the Nutrient SDK's theme, which is an
+         AppCompat/Material descendant. NutrientFlutterActivity (an
+         AppCompatActivity) requires this — the default Flutter
+         Theme.Light.NoTitleBar crashes it with "You need to use a Theme.AppCompat
+         theme (or descendant)". The PSPDFKit.Theme* styles also provide the
+         colorPrimary/Accent attributes the SDK needs to render the viewer. -->
+    <style name="LaunchTheme" parent="@style/PSPDFKit.Theme">
+        <!-- Splash drawable, removed once Flutter draws its first frame. -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Default">
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>

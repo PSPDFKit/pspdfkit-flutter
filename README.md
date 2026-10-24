@@ -6,10 +6,11 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
 
 ## Requirements
 
-- Flutter SDK (latest stable version)
+- Flutter 3.44.6 or later
 - For Android:
   - Android Studio (latest stable version)
   - Android NDK
+  - Android API level 24 or later
   - Android Virtual Device or physical device
 - For iOS:
   - Xcode 16 or later
@@ -23,7 +24,20 @@ Add powerful PDF functionality to your Flutter apps with the Nutrient Flutter SD
 
 ```yaml
 dependencies:
-  nutrient_flutter: any
+  nutrient_flutter: ^6.0.0
+```
+
+If you are building against the [bindings API](#bindings-api) — recommended for
+new applications — also add the platform packages as direct dependencies, so
+the federated plugins are registered at runtime:
+
+```yaml
+dependencies:
+  nutrient_flutter: ^6.0.0
+  nutrient_flutter_platform_interface: ^2.0.0
+  nutrient_flutter_android: ^2.0.0
+  nutrient_flutter_ios: ^2.0.0
+  nutrient_flutter_web: ^2.0.0
 ```
 
 2. Run the following command:
@@ -40,10 +54,10 @@ flutter pub get
 
 ```gradle
 android {
-    compileSdkVersion 35
+    compileSdkVersion 36
     
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
     }
     
     compileOptions {
@@ -77,6 +91,12 @@ class MainActivity: FlutterAppCompatActivity() {
 }
 ```
 
+**Note:** As of 6.0.0 this class ships in `nutrient_flutter_android`. The import
+path is unchanged, and it is still available when you depend on
+`nutrient_flutter`. Its built-in `AiAssistantProvider` integration was removed —
+if you relied on it, re-add it in your own app module as described in the
+[bindings migration guide](documentation/bindings-migration-guide.md).
+
 ### iOS Setup
 
 Make sure to set the minimum iOS version to 17.0 in your `ios/Podfile`:
@@ -94,10 +114,10 @@ You can include the Nutrient Web SDK using either CDN or local installation:
 Add the following script to your `web/index.html` file:
 
 ```html
-<script src="https://cdn.cloud.nutrient.io/pspdfkit-web@1.13.0/nutrient-viewer.js"></script>
+<script src="https://cdn.cloud.nutrient.io/pspdfkit-web@1.17.0/nutrient-viewer.js"></script>
 ```
 
-**Note:** Replace `1.13.0` with the latest version of Nutrient Web SDK. Check the [latest releases][web changelog] for the current version.
+**Note:** Replace `1.17.0` with the latest version of Nutrient Web SDK. Check the [latest releases][web changelog] for the current version.
 
 #### Option 2: Local Installation
 
@@ -210,6 +230,33 @@ class MyApp extends StatelessWidget {
 
 **Note:** Replace `'YOUR_ANDROID_LICENSE_KEY'`, `'YOUR_IOS_LICENSE_KEY'`, and `'YOUR_WEB_LICENSE_KEY'` with your actual license keys. Do not pass any license keys if you want to run the SDK in demo mode, the SDK will run in demo mode with a watermark.
 
+## Bindings API
+
+The example above uses the original API, imported from
+`package:nutrient_flutter/nutrient_flutter.dart`.
+
+As of 6.0.0, the **bindings API** is the recommended surface for new
+applications. It is a separate entry point:
+
+```dart
+import 'package:nutrient_flutter/bindings.dart';
+```
+
+It gives you `NutrientDocumentView` with a typed `controller.events` stream,
+platform adapters for reaching native SDK APIs that the cross-platform surface
+does not cover yet, and `NutrientInstantView` for real-time collaboration.
+Bindings applications must list the platform packages as direct dependencies —
+see [Installation](#installation).
+
+Start with the [bindings migration guide](documentation/bindings-migration-guide.md).
+
+### Upgrading from 5.x
+
+6.0.0 removes the legacy `MethodChannel` bridge, including `Pspdfkit.useLegacy`
+and the `useLegacy:` parameter on `Pspdfkit.initialize(...)`. See the
+[removal notes](documentation/legacy-method-channel-removal.md) for what to
+change, and the [CHANGELOG](CHANGELOG.md) for the full list of breaking changes.
+
 ## Learn More
 
 - [Documentation][documentation]
@@ -217,8 +264,16 @@ class MyApp extends StatelessWidget {
 - [Release Notes][release notes]
 - [Customization][customization]
 - [Migration Guide][migration guide]
+- [Bindings Migration Guide](documentation/bindings-migration-guide.md) - Move to the recommended bindings API
+- [Legacy MethodChannel Removal](documentation/legacy-method-channel-removal.md) - What changed in 6.0.0 and how to migrate
+- [Working with Annotations](documentation/annotations-api-guide.md) - Read, create, search, and remove annotations with typed models
+- [Working with Forms](documentation/forms-api-guide.md) - Read AcroForm fields as typed models and fill them in
+- [Working with Events](documentation/events-api-guide.md) - React to document, annotation, and form changes through one typed stream
+- [Customizing the Toolbars](documentation/toolbar-customization-guide.md) - Reorder, group, and extend the main and annotation toolbars from Dart
 - [Headless Document API](documentation/headless-document-api-guide.md) - Open documents without a viewer for batch processing
 - [Dirty State Tracking](documentation/dirty-state-tracking-guide.md) - Track unsaved changes across platforms
+- [Configuring Signatures](documentation/signature-configuration-guide.md) - Customize the signature creation UI and saving strategy
+- [Intercepting the Signature Flow](documentation/signature-interceptor-guide.md) - Choose a signature's thickness, opacity and placement from Dart
 
 ## Support
 

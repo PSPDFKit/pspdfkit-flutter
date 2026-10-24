@@ -383,4 +383,99 @@ void main() {
       );
     });
   });
+
+  // Regression tests for the cross-platform serialization deep-dive. These lock
+  // in the shared-model fixes so Instant JSON from Android/iOS/Web parses
+  // consistently. See documentation/typed-annotations-cross-platform.md.
+  group('Cross-platform robustness (deep-dive fixes)', () {
+    test(
+        'measurement shape annotation parses (measurementScale as a map, '
+        'was a Web crash / silent null)', () {
+      final json = {
+        'id': 'measure-1',
+        'type': 'pspdfkit/shape/line',
+        'bbox': [100.0, 100.0, 200.0, 50.0],
+        'pageIndex': 0,
+        'strokeColor': '#000000',
+        'strokeWidth': 2.0,
+        'startPoint': [100.0, 100.0],
+        'endPoint': [300.0, 100.0],
+        'measurementScale': {
+          'unitFrom': 'inch',
+          'valueFrom': 1.0,
+          'unitTo': 'inch',
+          'valueTo': 1.0,
+        },
+        'measurementPrecision': 'twoDP',
+      };
+
+      final annotation = Annotation.fromJson(json) as LineAnnotation;
+      expect(annotation.measurementScale, isA<MeasurementScale>());
+      expect(annotation.measurementPrecision, MeasurementPrecision.twoDP);
+    });
+
+    test('measurementPrecision also parses the Web `webName` spelling', () {
+      final json = {
+        'id': 'measure-2',
+        'type': 'pspdfkit/shape/rectangle',
+        'bbox': [0.0, 0.0, 10.0, 10.0],
+        'pageIndex': 0,
+        'strokeColor': '#000000',
+        'strokeWidth': 1.0,
+        'measurementPrecision': 'twoDp', // Web SDK spelling
+      };
+
+      final annotation = Annotation.fromJson(json) as SquareAnnotation;
+      expect(annotation.measurementPrecision, MeasurementPrecision.twoDP);
+    });
+
+    test('free text without a `font` falls back to a default (was a crash)',
+        () {
+      final json = {
+        'id': 'ft-1',
+        'type': 'pspdfkit/text',
+        'bbox': [0.0, 0.0, 100.0, 20.0],
+        'pageIndex': 0,
+        'text': {'format': 'plain', 'value': 'hi'},
+        'fontSize': 12.0,
+        // no 'font'
+      };
+
+      final annotation = Annotation.fromJson(json) as FreeTextAnnotation;
+      expect(annotation.font, 'sans-serif');
+    });
+
+    group('tryFromJson skips unknown/malformed instead of throwing', () {
+      test('null for the Android/iOS pspdfkit/unknown detach fallback', () {
+        expect(
+          Annotation.tryFromJson({'id': 'x', 'type': 'pspdfkit/unknown'}),
+          isNull,
+        );
+      });
+
+      test('null for the Web-only pspdfkit/comment type', () {
+        expect(
+          Annotation.tryFromJson({'id': 'x', 'type': 'pspdfkit/comment'}),
+          isNull,
+        );
+      });
+
+      test('null for empty or absent type', () {
+        expect(Annotation.tryFromJson({'id': 'x', 'type': ''}), isNull);
+        expect(Annotation.tryFromJson({'id': 'x'}), isNull);
+      });
+
+      test('returns the typed annotation for a valid payload', () {
+        final annotation = Annotation.tryFromJson({
+          'id': 'note-1',
+          'type': 'pspdfkit/note',
+          'bbox': [0.0, 0.0, 20.0, 20.0],
+          'pageIndex': 0,
+          'text': {'format': 'plain', 'value': 'hi'},
+          'icon': 'note',
+        });
+        expect(annotation, isA<NoteAnnotation>());
+      });
+    });
+  });
 }

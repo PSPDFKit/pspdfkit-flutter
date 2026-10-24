@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark variant — inherits from Nutrient SDK's dark Material theme. -->
+    <style name="LaunchTheme" parent="@style/PSPDFKit.Theme.Dark">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+
+    <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Dark">
+        <item name="colorPrimary">#F25E45</item>      <!-- Code Coral -->
+        <item name="colorPrimaryDark">#1A1414</item>  <!-- Warm Black -->
+        <item name="colorAccent">#F25E45</item>       <!-- Code Coral -->
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>

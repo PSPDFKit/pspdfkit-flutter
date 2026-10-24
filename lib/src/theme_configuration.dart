@@ -8,11 +8,16 @@
 ///
 
 import 'package:flutter/widgets.dart';
-import 'package:nutrient_flutter/src/annotations/annotation_colors.dart';
+import 'package:nutrient_flutter_platform_interface/src/models/annotations/annotation_colors.dart'
+    show ColorToHex;
 
 /// Configuration for customizing the main toolbar appearance.
 ///
 /// Controls the navigation/action bar at the top of the viewer.
+///
+/// On Android only [statusBarColor] is applied: the toolbar takes its colors
+/// from the Android theme (`pspdf__mainToolbarStyle`, `colorPrimary`), and the
+/// plugin doesn't recolor it at runtime yet. See the theming guide.
 class ToolbarTheme {
   /// Background color of the main toolbar.
   final Color? backgroundColor;
@@ -51,6 +56,9 @@ class ToolbarTheme {
 /// Configuration for customizing the annotation toolbar appearance.
 ///
 /// Controls the contextual toolbar that appears when creating or editing annotations.
+///
+/// Not applied on Android, where the annotation toolbar takes its colors from
+/// the `pspdf__contextualToolbarStyle` theme attribute. See the theming guide.
 class AnnotationToolbarTheme {
   /// Background color of the annotation toolbar.
   final Color? backgroundColor;
