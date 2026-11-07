@@ -67,10 +67,11 @@ class _NutrientAnnotationPropertiesExampleState
                 _buildPropertyEditorPanel(),
             ],
           ),
-          // Instructional message when no annotation is selected
+          // Instructional message when no annotation is selected. The viewer
+          // fills the screen, so keep it below the status bar.
           if (_selectedAnnotation == null && _document != null)
             Positioned(
-              top: 16,
+              top: MediaQuery.paddingOf(context).top + 16,
               left: 16,
               right: 16,
               child: Material(

@@ -39,6 +39,7 @@ android {
     namespace "io.nutrient.nutrient_flutter"
 
     compileSdk androidCompileSdkVersion
+    compileSdkMinor androidCompileSdkMinorVersion
     
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -53,6 +54,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
+        consumerProguardFiles 'consumer-rules.pro'
     }
     lintOptions {
         disable 'InvalidPackage'

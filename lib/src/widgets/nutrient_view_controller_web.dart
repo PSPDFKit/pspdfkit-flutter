@@ -15,23 +15,18 @@ import 'package:flutter/foundation.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
 import 'package:nutrient_flutter/src/events/nutrient_events_extension.dart';
 import 'package:nutrient_flutter/src/document/annotation_json_converter.dart';
+import 'package:nutrient_flutter_web/nutrient_flutter_web.dart' as nutrient_web
+    show Instance, Rect;
 import 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
-    show
-        NutrientWebInstance,
-        NutrientWebInstanceExtension,
-        NutrientWebStaticExtension,
-        NutrientNamespace,
-        NutrientRect,
-        annotationTypeMap,
-        pspdfkit;
+    show NutrientNamespace, annotationTypeMap, unloadInstance;
 
 /// A controller for a Nutrient viewer widget on the web platform.
 ///
-/// Wraps a [NutrientWebInstance] from the modern `dart:js_interop`-based
+/// Wraps a [nutrient_web.Instance] from the modern `dart:js_interop`-based
 /// web bindings provided by `nutrient_flutter_web`.
 class NutrientViewControllerWeb extends NutrientViewController
     with AnnotationJsonConverter {
-  final NutrientWebInstance instance;
+  final nutrient_web.Instance instance;
 
   NutrientViewControllerWeb(this.instance);
 
@@ -44,7 +39,14 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   @override
   Future<bool?> importXfdf(String xfdfPath) async {
-    await instance.importXFDF(xfdfPath).toDart;
+    // The generated Instance doesn't expose `importXFDF` directly — go
+    // through applyOperations like the Web SDK guides recommend.
+    final operations = [
+      <String, dynamic>{'type': 'applyXfdf', 'xfdf': xfdfPath},
+    ];
+    await instance
+        .applyOperations(operations.jsify()! as JSArray<JSAny>)
+        .toDart;
     return true;
   }
 
@@ -101,9 +103,9 @@ class NutrientViewControllerWeb extends NutrientViewController
     }
     _legacyEventListeners.clear();
 
-    // Unload the instance
+    // Unload the instance via the namespace shim
     try {
-      pspdfkit.unload(instance);
+      unloadInstance(instance);
     } catch (e) {
       if (kDebugMode) {
         print('Error unloading PSPDFKit instance: $e');
@@ -127,7 +129,7 @@ class NutrientViewControllerWeb extends NutrientViewController
     }).toJS;
 
     _legacyEventListeners[event] = jsCallback;
-    instance.addEventListener(event.webName, jsCallback);
+    instance.addEventListener<JSString>(event.webName.toJS, jsCallback);
   }
 
   @override
@@ -137,7 +139,7 @@ class NutrientViewControllerWeb extends NutrientViewController
     final jsCallback = _legacyEventListeners[event];
     if (jsCallback != null) {
       try {
-        instance.removeEventListener(event.webName, jsCallback);
+        instance.removeEventListener<JSString>(event.webName.toJS, jsCallback);
         _legacyEventListeners.remove(event);
       } catch (e) {
         if (kDebugMode) {
@@ -159,7 +161,7 @@ class NutrientViewControllerWeb extends NutrientViewController
       if (kDebugMode) {
         print('Adding event listener for: ${event.name}');
       }
-      instance.addEventListener(event.name, jsCallback);
+      instance.addEventListener<JSString>(event.name.toJS, jsCallback);
     } catch (e) {
       if (kDebugMode) {
         print('Error adding web event listener for ${event.name}: $e');
@@ -175,7 +177,7 @@ class NutrientViewControllerWeb extends NutrientViewController
       final jsCallback = eventCallbacks[callback];
       if (jsCallback != null) {
         try {
-          instance.removeEventListener(event.name, jsCallback);
+          instance.removeEventListener<JSString>(event.name.toJS, jsCallback);
         } catch (e) {
           if (kDebugMode) {
             print('Error removing web event listener for $event: $e');
@@ -227,7 +229,9 @@ class NutrientViewControllerWeb extends NutrientViewController
       final presetId = _getAnnotationPresetId(tool);
       if (presetId != null) {
         debugPrint('[enterAnnotationCreationMode] Setting preset: $presetId');
-        await instance.setCurrentAnnotationPreset(presetId).toDart;
+        // setCurrentAnnotationPreset is generated as `void` on Instance
+        // (TS source has no return type); applies synchronously.
+        instance.setCurrentAnnotationPreset(presetId);
       }
 
       // Use a callback function to update the view state (Immutable.js pattern)
@@ -236,7 +240,9 @@ class NutrientViewControllerWeb extends NutrientViewController
             'set'.toJS, 'interactionMode'.toJS, interactionMode);
       }).toJS;
 
-      instance.setViewState(updateFn);
+      // Generated `setViewState` takes a generated union type — go
+      // through callMethod so we don't have to construct it.
+      (instance as JSObject).callMethod<JSAny?>('setViewState'.toJS, updateFn);
       debugPrint(
           '[enterAnnotationCreationMode] setViewState called successfully');
       return true;
@@ -274,7 +280,7 @@ class NutrientViewControllerWeb extends NutrientViewController
         return viewState.callMethod('set'.toJS, 'interactionMode'.toJS, null);
       }).toJS;
 
-      instance.setViewState(updateFn);
+      (instance as JSObject).callMethod<JSAny?>('setViewState'.toJS, updateFn);
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -323,8 +329,8 @@ class NutrientViewControllerWeb extends NutrientViewController
         'height': rect.height,
       }.jsify();
 
-      final webRect = rectConstructor.callAsConstructor(rectData);
-      instance.jumpAndZoomToRect(pageIndex, webRect as NutrientRect);
+      final webRect = rectConstructor.callAsConstructor<JSObject>(rectData);
+      instance.jumpAndZoomToRect(pageIndex, webRect as nutrient_web.Rect);
     } catch (e) {
       throw Exception('Failed to zoom to rect: $e');
     }
@@ -342,10 +348,9 @@ class NutrientViewControllerWeb extends NutrientViewController
 
   @override
   Future<bool?> exportXfdf(String xfdfPath) async {
-    final result = await instance.exportXFDF(null).toDart;
+    final JSString? result = await instance.exportXFDF(null).toDart;
     if (result != null) {
-      _downloadContent(
-          (result as JSString).toDart, xfdfPath, 'application/vnd.adobe.xfdf');
+      _downloadContent(result.toDart, xfdfPath, 'application/vnd.adobe.xfdf');
     }
     return true;
   }

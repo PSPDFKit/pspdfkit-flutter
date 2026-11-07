@@ -12,10 +12,9 @@ package com.pspdfkit.flutter.pspdfkit
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationMenuConfigurationData
 
 /**
- * Global storage for annotation menu configuration that can be shared between
- * the deprecated PspdfkitPluginMethodCallHandler and the new PspdfkitApiImpl.
- * 
- * This ensures consistent annotation menu behavior across both old and new APIs.
+ * Global storage for annotation menu configuration set via the Pigeon
+ * [PspdfkitApiImpl.setAnnotationMenuConfiguration] and consumed by the PDF view's
+ * AnnotationMenuHandler when a fragment is created (see FlutterPdfUiFragment).
  */
 object GlobalAnnotationMenuConfiguration {
     

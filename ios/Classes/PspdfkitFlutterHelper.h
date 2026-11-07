@@ -16,8 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface PspdfkitFlutterHelper : NSObject
 
-+ (void)processMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result forViewController:(PSPDFViewController *)pdfViewController;
-
 // Document Helpers
 + (nullable PSPDFDocument *)documentFromPath:(NSString *)path;
 + (void)unlockWithPasswordIfNeeded:(PSPDFDocument *)document dictionary:(NSDictionary *)dictionary;

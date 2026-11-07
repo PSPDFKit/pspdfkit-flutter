@@ -13,7 +13,6 @@ import android.util.Log
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.document.processor.PdfProcessor
-import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
 import com.pspdfkit.flutter.pspdfkit.annotations.AnnotationUtils
@@ -36,14 +35,13 @@ import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.ui.PdfUiFragment
-import kotlinx.coroutines.CoroutineScope
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subscribers.DisposableSubscriber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -52,9 +50,10 @@ import java.util.Locale
 
 class PspdfkitViewImpl : NutrientViewControllerApi {
     private var pdfUiFragment: PdfUiFragment? = null
-    private var disposable: Disposable? = null
     private var eventDispatcher: FlutterEventsHelper? = null
-    private val scope = CoroutineScope(Dispatchers.Main)
+    // Results go to Flutter on the main thread. The SDK calls either dispatch their own work or are
+    // moved off the main thread here.
+    private val scope = MainScope()
 
     /**
      * Sets the PdfFragment to be used by the controller.
@@ -96,10 +95,9 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
             // Clean up event listeners first, before nullifying pdfUiFragment
             eventDispatcher?.removeAllEventListeners(pdfUiFragment)
             
-            // Dispose of any ongoing operations
-            disposable?.dispose()
-            disposable = null
-            
+            // Calls already in progress still finish and reply, since Flutter is waiting for them.
+            // They hold the document, not the fragment.
+
             // Clear references to prevent memory leaks
             eventDispatcher = null
             pdfUiFragment = null
@@ -108,13 +106,6 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
             android.util.Log.w("PspdfkitViewImpl", "Error during dispose", e)
             
             // Ensure critical cleanup still happens even if there's an error
-            try {
-                disposable?.dispose()
-            } catch (disposableError: Exception) {
-                android.util.Log.w("PspdfkitViewImpl", "Error disposing disposable", disposableError)
-            }
-            
-            disposable = null
             eventDispatcher = null
             pdfUiFragment = null
         }
@@ -126,89 +117,89 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         callback: (Result<Boolean?>) -> Unit
     ) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        // noinspection checkResult
-        document.formProvider
-            .getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { formElement ->
-                    if (formElement is TextFormElement) {
-                        formElement.setText(value)
-                        callback(Result.success(true))
-                    } else if (formElement is EditableButtonFormElement) {
-                        when (value) {
-                            "selected" -> {
-                                formElement.select()
-                                callback(Result.success(true))
-                            }
-
-                            "deselected" -> {
-                                formElement.deselect()
-                                callback(Result.success(true))
-                            }
-
-                            else -> {
-                                callback(
-                                    Result.failure(
-                                        NutrientApiError(
-                                            "Invalid value for editable button form element",
-                                            "Value must be either \"selected\" or \"deselected\""
-                                        )
-                                    )
-                                )
-                            }
-                        }
-                    } else if (formElement is ChoiceFormElement) {
-                        val selectedIndexes: List<Int> = java.util.ArrayList<Int>()
-                        if (areValidIndexes(value, selectedIndexes.toMutableList())) {
-                            formElement.selectedIndexes = selectedIndexes
-                            callback(Result.success(true))
-                        } else {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Invalid value for choice form element",
-                                        "\"value\" argument needs a list of " +
-                                                "integers to set selected indexes for a choice " +
-                                                "form element (e.g.: \"1, 3, 5\").",
-                                    )
-                                )
-                            )
-                        }
-                    } else if (formElement is SignatureFormElement) {
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "Signature form elements cannot be set programmatically",
-                                    "Signature form elements are not supported.",
-                                )
-                            )
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                document.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while searching for a form element with name $fullyQualifiedName",
+                            throwable.message ?: "",
                         )
-                    } else {
+                    )
+                )
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
+                callback(Result.failure(NutrientApiError("Form element not found", "")))
+                return@launch
+            }
+            if (formElement is TextFormElement) {
+                formElement.setText(value)
+                callback(Result.success(true))
+            } else if (formElement is EditableButtonFormElement) {
+                when (value) {
+                    "selected" -> {
+                        formElement.select()
+                        callback(Result.success(true))
+                    }
+
+                    "deselected" -> {
+                        formElement.deselect()
+                        callback(Result.success(true))
+                    }
+
+                    else -> {
                         callback(
                             Result.failure(
                                 NutrientApiError(
-                                    "Invalid form element type",
-                                    "Form element with name $fullyQualifiedName is not a text, " +
-                                            "editable button, choice, or signature form element."
+                                    "Invalid value for editable button form element",
+                                    "Value must be either \"selected\" or \"deselected\""
                                 )
                             )
                         )
                     }
-                },
-                { throwable ->
+                }
+            } else if (formElement is ChoiceFormElement) {
+                val selectedIndexes: List<Int> = java.util.ArrayList<Int>()
+                if (areValidIndexes(value, selectedIndexes.toMutableList())) {
+                    formElement.selectedIndexes = selectedIndexes
+                    callback(Result.success(true))
+                } else {
                     callback(
                         Result.failure(
                             NutrientApiError(
-                                "Error while searching for a form element with name $fullyQualifiedName",
-                                throwable.message ?: "",
+                                "Invalid value for choice form element",
+                                "\"value\" argument needs a list of " +
+                                        "integers to set selected indexes for a choice " +
+                                        "form element (e.g.: \"1, 3, 5\").",
                             )
                         )
                     )
                 }
-            ) // Form element for the given name not found.
-            { callback(Result.failure(NutrientApiError("Form element not found", ""))) }
+            } else if (formElement is SignatureFormElement) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Signature form elements cannot be set programmatically",
+                            "Signature form elements are not supported.",
+                        )
+                    )
+                )
+            } else {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Invalid form element type",
+                            "Form element with name $fullyQualifiedName is not a text, " +
+                                    "editable button, choice, or signature form element."
+                        )
+                    )
+                )
+            }
+        }
     }
 
     override fun getFormFieldValue(
@@ -217,74 +208,22 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     ) {
         checkNotNull(pdfUiFragment)
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        disposable = document.formProvider
-            .getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { formElement ->
-                    when (formElement) {
-                        is TextFormElement -> {
-                            val text: String = formElement.text ?: ""
-                            callback(Result.success(text))
-                        }
-
-                        is EditableButtonFormElement -> {
-                            val isSelected: Boolean =
-                                formElement.isSelected
-                            callback(Result.success(if (isSelected) "selected" else "deselected"))
-                        }
-
-                        is ChoiceFormElement -> {
-                            val selectedIndexes: List<Int> =
-                                formElement.selectedIndexes
-                            val stringBuilder = StringBuilder()
-                            val iterator = selectedIndexes.iterator()
-                            while (iterator.hasNext()) {
-                                stringBuilder.append(iterator.next())
-                                if (iterator.hasNext()) {
-                                    stringBuilder.append(",")
-                                }
-                            }
-                            callback(Result.success(stringBuilder.toString()))
-                        }
-
-                        is SignatureFormElement -> {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Signature form elements cannot be read programmatically",
-                                        "Signature form elements are not supported.",
-                                    )
-                                )
-                            )
-                        }
-
-                        else -> {
-                            callback(
-                                Result.failure(
-                                    NutrientApiError(
-                                        "Invalid form element type",
-                                        "Form element with name $fullyQualifiedName is not a text, " +
-                                                "editable button, choice, or signature form element."
-                                    )
-                                )
-                            )
-                        }
-                    }
-                },
-                { throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while searching for a form element with name $fullyQualifiedName",
-                                throwable.message ?: "",
-                            )
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                document.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while searching for a form element with name $fullyQualifiedName",
+                            throwable.message ?: "",
                         )
                     )
-                }
-            ) // Form element for the given name not found.
-            {
+                )
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -293,7 +232,58 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                         )
                     )
                 )
+                return@launch
             }
+            when (formElement) {
+                is TextFormElement -> {
+                    val text: String = formElement.text ?: ""
+                    callback(Result.success(text))
+                }
+
+                is EditableButtonFormElement -> {
+                    val isSelected: Boolean =
+                        formElement.isSelected
+                    callback(Result.success(if (isSelected) "selected" else "deselected"))
+                }
+
+                is ChoiceFormElement -> {
+                    val selectedIndexes: List<Int> =
+                        formElement.selectedIndexes
+                    val stringBuilder = StringBuilder()
+                    val iterator = selectedIndexes.iterator()
+                    while (iterator.hasNext()) {
+                        stringBuilder.append(iterator.next())
+                        if (iterator.hasNext()) {
+                            stringBuilder.append(",")
+                        }
+                    }
+                    callback(Result.success(stringBuilder.toString()))
+                }
+
+                is SignatureFormElement -> {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "Signature form elements cannot be read programmatically",
+                                "Signature form elements are not supported.",
+                            )
+                        )
+                    )
+                }
+
+                else -> {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "Invalid form element type",
+                                "Form element with name $fullyQualifiedName is not a text, " +
+                                        "editable button, choice, or signature form element."
+                            )
+                        )
+                    )
+                }
+            }
+        }
     }
 
     override fun applyInstantJson(annotationsJson: String, callback: (Result<Boolean?>) -> Unit) {
@@ -304,15 +294,11 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                 "annotationsJson"
             )
         )
-        // noinspection checkResult
-        DocumentJsonFormatter.importDocumentJsonAsync(document, documentJsonDataProvider)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    callback(Result.success(true))
-                }
-            ) { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter imports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.importDocumentJson(document, documentJsonDataProvider) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -321,7 +307,10 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                         )
                     )
                 )
+                return@launch
             }
+            callback(Result.success(true))
+        }
     }
 
     override fun exportInstantJson(callback: (Result<String?>) -> Unit) {
@@ -329,15 +318,11 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         val outputStream = ByteArrayOutputStream()
 
-        // noinspection checkResult
-        DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
-                }
-            ) { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(document, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -346,7 +331,10 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                         )
                     )
                 )
+                return@launch
             }
+            callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
+        }
     }
 
     override fun addAnnotation(
@@ -438,13 +426,11 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
     override fun getAllUnsavedAnnotationsJson(callback: (Result<String>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
         val outputStream = ByteArrayOutputStream()
-        disposable = DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                val jsonString: String = outputStream.toString()
-                callback(Result.success(jsonString))
-            }, { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(document, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -453,7 +439,11 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                         )
                     )
                 )
-            })
+                return@launch
+            }
+            val jsonString: String = outputStream.toString()
+            callback(Result.success(jsonString))
+        }
     }
 
     override fun processAnnotations(
@@ -489,29 +479,22 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
             PdfProcessorTask.fromDocument(document)
                 .changeAnnotationsOfType(annotationType, annotationProcessingMode)
         }
-        disposable = PdfProcessor.processDocumentAsync(task, outputPath)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(object : DisposableSubscriber<ProcessorProgress?>() {
-                override fun onComplete() {
-                    callback(Result.success(true))
-                }
-
-                override fun onNext(t: ProcessorProgress?) {
-                    // No-op
-                }
-
-                override fun onError(t: Throwable) {
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while processing annotations",
-                                t.message ?: "",
-                            )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                PdfProcessor.processDocumentAsync(task, outputPath).flowOn(Dispatchers.IO).collect()
+            }.getOrElse { t ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while processing annotations",
+                            t.message ?: "",
                         )
                     )
-                }
-            })
+                )
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun importXfdf(xfdfString: String, callback: (Result<Boolean>) -> Unit) {
@@ -521,8 +504,6 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
             try {
                 val annotations: List<com.pspdfkit.annotations.Annotation> = withContext(Dispatchers.IO) {
                     XfdfFormatter.parseXfdfAsync(document, dataProvider)
-                        .subscribeOn(Schedulers.io())
-                        .blockingGet()
                 }
                 withContext(Dispatchers.IO) {
                     for (annotation in annotations) {
@@ -542,43 +523,39 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         // Output stream pointing to the XFDF file into which to write the data.
         val outputStream = FileOutputStream(xfdfPath)
 
-        // The async `write` method is recommended (so you can easily offload writing from the UI thread).
-        disposable = XfdfFormatter.writeXfdfAsync(
-            document,
-            listOf(),
-            listOf(),
-            outputStream
-        )
-            .subscribeOn(Schedulers.io()) // Specify the thread on which to write XFDF.
-            .subscribe(
-                {
-                    // XFDF was successfully written.
-                    callback(Result.success(true))
-                },
-                { throwable ->
-                    // An error occurred while writing XFDF.
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error while exporting XFDF",
-                                throwable.message ?: "",
-                            )
-                        )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter writes on the calling thread.
+                withContext(Dispatchers.IO) {
+                    XfdfFormatter.writeXfdfAsync(
+                        document,
+                        listOf(),
+                        listOf(),
+                        outputStream
                     )
                 }
-            )
+            }.getOrElse { throwable ->
+                // An error occurred while writing XFDF.
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error while exporting XFDF",
+                            throwable.message ?: "",
+                        )
+                    )
+                )
+                return@launch
+            }
+            // XFDF was successfully written.
+            callback(Result.success(true))
+        }
     }
 
     override fun save(callback: (Result<Boolean>) -> Unit) {
         val document = requireNotNull(pdfUiFragment?.pdfFragment?.document)
-        disposable = document.saveIfModifiedAsync()
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    callback(Result.success(true))
-                }
-            ) { throwable ->
+        // The document saves off the main thread.
+        scope.launch {
+            runCatchingUnlessCancelled { document.saveIfModifiedAsync() }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -587,7 +564,10 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
                         )
                     )
                 )
+                return@launch
             }
+            callback(Result.success(true))
+        }
     }
 
     override fun setAnnotationConfigurations(
@@ -808,7 +788,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         point: com.pspdfkit.flutter.pspdfkit.api.PointF,
         callback: (Result<com.pspdfkit.flutter.pspdfkit.api.PointF>) -> Unit
     ) {
-        val viewProjection = pdfUiFragment?.pdfFragment?.getViewProjection()
+        val viewProjection = pdfUiFragment?.pdfFragment?.viewProjection
         if (viewProjection == null) {
             callback(Result.failure(NutrientApiError("Coordinate conversion failed", "PDF fragment or view projection not available")))
             return
@@ -823,7 +803,7 @@ class PspdfkitViewImpl : NutrientViewControllerApi {
         point: com.pspdfkit.flutter.pspdfkit.api.PointF,
         callback: (Result<com.pspdfkit.flutter.pspdfkit.api.PointF>) -> Unit
     ) {
-        val viewProjection = pdfUiFragment?.pdfFragment?.getViewProjection()
+        val viewProjection = pdfUiFragment?.pdfFragment?.viewProjection
         if (viewProjection == null) {
             callback(Result.failure(NutrientApiError("Coordinate conversion failed", "PDF fragment or view projection not available")))
             return

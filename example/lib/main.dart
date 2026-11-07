@@ -17,7 +17,6 @@ import 'example_list_view.dart';
 const String _nutrientFlutterPluginTitle =
     'Nutrient Flutter Plugin example app';
 const String _nutrientWidgetExamples = 'Nutrient Widget Examples';
-const String _nutrientPlatformAdapterExamples = 'Platform Adapter Examples';
 const String _nutrientGlobalPluginExamples = 'Nutrient Modal View Examples';
 const String _nutrientFor = 'Nutrient ';
 
@@ -128,17 +127,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       .titleLarge
                       ?.copyWith(fontWeight: FontWeight.bold))),
           ...examples(context),
-
-          /// Platform Adapter examples section
-          Container(
-              color: Colors.grey[200],
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Text(_nutrientPlatformAdapterExamples,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold))),
-          ...platformAdapterExamples(context),
 
           /// Global plugin examples are not supported on web.
           if (!kIsWeb)

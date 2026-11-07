@@ -13,15 +13,17 @@ import android.content.Context
 import android.net.Uri
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.PdfDocumentLoader
+import com.pspdfkit.flutter.pspdfkit.api.BookmarkManagerApi
 import com.pspdfkit.flutter.pspdfkit.api.HeadlessDocumentApi
 import com.pspdfkit.flutter.pspdfkit.api.HeadlessDocumentOpenOptions
 import com.pspdfkit.flutter.pspdfkit.api.NutrientApiError
 import com.pspdfkit.flutter.pspdfkit.api.PdfDocumentApi
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import io.flutter.plugin.common.BinaryMessenger
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.UUID
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
 
 /**
  * Implementation of HeadlessDocumentApi that provides headless document operations.
@@ -39,7 +41,7 @@ class HeadlessDocumentApiImpl(
     private val binaryMessenger: BinaryMessenger
 ) : HeadlessDocumentApi {
 
-    private var disposable: Disposable? = null
+    private val scope = MainScope()
 
     /**
      * Opens a document from the given path without displaying a viewer.
@@ -47,7 +49,8 @@ class HeadlessDocumentApiImpl(
      * This method loads a PDF document using PdfDocumentLoader and registers it with
      * a unique document ID. A PdfDocumentApi channel is set up for the document using
      * the document ID as a channel suffix, allowing Flutter to communicate with this
-     * specific document instance.
+     * specific document instance. A BookmarkManagerApi channel is set up alongside it,
+     * using "<documentId>_bookmark_manager" as the suffix.
      *
      * @param documentPath Path to the PDF document (file path or content:// URI)
      * @param options Optional settings like password for encrypted documents
@@ -74,40 +77,47 @@ class HeadlessDocumentApiImpl(
                 DocumentSource(documentUri)
             }
 
-            // Load document asynchronously
-            disposable = PdfDocumentLoader.openDocumentAsync(context, documentSource)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { pdfDocument ->
-                        // Generate unique document ID
-                        val documentId = UUID.randomUUID().toString()
-
-                        // Create FlutterPdfDocument wrapper with documentId and binaryMessenger
-                        // for proper cleanup in closeDocument
-                        val flutterPdfDocument = FlutterPdfDocument(pdfDocument, documentId, binaryMessenger)
-
-                        // Register document in the global registry
-                        FlutterPdfDocument.registerDocument(documentId, flutterPdfDocument)
-
-                        // Setup PdfDocumentApi channel with documentId as suffix
-                        PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, documentId)
-
-                        // Return document ID to Flutter
-                        callback(Result.success(documentId))
-                    },
-                    { throwable ->
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "DocumentOpenError",
-                                    "Failed to open document: ${throwable.message}",
-                                    throwable.stackTraceToString()
-                                )
+            // Load document asynchronously; the SDK loads it off the main thread.
+            scope.launch {
+                val pdfDocument = runCatchingUnlessCancelled {
+                    PdfDocumentLoader.openDocumentAsync(context, documentSource)
+                }.getOrElse { throwable ->
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "DocumentOpenError",
+                                "Failed to open document: ${throwable.message}",
+                                throwable.stackTraceToString()
                             )
                         )
-                    }
-                )
+                    )
+                    return@launch
+                }
+
+                // Generate unique document ID
+                val documentId = UUID.randomUUID().toString()
+
+                // The bookmark manager looks the document up in the registry by ID,
+                // so it can be created before the document is registered.
+                val bookmarkManager = BookmarkManagerImpl()
+                bookmarkManager.initialize(documentId)
+
+                // Create FlutterPdfDocument wrapper with documentId, binaryMessenger and
+                // bookmarkManager for proper cleanup in closeDocument
+                val flutterPdfDocument = FlutterPdfDocument(pdfDocument, documentId, binaryMessenger, bookmarkManager)
+
+                // Register document in the global registry
+                FlutterPdfDocument.registerDocument(documentId, flutterPdfDocument)
+
+                // Setup PdfDocumentApi channel with documentId as suffix
+                PdfDocumentApi.setUp(binaryMessenger, flutterPdfDocument, documentId)
+
+                // Setup BookmarkManagerApi with the same suffix the Dart side uses
+                BookmarkManagerApi.setUp(binaryMessenger, bookmarkManager, "${documentId}_bookmark_manager")
+
+                // Return document ID to Flutter
+                callback(Result.success(documentId))
+            }
         } catch (e: Exception) {
             callback(
                 Result.failure(
@@ -126,6 +136,7 @@ class HeadlessDocumentApiImpl(
      * This should be called when the API is no longer needed.
      */
     fun dispose() {
-        disposable?.dispose()
+        // Cancels the loads in progress, and leaves the scope usable.
+        scope.coroutineContext.cancelChildren()
     }
 }

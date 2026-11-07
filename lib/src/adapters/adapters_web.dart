@@ -13,4 +13,4 @@
 /// It is only imported on web platforms (dart.library.js_interop available).
 
 export 'package:nutrient_flutter_web/nutrient_flutter_web.dart'
-    show NutrientWebAdapter, NutrientWebInstance, NutrientWebInstanceExtension;
+    show NutrientWebAdapter;

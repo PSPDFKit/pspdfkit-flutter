@@ -31,6 +31,11 @@ abstract class NutrientViewController {
   Future<bool?> save();
 
   /// Sets the annotation preset configurations for the given annotation tools.
+  ///
+  /// For [AnnotationTool.signature], pass an [InkAnnotationConfiguration]: its
+  /// `thickness` and `alpha` become the stroke thickness and opacity the
+  /// signing UI starts with. Without one, Android falls back to an ink preset
+  /// for the signing UI; iOS does not.
   /// @param configurations A map of annotation tools and their corresponding configurations.
   /// @param modifyAssociatedAnnotations Whether to modify the annotations associated with the old configuration. Only used for Android.
   /// @return True if the configurations were set successfully, false otherwise.

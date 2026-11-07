@@ -1,7 +1,22 @@
 import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(PigeonOptions(
-    dartOut: 'lib/src/api/nutrient_api.g.dart',
+    // The Dart-side generated types belong to the platform-interface
+    // package: both `nutrient_flutter` (legacy method-channel surface)
+    // and the federated `nutrient_flutter_{android,ios,web}` packages
+    // already depend on the platform interface, so co-locating the
+    // generated types there gives every consumer a single import path
+    // (`package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart`)
+    // and removes the soft layering violation where the platform
+    // interface previously reached into `nutrient_flutter/src/`.
+    //
+    // Native Pigeon outputs stay in the legacy module for now —
+    // relocating those is gated on either (a) introducing publicly-
+    // visible Pigeon types (Swift `internal` is the blocker today) or
+    // (b) deprecating the legacy plugin. See
+    // documentation/bindings-federation-cleanup.md.
+    dartOut:
+        '../nutrient_flutter_platform_interface/lib/src/api/nutrient_api.g.dart',
     dartOptions: DartOptions(),
     kotlinOut:
         'android/src/main/java/com/pspdfkit/flutter/pspdfkit/api/NutrientApi.g.kt',
@@ -13,6 +28,12 @@ import 'package:pigeon/pigeon.dart';
       errorClassName: 'NutrientApiError',
     ),
     copyrightHeader: 'pigeons/copyright.txt',
+    // dartPackageName intentionally stays as 'nutrient_flutter' even though
+    // the generated Dart now lives in nutrient_flutter_platform_interface:
+    // Pigeon embeds this name into channel paths
+    // (`dev.flutter.pigeon.<dartPackageName>.<Api>.<method>`), so changing
+    // it would shift every channel name and break clients still talking to
+    // an older native side and vice versa. Keep the wire format stable.
     dartPackageName: 'nutrient_flutter'))
 enum AndroidPermissionStatus {
   notDetermined,

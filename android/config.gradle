@@ -38,11 +38,12 @@ if (nutrientMavenUrl == null || nutrientMavenUrl == '') {
 
 ext.nutrientVersion = localProperties.getProperty('pspdfkit.version')
 if (nutrientVersion == null || nutrientVersion == '') {
-    // Pinned to the released Nutrient Android SDK for this release. The plugin uses
-    // 11.5 APIs (AnnotationToolbar / AnnotationPopupToolbar /
-    // OnPreparePopupToolbarListener). Override via pspdfkit.version in
-    // local.properties to build against a nightly/SNAPSHOT.
-    ext.nutrientVersion = '11.5.1'
+    // Between releases, master builds against the nightly Nutrient Android SDK, published as
+    // SNAPSHOT: the plugin uses the coroutine APIs that replaced RxJava after 12.0.0. A release
+    // pins the version with bin/update-flutter-pspdfkit-dependency-versions.sh. Override via
+    // pspdfkit.version in local.properties. Gradle caches SNAPSHOT until
+    // --refresh-dependencies.
+    ext.nutrientVersion = 'SNAPSHOT'
 }
 
 ext.nutrientMavenModuleName = 'nutrient'
@@ -56,8 +57,10 @@ if (!pubspecFile.exists()) {
 def pubspecYaml = new Yaml().load(pubspecFile.newInputStream())
 ext.nutrientFlutterVersion = pubspecYaml.version
 
-ext.androidCompileSdkVersion = 36
+ext.androidCompileSdkVersion = 37
+// The Nutrient SDK's AAR metadata requires 37.1.
+ext.androidCompileSdkMinorVersion = 1
 ext.androidMinSdkVersion = 24
 ext.androidTargetSdkVersion = 36
-ext.androidGradlePluginVersion = '8.9.2'
-ext.kotlinVersion = "2.3.10"
+ext.androidGradlePluginVersion = '9.2.1'
+ext.kotlinVersion = "2.4.10"

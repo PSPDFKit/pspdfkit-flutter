@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.flutter.pspdfkit.util.MeasurementHelper;
+import com.pspdfkit.compose.toolbar.adapter.ToolbarSubscription;
+import com.pspdfkit.flutter.pspdfkit.toolbar.StylusButtonVisibility;
 import com.pspdfkit.ui.PdfActivity;
 
 import java.util.List;
@@ -30,10 +32,22 @@ import io.flutter.plugin.common.MethodChannel.Result;
  */
 public class FlutterPdfActivity extends PdfActivity {
 
+    /**
+     * Intent extra carrying the stylus button visibility. Passed per intent rather than through a
+     * static so back-to-back present() calls can't race each other.
+     */
+    public static final String EXTRA_SHOW_STYLUS_BUTTON =
+            "com.pspdfkit.flutter.SHOW_STYLUS_BUTTON";
+
     @Nullable private static FlutterPdfActivity currentActivity;
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
 
     @Nullable private  static List<Map<String,Object>> measurementValueConfigurations;
+
+    private boolean showStylusButton = true;
+
+    /** Keeps the stylus toggle off the annotation toolbar while the button is hidden. */
+    @Nullable private ToolbarSubscription stylusButtonSubscription;
 
     public static void setLoadedDocumentResult(Result result) {
         loadedDocumentResult.set(result);
@@ -46,6 +60,14 @@ public class FlutterPdfActivity extends PdfActivity {
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        if (getIntent() != null) {
+            showStylusButton = getIntent().getBooleanExtra(EXTRA_SHOW_STYLUS_BUTTON, true);
+        }
+        // The stylus button isn't a PdfActivityConfiguration property, so it has to be taken off
+        // the live annotation toolbar each time one is shown.
+        if (!showStylusButton) {
+            stylusButtonSubscription = StylusButtonVisibility.hideIn(this);
+        }
         bindActivity();
     }
 
@@ -58,6 +80,10 @@ public class FlutterPdfActivity extends PdfActivity {
 
     @Override
     public void onDestroy() {
+        if (stylusButtonSubscription != null) {
+            stylusButtonSubscription.close();
+            stylusButtonSubscription = null;
+        }
         super.onDestroy();
         releaseActivity();
     }
