@@ -273,6 +273,18 @@ public class BookmarkManagerImpl: NSObject, BookmarkManagerApi {
 
         return manager
     }
+
+    /// Headless documents are opened under their own ID rather than `document.uid`.
+    /// `initialize(documentId:)` from Dart resolves that ID through `AnnotationManagerImpl`'s
+    /// registry, so the document must be registered there too, as
+    /// `AnnotationManagerImpl.createAndInitialize(document:documentId:binaryMessenger:)` does.
+    static func createAndInitialize(document: Document, documentId: String, binaryMessenger: FlutterBinaryMessenger) -> BookmarkManagerImpl {
+        let manager = BookmarkManagerImpl(documentId: documentId, binaryMessenger: binaryMessenger)
+        manager.document = document
+        manager.register(binaryMessenger: binaryMessenger)
+
+        return manager
+    }
 }
 
 // MARK: - Error Definitions

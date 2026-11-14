@@ -24,21 +24,22 @@ export 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.io) 'src/widgets/pspdfkit_widget.dart'
     if (dart.library.js_interop) 'src/widgets/pspdfkit_widget_web.dart';
 export 'src/widgets/pspdfkit_widget_controller.dart';
-export 'src/measurements/measurements.dart';
+export 'package:nutrient_flutter_platform_interface/src/measurements/measurements.dart';
 export 'src/processor/processor.dart';
 export 'src/document/pdf_document.dart';
-export 'src/forms/forms.dart';
+export 'package:nutrient_flutter_platform_interface/src/models/forms/forms.dart';
 
 export 'src/annotation_preset_configurations.dart';
+export 'package:nutrient_flutter_platform_interface/src/models/annotations/annotations.dart';
 export 'src/annotations/annotations.dart';
 export 'src/web/models/nutrient_web_events.dart';
 export 'src/ai/ai_assistant_configuration.dart';
 
 /// Nutrient plugin to load PDF and image documents on both platform iOS and Android.
-@Deprecated('Use [Nutrient] instead.')
+@Deprecated(
+    'Use the bindings-based Nutrient from package:nutrient_flutter/bindings.dart '
+    'instead. This legacy class will be removed in a future release.')
 class Pspdfkit {
-  static bool useLegacy = false;
-
   /// Gets the Nutrient framework version.
   static Future<String?> get frameworkVersion =>
       NutrientFlutterPlatform.instance.getFrameworkVersion();
@@ -47,21 +48,23 @@ class Pspdfkit {
     String? androidLicenseKey,
     String? iosLicenseKey,
     String? webLicenseKey,
-    bool? useLegacy,
   }) async {
-    Pspdfkit.useLegacy = useLegacy ?? false;
     await NutrientFlutterPlatform.instance
         .setLicenseKeys(androidLicenseKey, iosLicenseKey, webLicenseKey);
   }
 
   /// Sets the license key.
   /// @param licenseKey The license key to be used.
-  @Deprecated('Use [Pspdfkit.initialize] instead.')
+  @Deprecated(
+      'Use Nutrient.initialize from package:nutrient_flutter/bindings.dart '
+      'instead.')
   static Future<void> setLicenseKey(String? licenseKey) =>
       NutrientFlutterPlatform.instance.setLicenseKey(licenseKey);
 
   /// Sets the license keys for both platforms.
-  @Deprecated('Use [Pspdfkit.initialize] instead.')
+  @Deprecated(
+      'Use Nutrient.initialize from package:nutrient_flutter/bindings.dart '
+      'instead.')
   static Future<void> setLicenseKeys(String? androidLicenseKey,
           String? iOSLicenseKey, String? webLicenseKey) async =>
       NutrientFlutterPlatform.instance
@@ -121,7 +124,7 @@ class Pspdfkit {
           .getAnnotations(pageIndex, annotationTypeFromString(type));
 
   /// Returns a list of JSON dictionaries for all the unsaved annotations in the presented document.
-  @Deprecated('Use getAllUnsavedAnnotationModels instead')
+  @Deprecated('Use PdfDocument.getUnsavedAnnotations instead.')
   static Future<dynamic> getAllUnsavedAnnotations() async =>
       NutrientFlutterPlatform.instance.getAllUnsavedAnnotations();
 

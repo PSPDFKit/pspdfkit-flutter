@@ -16,6 +16,7 @@ class AnnotationPropertyEditor extends StatelessWidget {
   final Function(double) onOpacityChanged;
   final Function(double) onLineWidthChanged;
   final Function(AnnotationFlag) onFlagToggled;
+  final Function(String)? onContentsChanged;
   final VoidCallback onAddCustomData;
   final VoidCallback? onViewCustomData;
 
@@ -27,6 +28,7 @@ class AnnotationPropertyEditor extends StatelessWidget {
     required this.onOpacityChanged,
     required this.onLineWidthChanged,
     required this.onFlagToggled,
+    this.onContentsChanged,
     required this.onAddCustomData,
     this.onViewCustomData,
   }) : super(key: key);
@@ -41,6 +43,16 @@ class AnnotationPropertyEditor extends StatelessWidget {
           // Header
           _buildHeader(context),
           const SizedBox(height: 20),
+
+          // Contents (for notes and free text)
+          if (onContentsChanged != null && _hasContents(annotation)) ...[
+            _ContentsField(
+              key: ValueKey(properties.annotationId),
+              contents: properties.contents ?? '',
+              onSave: onContentsChanged!,
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Color Picker
           _buildColorPicker(),
@@ -449,6 +461,10 @@ class AnnotationPropertyEditor extends StatelessWidget {
     );
   }
 
+  bool _hasContents(Annotation annotation) {
+    return annotation is NoteAnnotation || annotation is FreeTextAnnotation;
+  }
+
   bool _canHaveLineWidth(Annotation annotation) {
     return annotation is InkAnnotation ||
         annotation is LineAnnotation ||
@@ -483,5 +499,59 @@ class AnnotationPropertyEditor extends StatelessWidget {
       default:
         return const Icon(Icons.edit_note, size: 24, color: Colors.grey);
     }
+  }
+}
+
+/// A text field for an annotation's contents, saved with its Save button.
+class _ContentsField extends StatefulWidget {
+  final String contents;
+  final Function(String) onSave;
+
+  const _ContentsField({
+    super.key,
+    required this.contents,
+    required this.onSave,
+  });
+
+  @override
+  State<_ContentsField> createState() => _ContentsFieldState();
+}
+
+class _ContentsFieldState extends State<_ContentsField> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.contents);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('Contents', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _controller,
+          minLines: 1,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => widget.onSave(_controller.text),
+            child: const Text('Save Contents'),
+          ),
+        ),
+      ],
+    );
   }
 }

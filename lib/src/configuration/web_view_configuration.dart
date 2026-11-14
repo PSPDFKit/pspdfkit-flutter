@@ -456,8 +456,9 @@ class WebViewConfiguration {
     if (formFieldsNotSavingSignatures != null) {
       topLevel['formFieldsNotSavingSignatures'] = formFieldsNotSavingSignatures;
     }
-    if (mentionableUsers != null)
+    if (mentionableUsers != null) {
       topLevel['mentionableUsers'] = mentionableUsers;
+    }
     if (documentEditorFooterItems != null) {
       topLevel['documentEditorFooterItems'] = documentEditorFooterItems;
     }

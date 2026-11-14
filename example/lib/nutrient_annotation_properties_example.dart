@@ -67,10 +67,11 @@ class _NutrientAnnotationPropertiesExampleState
                 _buildPropertyEditorPanel(),
             ],
           ),
-          // Instructional message when no annotation is selected
+          // Instructional message when no annotation is selected. The viewer
+          // fills the screen, so keep it below the status bar.
           if (_selectedAnnotation == null && _document != null)
             Positioned(
-              top: 16,
+              top: MediaQuery.paddingOf(context).top + 16,
               left: 16,
               right: 16,
               child: Material(
@@ -221,6 +222,7 @@ class _NutrientAnnotationPropertiesExampleState
                     setState(() {});
                   }
                 },
+                onContentsChanged: _updateContents,
                 onAddCustomData: () {
                   setState(() {
                     _isPropertyEditorVisible = false;
@@ -305,6 +307,27 @@ class _NutrientAnnotationPropertiesExampleState
       }
     } catch (e) {
       _showError('Failed to update line width: $e');
+    }
+  }
+
+  /// Demonstrates updating the text of a note or free text annotation
+  Future<void> _updateContents(String contents) async {
+    final properties = _selectedProperties;
+    if (properties == null) return;
+
+    try {
+      final updated = properties.copyWith(contents: contents);
+      final success =
+          await _document?.saveAnnotationProperties(updated) ?? false;
+
+      if (success) {
+        setState(() {
+          _selectedProperties = updated;
+        });
+        _showMessage('Contents updated');
+      }
+    } catch (e) {
+      _showError('Failed to update contents: $e');
     }
   }
 

@@ -4,6 +4,13 @@ Nutrient AI Assistant brings AI chat capabilities to your documents, enabling us
 
 To use this feature, run [Nutrient AI Assistant][ai-assistant-guide] on your server.
 
+> **Bindings / unified surface:** the steps below use the legacy
+> `PdfConfiguration`. On the unified surface, set
+> `NutrientViewConfiguration.aiAssistantConfiguration` instead (a
+> `{serverUrl, jwt, sessionId, userId}` map). This is honored on **all three
+> platforms** — Android, iOS, and Web — so no platform-specific toolbar wiring
+> is required for the assistant to be reachable.
+
 ## Setting up AI Assistant on Flutter
 
 To get started, either implement AI Assistant in your own app by following the steps below, or check out the `nutrient_ai_assistant_example` in our [catalog app][].

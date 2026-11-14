@@ -76,6 +76,25 @@ public class AnnotationsPresetConfigurations: NSObject {
         return customStampsConfigured
     }
 
+    /// The last signature preset set through `Nutrient.setAnnotationPresetConfigurations`. The
+    /// signing UI reads its starting stroke from the view controller's configuration rather than
+    /// from the style manager, so this is applied to each document presented afterwards.
+    private(set) static var globalSignaturePreset: [String: Any]?
+
+    /// Merges the valid `thickness` and `alpha` of `preset` into `globalSignaturePreset`, so a
+    /// later call that sets only one of them keeps the other, as the style manager does for the
+    /// other annotation presets.
+    static func mergeGlobalSignaturePreset(_ preset: [String: Any]) {
+        var merged = globalSignaturePreset ?? [:]
+        if let thickness = preset[DEFAULT_THICKNESS] as? NSNumber, thickness.doubleValue > 0 {
+            merged[DEFAULT_THICKNESS] = thickness
+        }
+        if let alpha = preset[DEFAULT_ALPHA] as? NSNumber, alpha.doubleValue > 0, alpha.doubleValue <= 1 {
+            merged[DEFAULT_ALPHA] = alpha
+        }
+        globalSignaturePreset = merged
+    }
+
     @objc public static func setConfigurations(annotationPreset: [String:[String: Any]]) {
 
         for key in annotationPreset.keys {

@@ -19,6 +19,9 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
     /// The document ID used when registering with HeadlessDocumentApi.
     /// This may differ from document.uid when documents are opened headlessly.
     private var registeredDocumentId: String?
+    /// Set for headless documents only; viewer documents get theirs from PspdfPlatformView.
+    private var annotationManager: AnnotationManagerImpl?
+    private var bookmarkManager: BookmarkManagerImpl?
 
     @objc public init(viewController: PDFViewController) {
         super.init()
@@ -33,12 +36,15 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         self.pdfViewController = nil
     }
 
-    /// Initializer for headless document mode with a specific document ID
-    @objc public init(document: Document, documentId: String) {
+    /// Initializer for headless document mode with a specific document ID.
+    /// The managers are torn down in closeDocument.
+    init(document: Document, documentId: String, annotationManager: AnnotationManagerImpl, bookmarkManager: BookmarkManagerImpl) {
         super.init()
         self.document = document
         self.pdfViewController = nil
         self.registeredDocumentId = documentId
+        self.annotationManager = annotationManager
+        self.bookmarkManager = bookmarkManager
     }
     
     func getPageInfo(pageIndex: Int64, completion: @escaping (Result<PageInfo, any Error>) -> Void) {
@@ -441,7 +447,14 @@ public class FlutterPdfDocument: NSObject, PdfDocumentApi {
         // Unregister from Flutter message channels if needed
         if let messenger = binaryMessenger, !documentId.isEmpty {
             PdfDocumentApiSetup.setUp(binaryMessenger: messenger, api: nil, messageChannelSuffix: documentId)
+            annotationManager?.unregister(binaryMessenger: messenger)
+            bookmarkManager?.unregister(binaryMessenger: messenger)
         }
+        if annotationManager != nil {
+            AnnotationManagerImpl.unregisterDocument(withId: documentId)
+        }
+        annotationManager = nil
+        bookmarkManager = nil
 
         // Clear document reference
         self.document = nil

@@ -75,6 +75,7 @@ class ConfigurationAdapter {
     private static final String APPEARANCE_MODE = "appearanceMode";
     private static final String SETTINGS_MENU_ITEMS = "settingsMenuItems";
     private static final String SHOW_SEARCH_ACTION = "showSearchAction";
+    private static final String SHOW_STYLUS_BUTTON = "showStylusButton";
     private static final String SHOW_OUTLINE_ACTION = "showOutlineAction";
     private static final String SHOW_BOOKMARKS_ACTION = "showBookmarksAction";
     private static final String SHOW_SHARE_ACTION = "showShareAction";
@@ -242,6 +243,7 @@ class ConfigurationAdapter {
     private boolean hideAnnotationCreationButton = false;
     @Nullable
     private HashMap<String, Integer> themeColors = null;
+    private boolean showStylusButton = true;
 
     ConfigurationAdapter(@NonNull Context context,
                          @Nullable HashMap<String, Object> configurationMap) {
@@ -302,6 +304,10 @@ class ConfigurationAdapter {
             key = getKeyOfType(configurationMap, SHOW_SEARCH_ACTION, Boolean.class);
             if (key != null) {
                 configureShowSearchAction((Boolean) configurationMap.get(key));
+            }
+            key = getKeyOfType(configurationMap, SHOW_STYLUS_BUTTON, Boolean.class);
+            if (key != null) {
+                showStylusButton = (Boolean) configurationMap.get(key);
             }
             key = getKeyOfType(configurationMap, IMMERSIVE_MODE, Boolean.class);
             if (key != null) {
@@ -1200,6 +1206,15 @@ class ConfigurationAdapter {
     @Nullable
     public HashMap<String, Integer> getThemeColors() {
         return themeColors;
+    }
+
+    /**
+     * Gets whether the stylus button should be shown on the annotation creation toolbar.
+     *
+     * @return True if the stylus button should be shown, false otherwise. Defaults to true.
+     */
+    public boolean getShowStylusButton() {
+        return showStylusButton;
     }
 
     PdfActivityConfiguration build() {

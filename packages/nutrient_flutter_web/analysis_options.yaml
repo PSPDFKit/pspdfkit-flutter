@@ -1,0 +1,12 @@
+# Exclude the machine-generated web bindings from analysis.
+#
+# `lib/src/generated/` holds the generated Nutrient Web SDK bindings
+# (`nutrient_web_bindings.g.dart` + `_tuples.dart`). The analyzer (and the IDE
+# language server, which shares this config) would otherwise index and diagnose
+# them on every context. Excluding the directory keeps everyday
+# analysis/indexing fast; consumers still resolve its symbols on demand, and a
+# file can still be verified after regeneration with an explicit path:
+#   dart analyze lib/src/generated/nutrient_web_bindings.g.dart
+analyzer:
+  exclude:
+    - lib/src/generated/**

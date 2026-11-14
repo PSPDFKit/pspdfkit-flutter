@@ -132,10 +132,11 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
                 // Restore attachments
                 self.restoreAnnotationAttachments(annotation, attachments: existingAttachments)
 
-                // Mark as modified and save
-                document.add(annotations: [annotation], options: nil)
-
+                // The setters above already marked the annotation dirty. It is still in the
+                // document, so adding it again would put a second copy on the page. Notify
+                // Nutrient of the change instead, so viewers re-render it.
                 DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .PSPDFAnnotationChanged, object: annotation)
                     completion(.success(true))
                 }
 
@@ -1017,6 +1018,18 @@ public class AnnotationManagerImpl: NSObject, AnnotationManagerApi {
 
         // Initialize with document reference
         try manager.initialize(documentId: documentId)
+
+        return manager
+    }
+
+    /// Headless documents are opened under their own ID rather than `document.uid`.
+    /// Registers the document under that ID, which `BookmarkManagerImpl` relies on too.
+    static func createAndInitialize(document: Document, documentId: String, binaryMessenger: FlutterBinaryMessenger) -> AnnotationManagerImpl {
+        AnnotationManagerImpl.registerDocument(document, withId: documentId)
+
+        let manager = AnnotationManagerImpl(documentId: documentId, binaryMessenger: binaryMessenger)
+        manager.document = document
+        manager.register(binaryMessenger: binaryMessenger)
 
         return manager
     }

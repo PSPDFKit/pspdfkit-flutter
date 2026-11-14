@@ -77,6 +77,16 @@ These fields apply to iOS and Web. Android does not expose zoom constraints thro
 | `minimumZoomScale` | `double?` | Minimum zoom factor the user can zoom out to |
 | `maximumZoomScale` | `double?` | Maximum zoom factor the user can zoom in to |
 
+### Signatures
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `signatureSavingStrategy` | `SignatureSavingStrategy?` | Whether a newly created signature is stored for reuse (Android & iOS) |
+| `signatureCreationConfiguration` | `SignatureCreationConfiguration?` | Contents and layout of the signature creation UI — modes, colors, fonts, per-platform layout |
+
+See [Configuring Signatures](signature-configuration-guide.md) for the full
+options and the per-option platform-support matrix.
+
 ---
 
 ## AndroidViewConfiguration
@@ -142,6 +152,7 @@ iosConfig: IOSViewConfiguration(
 | `bookmarkIndicatorInteractionEnabled` | `bool?` | Allow tapping the bookmark indicator to toggle bookmarks. Only meaningful when `bookmarkIndicatorMode` is not `off` |
 | `leftBarButtonItems` | `List<String>?` | Replaces the default left navigation bar buttons. Pass an empty list to remove all buttons |
 | `rightBarButtonItems` | `List<String>?` | Replaces the default right navigation bar buttons. Pass an empty list to remove all buttons |
+| `fileConflictResolution` | `IOSFileConflictResolution?` | How to resolve out-of-process changes/deletion of the open file: `defaultBehavior` (alert), `close`, `save`, or `reload` |
 
 ### Bar button item identifiers
 

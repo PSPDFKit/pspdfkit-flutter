@@ -68,7 +68,6 @@ internal class PSPDFKitView(
         CustomToolbarCallbacks(messenger, "customToolbar.callbacks.$id")
     private var annotationMenuHandler: AnnotationMenuHandler? = null
     private var isFragmentAttached = false
-    private var methodCallHandler: PSPDFKitWidgetMethodCallHandler? = null
     // Held until the document loads — the AI Assistant factory needs a real
     // DocumentDescriptor, so we can't build the assistant until onDocumentLoaded.
     private var aiAssistantConfigurationMap: Map<String, Any>? = null
@@ -141,6 +140,11 @@ internal class PSPDFKitView(
             if (themeColors != null) {
                 (pdfUiFragment as? FlutterPdfUiFragment)?.setThemeColors(themeColors)
             }
+            // Unlike the theme colors above this doesn't have to beat commitNow(): the fragment
+            // only reads it in onPrepareContextualToolbar, long after view creation.
+            (pdfUiFragment as? FlutterPdfUiFragment)?.setShowStylusButton(
+                configurationAdapter.getShowStylusButton()
+            )
 
             // AI Assistant construction is deferred to onDocumentLoaded — the
             // Nutrient Android SDK's createAiAssistant requires a real
@@ -226,22 +230,6 @@ internal class PSPDFKitView(
                 }
 
                 override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-                    // Set up method call handler when fragment is resumed
-                    // This ensures pdfFragment is fully initialized
-                    if (f.tag == "Nutrient.Fragment.$id" && methodCallHandler == null) {
-                        try {
-                            val pdfFragment = pdfUiFragment.pdfFragment
-                            if (pdfFragment != null) {
-                                methodCallHandler = PSPDFKitWidgetMethodCallHandler(pdfFragment)
-                                methodCallHandler?.let { handler ->
-                                    methodChannel.setMethodCallHandler(handler)
-                                }
-                                Log.d(LOG_TAG, "Method call handler set up successfully in onFragmentResumed")
-                            }
-                        } catch (e: Exception) {
-                            Log.e(LOG_TAG, "Error setting up method call handler in onFragmentResumed", e)
-                        }
-                    }
                     // Foreground this view in the AI Assistant registry so
                     // `getActive()` returns the assistant tied to whichever
                     // view the user is actually looking at (relevant when

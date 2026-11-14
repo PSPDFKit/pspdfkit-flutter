@@ -1,0 +1,14 @@
+# The Gradle wrapper and GeneratedPluginRegistrant.java are checked in so the
+# example builds from a fresh clone. They are kept out of the published package
+# by the .pubignore at the package root, so they must not be ignored here —
+# `pub publish` warns about files that are checked in while gitignored.
+/.gradle
+/captures/
+/local.properties
+.cxx/
+
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/to/reference-keystore
+key.properties
+**/*.keystore
+**/*.jks
