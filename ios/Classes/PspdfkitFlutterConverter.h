@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (PSPDFSignatureSavingStrategy)signatureSavingStrategy:(NSString *)strategy;
 + (PSPDFPageBookmarkIndicatorMode)bookmarkIndicatorMode:(NSDictionary *)dictionary forKey:(NSString *)key;
 + (NSNumber * _Nullable)fileConflictResolution:(NSString * _Nullable)resolution;
+/// Applies a signature annotation preset's `thickness` and `alpha` as the default stroke width and
+/// opacity of the signature creation UI. Does nothing with an SDK that lacks those defaults.
++ (void)applySignatureStyleFromPreset:(NSDictionary<NSString *, id> *)preset toBuilder:(PSPDFConfigurationBuilder *)builder;
 @end
 
 NS_ASSUME_NONNULL_END

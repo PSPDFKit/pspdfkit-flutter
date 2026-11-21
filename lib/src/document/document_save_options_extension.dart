@@ -5,7 +5,7 @@
 ///  UNAUTHORIZED REPRODUCTION OR DISTRIBUTION IS SUBJECT TO CIVIL AND CRIMINAL PENALTIES.
 ///  This notice may not be removed from this file.
 
-import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart';
 
 /// Options for saving/exporting a document.
 extension DocumentSaveOptionsX on DocumentSaveOptions {
@@ -16,7 +16,8 @@ extension DocumentSaveOptionsX on DocumentSaveOptions {
       'ownerPassword': ownerPassword,
       'flatten': flatten,
       'incremental': incremental,
-      'permissions': permissions?.map((e) => e).toList(),
+      'permissions':
+          permissions?.where((e) => e != null).map((e) => e!.name).toList(),
       'pdfVersion': pdfVersion?.name,
     }..removeWhere((key, value) => value == null);
   }
@@ -32,7 +33,9 @@ extension DocumentSaveOptionsX on DocumentSaveOptions {
       'optimize': optimize,
       'includeComments': includeComments,
       'permissions': {
-        'documentPermissions': permissions?.map((e) => e).toList() ?? [],
+        'documentPermissions':
+            permissions?.where((e) => e != null).map((e) => e!.name).toList() ??
+                [],
         'userPassword': userPassword,
         'ownerPassword': ownerPassword,
       }..removeWhere((key, value) => value == null)

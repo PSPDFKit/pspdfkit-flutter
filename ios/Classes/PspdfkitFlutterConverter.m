@@ -8,6 +8,7 @@
 //
 #import "PspdfkitFlutterConverter.h"
 #import "nutrient_flutter-Swift.h"
+#import <objc/message.h>
 
 @implementation PspdfkitFlutterConverter
 
@@ -579,6 +580,44 @@
     }
 
     return nil; // Unknown value, use default behavior
+}
+
++ (void)applySignatureStyleFromPreset:(NSDictionary<NSString *, id> *)preset toBuilder:(PSPDFConfigurationBuilder *)builder {
+    NSNumber *thickness = [preset[@"thickness"] isKindOfClass:NSNumber.class] ? preset[@"thickness"] : nil;
+    NSNumber *alpha = [preset[@"alpha"] isKindOfClass:NSNumber.class] ? preset[@"alpha"] : nil;
+    BOOL appliesThickness = thickness != nil && thickness.doubleValue > 0;
+    BOOL appliesAlpha = alpha != nil && alpha.doubleValue > 0 && alpha.doubleValue <= 1;
+    if (!appliesThickness && !appliesAlpha) {
+        NSLog(@"Nutrient: ignoring the signature preset: it sets no valid thickness (> 0) or alpha (0 < alpha <= 1).");
+        return;
+    }
+
+    // The defaults are resolved by name: the SDK this plugin builds against (26.11) predates them.
+    // Switch to the typed API once the pin includes them.
+    id configuration = builder.signatureCreationConfiguration;
+    SEL updateSel = NSSelectorFromString(@"configurationUpdatedWithBuilder:");
+    if (![configuration respondsToSelector:updateSel]) {
+        NSLog(@"Nutrient: ignoring the signature preset: this Nutrient iOS SDK can't update the signature creation configuration.");
+        return;
+    }
+    void (^styleBlock)(id) = ^(id signatureBuilder) {
+        if (appliesThickness) {
+            if ([signatureBuilder respondsToSelector:NSSelectorFromString(@"setDefaultLineWidth:")]) {
+                [signatureBuilder setValue:thickness forKey:@"defaultLineWidth"];
+            } else {
+                NSLog(@"Nutrient: ignoring the signature preset's thickness: this Nutrient iOS SDK has no default signature line width.");
+            }
+        }
+        if (appliesAlpha) {
+            if ([signatureBuilder respondsToSelector:NSSelectorFromString(@"setDefaultAlpha:")]) {
+                [signatureBuilder setValue:alpha forKey:@"defaultAlpha"];
+            } else {
+                NSLog(@"Nutrient: ignoring the signature preset's alpha: this Nutrient iOS SDK has no default signature alpha.");
+            }
+        }
+    };
+    id updated = ((id (*)(id, SEL, id))objc_msgSend)(configuration, updateSel, styleBlock);
+    if (updated != nil) builder.signatureCreationConfiguration = updated;
 }
 
 @end

@@ -10,6 +10,11 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - lib/src/api/nutrient_api.g.dart
+    # The catalog is a self-contained sub-app with its own pubspec
+    # (depends on google_fonts and other packages not in the parent's
+    # transitive dep set). It has its own analysis_options.yaml and
+    # is linted by its own CI step.
+    - catalog/**
 #    - ../../core/Vendor
   errors:
     invalid_assignment: error

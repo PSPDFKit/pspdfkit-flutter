@@ -36,7 +36,99 @@ NutrientInstantView(
 | `jwt` | `String` | Yes | Signed JWT with at least `read-document` and `write` permissions |
 | `configuration` | `NutrientViewConfiguration?` | No | Viewer appearance and behaviour options. See [view-configuration-guide.md](view-configuration-guide.md) |
 | `onViewCreated` | `void Function(NutrientViewHandle)?` | No | Called once the native view is initialised and ready |
+| `onDocumentLoadFailed` | `void Function(DocumentLoadFailure)?` | No | Called when the document fails to open. See [Handling load failures](#handling-load-failures) |
+| `onControllerReady` | `void Function(T)?` | No | Surfaces the [Instant controller](#the-instant-controller) once ready (Android & iOS) |
+| `adapter` | `T?` | No | Per-view controller instance you own; see [Custom controllers](#custom-controllers) |
 | `key` | `Key?` | No | Standard Flutter widget key |
+
+## The Instant controller
+
+`onControllerReady` surfaces a `NutrientInstantController` — the regular
+controller surface (`document`, `events`, …) plus the Instant sync controls:
+
+```dart
+NutrientInstantView(
+  serverUrl: serverUrl,
+  jwt: jwt,
+  onControllerReady: (controller) async {
+    // Instant sync controls (Android & iOS):
+    await controller.setDelayForSyncingLocalChanges(2); // seconds
+    await controller.setListenToServerChanges(true);
+    await controller.syncAnnotations();
+
+    // Typed Instant events (buffered — no events are missed):
+    controller.events.instantSyncFinished.listen((e) {
+      debugPrint('In sync: ${e.documentId}');
+    });
+  },
+)
+```
+
+On Web these controls are not available — Instant sync is configured at load
+time and managed by the Web SDK; `onControllerReady` is not called there.
+
+## Handling load failures
+
+A document can fail to open — most commonly when the device is offline and has never downloaded the document before, which fails within milliseconds. When that happens the viewer stays on its loading indicator and `onControllerReady` never fires, so `onDocumentLoadFailed` is the only signal your app gets.
+
+```dart
+class _ApprovalViewState extends State<ApprovalView> {
+  DocumentLoadFailure? _failure;
+  int _attempt = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final failure = _failure;
+    if (failure != null) {
+      return ErrorState(
+        message: failure.message,
+        onRetry: () => setState(() {
+          _failure = null;
+          _attempt++; // New key → fresh view → fresh download attempt.
+        }),
+      );
+    }
+
+    return NutrientInstantView(
+      key: ValueKey(_attempt),
+      serverUrl: widget.serverUrl,
+      jwt: widget.jwt,
+      onDocumentLoadFailed: (failure) => setState(() => _failure = failure),
+    );
+  }
+}
+```
+
+The failure is terminal: the view does not retry on its own, so recover by rebuilding the widget with a new `key` (see [Reconnecting and changing documents](#reconnecting-and-changing-documents)).
+
+`DocumentLoadFailure` carries:
+
+| Field | Description |
+|-------|-------------|
+| `message` | Human-readable description; never empty |
+| `type` | Native error type, e.g. `InstantDownloadException` (Android only) |
+| `code` | `InstantErrorCode` name, e.g. `REQUEST_FAILED` (server unreachable) or `AUTHENTICATION_FAILED` (rejected JWT) — Android only |
+
+`type` and `code` are `null` on iOS and Web, where the platforms report the underlying error to the native console only. Branch on `code` where you have it and fall back to `message` otherwise.
+
+The same failure is also emitted on the controller's event stream as a `DocumentErrorEvent`, which is useful when you supply your own `adapter:` and already hold a controller:
+
+```dart
+controller.events.documentError.listen((e) => debugPrint(e.error));
+```
+
+## Custom controllers
+
+`NutrientInstantView` follows the same adapter model as `NutrientDocumentView`:
+
+- **Bare** `NutrientInstantView(...)` — the platform's default Instant
+  controller is built fresh for this view and disposed with it.
+- **Typed** `NutrientInstantView<MyInstantController>(...)` — a fresh instance
+  from the factory registered with
+  `Nutrient.addAdapterClass<MyInstantController>(...)`; the view owns its
+  lifecycle. `MyInstantController` must implement `NutrientInstantController`.
+- **Per-view instance** via `adapter:` — you allocate and dispose it; the view
+  attaches and detaches only.
 
 ## Applying configuration
 

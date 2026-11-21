@@ -8,7 +8,7 @@
 ///
 
 import 'dart:convert';
-import 'package:nutrient_flutter/src/api/nutrient_api.g.dart';
+import 'package:nutrient_flutter_platform_interface/nutrient_flutter_platform_interface.dart';
 
 /// Extension methods for the [Bookmark] class to provide convenience
 /// constructors and utility methods.

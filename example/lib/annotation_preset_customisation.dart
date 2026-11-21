@@ -46,6 +46,12 @@ class _AnnotationPresetCustomizationState
                   minAlpha: 0.1,
                   alpha: 1,
                 ),
+                // The signing UI starts with this stroke thickness and
+                // opacity. Ink presets don't affect signatures.
+                AnnotationTool.signature: InkAnnotationConfiguration(
+                  thickness: 10,
+                  alpha: 0.5,
+                ),
                 AnnotationTool.freeText: FreeTextAnnotationConfiguration(
                   color: Colors.red,
                   fontSize: 40,

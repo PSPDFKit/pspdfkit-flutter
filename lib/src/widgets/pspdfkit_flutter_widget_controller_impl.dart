@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:nutrient_flutter/nutrient_flutter.dart';
+import 'package:nutrient_flutter_platform_interface/src/api/nutrient_api.g.dart';
 import '../document/pdf_document_native.dart';
 
 @Deprecated('Use NutrientViewController instead')

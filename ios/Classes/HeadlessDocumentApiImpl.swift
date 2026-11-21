@@ -82,9 +82,16 @@ public class HeadlessDocumentApiImpl: NSObject, HeadlessDocumentApi {
         // Generate unique document ID
         let documentId = UUID().uuidString
 
+        // Set up the AnnotationManagerApi and BookmarkManagerApi channels on
+        // "<documentId>_annotation_manager" and "<documentId>_bookmark_manager", the
+        // suffixes the Dart side uses. The annotation manager registers the document
+        // under documentId, which both managers' initialize(documentId:) look up.
+        let annotationManager = AnnotationManagerImpl.createAndInitialize(document: document, documentId: documentId, binaryMessenger: binaryMessenger)
+        let bookmarkManager = BookmarkManagerImpl.createAndInitialize(document: document, documentId: documentId, binaryMessenger: binaryMessenger)
+
         // Create FlutterPdfDocument instance for headless mode with the documentId
-        // so closeDocument can properly clean up
-        let flutterPdfDocument = FlutterPdfDocument(document: document, documentId: documentId)
+        // and managers so closeDocument can properly clean up
+        let flutterPdfDocument = FlutterPdfDocument(document: document, documentId: documentId, annotationManager: annotationManager, bookmarkManager: bookmarkManager)
 
         // Register the document in our registry
         HeadlessDocumentApiImpl.documentRegistry[documentId] = flutterPdfDocument

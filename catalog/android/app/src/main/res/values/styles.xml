@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launch theme — extends Nutrient SDK's Material Components theme, which
+         provides colorPrimary/Secondary/PrimaryDark/Accent attributes the SDK
+         requires for fragment rendering. -->
+    <style name="LaunchTheme" parent="@style/PSPDFKit.Theme">
+        <!-- Splash drawable, removed once Flutter draws its first frame. -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+
+    <!-- Theme applied as soon as the process has started; behind the Flutter
+         UI while it runs. Brand colors override the SDK defaults. -->
+    <style name="NormalTheme" parent="@style/PSPDFKit.Theme.Default">
+        <item name="colorPrimary">#F25E45</item>      <!-- Code Coral -->
+        <item name="colorPrimaryDark">#1A1414</item>  <!-- Warm Black -->
+        <item name="colorAccent">#F25E45</item>       <!-- Code Coral -->
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+
+    <!-- Custom viewer themes for the Themes example — referenced BY NAME from
+         Dart via androidConfig.defaultThemeResource / darkThemeResource and
+         resolved with Resources.getIdentifier, so renaming them breaks the
+         example. Loud, obviously-custom colors so the override is visible. -->
+    <style name="NutrientCatalog.Theme.Custom" parent="@style/PSPDFKit.Theme.Default">
+        <item name="colorPrimary">#00695C</item>      <!-- Teal toolbar -->
+        <item name="colorPrimaryDark">#003D33</item>
+        <item name="colorAccent">#FFB300</item>       <!-- Amber accents -->
+        <item name="pspdf__backgroundColor">#E0F2F1</item>
+    </style>
+
+    <style name="NutrientCatalog.Theme.CustomDark" parent="@style/PSPDFKit.Theme.Dark">
+        <item name="colorPrimary">#4527A0</item>      <!-- Deep purple toolbar -->
+        <item name="colorPrimaryDark">#311B92</item>
+        <item name="colorAccent">#00E5FF</item>       <!-- Cyan accents -->
+        <item name="pspdf__backgroundColor">#1A1036</item>
+    </style>
+</resources>
