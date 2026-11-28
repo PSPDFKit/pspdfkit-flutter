@@ -114,6 +114,7 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
         let pdfConfiguration = PspdfkitFlutterConverter.configuration(configurationDictionary, isImageDocument: isImageDocument)
 
         let newViewController = PDFViewController(document: document, configuration: pdfConfiguration)
+        applyGlobalSignaturePreset(to: newViewController)
         self.pdfViewController = newViewController
         self.setupViewController(configurationDictionary: configurationDictionary) { result in
             // Capture the view controller locally so measurement-config application
@@ -174,6 +175,7 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
                     builder.editableAnnotationTypes = editableAnnotationTypes
                 }
             }
+            applyGlobalSignaturePreset(to: instantViewController)
             self.pdfViewController = instantViewController
 
             let client = instantViewController.client
@@ -422,6 +424,12 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
     func setAnnotationPresetConfigurations(configurations: [String : Any?], completion: @escaping (Result<Bool?, any Error>) -> Void) {
         if let annotationConfigurations = configurations["annotationConfigurations"] as? Dictionary<String, Dictionary<String, Any>> {
             AnnotationsPresetConfigurations.setConfigurations(annotationPreset: annotationConfigurations)
+            // A signature preset applies to the presented document's signing UI, and to the
+            // documents presented after it.
+            if let signaturePreset = annotationConfigurations[ANNOTATION_SIGNATURE] {
+                AnnotationsPresetConfigurations.mergeGlobalSignaturePreset(signaturePreset)
+                applyGlobalSignaturePreset(to: pdfViewController)
+            }
             completion(.success(true))
         } else {
             let error = NSError(domain: "FlutterError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid annotation configurations."])
@@ -429,6 +437,14 @@ public class PspdfkitApiImpl: NSObject, NutrientApi, PDFViewControllerDelegate, 
         }
     }
     
+    /// Applies the signature preset set through `setAnnotationPresetConfigurations`, if any.
+    private func applyGlobalSignaturePreset(to viewController: PDFViewController?) {
+        guard let viewController, let preset = AnnotationsPresetConfigurations.globalSignaturePreset else { return }
+        viewController.updateConfigurationWithoutReloading { builder in
+            PspdfkitFlutterConverter.applySignatureStyle(fromPreset: preset, to: builder)
+        }
+    }
+
     func getTemporaryDirectory(completion: @escaping (Result<String, any Error>) -> Void) {
         let paths = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true)
         if let tempDirectory = paths.first {

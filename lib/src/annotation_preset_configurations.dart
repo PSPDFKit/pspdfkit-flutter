@@ -37,7 +37,18 @@ abstract class AnnotationConfiguration {
   }
 }
 
-/// Annotation configuration class for ink annotation. Ink annotations include: InkPen, MagicInk, Highlighter, Eraser and Signature.
+/// Annotation configuration class for ink annotations: InkPen, MagicInk,
+/// Highlighter and Eraser.
+///
+/// Signatures are not configured through an ink preset. To set the stroke
+/// thickness and opacity the signing UI starts with, set an
+/// [InkAnnotationConfiguration] for [AnnotationTool.signature]; only
+/// [thickness] and [alpha] apply there. On Android, while no
+/// [AnnotationTool.signature] preset is set, an ink preset is still used for
+/// the signing UI as a fallback; on iOS it is not. Signature colors come from
+/// [SignatureCreationConfiguration.colorOptions] instead. With
+/// `NutrientDocumentView`, use a `SignatureInterceptor` and its
+/// `SignatureStyle`.
 class InkAnnotationConfiguration extends AnnotationConfiguration {
   final Color? color;
   final double? thickness;

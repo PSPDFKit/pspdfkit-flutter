@@ -23,7 +23,6 @@ import com.pspdfkit.document.formatters.DocumentJsonFormatter
 import com.pspdfkit.document.formatters.XfdfFormatter
 import com.pspdfkit.document.html.HtmlToPdfConverter
 import com.pspdfkit.document.processor.PdfProcessor
-import com.pspdfkit.document.processor.PdfProcessor.ProcessorProgress
 import com.pspdfkit.document.processor.PdfProcessorTask
 import com.pspdfkit.exceptions.NutrientException
 import com.pspdfkit.flutter.pspdfkit.AnnotationConfigurationAdaptor.Companion.convertAnnotationConfigurations
@@ -44,27 +43,24 @@ import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
 import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
-import com.pspdfkit.forms.FormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
 import com.pspdfkit.initialization.CrossPlatformTechnology
 import com.pspdfkit.initialization.InitializationOptions
-import com.pspdfkit.instant.client.InstantProgress
 import com.pspdfkit.instant.document.InstantPdfDocument
 import com.pspdfkit.instant.ui.InstantPdfActivityIntentBuilder
 import com.pspdfkit.preferences.PSPDFKitPreferences
 import com.pspdfkit.ui.PdfActivity
 import com.pspdfkit.ui.PdfActivityIntentBuilder
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import kotlinx.coroutines.CoroutineScope
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subscribers.DisposableSubscriber
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import java.io.ByteArrayOutputStream
@@ -75,12 +71,14 @@ import androidx.core.net.toUri
 
 class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?) : NutrientApi {
 
-    private var disposable: Disposable? = null
     private var analyticsEventClient: FlutterAnalyticsClient? = null
-    private val scope = CoroutineScope(Dispatchers.Main)
+    // Results go to Flutter on the main thread. The SDK calls either dispatch their own work or are
+    // moved off the main thread here.
+    private val scope = MainScope()
 
     fun dispose() {
-        disposable?.dispose()
+        // Cancels the calls in progress, whose callbacks then don't run.
+        scope.coroutineContext.cancelChildren()
         analyticsEventClient = null
     }
 
@@ -132,6 +130,13 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             // ClassCastException from a raw downcast.
             val configurationMap = configuration?.let { HashMap(it) }
             val configurationAdapter = ConfigurationAdapter(activity, configurationMap)
+            // Measurement value configurations are applied by FlutterPdfActivity once
+            // the document is loaded. This used to be wired up by the legacy plugin
+            // method-call handler; carry it over to the Pigeon path here.
+            @Suppress("UNCHECKED_CAST")
+            FlutterPdfActivity.setMeasurementValueConfigurations(
+                configurationMap?.get("measurementValueConfigurations") as? List<Map<String, Any>>
+            )
             val imageDocument = isImageDocument(documentPath)
             val intent = if (imageDocument) {
                 PdfActivityIntentBuilder.fromImageUri(activity, Uri.parse(documentPath))
@@ -143,6 +148,12 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                     .configuration(configurationAdapter.build())
                     .passwords(configurationAdapter.password).build()
             }
+            // Not a PdfActivityConfiguration property: the activity applies it on the live
+            // AnnotationToolbar from this extra (see FlutterPdfActivity).
+            intent.putExtra(
+                FlutterPdfActivity.EXTRA_SHOW_STYLUS_BUTTON,
+                configurationAdapter.showStylusButton
+            )
             activity.startActivity(intent)
             callback(Result.success(true))
         } catch (e: Exception) {
@@ -171,10 +182,22 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             // callers omitted the optional configuration argument.
             val configurationMap = configuration?.let { HashMap(it) }
             val configurationAdapterInstant = ConfigurationAdapter(activity, configurationMap)
+            // Carry over measurement value configurations from the legacy handler:
+            // FlutterInstantPdfActivity applies them once the document is loaded.
+            @Suppress("UNCHECKED_CAST")
+            FlutterInstantPdfActivity.setMeasurementValueConfigurations(
+                configurationMap?.get("measurementValueConfigurations") as? List<Map<String, Any>>
+            )
             val intentInstant = InstantPdfActivityIntentBuilder.fromInstantDocument(
                 activity, serverUrl, jwt
             ).activityClass(FlutterInstantPdfActivity::class.java)
                 .configuration(configurationAdapterInstant.build()).build()
+            // Not a PdfActivityConfiguration property: the activity applies it on the live
+            // AnnotationToolbar from this extra (see FlutterInstantPdfActivity).
+            intentInstant.putExtra(
+                FlutterInstantPdfActivity.EXTRA_SHOW_STYLUS_BUTTON,
+                configurationAdapterInstant.showStylusButton
+            )
             // Attach AI Assistant config + Instant server URL via Intent
             // extras so each activity instance owns its own configuration.
             // Previously these were shared statics that raced when callers
@@ -213,56 +236,10 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.setFormFieldValue(String)"
         )
-        disposable = document.formProvider.getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ formElement: FormElement? ->
-                if (formElement is TextFormElement) {
-                    formElement.setText(value)
-                    callback(Result.success(true))
-                } else if (formElement is EditableButtonFormElement) {
-                    when (value) {
-                        "selected" -> {
-                            formElement.select()
-                            callback(Result.success(true))
-                        }
-
-                        "deselected" -> {
-                            formElement.deselect()
-                            callback(Result.success(true))
-                        }
-
-                        else -> {
-                            callback(Result.success(false))
-                        }
-                    }
-                } else if (formElement is ChoiceFormElement) {
-                    val selectedIndexes: MutableList<Int> = ArrayList()
-                    if (areValidIndexes(value, selectedIndexes)) {
-                        formElement.selectedIndexes = selectedIndexes
-                        callback(Result.success(true))
-                    } else {
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "InvalidArgument",
-                                    "\"value\" argument needs a list of " + "integers to set selected indexes for a choice " + "form element (e.g.: \"1, 3, 5\")."
-                                )
-                            )
-                        )
-                    }
-                } else if (formElement is SignatureFormElement) {
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "UnsupportedOperation",
-                                "Signature form elements are not supported."
-                            )
-                        )
-                    )
-                } else {
-                    callback(Result.success(false))
-                }
-            }, { throwable: Throwable ->
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                document.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -273,9 +250,60 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            },  // Form element for the given name not found.
-                { callback(Result.success(false)) })
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
+                callback(Result.success(false))
+                return@launch
+            }
+            if (formElement is TextFormElement) {
+                formElement.setText(value)
+                callback(Result.success(true))
+            } else if (formElement is EditableButtonFormElement) {
+                when (value) {
+                    "selected" -> {
+                        formElement.select()
+                        callback(Result.success(true))
+                    }
 
+                    "deselected" -> {
+                        formElement.deselect()
+                        callback(Result.success(true))
+                    }
+
+                    else -> {
+                        callback(Result.success(false))
+                    }
+                }
+            } else if (formElement is ChoiceFormElement) {
+                val selectedIndexes: MutableList<Int> = ArrayList()
+                if (areValidIndexes(value, selectedIndexes)) {
+                    formElement.selectedIndexes = selectedIndexes
+                    callback(Result.success(true))
+                } else {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "InvalidArgument",
+                                "\"value\" argument needs a list of " + "integers to set selected indexes for a choice " + "form element (e.g.: \"1, 3, 5\")."
+                            )
+                        )
+                    )
+                }
+            } else if (formElement is SignatureFormElement) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "UnsupportedOperation",
+                            "Signature form elements are not supported."
+                        )
+                    )
+                )
+            } else {
+                callback(Result.success(false))
+            }
+        }
     }
 
     override fun getFormFieldValue(
@@ -285,49 +313,10 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.getFormFieldValue()"
         )
-        disposable = document.formProvider.getFormElementWithNameAsync(fullyQualifiedName)
-            .subscribeOn(Schedulers.computation()).observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ formElement: FormElement? ->
-                when (formElement) {
-                    is TextFormElement -> {
-                        val text = formElement.text
-                        callback(Result.success(text))
-                    }
-
-                    is EditableButtonFormElement -> {
-                        val isSelected = formElement.isSelected
-                        callback(Result.success(if (isSelected) "selected" else "deselected"))
-                    }
-
-                    is ChoiceFormElement -> {
-                        val selectedIndexes = formElement.selectedIndexes
-                        val stringBuilder = StringBuilder()
-                        val iterator: Iterator<Int> = selectedIndexes.iterator()
-                        while (iterator.hasNext()) {
-                            stringBuilder.append(iterator.next())
-                            if (iterator.hasNext()) {
-                                stringBuilder.append(",")
-                            }
-                        }
-                        callback(Result.success(stringBuilder.toString()))
-                    }
-
-                    is SignatureFormElement -> {
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "UnsupportedOperation",
-                                    "Signature form elements are not supported."
-                                )
-                            )
-                        )
-                    }
-
-                    else -> {
-                        callback(Result.success(null))
-                    }
-                }
-            }, { throwable: Throwable ->
+        scope.launch {
+            val formElement = runCatchingUnlessCancelled {
+                document.formProvider.getFormElementWithName(fullyQualifiedName)
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -338,18 +327,61 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            },  // Form element for the given name not found.
-                {
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error", String.format(
-                                    "Form element not found with name %s", fullyQualifiedName
-                                )
+                return@launch
+            }
+            // Form element for the given name not found.
+            if (formElement == null) {
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error", String.format(
+                                "Form element not found with name %s", fullyQualifiedName
                             )
                         )
                     )
-                })
+                )
+                return@launch
+            }
+            when (formElement) {
+                is TextFormElement -> {
+                    val text = formElement.text
+                    callback(Result.success(text))
+                }
+
+                is EditableButtonFormElement -> {
+                    val isSelected = formElement.isSelected
+                    callback(Result.success(if (isSelected) "selected" else "deselected"))
+                }
+
+                is ChoiceFormElement -> {
+                    val selectedIndexes = formElement.selectedIndexes
+                    val stringBuilder = StringBuilder()
+                    val iterator: Iterator<Int> = selectedIndexes.iterator()
+                    while (iterator.hasNext()) {
+                        stringBuilder.append(iterator.next())
+                        if (iterator.hasNext()) {
+                            stringBuilder.append(",")
+                        }
+                    }
+                    callback(Result.success(stringBuilder.toString()))
+                }
+
+                is SignatureFormElement -> {
+                    callback(
+                        Result.failure(
+                            NutrientApiError(
+                                "UnsupportedOperation",
+                                "Signature form elements are not supported."
+                            )
+                        )
+                    )
+                }
+
+                else -> {
+                    callback(Result.success(null))
+                }
+            }
+        }
     }
 
     override fun applyInstantJson(annotationsJson: String, callback: (Result<Boolean?>) -> Unit) {
@@ -358,20 +390,24 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.applyInstantJson(String)"
         )
         val documentJsonDataProvider = DocumentJsonDataProvider(annotationsJson)
-        disposable =
-            DocumentJsonFormatter.importDocumentJsonAsync(document, documentJsonDataProvider)
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ callback(Result.success(true)) }, { throwable: Throwable ->
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error",
-                                "Error while importing document Instant JSON",
-                                throwable.message
-                            )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter imports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.importDocumentJson(document, documentJsonDataProvider) }
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error",
+                            "Error while importing document Instant JSON",
+                            throwable.message
                         )
                     )
-                })
+                )
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun exportInstantJson(callback: (Result<String?>) -> Unit) {
@@ -381,10 +417,11 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         )
         val outputStream = ByteArrayOutputStream()
 
-        disposable = DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe({
-                callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
-            }, { throwable: Throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(document, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -394,7 +431,10 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            })
+                return@launch
+            }
+            callback(Result.success(outputStream.toString(StandardCharsets.UTF_8.name())))
+        }
     }
 
     override fun addAnnotation(annotation: String, attachment:String?, callback: (Result<Boolean?>) -> Unit) {
@@ -501,11 +541,11 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         )
 
         val outputStream = ByteArrayOutputStream()
-        disposable = DocumentJsonFormatter.exportDocumentJsonAsync(document, outputStream)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe({
-                val jsonString: String = outputStream.toString()
-                callback(Result.success(jsonString))
-            }, { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter exports on the calling thread.
+                withContext(Dispatchers.IO) { DocumentJsonFormatter.exportDocumentJson(document, outputStream) }
+            }.getOrElse { throwable ->
                 callback(
                     Result.failure(
                         NutrientApiError(
@@ -514,7 +554,11 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            })
+                return@launch
+            }
+            val jsonString: String = outputStream.toString()
+            callback(Result.success(jsonString))
+        }
     }
 
     override fun updateAnnotation(annotation: String, callback: (Result<Unit>) -> Unit) {
@@ -578,27 +622,21 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                 .changeAnnotationsOfType(annotationType, annotationProcessingMode)
         }
 
-        disposable = PdfProcessor.processDocumentAsync(task, File(destinationPath))
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(object : DisposableSubscriber<ProcessorProgress?>() {
-                override fun onComplete() {
-                    callback(Result.success(true))
-                }
-
-                override fun onNext(t: ProcessorProgress?) {
-                    // Notify the progress.
-                }
-
-                override fun onError(t: Throwable) {
-                    callback(
-                        Result.failure(
-                            NutrientApiError(
-                                "Error", "Error while processing annotations", t.message
-                            )
+        scope.launch {
+            runCatchingUnlessCancelled {
+                PdfProcessor.processDocumentAsync(task, File(destinationPath)).flowOn(Dispatchers.IO).collect()
+            }.getOrElse { t ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error", "Error while processing annotations", t.message
                         )
                     )
-                }
-            })
+                )
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun importXfdf(xfdfString: String, callback: (Result<Boolean?>) -> Unit) {
@@ -608,25 +646,21 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         )
 
         val dataProvider = DocumentJsonDataProvider(xfdfString)
-        // The async parse method is recommended (so you can easily offload parsing from the UI thread).
-        disposable = XfdfFormatter.parseXfdfAsync(document, dataProvider)
-            .subscribeOn(Schedulers.io()) // Specify the thread on which to parse XFDF.
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { annotations ->
-                    // Annotations parsed from XFDF aren't added to the document automatically.
-                    // You need to add them manually.
-                    runBlocking {
-                        for (annotation in annotations) {
-                            document.annotationProvider.addAnnotationToPage(annotation)
-                        }
-                    }
-                    callback(Result.success(true))
-                },
-                { throwable ->
-                    callback(Result.failure(NutrientApiError("Error importing XFDF", throwable.message ?: "")))
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter parses on the calling thread.
+                val annotations = withContext(Dispatchers.IO) { XfdfFormatter.parseXfdfAsync(document, dataProvider) }
+                // Annotations parsed from XFDF aren't added to the document automatically.
+                // You need to add them manually.
+                for (annotation in annotations) {
+                    document.annotationProvider.addAnnotationToPage(annotation)
                 }
-            )
+            }.getOrElse { throwable ->
+                callback(Result.failure(NutrientApiError("Error importing XFDF", throwable.message ?: "")))
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun exportXfdf(xfdfPath: String, callback: (Result<Boolean?>) -> Unit) {
@@ -637,14 +671,13 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         // Output stream pointing to the XFDF file into which to write the data.
         val outputStream = FileOutputStream(xfdfPath)
 
-        // The async `write` method is recommended (so you can easily offload writing from the UI thread).
-        disposable = XfdfFormatter.writeXfdfAsync(
-            document, listOf(), listOf(), outputStream
-        ).subscribeOn(Schedulers.io()) // Specify the thread on which to write XFDF.
-            .subscribe({
-                // XFDF was successfully written.
-                callback(Result.success(true))
-            }, { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                // The formatter writes on the calling thread.
+                withContext(Dispatchers.IO) {
+                    XfdfFormatter.writeXfdfAsync(document, listOf(), listOf(), outputStream)
+                }
+            }.getOrElse { throwable ->
                 // An error occurred while writing XFDF.
                 callback(
                     Result.failure(
@@ -654,7 +687,11 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
                         )
                     )
                 )
-            })
+                return@launch
+            }
+            // XFDF was successfully written.
+            callback(Result.success(true))
+        }
     }
 
     override fun save(callback: (Result<Boolean?>) -> Unit) {
@@ -662,9 +699,14 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             activityPluginBinding?.activity as PdfActivity, "Pspdfkit.save()"
         )
-        disposable = document.saveIfModifiedAsync().subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { result: Boolean -> callback(Result.success(result)) }
+        // The document saves off the main thread. A failure used to go unhandled.
+        scope.launch {
+            val saved = runCatchingUnlessCancelled { document.saveIfModifiedAsync() }.getOrElse { throwable ->
+                callback(Result.failure(NutrientApiError("Error", "Error while saving the document", throwable.message)))
+                return@launch
+            }
+            callback(Result.success(saved))
+        }
     }
 
     override fun setDelayForSyncingLocalChanges(
@@ -706,19 +748,23 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         val document = Preconditions.requireDocumentNotNull(
             instantActivity, "Pspdfkit.syncAnnotations()"
         )
-        disposable =
-            (document as InstantPdfDocument).syncAnnotationsAsync().subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ _: InstantProgress -> callback(Result.success(true)) },
-                    { throwable: Throwable ->
-                        callback(
-                            Result.failure(
-                                NutrientApiError(
-                                    "Error", "Error while syncing annotations", throwable.message
-                                )
-                            )
+        scope.launch {
+            // A reply can only be sent once, so it goes when syncing has finished, not on each
+            // progress update.
+            runCatchingUnlessCancelled {
+                (document as InstantPdfDocument).syncAnnotationsAsync().collect()
+            }.getOrElse { throwable ->
+                callback(
+                    Result.failure(
+                        NutrientApiError(
+                            "Error", "Error while syncing annotations", throwable.message
                         )
-                    })
+                    )
+                )
+                return@launch
+            }
+            callback(Result.success(true))
+        }
     }
 
     override fun checkAndroidWriteExternalStoragePermission(callback: (Result<Boolean?>) -> Unit) {
@@ -809,19 +855,17 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         }
 
         val outputFile = File(outputPath)
-        disposable = PdfProcessor
-            .processDocumentAsync(task, outputFile)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                //Log progress
-                //Log.d("PDF Generation", "generatePdf: Processing page ${it.pagesProcessed + 1} of ${it.totalPages}")
-            }, { throwable ->
+        scope.launch {
+            runCatchingUnlessCancelled {
+                PdfProcessor.processDocumentAsync(task, outputFile).flowOn(Dispatchers.IO).collect()
+            }.getOrElse { throwable ->
                 // Handle the error.
                 callback(Result.failure(NutrientApiError("Error generating PDF", throwable.message)))
-            }, {  // Handle the completion.
-                callback(Result.success(outputPath))
-            })
+                return@launch
+            }
+            // Handle the completion.
+            callback(Result.success(outputPath))
+        }
     }
 
     override fun generatePdfFromHtmlString(
@@ -847,19 +891,15 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         if (options?.contains("documentTitle") == true)
             converter?.title(options["documentTitle"] as String)
 
-        disposable = converter
+        converter ?: return
+        scope.launch {
             // Perform the conversion.
-            ?.convertToPdfAsync(outputFile)
-            ?.subscribeOn(Schedulers.io())
-            // Publish results on the main thread so we can update the UI.
-            ?.observeOn(AndroidSchedulers.mainThread())
-            ?.subscribe(
-                {
-                    callback(Result.success(outputFile.absolutePath))
-                },
-                {
-                    callback(Result.failure(NutrientApiError("HTML_TO_PDF_ERROR", it.message)))
-                })
+            runCatchingUnlessCancelled { converter.convertToPdfAsync(outputFile) }.getOrElse {
+                callback(Result.failure(NutrientApiError("HTML_TO_PDF_ERROR", it.message)))
+                return@launch
+            }
+            callback(Result.success(outputFile.absolutePath))
+        }
     }
 
     override fun generatePdfFromHtmlUri(
@@ -886,18 +926,16 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
             convertor?.title(options["documentTitle"] as String)
         }
 
-        convertor?.let {
-            disposable = it
-                // Perform the conversion.
-                .convertToPdfAsync(outputFile)
-                // Subscribe to the conversion result.
-                .subscribe({
-                    // Return the converted document.
-                    callback(Result.success(outputFile.absolutePath))
-                }, { throwable ->
-                    // Handle the error.
-                    callback(Result.failure(NutrientApiError("", throwable.message)))
-                })
+        convertor ?: return
+        scope.launch {
+            // Perform the conversion.
+            runCatchingUnlessCancelled { convertor.convertToPdfAsync(outputFile) }.getOrElse { throwable ->
+                // Handle the error.
+                callback(Result.failure(NutrientApiError("", throwable.message)))
+                return@launch
+            }
+            // Return the converted document.
+            callback(Result.success(outputFile.absolutePath))
         }
     }
 
@@ -974,7 +1012,8 @@ class PspdfkitApiImpl(private var activityPluginBinding: ActivityPluginBinding?)
         callback: (Result<Boolean?>) -> Unit
     ) {
         try {
-            // Store the configuration globally for use with PspdfkitPluginMethodCallHandler (deprecated)
+            // Store the configuration globally so the PDF view's AnnotationMenuHandler
+            // can pick it up when a fragment is created (see FlutterPdfUiFragment).
             GlobalAnnotationMenuConfiguration.setConfiguration(configuration)
             
             callback(Result.success(true))

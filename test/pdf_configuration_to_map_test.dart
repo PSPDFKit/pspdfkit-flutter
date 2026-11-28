@@ -28,5 +28,18 @@ void main() {
       expect(map.containsKey('pageMode'), isFalse);
       expect(map.containsKey('pageLayoutMode'), isFalse);
     });
+
+    // androidShowStylusButton is not a PdfActivityConfiguration builder
+    // property, so it reaches Android only as this map key. A serialization
+    // regression would silently drop it and leave the button visible.
+    test('emits androidShowStylusButton when set', () {
+      final map = PdfConfiguration(androidShowStylusButton: false).toMap();
+      expect(map['androidShowStylusButton'], isFalse);
+    });
+
+    test('omits androidShowStylusButton when not set', () {
+      final map = PdfConfiguration().toMap();
+      expect(map.containsKey('androidShowStylusButton'), isFalse);
+    });
   });
 }

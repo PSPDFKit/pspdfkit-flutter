@@ -98,7 +98,6 @@
 @interface PspdfPlatformView() <PSPDFViewControllerDelegate>
 @property int64_t platformViewId;
 @property (nonatomic) FlutterMethodChannel *channel;
-@property (nonatomic) FlutterMethodChannel *broadcastChannel;
 @property (nonatomic) PSPDFViewController *pdfViewController;
 @property (nonatomic) PSPDFNavigationController *navigationController;
 @property (nonatomic) PspdfPlatformContainerView *containerView;
@@ -195,7 +194,6 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
     if ((self = [super init])) {
         _platformViewId = viewId;
         _channel = [FlutterMethodChannel methodChannelWithName:[NSString stringWithFormat:@"com.nutrient.widget.%lld", viewId] binaryMessenger:messenger];
-        _broadcastChannel = [FlutterMethodChannel methodChannelWithName:@"com.nutrient.global" binaryMessenger:messenger];
         _binaryMessenger = messenger;
         _navigationController = [PSPDFNavigationController new];
         _platformViewImpl = [[PspdfkitPlatformViewImpl alloc] init];
@@ -456,8 +454,6 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
         }
         [_navigationController setViewControllers:@[_pdfViewController] animated:NO];
 
-        __weak id weakSelf = self;
-        
         // Handle annotation menu configuration if present (shared for both branches)
         NSDictionary *configurationDictionary = [PspdfkitFlutterConverter processConfigurationOptionsDictionaryForPrefix:args[@"configuration"]];
         if (configurationDictionary && (id)configurationDictionary != NSNull.null && configurationDictionary[@"annotationMenuConfiguration"]) {
@@ -472,10 +468,6 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
 
         // Apply stored theme colors to PSPDFKit UI components
         [self applyStoredThemeColors];
-
-        [_channel setMethodCallHandler:^(FlutterMethodCall * _Nonnull call, FlutterResult  _Nonnull result) {
-            [weakSelf handleMethodCall:call result:result];
-        }];
 
         // Register the PSPDFViewController in the static registry for adapter access via FFI
         [PspdfPlatformView registerViewController:viewId controller:_pdfViewController];
@@ -612,11 +604,6 @@ static NSMutableDictionary<NSNumber *, PSPDFViewController *> *viewControllerReg
         }
     }
 }
-
-- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [PspdfkitFlutterHelper processMethodCall:call result:result forViewController:self.pdfViewController];
-}
-
 
 # pragma mark - PSPDFViewControllerDelegate
 

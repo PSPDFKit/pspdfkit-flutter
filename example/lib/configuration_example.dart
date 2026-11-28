@@ -41,6 +41,9 @@ class ConfigurationExample extends StatelessWidget {
                         spreadFitting: SpreadFitting.fit,
                         userInterfaceViewMode: UserInterfaceViewMode.automatic,
                         androidShowSearchAction: true,
+                        // Only rendered on Android devices with a stylus, such
+                        // as a Samsung S Pen.
+                        androidShowStylusButton: false,
                         inlineSearch: false,
                         showThumbnailBar: ThumbnailBarMode.floating,
                         androidShowThumbnailGridAction: true,

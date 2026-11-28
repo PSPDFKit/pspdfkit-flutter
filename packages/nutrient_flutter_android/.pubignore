@@ -1,0 +1,13 @@
+# Pub publish exclusions
+*.overrides.backup
+build/
+jnigen_resolved.yaml
+generate_bindings.sh
+scripts/
+jnigen.yaml
+
+# Exclude gitignored example files that are checked in
+example/android/gradlew
+example/android/gradlew.bat
+example/android/gradle/wrapper/gradle-wrapper.jar
+example/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java

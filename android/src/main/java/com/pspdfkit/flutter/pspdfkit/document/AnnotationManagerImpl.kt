@@ -10,10 +10,10 @@ package com.pspdfkit.flutter.pspdfkit.document
 import com.pspdfkit.annotations.Annotation as PspdfkitAnnotation
 import com.pspdfkit.annotations.*
 import com.pspdfkit.annotations.AnnotationFlags
-import kotlinx.coroutines.runBlocking
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationManagerApi
 import com.pspdfkit.flutter.pspdfkit.api.AnnotationProperties
+import com.pspdfkit.flutter.pspdfkit.util.runCatchingUnlessCancelled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -284,69 +284,68 @@ class AnnotationManagerImpl(
 
     override fun exportXFDF(pageIndex: Long?, callback: (Result<String>) -> Unit) {
         scope.launch {
-            try {
+            // If pageIndex is specified, export only annotations from that page
+            val annotationsToExport = runCatchingUnlessCancelled {
+                if (pageIndex != null) {
+                    pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
+                } else {
+                    // Export all annotations from all pages
+                    emptyList()
+                }
+            }.getOrElse {
+                callback(Result.failure(it))
+                return@launch
+            }
+
+            // The formatter writes on the calling thread.
+            val xfdfString = runCatchingUnlessCancelled {
                 withContext(Dispatchers.IO) {
                     val outputStream = java.io.ByteArrayOutputStream()
-
-                    // If pageIndex is specified, export only annotations from that page
-                    val annotationsToExport = if (pageIndex != null) {
-                        pdfDocument.annotationProvider.getAnnotations(pageIndex.toInt())
-                    } else {
-                        // Export all annotations from all pages
-                        emptyList()
-                    }
-
                     com.pspdfkit.document.formatters.XfdfFormatter.writeXfdfAsync(
                         pdfDocument,
                         annotationsToExport,
                         emptyList(), // No form fields to export
                         outputStream
                     )
-                        .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                            {
-                                val xfdfString = outputStream.toString("UTF-8")
-                                callback(Result.success(xfdfString))
-                            },
-                            { throwable ->
-                                callback(Result.failure(Exception("Failed to export XFDF: ${throwable.message}")))
-                            }
-                        )
+                    outputStream.toString("UTF-8")
                 }
-            } catch (e: Exception) {
-                callback(Result.failure(e))
+            }.getOrElse { throwable ->
+                callback(Result.failure(Exception("Failed to export XFDF: ${throwable.message}")))
+                return@launch
             }
+            callback(Result.success(xfdfString))
         }
     }
 
     override fun importXFDF(xfdfString: String, callback: (Result<Boolean>) -> Unit) {
         scope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val dataProvider = com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider(xfdfString)
-
-                    com.pspdfkit.document.formatters.XfdfFormatter.parseXfdfAsync(pdfDocument, dataProvider)
-                        .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-                        .subscribe(
-                            { annotations ->
-                                // Add parsed annotations to the document
-                                runBlocking {
-                                    for (annotation in annotations) {
-                                        pdfDocument.annotationProvider.addAnnotationToPage(annotation)
-                                    }
-                                }
-                                callback(Result.success(true))
-                            },
-                            { throwable ->
-                                callback(Result.failure(Exception("Failed to import XFDF: ${throwable.message}")))
-                            }
-                        )
-                }
-            } catch (e: Exception) {
-                callback(Result.failure(e))
+            val dataProvider = runCatchingUnlessCancelled {
+                com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider(xfdfString)
+            }.getOrElse {
+                callback(Result.failure(it))
+                return@launch
             }
+
+            // The formatter parses on the calling thread.
+            val annotations = runCatchingUnlessCancelled {
+                withContext(Dispatchers.IO) {
+                    com.pspdfkit.document.formatters.XfdfFormatter.parseXfdfAsync(pdfDocument, dataProvider)
+                }
+            }.getOrElse { throwable ->
+                callback(Result.failure(Exception("Failed to import XFDF: ${throwable.message}")))
+                return@launch
+            }
+
+            // Add parsed annotations to the document
+            runCatchingUnlessCancelled {
+                for (annotation in annotations) {
+                    pdfDocument.annotationProvider.addAnnotationToPage(annotation)
+                }
+            }.getOrElse {
+                callback(Result.failure(it))
+                return@launch
+            }
+            callback(Result.success(true))
         }
     }
 
